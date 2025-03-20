@@ -175,6 +175,180 @@ AI_KasperExperiments class >> testMethodBlackTestGenerator [
 ]
 
 { #category : 'tests' }
+AI_KasperExperiments class >> testMethodCommenting [
+	"Tests all models with a simple prompt, returns collected responses"
+	| model |
+	model := self new.
+	model 
+		system: 'Short comments in Pharo and Smalltalk er one line, upto 60 characters. Medium comments are up to three lines, or upto 180 characters. Large comments should be less that 1000 characters.'
+		prompt: 'Write short commentfor the following Pharo/Smalltalk method. Return only the comment, nothing more,
+	resultForModel: modelName 
+	| url jsonResponse requestBody |
+	url := ''http://localhost:11434/api/generate''.
+
+	requestBody := STONJSON toString: { 
+	    #model -> modelName.
+	    #system -> system.
+	    #prompt -> prompt.
+	    #stream -> false.
+	} asDictionary.
+
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+
+	^ (STONJSON fromString: jsonResponse) at: ''response''.
+	'
+		testting: 'phi4'. 
+	model queryAllModels.
+	^ model
+	
+]
+
+{ #category : 'tests' }
+AI_KasperExperiments class >> testMethodCommenting01 [
+	"Tests all models with a simple prompt, returns collected responses"
+	| model |
+	model := self new.
+	model 
+		system: 'In Pharo and smalltalk the key comments of methods are 
+		written in the line just after the method declaration. If you are asked to return 
+		code, just return the code, no text for reading and explaining.' 
+		prompt: 'This is a pharo and smalltalk method. Could you please read it.
+		Insert one short comment into the method, and return the result of this. I want the code, not your thinking.
+	resultForModel: modelName 
+	| url jsonResponse requestBody |
+	url := ''http://localhost:11434/api/generate''.
+
+	requestBody := STONJSON toString: { 
+	    #model -> modelName.
+	    #system -> system.
+	    #prompt -> prompt.
+	    #stream -> false.
+    	 #temperature -> 0.
+	} asDictionary.
+
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+
+	^ (STONJSON fromString: jsonResponse) at: ''response''.
+'
+		testting: 'Yi-Coder:9b'.. 
+	model queryAllModels.
+	^ model
+	
+]
+
+{ #category : 'tests' }
+AI_KasperExperiments class >> testMethodCommenting02 [
+	"Tests all models with a simple prompt, returns collected responses"
+	| model |
+	model := self new.
+	model 
+		system: 'In Pharo and smalltalk comments of methods are 
+		written in the line just after the method name and before the implementation.. If you are asked to return 
+		code, just return the code, no text for reading and explaining.' 
+		prompt: 'This is a pharo and smalltalk method. Could you please read it.
+		Insert one short comment into the method, and return the result of this. I want the code, not your thinking.
+	resultForModel: modelName 
+	| url jsonResponse requestBody |
+	url := ''http://localhost:11434/api/generate''.
+
+	requestBody := STONJSON toString: { 
+	    #model -> modelName.
+	    #system -> system.
+	    #prompt -> prompt.
+	    #stream -> false.
+	} asDictionary.
+
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+
+	^ (STONJSON fromString: jsonResponse) at: ''response''.
+	'
+		testting: 'Yi-Coder:9b'.. 
+	model queryAllModels.
+	^ model
+	
+]
+
+{ #category : 'tests' }
+AI_KasperExperiments class >> testMethodCommenting03 [
+	"Tests all models with a simple prompt, returns collected responses"
+	| model |
+	model := self new.
+	model 
+		system: 'Your task is to edit a given Pharo/Smalltalk method by inserting a single short comment at the appropriate place. 
+Return only the modified code, without any explanations, extra text, or formatting. Do not add any other output.' 
+		prompt: 'Modify the following Pharo/Smalltalk method by inserting a single short comment describing its purpose.
+Return only the modified code and nothing else.
+	resultForModel: modelName 
+	| url jsonResponse requestBody |
+	url := ''http://localhost:11434/api/generate''.
+
+	requestBody := STONJSON toString: { 
+	    #model -> modelName.
+	    #system -> system.
+	    #prompt -> prompt.
+	    #stream -> false.
+	} asDictionary.
+
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+
+	^ (STONJSON fromString: jsonResponse) at: ''response''.
+	'
+		testting: 'phi4'. 
+	model queryAllModels.
+	^ model
+	
+]
+
+{ #category : 'tests' }
+AI_KasperExperiments class >> testMethodCommenting04 [
+	"Tests all models with a simple prompt, returns collected responses"
+	| model |
+	model := self new.
+	model 
+		system: 'Short comments in Pharo and Smalltalk er one line, upto 60 characters. Medium comments are up to three lines, or upto 180 characters. Large comments should be less that 1000 characters.'
+		prompt: 'Write a one line commentfor the following Pharo/Smalltalk method. Return only the comment and nothing else. Do not put it into the code, just return the comment as a "this is the comment". The comment should be one line, and upto 60 charaters. ,
+	resultForModel: modelName 
+	| url jsonResponse requestBody |
+	url := ''http://localhost:11434/api/generate''.
+
+	requestBody := STONJSON toString: { 
+	    #model -> modelName.
+	    #system -> system.
+	    #prompt -> prompt.
+	    #stream -> false.
+	} asDictionary.
+
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+
+	^ (STONJSON fromString: jsonResponse) at: ''response''.
+	'
+		testting: 'phi4'. 
+	model queryAllModels.
+	^ model
+	
+]
+
+{ #category : 'tests' }
 AI_KasperExperiments class >> testMethodPharoKnowledge [
 	"Tests all models with a simple prompt, returns collected responses"
 	| model |
@@ -527,6 +701,7 @@ AI_KasperExperiments >> resultForModel: modelName [
 	    #system -> system.
 	    #prompt -> prompt.
 	    #stream -> false.
+    	 #temperature -> 0.
 	} asDictionary.
 
 	jsonResponse := ZnClient new
