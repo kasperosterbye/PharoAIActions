@@ -56,6 +56,18 @@ AI_OllamaPrompting >> askPrompt: promptString [
 ]
 
 { #category : 'ollama models' }
+AI_OllamaPrompting >> askResonceForPrompt: promptString [
+	self askPrompt: promptString.
+	^ self getResponse 
+]
+
+{ #category : 'ollama models' }
+AI_OllamaPrompting >> getResonceForPrompt: promptString [
+	^ self promptAndResponseSemaphore: promptString 
+
+]
+
+{ #category : 'ollama models' }
 AI_OllamaPrompting >> getResponse [
 	"returns the responce. If the response is nil, and semaphore not nil, waits for result"
 	response ifNil: [ 
@@ -66,7 +78,7 @@ AI_OllamaPrompting >> getResponse [
 
 { #category : 'initialization' }
 AI_OllamaPrompting >> initialize [ 
-	model := 'phi4'.
+	model := 'llama3.2'.
 	system := ''.
 	promptPrefix := ''.
 ]
@@ -123,14 +135,13 @@ AI_OllamaPrompting >> promptAndResponseSemaphore: prompt [
 	    #stream -> false.
     	 #temperature -> 0.
 	} asDictionary.
-
 	jsonResponse := ZnClient new
 	    url: url;
 	    entity: (ZnEntity with: requestBody);
 	    post;
 	    contents.
 	response := (STONJSON fromString: jsonResponse) at: 'response'.
-	^ response.
+	^ response contents.
 ]
 
 { #category : 'accessing' }

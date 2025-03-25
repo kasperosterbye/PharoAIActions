@@ -8,13 +8,13 @@ Class {
 	#package : 'AI-OllamaKasper'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'running' }
 AI_CommentBuildingTest >> dummyCommentedMethod [
 	"42 is really a great integer"
 		^ 42.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'running' }
 AI_CommentBuildingTest >> dummyMethod [
 		^ 42.
 ]
