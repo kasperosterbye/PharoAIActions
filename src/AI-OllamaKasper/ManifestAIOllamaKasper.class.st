@@ -15,3 +15,10 @@ ManifestAIOllamaKasper class >> ruleCascadedNextPutAllsRuleV1FalsePositive [
 	<ignoreForCoverage>
 	^ #(#(#(#RGPackageDefinition #(#'AI-OllamaKasper')) #'2025-03-25T10:33:44.159325+01:00') )
 ]
+
+{ #category : 'code-critics' }
+ManifestAIOllamaKasper class >> ruleCollectSelectNotUsedRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGClassDefinition #(#AI_PackagesAsOllamaSystem)) #'2025-03-26T07:24:02.096714+01:00') )
+]
