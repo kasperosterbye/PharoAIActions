@@ -134,7 +134,7 @@ AI_OllamaPrompting >> response [
 ]
 
 { #category : 'accessing' }
-AI_OllamaPrompting >> responses: aValue [
+AI_OllamaPrompting >> response: aValue [
 	response	 :=	aValue.
 ]
 

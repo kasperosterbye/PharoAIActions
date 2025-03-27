@@ -1,3 +1,6 @@
+"
+All tests use RxParser as the example class, since it is small, stable, and unchanged for decades. This avoids meta-level confusion and ensures consistent test behavior.
+"
 Class {
 	#name : 'AI_CommentBuildingTest',
 	#superclass : 'TestCase',
@@ -9,50 +12,74 @@ Class {
 }
 
 { #category : 'running' }
-AI_CommentBuildingTest >> dummyCommentedMethod [
-	"42 is really a great integer"
-		^ 42.
-]
-
-{ #category : 'running' }
-AI_CommentBuildingTest >> dummyMethod [
-		^ 42.
-]
-
-{ #category : 'helper methods' }
-AI_CommentBuildingTest >> setDummyMethod [
-	"set the dummyMethod so we are sure it is the right method"
-	self class compile: 'dummyMethod
-		^ 42.'.
-]
-
-{ #category : 'running' }
 AI_CommentBuildingTest >> setUp [
 	super setUp.
 
 	"Put here a common initialization logic for tests"
-	self setDummyMethod.
-	commentBuilder :=   AI_CommentBuilding new initialize: self class
+	"self setDummyMethod."
+	commentBuilder :=   AI_CommentBuilding new initialize: RxParser
 ]
 
 { #category : 'tests' }
-AI_CommentBuildingTest >> testAddCommentTo [
+AI_CommentBuildingTest >> testAddCommentToUncommented [
 	"test if the comment propsed makes sence."
 	| testCommentText comment res |
-	testCommentText := 'containsComment: code
-    | ast |
-    ast := RBParser parseMethod: code.
-
-    ^ ast allChildren anySatisfy: [:node | node isKindOf: RBComment].'.
+	"RxParser >> #signalParseError does not contain a comment"
+	testCommentText := (RxParser >> #signalParseError) sourceCode.
 	comment := 'To be "or" not to be'.
-	res := commentBuilder addComment: comment to: testCommentText.
-	Transcript show: 'testAddCommentTo: '; show: res lines second;cr.
+	res := commentBuilder addComment: comment toUncommented: testCommentText.
 	self assert: res lines second equals: comment asComment
 	
 ]
 
 { #category : 'tests' }
-AI_CommentBuildingTest >> testCommentClass [
+AI_CommentBuildingTest >> testAiCommentedInstanceVariables [ 
+	"The test is actually tested in testInitialize, but here is an explict test"
+	| classToBeCommented classComment|
+	classToBeCommented := commentBuilder class commentClass: RxParser.
+	self timeLimit: 100 seconds.
+	classComment  := classToBeCommented aiCommentedInstanceVariables lines.
+	self 
+		assert: ((classComment at: 1) beginsWith: '## instace variables').
+	self 
+		assert: ((classComment at: 2) beginsWith: 'input :').
+	self 
+		assert: ((classComment at: 3) beginsWith: 'lookahead :')
+	
+]
+
+{ #category : 'tests' }
+AI_CommentBuildingTest >> testAiCommentedMethods [ 
+	"The test is actually tested in testInitialize, but here is an explict test"
+	| classToBeCommented methodComments |
+	classToBeCommented := commentBuilder class commentClass: RxParser.
+	self timeLimit: 100 seconds.
+	methodComments  := classToBeCommented aiCommentedMethods.
+	self assert: methodComments size = 3.
+	methodComments do: [ :method |
+		self assert: (method lines second trimBoth beginsWith: '"').
+		self assert: (method lines second trimBoth endsWith: '"').
+	]
+]
+
+{ #category : 'helper methods' }
+AI_CommentBuildingTest >> testContainsComment [
+	"Check that non-commented methods are fount"
+    | result |
+    
+    "Check if it wrongly detects a comment"
+    result := commentBuilder containsComment: (RxParser >> #signalParseError) sourceCode.
+    self deny: result.
+
+	"Check if it wrongly detects a comment"
+    result := commentBuilder containsComment: (RxParser >> #lookAround) sourceCode.
+    self assert: result .
+
+
+]
+
+{ #category : 'tests' }
+AI_CommentBuildingTest >> testInitialize [
 	"test that the commentClass on class side is working"
 	| classToBeCommented |
 	classToBeCommented := commentBuilder class commentClass: RxParser.
@@ -66,71 +93,14 @@ AI_CommentBuildingTest >> testCommentClass [
 		assert: (classToBeCommented system beginsWith: 'Give respose of maximum 100').
 	self 
 		assert: (classToBeCommented prompt beginsWith: 'Write short commentfor').
-	self 
-		assert: classToBeCommented terminatePrompt 
-		equals: nil.
-]
-
-{ #category : 'helper methods' }
-AI_CommentBuildingTest >> testContainsComment [
-	"Check that non-commented methods are fount (should only be dummyMethod"
-    | result |
-    
-    "Check if it wrongly detects a comment"
-    result := commentBuilder containsComment: (AI_CommentBuildingTest >> #dummyMethod) sourceCode.
-    self deny: result.
-
-	"Check if it wrongly detects a comment"
-    result := commentBuilder containsComment: (AI_CommentBuildingTest >> #dummyCommentedMethod) sourceCode.
-    self assert: result .
-
-
-]
-
-{ #category : 'helper methods' }
-AI_CommentBuildingTest >> testInitialize [
-	"Check that the initialize: is actually working "
-   | methods  |
-	methods := commentBuilder methodsToComments.
-	self assert: (methods anySatisfy: [:method | method selector = #dummyMethod]) 
 ]
 
 { #category : 'tests' }
 AI_CommentBuildingTest >> testNonCommentedMethods [
-	"Ensure all test methods are commented, except dummyMethod"
-	|  nonCommented |
-	nonCommented := commentBuilder nonCommentedMethods.
-	"Assert that only dummyMethod is in the list"
-	self assert: (nonCommented size = 1).
-	self assert: (nonCommented first selector = #dummyMethod).
-]
-
-{ #category : 'tests' }
-AI_CommentBuildingTest >> testPromptForCommentTo [
-	"test if the comment proposal makes sence."
-	| testCommentText commentedMethod |
-	"a method with no comment, could be any one"
-	testCommentText := 'containsComment: code
-    | ast |
-    ast := RBParser parseMethod: code.
-
-    ^ ast allChildren anySatisfy: [:node | node isKindOf: RBComment].'.
-	self deny: (commentBuilder containsComment: testCommentText).
-	commentedMethod := commentBuilder promptForCommentTo: testCommentText.
-	self assert: (commentBuilder containsComment: commentedMethod) 
-	
-]
-
-{ #category : 'tests' }
-AI_CommentBuildingTest >> testProposeCommentForMethod [
-	"test if the comment propsed makes sence."
-	| testCommentText |
-	testCommentText := 'containsComment: code
-    | ast |
-    ast := RBParser parseMethod: code.
-
-    ^ ast allChildren anySatisfy: [:node | node isKindOf: RBComment].'.
-	"Actual test need to be done"
-	self fail.
-	
+	"The test is actually tested in testInitialize, but here is an explict test"
+	| classToBeCommented |
+	classToBeCommented := commentBuilder class commentClass: RxParser.
+	self 
+		assert: classToBeCommented nonCommentedMethods size
+		equals: 3.
 ]

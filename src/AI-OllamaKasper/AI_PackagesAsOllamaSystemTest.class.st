@@ -25,7 +25,6 @@ AI_PackagesAsOllamaSystemTest >> testClassesInPackage [
 	self assert: classNames isNotEmpty.  "Sanity check: the package must contain classes"
 	classNames do: [:name |
 		self assert: (result contents includesSubstring: '## Class: ', name asString)
-			"Check that each class is listed in the output"
 	].
 ]
 
@@ -38,6 +37,17 @@ AI_PackagesAsOllamaSystemTest >> testFor [
 	result := generator for: { 'AI-OllamaKasper' }.
 
 	self assert: (result includesSubstring: '## Class: AI_PackagesAsOllamaSystem').
+]
+
+{ #category : 'tests' }
+AI_PackagesAsOllamaSystemTest >> testForClass [
+	| resourse |
+	resourse := (AI_PackagesAsOllamaSystem new forClass: RxParser) lines.
+	self assert: (resourse first beginsWith: '## Class: RxParser').
+	self assert: (resourse second beginsWith: '### Instance').
+	self assert: (resourse third beginsWith: '### Methods').
+	self assert: (resourse fourth beginsWith: '#### Protocol').
+	self assert: (resourse fifth beginsWith: 'parse:').
 ]
 
 { #category : 'tests' }

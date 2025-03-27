@@ -57,6 +57,18 @@ AI_PackagesAsOllamaSystem >> for: aPackageList [
 	
 ]
 
+{ #category : 'accessing' }
+AI_PackagesAsOllamaSystem >> forClass: aClass [
+	"The input is aClass, return ollama system input."
+	responce := WriteStream on: ''.
+	responce nextPutAll: '## Class: ', aClass name asString, String cr.
+	self instanceVariablesFor: aClass.
+	self methodsFor: aClass.
+	responce nextPutAll: String cr.
+	^ responce contents
+	
+]
+
 { #category : 'internal' }
 AI_PackagesAsOllamaSystem >> instanceVariablesFor: aClass [
 	"Add all the instance variables of aClass to response"

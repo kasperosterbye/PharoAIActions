@@ -18,7 +18,7 @@ AI_CommentBuilding class >> commentClass: aClass [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'ollama system' }
 AI_CommentBuilding class >> numberExample [
 	| a b c op1 op2 operators res prefix|
 	operators := { #+. #-. #*.}.
@@ -440,7 +440,7 @@ Support for Domain Specific Languages'
 ]
 
 { #category : 'comment analysis' }
-AI_CommentBuilding >> addComment: comment to: methodSource [
+AI_CommentBuilding >> addComment: comment toUncommented: methodSource [
 	"Assumes methodCode to be uncommented, returns methodCode with comment added"
 	|  methodName rest |
 	methodName := methodSource lines first.
@@ -453,7 +453,8 @@ AI_CommentBuilding >> aiCommentedInstanceVariables [
 	"for classObj and all its methods to comment, 
 	return an array of instance variable and suggested comment about them"
 	|  instanceVariables  commentBuilder response responses |
-	system := self generateOllamaSystemMethods.
+	"system := self generateOllamaSystemMethods."
+	system := AI_PackagesAsOllamaSystem new forClass: classObj.
 	prompt := 'Just answer with a single line. '.
 	instanceVariables := classObj instVarNames.
 	commentBuilder := AI_OllamaPrompting newSystem: system promptPrefix: prompt .
@@ -462,7 +463,7 @@ AI_CommentBuilding >> aiCommentedInstanceVariables [
 	instanceVariables do: [ :iv | | nrPrompt |
 		nrPrompt := 'Can you describe the purpose of ', iv, 
 			' in class ', classObj name asString, ' as a comment. Just give a comment with 50 characters.'.
-		response := self cleanComment: (commentBuilder getResonceForPrompt: nrPrompt) .
+		response := (commentBuilder getResonceForPrompt: nrPrompt) copyWithoutAll: '"'.
 		responses nextPutAll: (iv, ' : ', response , String cr)
 	].
 	^ responses contents.
@@ -482,7 +483,7 @@ AI_CommentBuilding >> aiCommentedMethods [
 	1 to: methodsToComment size do: [ :nr |
 		commentedCode 
 			at: nr 
-			put: (self addComment: (prompterArray at: nr) getResponse to: (methodsToComment at: nr) sourceCode)
+			put: (self addComment: (prompterArray at: nr) getResponse toUncommented: (methodsToComment at: nr) sourceCode)
 	].
 	^ commentedCode
 ]
@@ -498,58 +499,12 @@ AI_CommentBuilding >> classObj: anObject [
 ]
 
 { #category : 'comment analysis' }
-AI_CommentBuilding >> cleanComment: aString [
-	"Needs to be made into a string, without embedded comments"
-	^ aString copyWithoutAll: '"'
-	
-]
-
-{ #category : 'comment analysis' }
 AI_CommentBuilding >> containsComment: code [
 	"Checks if the code has a comment - return true if it does, false if not"
 	| ast |
 	ast := RBParser parseMethod: code.
 
 	^ ast allChildren anySatisfy: [:node | node isKindOf: RBComment].
-]
-
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> generateOllamaSystem [
-	| systemInformation |
-	systemInformation := WriteStream on: ''.
-	systemInformation nextPutAll: ( self generateOllamaSystemForInstanceVariables), String cr.
-	systemInformation nextPutAll: ( self generateOllamaSystemMethods), String cr.
-	systemInformation nextPutAll: AI_CommentBuilding ollamaSystem03, String cr.
-	^ systemInformation contents.
-	
-]
-
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> generateOllamaSystemForInstanceVariables [
-	| systemInformation |
-	systemInformation := WriteStream on: ''.
-	systemInformation nextPutAll: '## ', classObj name, ' Insance variables (Pharo)', String cr.
-	classObj instVarNames do: [ :iv |
-		systemInformation nextPutAll: iv, String cr.
-	].
-	^ systemInformation contents.
-	
-]
-
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> generateOllamaSystemMethods [
-	| systemInformation |
-	systemInformation := WriteStream on: ''.
-	systemInformation nextPut: AI_CommentBuilding ollamaSystem03.
-	systemInformation nextPutAll: '## ' , classObj name, ' Methods (Pharo)', String cr.
-	classObj localMethods do: [ :iv |
-		systemInformation nextPutAll: '### method ', (iv selector), ' (Pharo)', String cr.
-		systemInformation nextPutAll: iv sourceCode, String cr, String cr.
-	].
-	^ systemInformation contents
-	
-	
-	
 ]
 
 { #category : 'initialize' }
@@ -592,39 +547,6 @@ AI_CommentBuilding >> nonCommentedMethods [
 	
 ]
 
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> old_promptForCommentTo: methodText [
-	| commentBuilder comment commentedMethod|
-	commentBuilder := AI_OllamaPrompting newSystem: system promptPrefix: prompt. 
-	comment := commentBuilder promptAndResponse: methodText.
-	commentedMethod := self addComment: comment to: methodText.
-	^ commentedMethod 
-	"self addCommentToMethod: methodText comment: comment"
-]
-
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> parallelPrompter: listOfPrompts [
-	"too complicated"
-	"I expect listOfPrompts to be {system. promptPrefix. prompt}. "
-
-	|  prompts responses |
-	prompts := Array new: listOfPrompts size.
-	responses := Array new: listOfPrompts size.
-	1 to: listOfPrompts size do: [ :nr |
-		prompts at: nr 
-			put: (AI_OllamaPrompting 
-				newSystem: ((listOfPrompts at: nr) at: 1) 
-				promptPrefix: ((listOfPrompts at: nr) at: 2) ).
-		(prompts at: nr) askPrompt:((listOfPrompts at: nr) at: 3) 
-	].
-	1 to: listOfPrompts size do: [ :nr |
-		responses 
-			at: nr 
-			put: (self addComment: (responses at: nr) getResponse to: (methodsToComment at: nr) sourceCode)
-	].
-	^ 77
-]
-
 { #category : 'accessing' }
 AI_CommentBuilding >> prompt [ 
 	^ prompt
@@ -633,11 +555,6 @@ AI_CommentBuilding >> prompt [
 { #category : 'accessing' }
 AI_CommentBuilding >> prompt: anObject [ 
 	prompt := anObject
-]
-
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> proposeCommentForMethod: aMethod [
-	"Given aMethod without comment, return a comment to be added to it"
 ]
 
 { #category : 'accessing' }
