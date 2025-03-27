@@ -1,5 +1,5 @@
 "
-Asking a ollama model a prompt and get a response.
+Handles prompt-based communication with a local Ollama model, allowing system/prefix customization and async response handling.
 
 It is possible to set two variables:
 * system: part of the information given to the model before the query is actually asked.
@@ -29,11 +29,20 @@ Class {
 
 { #category : 'instance creation' }
 AI_OllamaPrompting class >> newSystem: synstemText promptPrefix: promptPrefixText [
+	"Create and return an instance with predefined system and prompt prefix for Ollama queries."
 	| prompter |
 	prompter := self new.
 	prompter system: synstemText.
 	prompter promptPrefix: promptPrefixText.
 	^ prompter 
+]
+
+{ #category : 'ollama models' }
+AI_OllamaPrompting class >> ollamaList [
+	"Ask ollama for its list of model names, return them"
+	| res |
+	res := (LibC resultOfCommand: 'ollama list') lines allButFirst.
+	^res collect: [:resItem | resItem copyUpToSubstring: ' ' ].
 ]
 
 { #category : 'ollama models' }
@@ -53,12 +62,6 @@ AI_OllamaPrompting >> askPrompt: promptString [
 	] newProcess.
 
 	ollamaProcess resume.
-]
-
-{ #category : 'ollama models' }
-AI_OllamaPrompting >> askResonceForPrompt: promptString [
-	self askPrompt: promptString.
-	^ self getResponse 
 ]
 
 { #category : 'ollama models' }
@@ -91,35 +94,6 @@ AI_OllamaPrompting >> model [
 { #category : 'accessing' }
 AI_OllamaPrompting >> model: aValue [
 	model	:=	aValue.
-]
-
-{ #category : 'ollama models' }
-AI_OllamaPrompting >> old_promptAndResponse: promptString [
-	| ollamaProcess  |
-
-	semaphore := Semaphore new.
-	response := nil.
-	ollamaProcess := [ 
-		"Perform the actual Ollama request"
-		response := self promptAndResponseSemaphore: promptString.
-
-		"Signal that the process is done"
-		semaphore signal.
-	] newProcess.
-
-	ollamaProcess resume.
-	"Wait until the process finishes"
-	semaphore wait.
-
-	^ response
-]
-
-{ #category : 'ollama models' }
-AI_OllamaPrompting >> ollamaList [
-	"Ask ollama for its list of model names, return them"
-	| res |
-	res := (LibC resultOfCommand: 'ollama list') lines allButFirst.
-	^res collect: [:resItem | resItem copyUpToSubstring: ' ' ].
 ]
 
 { #category : 'ollama models' }

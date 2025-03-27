@@ -10,13 +10,16 @@ Each package will be expanded to:
 		
 AI_PackagesAsOllamaSystem new for: { 'RTree' }
 
-This gives a result that starts like:
 ## Class: RTNilNode
 ### Instance variables for RTNilNode: 
-### Methods for RTNilNode: isNilNode
-	^ true
+### Methods for RTNilNode:
+#### Protocol: adding
 addChild: anRTEntry
 	^ RTNode new: anRTEntry
+
+#### Protocol: testing
+isNilNode
+	^ true
 
 
 ## Class: RTEntry...
@@ -64,9 +67,14 @@ AI_PackagesAsOllamaSystem >> instanceVariablesFor: aClass [
 
 { #category : 'internal' }
 AI_PackagesAsOllamaSystem >> methodsFor: aClass [
-	"Add all the methods definitions of aClass to response"
-	responce nextPutAll: '### Methods for ', aClass name asString, ': '.
-	aClass methodDictionary asArray collect: [:each | 
-		responce nextPutAll: each asString, String cr].
-	responce nextPutAll: String cr.
+	"Add all methods grouped by protocol, including full source code"
+
+	responce nextPutAll: '### Methods for ', aClass name asString, ':', String cr.
+
+	aClass protocolNames asSortedCollection do: [:protocol |
+		responce nextPutAll: '#### Protocol: ', protocol, String cr.
+		(aClass selectorsInProtocol: protocol) do: [:selector |
+			responce nextPutAll: (aClass >> selector) sourceCode, String cr, String cr.
+		].
+	].
 ]

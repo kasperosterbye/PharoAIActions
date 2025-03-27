@@ -144,7 +144,7 @@ AI_OllamaPromptingTest >> testGetResponse [
 AI_OllamaPromptingTest >> testOllamaList [
 	"check at the list function works, and is larger than 0"
 	| res |
-	res := AI_OllamaPrompting new ollamaList.
+	res := AI_OllamaPrompting ollamaList.
 	self assert: res size >= 1
 	
 ]

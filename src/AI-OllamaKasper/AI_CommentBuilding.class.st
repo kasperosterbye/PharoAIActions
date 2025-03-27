@@ -18,6 +18,38 @@ AI_CommentBuilding class >> commentClass: aClass [
 	
 ]
 
+{ #category : 'as yet unclassified' }
+AI_CommentBuilding class >> numberExample [
+	| a b c op1 op2 operators res prefix|
+	operators := { #+. #-. #*.}.
+	res := WriteStream on: ''.
+	prefix := '
+	1.	Build a symbol list with clear left-to-right examples:
+	•	In Pharo, a + b * c → (a + b) * c
+	•	In Pharo, a / b * c → (a / b) * c
+	2.	Feed it to the system prompt as training:
+	•	“In Pharo, arithmetic follows left-to-right message order. Do not follow standard precedence. Here are examples…”
+	3.	Then, the model will:
+	•	Answer correctly for Pharo-style expressions
+	•	Maybe even reformat expressions to match Pharo rules
+	•	Distinguish between normal math and Pharo evaluation when asked
+'.
+	res nextPutAll: '', String cr.
+	1 to: 100 do:[ :dummy | | e1 e2 e3|
+		a := (Random new nextIntegerBetween: 1 and: 100).
+		b := (Random new nextIntegerBetween: 1 and: 100).
+		c := (Random new nextIntegerBetween: 1 and: 100).	
+		op1 := operators at: (Random new nextIntegerBetween: 1 and: operators size).
+		op2 := operators at: (Random new nextIntegerBetween: 1 and: operators size).
+		e1 := a asString, op1, b asString, op2, c asString.
+		e2 := '(', a asString, op1, b asString, ')', op2, c asString.
+		e3 := (a perform: op1 with: b) perform: op2 with: c.
+		res nextPutAll: (prefix, ' Example: ', e1, ' is interpreted as ', e2, ' giving ', e3 asString, String cr)
+	].
+	res nextPutAll: String cr.
+	^ res contents.
+]
+
 { #category : 'ollama system' }
 AI_CommentBuilding class >> ollamaSystem01 [
 	"returns a system variable"
@@ -422,26 +454,7 @@ AI_CommentBuilding >> aiCommentedInstanceVariables [
 	return an array of instance variable and suggested comment about them"
 	|  instanceVariables  commentBuilder response responses |
 	system := self generateOllamaSystemMethods.
-	prompt := "'Just answer with a single line.'"
-	'## Task
-You are an AI assistant specialized in Pharo/Smalltalk code commentary.
-
-## Your goal
-Given an instance variable name and the class name it belongs to:
-- Describe its likely purpose in 50 characters or fewer.
-- Use a **single line**.
-- Do **not** mention the user, prompts, or interactions.
-- Do **not** use quotes or formatting characters.
-- Prefer action-focused or purpose-driven phrases.
-- No generic or placeholder responses.
-
-## Example
-classObj : Holds the class being analyzed for comments.
-methodsToComment : Tracks methods needing commentary.
-system : Stores constraints for comment generation.
-prompt : Used to shape the response style and tone.
-
-## Now respond to:'.
+	prompt := 'Just answer with a single line. '.
 	instanceVariables := classObj instVarNames.
 	commentBuilder := AI_OllamaPrompting newSystem: system promptPrefix: prompt .
 	responses := WriteStream on: ''.
@@ -474,17 +487,17 @@ AI_CommentBuilding >> aiCommentedMethods [
 	^ commentedCode
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> classObj [ 
 	^ classObj
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> classObj: anObject [ 
 	classObj := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'comment analysis' }
 AI_CommentBuilding >> cleanComment: aString [
 	"Needs to be made into a string, without embedded comments"
 	^ aString copyWithoutAll: '"'
@@ -551,17 +564,17 @@ AI_CommentBuilding >> initialize: aClass [
 	
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> methodsToComment [ 
 	^ methodsToComment
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> methodsToComment: anObject [ 
 	methodsToComment := anObject
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> methodsToComments [
 	^ methodsToComment 
 ]
@@ -612,12 +625,12 @@ AI_CommentBuilding >> parallelPrompter: listOfPrompts [
 	^ 77
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> prompt [ 
 	^ prompt
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> prompt: anObject [ 
 	prompt := anObject
 ]
@@ -627,12 +640,12 @@ AI_CommentBuilding >> proposeCommentForMethod: aMethod [
 	"Given aMethod without comment, return a comment to be added to it"
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> system [ 
 	^ system
 ]
 
-{ #category : 'adding' }
+{ #category : 'accessing' }
 AI_CommentBuilding >> system: anObject [ 
 	system := anObject
 ]

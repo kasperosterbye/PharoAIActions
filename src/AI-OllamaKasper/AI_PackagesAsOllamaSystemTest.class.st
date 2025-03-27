@@ -10,21 +10,23 @@ Class {
 
 { #category : 'tests' }
 AI_PackagesAsOllamaSystemTest >> testClassesInPackage [
-	"Tests that classesInSamePackageAs: writes correct data for a known class"
-	| result testee knownClass packageClasses classNames |
-	result := WriteStream on: ''.
-	testee := AI_PackagesAsOllamaSystem new.
-	testee instVarNamed: #responce put: result.
+	"Test that classesInPackage: writes data for all classes in the package"
+	| result generator package classNames |
 
-	knownClass := self class.
-	testee classesInSamePackageAs: knownClass.
+	result := WriteStream on: ''.  "Create an in-memory stream to collect output"
+	generator := AI_PackagesAsOllamaSystem new.
+	generator instVarNamed: #responce put: result.  "Redirect output to our stream"
 
-	packageClasses := knownClass package classes.
-	classNames := packageClasses asArray collect: #name .
+	package := RPackageSet named: 'AI-OllamaKasper'.  "Find the package to test"
+	generator classesInPackage: package.  "Invoke the method under test"
 
-	self assert: classNames isNotEmpty.
-	classNames do: [ :name |
-		self assert: (result contents includesSubstring: name) ].
+	classNames := package classes collect: #name.  "Collect expected class names"
+
+	self assert: classNames isNotEmpty.  "Sanity check: the package must contain classes"
+	classNames do: [:name |
+		self assert: (result contents includesSubstring: '## Class: ', name asString)
+			"Check that each class is listed in the output"
+	].
 ]
 
 { #category : 'tests' }
