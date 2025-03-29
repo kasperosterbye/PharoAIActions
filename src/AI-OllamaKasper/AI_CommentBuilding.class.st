@@ -1,3 +1,12 @@
+"
+A helper class that adds AI-generated comments to uncommented methods and instance variables of a given class. Uses Ollama for analysis and phrasing.
+
+## Instance variables
+* classObj: The class being analyzed
+* methodsToComment: Methods missing comments
+* system: The system prompt used for Ollama
+* prompt: The instruction prefix sent to Ollama
+"
 Class {
 	#name : 'AI_CommentBuilding',
 	#superclass : 'Object',
