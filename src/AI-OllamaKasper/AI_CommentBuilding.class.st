@@ -1,11 +1,13 @@
 "
 A helper class that adds AI-generated comments to uncommented methods and instance variables of a given class. Uses Ollama for analysis and phrasing.
 
+
 ## Instance variables
 * classObj: The class being analyzed
 * methodsToComment: Methods missing comments
 * system: The system prompt used for Ollama
 * prompt: The instruction prefix sent to Ollama
+
 "
 Class {
 	#name : 'AI_CommentBuilding',
@@ -461,21 +463,41 @@ AI_CommentBuilding >> addComment: comment toUncommented: methodSource [
 AI_CommentBuilding >> aiCommentedInstanceVariables [
 	"for classObj and all its methods to comment, 
 	return an array of instance variable and suggested comment about them"
-	|  instanceVariables  commentBuilder response responses |
+
+	| instanceVariables commentBuilder response responses |
 	"system := self generateOllamaSystemMethods."
 	system := AI_PackagesAsOllamaSystem new forClass: classObj.
 	prompt := 'Just answer with a single line. '.
 	instanceVariables := classObj instVarNames.
-	commentBuilder := AI_OllamaPrompting newSystem: system promptPrefix: prompt .
+	commentBuilder := AI_OllamaPrompting
+		                  newSystem: system
+		                  promptPrefix: prompt.
 	responses := WriteStream on: ''.
-	responses nextPutAll: '## instace variables ', String cr.
-	instanceVariables do: [ :iv | | nrPrompt |
-		nrPrompt := 'Can you describe the purpose of ', iv, 
-			' in class ', classObj name asString, ' as a comment. Just give a comment with 50 characters.'.
-		response := (commentBuilder getResonceForPrompt: nrPrompt) copyWithoutAll: '"'.
-		responses nextPutAll: (iv, ' : ', response , String cr)
-	].
-	^ responses contents.
+	responses nextPutAll: '## Instance variables (AI generated comments)' , String cr.
+	instanceVariables do: [ :iv |
+		| nrPrompt |
+		nrPrompt := 'Can you describe the purpose of ' , iv , ' in class '
+		            , classObj name asString
+		            ,
+		            ' as a comment. Just give a comment with 50 characters.'.
+		response := (commentBuilder getResonceForPrompt: nrPrompt)
+			            copyWithoutAll: '"/.'.
+		responses nextPutAll: iv , ' : ' , response , String cr ].
+	responses nextPutAll: '-----' , String cr.
+	^ responses contents
+]
+
+{ #category : 'comment analysis' }
+AI_CommentBuilding >> aiCommentedMethod: aMethod [
+	"Assumes aMethod to have no comment. Returns {protocol. method sourceCode}"
+
+	| commentAI  protocol commentedSource |
+	commentAI := AI_OllamaPrompting newSystem: system promptPrefix: prompt.
+	protocol := aMethod protocol name asString.
+	commentedSource := self 
+		addComment: (commentAI getResonceForPrompt: aMethod sourceCode) 
+		toUncommented: aMethod sourceCode.
+	^ { protocol. commentedSource }
 ]
 
 { #category : 'comment analysis' }
@@ -483,37 +505,100 @@ AI_CommentBuilding >> aiCommentedMethods [
 	"for classObj and all its methods to comment, return an array of commented sourceCode"
 
 	| prompterArray commentedCode |
+	prompterArray := OrderedCollection new.
+	commentedCode := methodsToComment collect: [ :meth |
+		self aiCommentedMethod: meth.
+	].
+	^ commentedCode 
+	
+]
+
+{ #category : 'comment analysis' }
+AI_CommentBuilding >> aiCommentedMethods_OLD [
+	"for classObj and all its methods to comment, return an array of commented sourceCode"
+
+	| prompterArray commentedCode |
 	prompterArray := Array new: methodsToComment size.
 	commentedCode := Array new: methodsToComment size.
 	1 to: methodsToComment size do: [ :nr |
-		prompterArray at: nr put: (AI_OllamaPrompting newSystem: system promptPrefix: prompt ).
-		(prompterArray at: nr) askPrompt: (methodsToComment at: nr) sourceCode
-		 ].
+		prompterArray
+			at: nr
+			put: (AI_OllamaPrompting newSystem: system promptPrefix: prompt).
+		(prompterArray at: nr) askPrompt:
+			(methodsToComment at: nr) sourceCode ].
 	1 to: methodsToComment size do: [ :nr |
-		commentedCode 
-			at: nr 
-			put: (self addComment: (prompterArray at: nr) getResponse toUncommented: (methodsToComment at: nr) sourceCode)
-	].
+		commentedCode at: nr put: (self
+				 addComment: (prompterArray at: nr) getResponse
+				 toUncommented: (methodsToComment at: nr) sourceCode) ].
 	^ commentedCode
 ]
 
+{ #category : 'extending' }
+AI_CommentBuilding >> checkInstVarsCommented [
+	"return true if the AI generates class instance variables comments must be updated"
+
+	| commentList aiCommentStart aiCommentEnd |
+	commentList := classObj comment lines.
+	aiCommentStart := commentList indexOf:
+			'## Instance variables (AI generated comments)'.
+	aiCommentStart = 0 ifTrue: [ ^ true ].
+	aiCommentEnd := commentList indexOf: '-----'.
+	aiCommentEnd = 0 ifTrue: [ ^ true ].
+	"check if the commented instance variables are the same as the class instance variables"
+	^ true.
+]
+
 { #category : 'accessing' }
-AI_CommentBuilding >> classObj [ 
+AI_CommentBuilding >> classObj [
+	"Instance variable getting/setting"
 	^ classObj
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> classObj: anObject [ 
+AI_CommentBuilding >> classObj: anObject [
+	"Instance variable getting/setting"
 	classObj := anObject
 ]
 
 { #category : 'comment analysis' }
 AI_CommentBuilding >> containsComment: code [
 	"Checks if the code has a comment - return true if it does, false if not"
+
 	| ast |
 	ast := RBParser parseMethod: code.
+	^ ast allChildren anySatisfy: [ :node |  node isKindOf: OCCommentNode ]
+]
 
-	^ ast allChildren anySatisfy: [:node | node isKindOf: RBComment].
+{ #category : 'extending' }
+AI_CommentBuilding >> extendClassInstancesWithComments [
+	"Update the class comment to include a list of instance class comments"
+
+	"The construction of class comments are not well defined at the moment...."
+
+	| methodToExtend |
+	^self.
+	self checkInstVarsCommented ifTrue: [
+		methodToExtend := self aiCommentedInstanceVariables.
+		classObj comment:
+			classObj comment , String cr , methodToExtend , String cr ]
+]
+
+{ #category : 'extending' }
+AI_CommentBuilding >> extendClassMethodsWithComments [
+	"Update the class methods without comments to include method specific comments"
+
+	| methodToComment |
+	self halt.
+	methodToComment := self aiCommentedMethods.
+]
+
+{ #category : 'extending' }
+AI_CommentBuilding >> extendClassWithComments [
+	"Extend classObj with class instance comments and comments for methods without comments"
+
+	self extendClassMethodsWithComments.
+	"self extendClassInstancesWithComments."
+	
 ]
 
 { #category : 'initialize' }
@@ -529,18 +614,15 @@ AI_CommentBuilding >> initialize: aClass [
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> methodsToComment [ 
+AI_CommentBuilding >> methodsToComment [
+	"Instance variable getting/setting"
 	^ methodsToComment
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> methodsToComment: anObject [ 
+AI_CommentBuilding >> methodsToComment: anObject [
+	"Instance variable getting/setting"
 	methodsToComment := anObject
-]
-
-{ #category : 'accessing' }
-AI_CommentBuilding >> methodsToComments [
-	^ methodsToComment 
 ]
 
 { #category : 'comment analysis' }
@@ -557,21 +639,25 @@ AI_CommentBuilding >> nonCommentedMethods [
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> prompt [ 
+AI_CommentBuilding >> prompt [
+	"Instance variable getting/setting"
 	^ prompt
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> prompt: anObject [ 
+AI_CommentBuilding >> prompt: anObject [
+	"Instance variable getting/setting"
 	prompt := anObject
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> system [ 
+AI_CommentBuilding >> system [
+	"Instance variable getting/setting"
 	^ system
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> system: anObject [ 
+AI_CommentBuilding >> system: anObject [
+	"Instance variable getting/setting"
 	system := anObject
 ]

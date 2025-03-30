@@ -1,17 +1,5 @@
 "
-Handles prompt-based communication with a local Ollama model, allowing system/prefix customization and async response handling.
-
-It is possible to set two variables:
-* system: part of the information given to the model before the query is actually asked.
-* promptPrefix: fixed prefix that is set before any actual prompt
-These two can be set using the class side operation newSystem:promptPrefix:
-In addition is this
-* model - which ollama model is used, which is set in the initialize method
-
-also this exist:
-* semaphore, which is just a way to prevent the system to halt while asking prompts
-
-
+Eva offers Alian help
 "
 Class {
 	#name : 'AI_OllamaPrompting',

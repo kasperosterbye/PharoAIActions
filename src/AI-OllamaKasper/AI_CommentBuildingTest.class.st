@@ -49,6 +49,19 @@ AI_CommentBuildingTest >> testAiCommentedInstanceVariables [
 ]
 
 { #category : 'tests' }
+AI_CommentBuildingTest >> testAiCommentedMethod [
+	"Test the comment adding to a single method given as praramter"
+
+	| classToBeCommented aMethod |
+	classToBeCommented := commentBuilder class commentClass: RxParser.
+	aMethod := classToBeCommented aiCommentedMethod:
+		           RxParser >> #signalParseError:.
+	self timeLimit: 100 seconds.
+	self assert: aMethod first equals: 'private'.
+	self assert: (commentBuilder containsComment: aMethod second)
+]
+
+{ #category : 'tests' }
 AI_CommentBuildingTest >> testAiCommentedMethods [ 
 	"The test is actually tested in testInitialize, but here is an explict test"
 	| classToBeCommented methodComments |
