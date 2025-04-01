@@ -1,5 +1,10 @@
 "
 All tests use RxParser as the example class, since it is small, stable, and unchanged for decades. This avoids meta-level confusion and ensures consistent test behavior.
+## Instance variables (AI generated comments)
+**commentBuilder** : Creates and tests CommentBuilder instance for parsing and commenting code
+-----
+
+
 "
 Class {
 	#name : 'AI_CommentBuildingTest',
@@ -70,8 +75,8 @@ AI_CommentBuildingTest >> testAiCommentedMethods [
 	methodComments  := classToBeCommented aiCommentedMethods.
 	self assert: methodComments size = 3.
 	methodComments do: [ :method |
-		self assert: (method lines second trimBoth beginsWith: '"').
-		self assert: (method lines second trimBoth endsWith: '"').
+		self assert: (method second lines second trimBoth beginsWith: '"').
+		self assert: (method second lines second trimBoth endsWith: '"').
 	]
 ]
 

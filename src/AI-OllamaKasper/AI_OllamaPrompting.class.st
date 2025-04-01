@@ -1,5 +1,5 @@
 "
-Eva offers Alian help
+Killroy was here, but went away
 "
 Class {
 	#name : 'AI_OllamaPrompting',

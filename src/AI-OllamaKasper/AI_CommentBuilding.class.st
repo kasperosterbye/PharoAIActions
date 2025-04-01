@@ -8,6 +8,15 @@ A helper class that adds AI-generated comments to uncommented methods and instan
 * system: The system prompt used for Ollama
 * prompt: The instruction prefix sent to Ollama
 
+
+## Instance variables (AI generated comments)
+**classObj** : Can you describe the purpose of 'classObj' in class 'AI_CommentBuilding' as a comment? Just give a comment with 50 characters
+**methodsToComment** : Can you describe the purpose of `methodsToComment` in class `AI_CommentBuilding` as a comment?
+**system** : Give response of maximum 100 characters Never more than 100 characters, and less is good
+**prompt** : The purpose of prompt is to facilitate conversation
+-----
+
+
 "
 Class {
 	#name : 'AI_CommentBuilding',
@@ -456,7 +465,7 @@ AI_CommentBuilding >> addComment: comment toUncommented: methodSource [
 	|  methodName rest |
 	methodName := methodSource lines first.
 	rest := String cr join: methodSource lines allButFirst.
-	^ Character cr join: { methodName. comment asComment. rest }
+	^ Character cr join: { methodName. (String tab, comment asComment). rest }
 ]
 
 { #category : 'comment analysis' }
@@ -482,7 +491,7 @@ AI_CommentBuilding >> aiCommentedInstanceVariables [
 		            ' as a comment. Just give a comment with 50 characters.'.
 		response := (commentBuilder getResonceForPrompt: nrPrompt)
 			            copyWithoutAll: '"/.'.
-		responses nextPutAll: iv , ' : ' , response , String cr ].
+		responses nextPutAll: '**', iv , '** : ' , response , String cr ].
 	responses nextPutAll: '-----' , String cr.
 	^ responses contents
 ]
@@ -502,7 +511,7 @@ AI_CommentBuilding >> aiCommentedMethod: aMethod [
 
 { #category : 'comment analysis' }
 AI_CommentBuilding >> aiCommentedMethods [
-	"for classObj and all its methods to comment, return an array of commented sourceCode"
+	"Returns a collection of commented methods from `methodsToComment`."
 
 	| prompterArray commentedCode |
 	prompterArray := OrderedCollection new.
@@ -513,31 +522,10 @@ AI_CommentBuilding >> aiCommentedMethods [
 	
 ]
 
-{ #category : 'comment analysis' }
-AI_CommentBuilding >> aiCommentedMethods_OLD [
-	"for classObj and all its methods to comment, return an array of commented sourceCode"
-
-	| prompterArray commentedCode |
-	prompterArray := Array new: methodsToComment size.
-	commentedCode := Array new: methodsToComment size.
-	1 to: methodsToComment size do: [ :nr |
-		prompterArray
-			at: nr
-			put: (AI_OllamaPrompting newSystem: system promptPrefix: prompt).
-		(prompterArray at: nr) askPrompt:
-			(methodsToComment at: nr) sourceCode ].
-	1 to: methodsToComment size do: [ :nr |
-		commentedCode at: nr put: (self
-				 addComment: (prompterArray at: nr) getResponse
-				 toUncommented: (methodsToComment at: nr) sourceCode) ].
-	^ commentedCode
-]
-
 { #category : 'extending' }
 AI_CommentBuilding >> checkInstVarsCommented [
-	"return true if the AI generates class instance variables comments must be updated"
-
-	| commentList aiCommentStart aiCommentEnd |
+	
+	| commentList aiCommentStart aiCommentEnd commentInstList |
 	commentList := classObj comment lines.
 	aiCommentStart := commentList indexOf:
 			'## Instance variables (AI generated comments)'.
@@ -545,7 +533,11 @@ AI_CommentBuilding >> checkInstVarsCommented [
 	aiCommentEnd := commentList indexOf: '-----'.
 	aiCommentEnd = 0 ifTrue: [ ^ true ].
 	"check if the commented instance variables are the same as the class instance variables"
-	^ true.
+	commentInstList := (commentList copyFrom: aiCommentStart + 1 to: aiCommentEnd -1)
+		collect: [ :inst | (inst copyUpToSubstring: ':') copyWithoutAll: ' *' ].
+	
+	^ commentInstList asSet ~= (classObj instVarNames collect: [:iv| iv asString]) asSet.
+
 ]
 
 { #category : 'accessing' }
@@ -576,7 +568,6 @@ AI_CommentBuilding >> extendClassInstancesWithComments [
 	"The construction of class comments are not well defined at the moment...."
 
 	| methodToExtend |
-	^self.
 	self checkInstVarsCommented ifTrue: [
 		methodToExtend := self aiCommentedInstanceVariables.
 		classObj comment:
@@ -587,9 +578,12 @@ AI_CommentBuilding >> extendClassInstancesWithComments [
 AI_CommentBuilding >> extendClassMethodsWithComments [
 	"Update the class methods without comments to include method specific comments"
 
-	| methodToComment |
-	self halt.
-	methodToComment := self aiCommentedMethods.
+	| commentExtendedMethods |
+	commentExtendedMethods := self aiCommentedMethods.
+	commentExtendedMethods do: [ :m |
+		classObj compile: m second classified: m first
+		 ].
+	
 ]
 
 { #category : 'extending' }
@@ -597,12 +591,13 @@ AI_CommentBuilding >> extendClassWithComments [
 	"Extend classObj with class instance comments and comments for methods without comments"
 
 	self extendClassMethodsWithComments.
-	"self extendClassInstancesWithComments."
+	self extendClassInstancesWithComments.
 	
 ]
 
 { #category : 'initialize' }
 AI_CommentBuilding >> initialize: aClass [
+	"Comment for given method."
 	classObj := aClass.
 	methodsToComment := classObj localMethods.
 	self nonCommentedMethods.
