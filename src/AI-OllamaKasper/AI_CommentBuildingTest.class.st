@@ -45,11 +45,11 @@ AI_CommentBuildingTest >> testAiCommentedInstanceVariables [
 	self timeLimit: 100 seconds.
 	classComment  := classToBeCommented aiCommentedInstanceVariables lines.
 	self 
-		assert: ((classComment at: 1) beginsWith: '## instace variables').
+		assert: ((classComment at: 1) beginsWith: '## Instance variables').
 	self 
-		assert: ((classComment at: 2) beginsWith: 'input :').
+		assert: ((classComment at: 2) beginsWith: '**input** :').
 	self 
-		assert: ((classComment at: 3) beginsWith: 'lookahead :')
+		assert: ((classComment at: 3) beginsWith: '**lookahead** :')
 	
 ]
 

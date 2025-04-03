@@ -8,8 +8,7 @@ Class {
 		'model',
 		'system',
 		'promptPrefix',
-		'response',
-		'semaphore'
+		'response'
 	],
 	#category : 'AI-OllamaKasper',
 	#package : 'AI-OllamaKasper'
@@ -34,42 +33,29 @@ AI_OllamaPrompting class >> ollamaList [
 ]
 
 { #category : 'ollama models' }
-AI_OllamaPrompting >> askPrompt: promptString [
-	"Asks the promptString, the result will be awailable after a while in getResponse"
-	| ollamaProcess  |
+AI_OllamaPrompting >> getResonceForPrompt: prompt [
+	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
+	| url jsonResponse requestBody|
+	url := 'http://localhost:11434/api/generate'.
 
-	semaphore := Semaphore new.
-	response := nil.
-	ollamaProcess := [ 
-		"Perform the actual Ollama request"
-		response := self promptAndResponseSemaphore: promptString.
-		"Transcript show: (promptString , ' -> ', response); cr."
-
-		"Signal that the process is done"
-		semaphore signal.
-	] newProcess.
-
-	ollamaProcess resume.
-]
-
-{ #category : 'ollama models' }
-AI_OllamaPrompting >> getResonceForPrompt: promptString [
-	^ self promptAndResponseSemaphore: promptString 
-
-]
-
-{ #category : 'ollama models' }
-AI_OllamaPrompting >> getResponse [
-	"returns the responce. If the response is nil, and semaphore not nil, waits for result"
-	response ifNil: [ 
-		semaphore ifNotNil: [ semaphore wait ] ].
-
-	^ response
+	requestBody := STONJSON toString: { 
+		#model -> model.
+		#system -> system.
+		#prompt -> (promptPrefix , ' ', prompt).
+		#stream -> false.
+	} asDictionary.
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+	response := (STONJSON fromString: jsonResponse) at: 'response'.
+	^ response contents.
 ]
 
 { #category : 'initialization' }
 AI_OllamaPrompting >> initialize [ 
-	model := 'llama3.2'.
+	model := 'Yi-Coder:9b'.
 	system := ''.
 	promptPrefix := ''.
 ]
@@ -82,28 +68,6 @@ AI_OllamaPrompting >> model [
 { #category : 'accessing' }
 AI_OllamaPrompting >> model: aValue [
 	model	:=	aValue.
-]
-
-{ #category : 'ollama models' }
-AI_OllamaPrompting >> promptAndResponseSemaphore: prompt [
-	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
-	| url jsonResponse requestBody|
-	url := 'http://localhost:11434/api/generate'.
-
-	requestBody := STONJSON toString: { 
-	    #model -> model.
-	    #system -> system.
-	    #prompt -> (promptPrefix , ' ', prompt).
-	    #stream -> false.
-    	 #temperature -> 0.
-	} asDictionary.
-	jsonResponse := ZnClient new
-	    url: url;
-	    entity: (ZnEntity with: requestBody);
-	    post;
-	    contents.
-	response := (STONJSON fromString: jsonResponse) at: 'response'.
-	^ response contents.
 ]
 
 { #category : 'accessing' }
@@ -134,9 +98,4 @@ AI_OllamaPrompting >> system [
 { #category : 'accessing' }
 AI_OllamaPrompting >> system: aValue [
 	system	 :=	aValue.
-]
-
-{ #category : 'accessing' }
-AI_OllamaPrompting >> terminatePrompt [
-	semaphore terminate.
 ]

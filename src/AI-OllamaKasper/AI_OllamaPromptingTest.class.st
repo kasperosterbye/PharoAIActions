@@ -20,31 +20,11 @@ AI_OllamaPromptingTest >> setUp [
 ]
 
 { #category : 'tests' }
-AI_OllamaPromptingTest >> testAskPrompt [
-	"test that the connection to the model works"
- 	| response |
-	ollamaPrompte askPrompt: ' Please answer Yes or no. Can you read this question'.
-	response := ollamaPrompte getResponse.
-	self assert: (response size between: 1 and: 100).
-	
-	Transcript show: ollamaPrompte getResponse; cr.
-]
-
-{ #category : 'tests' }
 AI_OllamaPromptingTest >> testGetResonceForPrompt [
 	| result |
 	result := AI_OllamaPrompting new 
 		getResonceForPrompt: ' Please answer Yes or no. Can you read these words'.
 	self assert: (result includesSubstring: 'Yes')
-]
-
-{ #category : 'tests' }
-AI_OllamaPromptingTest >> testGetResponse [
-	"test that the connection to the model works"
-
-	ollamaPrompte askPrompt: ' Please answer Yes or no. Can you read this question'.
-	self assert: ollamaPrompte response isNil.
-	self assert: ollamaPrompte getResponse isNotNil
 ]
 
 { #category : 'tests' }
@@ -64,13 +44,4 @@ AI_OllamaPromptingTest >> testOllamaList [
 	res := AI_OllamaPrompting ollamaList.
 	self assert: res size >= 1
 	
-]
-
-{ #category : 'tests' }
-AI_OllamaPromptingTest >> testPromptAndResponseSemaphore [
-	"tests if promptAndResponseSemaphore: is returning a result"
-	| result |
-	result := AI_OllamaPrompting new promptAndResponseSemaphore: 
-		' Please answer Yes or no. Can you read these words'.
-	self assert: (result includesSubstring: 'Yes')
 ]
