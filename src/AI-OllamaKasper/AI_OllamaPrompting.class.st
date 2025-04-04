@@ -33,6 +33,56 @@ AI_OllamaPrompting class >> ollamaList [
 ]
 
 { #category : 'ollama models' }
+AI_OllamaPrompting >> getOllamaModelInformation [
+	"Show information about a model including details, modelfile, template, parameters, license, system prompt."
+	"Check https://github.com/ollama/ollama/blob/main/docs/api.md#show-model-information for details"
+	| url jsonResponse requestBody|
+	url := 'http://localhost:11434/api/show'.
+
+	requestBody := STONJSON toString: { 
+		#model -> model.
+	} asDictionary.
+	jsonResponse := ZnClient new
+	    url: url;
+	    entity: (ZnEntity with: requestBody);
+	    post;
+	    contents.
+	response := (STONJSON fromString: jsonResponse).
+	^ response contents.
+]
+
+{ #category : 'ollama models' }
+AI_OllamaPrompting >> getOllamaModelNames [
+	"returns an array with one item per model. Each item has nested informations, and some arrays"
+	| url  |
+	url := 'http://localhost:11434/api/tags'.
+	
+	response := ZnClient new get: url.
+	^ ((STONJSON fromString: response) at: 'models' )
+		 collect: [ :model | model at: 'name' ]
+]
+
+{ #category : 'ollama models' }
+AI_OllamaPrompting >> getOllamaModels [
+	"returns an array with one item per model. Each item has nested informations, and some arrays"
+	| url  |
+	url := 'http://localhost:11434/api/tags'.
+	
+	response := ZnClient new get: url.
+	^ (STONJSON fromString: response) at: 'models'  .
+]
+
+{ #category : 'ollama models' }
+AI_OllamaPrompting >> getOllamaVersion [
+	"Retrieve the Ollama version"
+	| url  |
+	url := 'http://localhost:11434/api/version'.
+	
+	response := ZnClient new get: url.
+	^ (STONJSON fromString: response) at: 'version'  .
+]
+
+{ #category : 'ollama models' }
 AI_OllamaPrompting >> getResonceForPrompt: prompt [
 	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
 	| url jsonResponse requestBody|
