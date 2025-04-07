@@ -33,6 +33,39 @@ AI_OllamaPrompting class >> ollamaList [
 ]
 
 { #category : 'ollama models' }
+AI_OllamaPrompting >> getDeepSeekResponseForPrompt: prompt [
+    "Sends a prompt to DeepSeek Chat's API and returns the response."
+    | url apiKey requestBody jsonResponse |
+    
+    url := 'https://api.deepseek.com/v1/chat/completions'. "Replace with actual API endpoint if different"
+    apiKey := 'your_api_key_here'. "If authentication is required"
+    
+    "Format the request body for DeepSeek (adjust fields as per their API docs)"
+    requestBody := STONJSON toString: {
+        #model -> 'deepseek-chat'. "Or the specific model name"
+        #messages -> { {
+            #role -> 'user'.
+            #content -> prompt
+        } }.
+        #stream -> false
+    } asDictionary.
+    
+    "Send the HTTP request"
+    jsonResponse := ZnClient new
+        url: url;
+        headers: {
+            'Content-Type' -> 'application/json'.
+            'Authorization' -> ('Bearer ', apiKey) "If auth is needed"
+        };
+        entity: (ZnEntity with: requestBody);
+        post;
+        contents.
+    
+    "Parse the JSON response (adjust key paths as per DeepSeek's response structure)"
+    ^ (STONJSON fromString: jsonResponse) at: 'choices' at: 1 at: 'message' at: 'content'.
+]
+
+{ #category : 'ollama models' }
 AI_OllamaPrompting >> getOllamaModelInformation [
 	"Show information about a model including details, modelfile, template, parameters, license, system prompt."
 	"Check https://github.com/ollama/ollama/blob/main/docs/api.md#show-model-information for details"
