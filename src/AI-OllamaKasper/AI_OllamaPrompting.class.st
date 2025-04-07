@@ -105,7 +105,7 @@ AI_OllamaPrompting >> getResonceForPrompt: prompt [
 
 { #category : 'initialization' }
 AI_OllamaPrompting >> initialize [ 
-	model := 'Yi-Coder:9b'.
+	model := ''.
 	system := ''.
 	promptPrefix := ''.
 ]
