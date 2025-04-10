@@ -9676,7 +9676,7 @@ AI_CommentBuilding >> aiCommentedInstanceVariables [
 	system := AI_PackagesAsOllamaSystem new forClass: classObj.
 	prompt := 'Just answer with a single line. '.
 	instanceVariables := classObj instVarNames.
-	commentBuilder := AI_OllamaPrompting
+	commentBuilder := Ollama
 		                  newSystem: system
 		                  promptPrefix: prompt.
 	responses := WriteStream on: ''.
@@ -9687,7 +9687,7 @@ AI_CommentBuilding >> aiCommentedInstanceVariables [
 		            , classObj name asString
 		            ,
 		            ' as a comment. Just give a comment with 50 characters.'.
-		response := (commentBuilder getResonceForPrompt: nrPrompt)
+		response := (commentBuilder getResponseForPrompt: nrPrompt)
 			            copyWithoutAll: '"/.'.
 		responses nextPutAll: '**', iv , '** : ' , response , String cr ].
 	responses nextPutAll: '-----' , String cr.
@@ -9699,10 +9699,10 @@ AI_CommentBuilding >> aiCommentedMethod: aMethod [
 	"Assumes aMethod to have no comment. Returns {protocol. method sourceCode}"
 
 	| commentAI  protocol commentedSource |
-	commentAI := AI_OllamaPrompting newSystem: system promptPrefix: prompt.
+	commentAI := Ollama newSystem: system promptPrefix: prompt.
 	protocol := aMethod protocol name asString.
 	commentedSource := self 
-		addComment: (commentAI getResonceForPrompt: aMethod sourceCode) 
+		addComment: (commentAI getResponseForPrompt: aMethod sourceCode) 
 		toUncommented: aMethod sourceCode.
 	^ { protocol. commentedSource }
 ]
