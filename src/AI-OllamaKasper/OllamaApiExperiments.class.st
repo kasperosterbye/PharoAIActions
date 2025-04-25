@@ -7,47 +7,23 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-OllamaApiExperiments >> femForAlleModeller [
-	"return a list of OrderedDictiontionaries, {modelName, prompt, response}"
-	| lines models prompt|
-	lines := OrderedCollection new.
-	lines add: {'modelName'. 'prompt'. 'response'}.
-	models := OllamaApi modelNames" atAll: #(1 2 )".
-	prompt := '2+3. What is the result'.
-	models do: [ :modelName | |ollamaModel |
-		ollamaModel := OllamaApi new.
-		ollamaModel
-			model: modelName;
-			promptPrefix: prompt.
-		Transcript show: 'Running model: ' , modelName ;cr.
-		World doOneCycle.
-		ollamaModel getResponseForPrompt:''.
-		lines add: { modelName. prompt. ollamaModel response }
-	].
-	self  writeAsHTML: lines toFile: 'Test01'.
-	
-	
-]
-
-{ #category : 'as yet unclassified' }
 OllamaApiExperiments >> fiveForAlleModeller [
 	"return a list of OrderedDictiontionaries, {modelName, prompt, response}"
 	| lines models prompt|
 	lines := OrderedCollection new.
 	lines add: {'modelName'. 'prompt'. 'response'}.
-	models := OllamaApi modelNames" atAll: #(1 2 )".
+	models := OllamaApi modelNames atAll: #(1 2).
 	prompt := '2+3. What is the result'.
 	models do: [ :modelName | |ollamaModel |
 		ollamaModel := OllamaApi new.
 		ollamaModel
-			model: modelName;
-			promptPrefix: prompt.
+			model: modelName.
 		Transcript show: 'Running model: ' , modelName ;cr.
 		World doOneCycle.
-		ollamaModel getResponseForPrompt:''.
+		ollamaModel getResponseForPrompt: prompt.
 		lines add: { modelName. prompt. ollamaModel response }
 	].
-	self  writeAsHTML: lines toFile: 'Test01'.
+	self  writeAsHTML: lines toFile: 'Test02'.
 	
 	
 ]
