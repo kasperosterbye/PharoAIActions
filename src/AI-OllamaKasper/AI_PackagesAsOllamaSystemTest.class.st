@@ -4,8 +4,9 @@ Class {
 	#instVars : [
 		'killRoy'
 	],
-	#category : 'AI-OllamaKasper',
-	#package : 'AI-OllamaKasper'
+	#category : 'AI-OllamaKasper-Eksperiments',
+	#package : 'AI-OllamaKasper',
+	#tag : 'Eksperiments'
 }
 
 { #category : 'tests' }

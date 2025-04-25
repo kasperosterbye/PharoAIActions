@@ -30,29 +30,30 @@ Class {
 	#instVars : [
 		'responce'
 	],
-	#category : 'AI-OllamaKasper',
-	#package : 'AI-OllamaKasper'
+	#category : 'AI-OllamaKasper-Eksperiments',
+	#package : 'AI-OllamaKasper',
+	#tag : 'Eksperiments'
 }
 
 { #category : 'internal' }
 AI_PackagesAsOllamaSystem >> classesInPackage: aPackage [
 	"Adds class name, instance variables, and method definitions to response"
-	|  aClassCollection  |
+
+	| aClassCollection |
 	aClassCollection := aPackage classes asArray.
-	aClassCollection collect: [ :cl | 
-		responce nextPutAll: '## Class: ', cl name asString, String cr.
-		self instanceVariablesFor: cl.
-		self methodsFor: cl.
-		responce nextPutAll: String cr.
-	].
-	
+	aClassCollection collect: [ :cl |
+			responce << '## Class: ' << cl name asString <<String cr.
+			self instanceVariablesFor: cl.
+			self methodsFor: cl.
+			responce << String cr ]
 ]
 
 { #category : 'accessing' }
 AI_PackagesAsOllamaSystem >> for: aPackageList [
 	"The input is {package1. package2. package3}."
 	responce := WriteStream on: ''.
-	aPackageList do: [ :pack | self classesInPackage: (RPackageSet named: pack) ].
+	"aPackageList do: [ :pack | self classesInPackage: (RPackageSet named: pack) ]."
+	aPackageList do: [ :pack | self classesInPackage: (PackageOrganizer default packageNamed: pack) ].
 	^ responce contents
 	
 ]
@@ -61,10 +62,10 @@ AI_PackagesAsOllamaSystem >> for: aPackageList [
 AI_PackagesAsOllamaSystem >> forClass: aClass [
 	"The input is aClass, return ollama system input."
 	responce := WriteStream on: ''.
-	responce nextPutAll: '## Class: ', aClass name asString, String cr.
+	responce << '## Class: ' << aClass name asString << String cr.
 	self instanceVariablesFor: aClass.
 	self methodsFor: aClass.
-	responce nextPutAll: String cr.
+	responce << String cr.
 	^ responce contents
 	
 ]
@@ -72,21 +73,20 @@ AI_PackagesAsOllamaSystem >> forClass: aClass [
 { #category : 'internal' }
 AI_PackagesAsOllamaSystem >> instanceVariablesFor: aClass [
 	"Add all the instance variables of aClass to response"
-	responce nextPutAll: '### Instance variables for ', aClass name asString, ': '.
-	aClass instVarNames  collect: [:each | responce nextPutAll: each asString, ' '].
+	responce  << '### Instance variables for ' << aClass name asString << ': '.
+	aClass instVarNames  collect: [:each | 
+		responce  << each asString << ' '].
 	responce nextPutAll: String cr.
 ]
 
 { #category : 'internal' }
 AI_PackagesAsOllamaSystem >> methodsFor: aClass [
 	"Add all methods grouped by protocol, including full source code"
-
-	responce nextPutAll: '### Methods for ', aClass name asString, ':', String cr.
-
+	responce << '### Methods for ' << aClass name asString << ':' << String cr.
 	aClass protocolNames asSortedCollection do: [:protocol |
-		responce nextPutAll: '#### Protocol: ', protocol, String cr.
+		responce  << '#### Protocol: ' << protocol << String cr.
 		(aClass selectorsInProtocol: protocol) do: [:selector |
-			responce nextPutAll: (aClass >> selector) sourceCode, String cr, String cr.
+			responce << (aClass >> selector) sourceCode << String cr << String cr.
 		].
 	].
 ]
