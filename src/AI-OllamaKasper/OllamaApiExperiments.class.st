@@ -1,35 +1,32 @@
 Class {
 	#name : 'OllamaApiExperiments',
 	#superclass : 'Object',
+	#instVars : [
+		'ollamaModel',
+		'lines',
+		'models'
+	],
 	#category : 'AI-OllamaKasper-Eksperiments',
 	#package : 'AI-OllamaKasper',
 	#tag : 'Eksperiments'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'experiments' }
 OllamaApiExperiments >> fiveForAlleModeller [
-	"return a list of OrderedDictiontionaries, {modelName, prompt, response}"
-	| lines models prompt|
-	lines := OrderedCollection new.
-	lines add: {'modelName'. 'prompt'. 'response'}.
-	models := OllamaApi modelNames atAll: #(1 2).
+	"Can the models calculate the prompt"
+	|  prompt|
+	self initializeOllamaModel.
+	
 	prompt := '2+3. What is the result'.
-	models do: [ :modelName | |ollamaModel |
-		ollamaModel := OllamaApi new.
-		ollamaModel
-			model: modelName.
-		Transcript show: 'Running model: ' , modelName ;cr.
-		World doOneCycle.
-		ollamaModel getResponseForPrompt: prompt.
-		lines add: { modelName. prompt. ollamaModel response }
-	].
-	self  writeAsHTML: lines toFile: 'Test02'.
+
+	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
 	
 	
 ]
 
 { #category : 'writing' }
 OllamaApiExperiments >> html: html title: title do: block [
+	"Initial html"
 	html
 		tag: #html
 		do: [ html
@@ -46,6 +43,81 @@ OllamaApiExperiments >> html: html title: title do: block [
 						block value ] ]
 ]
 
+{ #category : 'initialization' }
+OllamaApiExperiments >> initializeOllamaModel [
+	models := OllamaApi modelNames " atAll: #(1 2 )".
+	ollamaModel := OllamaApi new.
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> pharoManualTestForModeller [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	ollamaModel
+			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+	prompt := 'What is an Unary Message in Pharo'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test02b'.
+	
+	
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> pharoWhatIsAnInstanceVariable [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	ollamaModel
+			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+	prompt := 'What is an Instance Variable in Pharo'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test03'.
+	
+	
+	
+]
+
+{ #category : 'writing' }
+OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
+
+	lines := OrderedCollection new.
+	lines add: {'modelName'. 'millis'. 'prompt'. 'response'}.
+	models do: [ :modelName | | seconds |
+			ollamaModel model: modelName.
+			Transcript show: 'Running model: ' , modelName.
+			World doOneCycle.
+			seconds := Time now asSeconds.
+			ollamaModel getResponseForPrompt: promt.
+			seconds := Time now asSeconds - seconds.
+			Transcript show: ' Seconds: ' , seconds asString; cr.
+			World doOneCycle.
+			lines add: { modelName. seconds asString. promt. ollamaModel response }
+		].
+	Transcript show: 'Done' ;cr.
+	self  writeAsHTML: lines toFile: file.
+]
+
+{ #category : 'writing' }
+OllamaApiExperiments >> tableOn: html on: list [
+	"Add the table to html, of all the models in list"
+ 	html
+		tag: #table
+		attributes: #(style 'width:90%')
+		do: [ html tag: #tr 
+				do: [ list first
+						do: [ :header | 
+							html tag: #th with: header ].
+						html  ].
+			2 to: list size do: [ :id | 
+					html
+						tag: #tr
+						do: [ 
+							1 to: (list at: id) size do: [ :x |
+								html tag: #td with: ((list at: id) at: x).
+								
+							]].] 
+					] 
+]
+
 { #category : 'writing' }
 OllamaApiExperiments >> writeAsHTML: list toFile: fileName [
 	| out html path|
@@ -55,180 +127,15 @@ OllamaApiExperiments >> writeAsHTML: list toFile: fileName [
 	path := out pathString.
 	out := out writeStream .
 	html := ZnHtmlOutputStream on: out.
-	self html: html
+	self 
+		html: html
 		title: (fileName)
-		do: [ html
-				tag: #table
-				attributes: #(style 'width:90%')
-				do: [ html tag: #tr 
-						do: [ list first
-								do: [ :header | html tag: #th attributes: #('text-align' right) with: header ].
-								html  ].
-						html << String cr.
-					2 to: list size do: [ :id | 
-							html
-								tag: #tr
-								do: [ 
-									1 to: (list at: id) size do: [ :x |
-										html tag: #td with: ((list at: id) at: x).
-										
-									]].] 
-							] ].
-		html flush; close.
-		WebBrowser openOn: ('file://', path) asZnUrl .
-]
-
-{ #category : 'writing' }
-OllamaApiExperiments >> writeResultHTML [
-	| rente forbrug saldo out inflation html path|
-	rente := 0.04.
-	inflation := 0.01.
-	forbrug := 525000.
-	"saldo := depotStart."
-	
-	out := 'fremskrivning.html' asFileReference.
-	out deleteIfAbsent: [  ].
-	path := out pathString.
-	out := out writeStream .
-	html := ZnHtmlOutputStream on: out.
-	self html: html
-		title: ('Fremskrivning', ' Forbrug: ', forbrug  , ' Rente: ', (rente * 100) , '%')
-		do: [ html
-				tag: #table
-				attributes: #(style 'width:500px')
-				do: [ html tag: #tr 
-						do: [ #('år' 'Malene' 'Kasper' 'Engang' ' Netto ' 'Forbrug' ' Saldo')
-								do: [ :header | html tag: #th attributes: #('text-align' right) with: header ].
-								html  ].
-						html << String cr.
-					2025 to: 2063 do: [ :år | | netto engangs |
-							html
-								tag: #tr
-								do: [ 
-									html tag: #td with: år printString.
-									html
-										tag: #td
-										with: (self ) asInteger asStringWithCommas.
-									html
-										tag: #td
-										with: (self ) asInteger asStringWithCommas.
-									engangs := (self ) asInteger.
-									html
-										tag: #td
-										with:  engangs asStringWithCommas.
-									netto := (self ) asInteger + engangs.
-									html tag: #td with: netto asStringWithCommas.
-									saldo := saldo + netto - forbrug.
-									html tag: #td with: forbrug .
-									forbrug := forbrug + (forbrug*inflation).
-									saldo := saldo * (1 + rente).
-									saldo := saldo asInteger.
-									html tag: #td with: saldo asStringWithCommas ].
-							html << String cr ] 
-							
-							] ].
-		html flush; close.
-		WebBrowser openOn: ('file://', path) asZnUrl .
-]
-
-{ #category : 'writing' }
-OllamaApiExperiments >> writeResultHTML: list [
-	| rente forbrug saldo out inflation html path|
-	
-	out := 'fremskrivning.html' asFileReference.
-	out deleteIfAbsent: [  ].
-	path := out pathString.
-	out := out writeStream .
-	html := ZnHtmlOutputStream on: out.
-	self html: html
-		title: ('Fremskrivning', ' Forbrug: ', forbrug  , ' Rente: ', (rente * 100) , '%')
-		do: [ html
-				tag: #table
-				attributes: #(style 'width:500px')
-				do: [ html tag: #tr 
-						do: [ #('år' 'Malene' 'Kasper' 'Engang' ' Netto ' 'Forbrug' ' Saldo')
-								do: [ :header | html tag: #th attributes: #('text-align' right) with: header ].
-								html  ].
-						html << String cr.
-					2025 to: 2063 do: [ :år | | netto engangs |
-							html
-								tag: #tr
-								do: [ 
-									html tag: #td with: år printString.
-									html
-										tag: #td
-										with: (self ) asInteger asStringWithCommas.
-									html
-										tag: #td
-										with: (self ) asInteger asStringWithCommas.
-									engangs := (self ) asInteger.
-									html
-										tag: #td
-										with:  engangs asStringWithCommas.
-									netto := (self ) asInteger + engangs.
-									html tag: #td with: netto asStringWithCommas.
-									saldo := saldo + netto - forbrug.
-									html tag: #td with: forbrug .
-									forbrug := forbrug + (forbrug*inflation).
-									saldo := saldo * (1 + rente).
-									saldo := saldo asInteger.
-									html tag: #td with: saldo asStringWithCommas ].
-							html << String cr ] 
-							
-							] ].
-		html flush; close.
-		WebBrowser openOn: ('file://', path) asZnUrl .
-]
-
-{ #category : 'writing' }
-OllamaApiExperiments >> writeResultHTML_OLD [ 
-	"| rente forbrug saldo out inflation html path|
-	rente := 0.04.
-	inflation := 0.01.
-	forbrug := 525000.
-	saldo := depotStart.
-	
-	out := 'fremskrivning.html' asFileReference.
-	out deleteIfAbsent: [  ].
-	path := out pathString.
-	out := out writeStream .
-	html := ZnHtmlOutputStream on: out.
-	self html: html
-		title: ('Fremskrivning', ' Forbrug: ', forbrug kFormat , ' Rente: ', (rente * 100) kFormat, '%')
-		do: [ html
-				tag: #table
-				attributes: #(style 'width:500px')
-				do: [ html tag: #tr 
-						do: [ #('år' 'Malene' 'Kasper' 'Engang' ' Netto ' 'Forbrug' ' Saldo')
-								do: [ :header | html tag: #th attributes: #('text-align' right) with: header ].
-								html  ].
-						html << String cr.
-					2025 to: 2063 do: [ :år | | netto engangs |
-							html
-								tag: #tr
-								do: [ 
-									html tag: #td with: år printString.
-									html
-										tag: #td
-										with: (self maleneUdbetaltÅr: år) asInteger asStringWithCommas.
-									html
-										tag: #td
-										with: (self kasperUdbetaltÅr: år) asInteger asStringWithCommas.
-									engangs := (self beggeEngangsÅr: år) asInteger.
-									html
-										tag: #td
-										with:  engangs asStringWithCommas.
-									netto := (self beggeUdbetaltÅrEfterSkat: år) asInteger + engangs.
-									html tag: #td with: netto asStringWithCommas.
-									saldo := saldo + netto - forbrug.
-									html tag: #td with: forbrug kFormat.
-									forbrug := forbrug + (forbrug*inflation).
-									saldo := saldo * (1 + rente).
-									saldo := saldo asInteger.
-									html tag: #td with: saldo asStringWithCommas ].
-							html << String cr ] 
-							
-							] ].
-		html flush; close.
-		WebBrowser openOn: ('file://', path) asZnUrl ".
+		do: [self tableOn: html on: list ].
+		
+	html tag: #h3 with: 'Prompt'.
+	html tag: #pre with: ollamaModel promptPrefix.
+	html tag: #h3 with: 'System'.
+	html tag: #pre with: ollamaModel system.
+	html flush; close.
+	WebBrowser openOn: ('file://', path) asZnUrl .
 ]
