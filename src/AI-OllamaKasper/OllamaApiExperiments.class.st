@@ -136,6 +136,18 @@ OllamaApiExperiments >> pharoWhatIsAnInstanceVariable [
 	
 ]
 
+{ #category : 'accessing' }
+OllamaApiExperiments >> presenter [
+
+	^ presenter
+]
+
+{ #category : 'accessing' }
+OllamaApiExperiments >> presenter: anObject [
+
+	presenter := anObject
+]
+
 { #category : 'writing' }
 OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 	"I run the prompt on all the models. 
@@ -167,6 +179,18 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 		self  writeAsHTML: lines toFile: file.
 		sema signal.
 	] fork.
+]
+
+{ #category : 'accessing' }
+OllamaApiExperiments >> sema [
+
+	^ sema
+]
+
+{ #category : 'accessing' }
+OllamaApiExperiments >> sema: anObject [
+
+	sema := anObject
 ]
 
 { #category : 'writing' }
