@@ -34,7 +34,7 @@ ManifestAIOllamaKasper class >> ruleCollectionProtocolRuleV1FalsePositive [
 ManifestAIOllamaKasper class >> ruleLongMethodsRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments #writeAsHTML:toFile: #false)) #'2025-04-25T14:23:56.712667+02:00') #(#(#RGMethodDefinition #(#OllamaApiExperiments01 #writeAsHTML:toFile: #false)) #'2025-04-25T15:36:04.461195+02:00') )
+	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments #writeAsHTML:toFile: #false)) #'2025-04-25T14:23:56.712667+02:00') #(#(#RGMethodDefinition #(#OllamaApiExperiments01 #writeAsHTML:toFile: #false)) #'2025-04-25T15:36:04.461195+02:00') #(#(#RGPackageDefinition #(#'AI-OllamaKasper')) #'2025-04-28T14:50:37.010799+02:00') )
 ]
 
 { #category : 'code-critics' }

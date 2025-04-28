@@ -11,6 +11,7 @@ Class {
 		'lines',
 		'models',
 		'ollamaProcess',
+		'sema',
 		'presenter'
 	],
 	#category : 'AI-OllamaKasper-Eksperiments',
@@ -30,14 +31,11 @@ OllamaApiExperiments >> cancelOllamaPrompt [
 { #category : 'experiments' }
 OllamaApiExperiments >> fiveForAlleModeller [
 	"Can the models calculate the prompt"
-	|  prompt|
-	self initializeOllamaModel.
-	
-	prompt := '2+3. What is the result'.
-
-	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
-	
-	
+	| prompt|
+	self threeExperimentsOf: [ :item | 
+		prompt := '2+3. What is the result'.
+		self runModelsWithPrompt: prompt saveToFile: ('Test01', item).
+	]
 ]
 
 { #category : 'writing' }
@@ -79,7 +77,17 @@ OllamaApiExperiments >> ollamaProcess: anObject [
 ]
 
 { #category : 'experiments' }
-OllamaApiExperiments >> pharoManualTestForModeller [
+OllamaApiExperiments >> pharoManualTestForModeller_a [
+	"Can the models produce a response for the prompt"
+	self threeExperimentsOf:  [ :item | | prompt|
+		prompt := 'What is an Unary Message in Pharo'.
+		self runModelsWithPrompt: prompt saveToFile: ('Test02a',item).
+	
+	]
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> pharoManualTestForModeller_b [
 	"Can the models produce a response for the prompt"
 	| prompt|
 	self initializeOllamaModel.
@@ -87,6 +95,29 @@ OllamaApiExperiments >> pharoManualTestForModeller [
 			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Unary Message in Pharo'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test02b'.
+	
+	
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> pharoManualTestForModeller_c [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	ollamaModel
+			system: 'In Pharo there three kinds of methods (functions).
+			In Pharo all methods are sendt to an object.
+			In Pharo every instance is an object.
+			A unary method has the form "obj methodName". 
+			An example of a unary method is "5 factorial", 
+				that return the factorial of 5, which is 120.
+			A binary method has the form "obj1 operator obj2.
+			An example of a binary method is "55 + 5.
+				plus "+" is the binary method, that on object 55 gets 5 as argument, and return 60.
+			The keyword method is on an object, and takes 1 to several arguments.
+				A keyword method has the form "obj1 devide: obj2 precision: obj3.'.
+	prompt := 'What is an Unary Message in Pharo'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test02c'.
 	
 	
 ]
@@ -112,6 +143,7 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 	To be able to see the result and its basics, I store it in file"
 	lines := OrderedCollection new.
 	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
+	sema := Semaphore new.
 	presenter := OllamaApiExperimentsPresenter new.
 	presenter experiments: self.
 	presenter open.
@@ -123,7 +155,8 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 					[ 1 > 0 ] whileTrue: [
 						(Delay forSeconds: 1) wait.
 						fibbe := fibbe + 1.
-						presenter set: index seconds: fibbe] ] fork.
+						presenter set: index seconds: fibbe.
+						World doOneCycle.] ] fork.
 			seconds := Time now asSeconds.
 			ollamaModel getResponseForPrompt: promt.
 			seconds := Time now asSeconds - seconds.
@@ -132,29 +165,8 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 			lines add: { (models at: index). seconds asString. promt. ollamaModel response }
 		]. 
 		self  writeAsHTML: lines toFile: file.
-	] fork .
-]
-
-{ #category : 'writing' }
-OllamaApiExperiments >> runModelsWithPrompt_old: promt saveToFile: file [
-	"I run the prompt on all the models. 
-	As it takes time, progress is shown in my Presenter.
-	To be able to see the result and its basics, I store it in file"
-	lines := OrderedCollection new.
-	lines add: {'modelName'. 'millis'. 'prompt'. 'response'}.
-	models do: [ :modelName | | seconds |
-			ollamaModel model: modelName.
-			Transcript show: 'Running model: ' , modelName.
-			World doOneCycle.
-			seconds := Time now asSeconds.
-			ollamaModel getResponseForPrompt: promt.
-			seconds := Time now asSeconds - seconds.
-			Transcript show: ' Seconds: ' , seconds asString; cr.
-			World doOneCycle.
-			lines add: { modelName. seconds asString. promt. ollamaModel response }
-		].
-	Transcript show: 'Done' ;cr.
-	self  writeAsHTML: lines toFile: file.
+		sema signal.
+	] fork.
 ]
 
 { #category : 'writing' }
@@ -177,6 +189,17 @@ OllamaApiExperiments >> tableOn: html on: list [
 								
 							]].] 
 					] 
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> threeExperimentsOf: experiment [
+	"Can the models calculate the prompt"
+	#('a' 'b' 'c') do: [ :item |
+		self initializeOllamaModel.
+		experiment value: item.
+		sema wait.
+		presenter closePresenter.
+	]
 ]
 
 { #category : 'writing' }
