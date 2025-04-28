@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'ollamaApi'
 	],
-	#category : 'AI-OllamaKasper-Eksperiments',
+	#category : 'AI-OllamaKasper-TestOfEksperiments',
 	#package : 'AI-OllamaKasper',
-	#tag : 'Eksperiments'
+	#tag : 'TestOfEksperiments'
 }
 
 { #category : 'running' }

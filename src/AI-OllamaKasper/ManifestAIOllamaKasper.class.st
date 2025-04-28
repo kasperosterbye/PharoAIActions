@@ -27,7 +27,7 @@ ManifestAIOllamaKasper class >> ruleCodeCruftLeftInMethodsRuleV1FalsePositive [
 ManifestAIOllamaKasper class >> ruleCollectionProtocolRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments01 #femForAlleModeller #false)) #'2025-04-25T08:14:07.356408+02:00') )
+	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments01 #femForAlleModeller #false)) #'2025-04-25T08:14:07.356408+02:00') #(#(#RGPackageDefinition #(#'AI-OllamaKasper')) #'2025-04-28T09:03:31.104576+02:00') )
 ]
 
 { #category : 'code-critics' }

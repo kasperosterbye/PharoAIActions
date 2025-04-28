@@ -1,15 +1,31 @@
+"
+Fix this - it ended as nonsence...
+
+I convert the result of some doing the experiement (system+prompt -> result) on multiple Ollama models.
+"
 Class {
 	#name : 'OllamaApiExperiments',
 	#superclass : 'Object',
 	#instVars : [
 		'ollamaModel',
 		'lines',
-		'models'
+		'models',
+		'ollamaProcess',
+		'presenter'
 	],
 	#category : 'AI-OllamaKasper-Eksperiments',
 	#package : 'AI-OllamaKasper',
 	#tag : 'Eksperiments'
 }
+
+{ #category : 'actions' }
+OllamaApiExperiments >> cancelOllamaPrompt [
+	"This method sends a user's input to an Ollama API and updates the chat history with the response."
+
+	ollamaProcess ifNotNil: [
+		ollamaProcess terminate.
+	].
+]
 
 { #category : 'experiments' }
 OllamaApiExperiments >> fiveForAlleModeller [
@@ -45,8 +61,21 @@ OllamaApiExperiments >> html: html title: title do: block [
 
 { #category : 'initialization' }
 OllamaApiExperiments >> initializeOllamaModel [
+	"I am called at the beginning of one of the experiments"
 	models := OllamaApi modelNames " atAll: #(1 2 )".
 	ollamaModel := OllamaApi new.
+]
+
+{ #category : 'accessing' }
+OllamaApiExperiments >> ollamaProcess [
+
+	^ ollamaProcess
+]
+
+{ #category : 'accessing' }
+OllamaApiExperiments >> ollamaProcess: anObject [
+
+	ollamaProcess := anObject
 ]
 
 { #category : 'experiments' }
@@ -78,7 +107,39 @@ OllamaApiExperiments >> pharoWhatIsAnInstanceVariable [
 
 { #category : 'writing' }
 OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
+	"I run the prompt on all the models. 
+	As it takes time, progress is shown in my Presenter.
+	To be able to see the result and its basics, I store it in file"
+	lines := OrderedCollection new.
+	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
+	presenter := OllamaApiExperimentsPresenter new.
+	presenter experiments: self.
+	presenter open.
+	ollamaProcess := [1 to: models size do: [ :index | | seconds counting |
+			ollamaModel model: (models at: index).
+			presenter set: index seconds: 0.
+			counting := [  |fibbe| 
+					fibbe := 0.
+					[ 1 > 0 ] whileTrue: [
+						(Delay forSeconds: 1) wait.
+						fibbe := fibbe + 1.
+						presenter set: index seconds: fibbe] ] fork.
+			seconds := Time now asSeconds.
+			ollamaModel getResponseForPrompt: promt.
+			seconds := Time now asSeconds - seconds.
+			counting terminate.
+			presenter set: index seconds: seconds.
+			lines add: { (models at: index). seconds asString. promt. ollamaModel response }
+		]. 
+		self  writeAsHTML: lines toFile: file.
+	] fork .
+]
 
+{ #category : 'writing' }
+OllamaApiExperiments >> runModelsWithPrompt_old: promt saveToFile: file [
+	"I run the prompt on all the models. 
+	As it takes time, progress is shown in my Presenter.
+	To be able to see the result and its basics, I store it in file"
 	lines := OrderedCollection new.
 	lines add: {'modelName'. 'millis'. 'prompt'. 'response'}.
 	models do: [ :modelName | | seconds |
