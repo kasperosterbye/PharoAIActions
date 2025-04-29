@@ -31,18 +31,9 @@ OllamaApiExperiments >> cancelOllamaPrompt [
 OllamaApiExperiments >> fiveForAlleModeller [
 	"Can the models calculate the prompt"
 	| prompt|
+	self initializeOllamaModel.
 	prompt := '2+3. What is the result'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
-]
-
-{ #category : 'experiments' }
-OllamaApiExperiments >> fiveForAlleModeller_old [
-	"Can the models calculate the prompt"
-	| prompt|
-	self threeExperimentsOf: [ :item | 
-		prompt := '2+3. What is the result'.
-		self runModelsWithPrompt: prompt saveToFile: ('Test01', item).
-	]
 ]
 
 { #category : 'writing' }
@@ -57,7 +48,7 @@ OllamaApiExperiments >> html: html title: title do: block [
 					html
 						tag: #style
 						with:
-							'th, td {text-align:right } tr:nth-child(even){background-color: #f2f2f2}'].
+							'th, td {text-align:left } tr:nth-child(even){background-color: #f2f2f2}'].
 				html
 					tag: #body
 					do: [ html tag: #h1 with: title.
@@ -67,7 +58,7 @@ OllamaApiExperiments >> html: html title: title do: block [
 { #category : 'initialization' }
 OllamaApiExperiments >> initializeOllamaModel [
 	"I am called at the beginning of one of the experiments"
-	models := OllamaApi modelNames atAll: #(1 2 ).
+	models := OllamaApi modelNames "atAll: #(1 2 )".
 	ollamaModel := OllamaApi new.
 ]
 
@@ -83,14 +74,26 @@ OllamaApiExperiments >> ollamaProcess: anObject [
 	ollamaProcess := anObject
 ]
 
+{ #category : 'writing' }
+OllamaApiExperiments >> oneCounterFor: modelIndex experimentIndex: experimentIndex [
+	^  [  |fibbe| 
+			fibbe := 0.
+			presenter model: modelIndex experimentIndex: experimentIndex seconds: fibbe.
+			[	(Delay forSeconds: 1) wait.
+				fibbe := fibbe + 1.
+				presenter model: modelIndex experimentIndex: experimentIndex seconds: fibbe.
+				World doOneCycle] repeat
+		] fork.
+]
+
 { #category : 'experiments' }
 OllamaApiExperiments >> pharoManualTestForModeller_a [
 	"Can the models produce a response for the prompt"
-	self threeExperimentsOf:  [ :item | | prompt|
-		prompt := 'What is an Unary Message in Pharo'.
-		self runModelsWithPrompt: prompt saveToFile: ('Test02a',item).
-	
-	]
+	| prompt|
+	self initializeOllamaModel.
+	prompt := 'What is an Unary Message in Pharo'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test02a'.
+
 ]
 
 { #category : 'experiments' }
@@ -160,64 +163,25 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 	"I run the prompt on all the models. 
 	As it takes time, progress is shown in my Presenter.
 	To be able to see the result and its basics, I store it in file"
-	self initializeOllamaModel.
 	lines := OrderedCollection new.
 	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
 	presenter := OllamaApiExperimentsPresenter new.
 	presenter experiments: self.
 	presenter open.
 	World doOneCycle.
-	ollamaProcess := [1 to: models size do: [ :index | | seconds counting |
-			ollamaModel model: (models at: index).
-			#('a' 'b' 'c') do: [ :item |
-				presenter set: index seconds: 0.
-				"counting := [  |fibbe| 
-						fibbe := 0.
-						[ 1 > 0 ] whileTrue: [
-							(Delay forSeconds: 1) wait.
-							fibbe := fibbe + 1.
-							presenter set: index seconds: fibbe.
-							World doOneCycle.] ] fork."
+	ollamaProcess := [1 to: models size do: [ :modelIndex | | seconds counting |
+			ollamaModel model: (models at: modelIndex).
+			1 to: 3 do: [ :experimentIndex |
+				counting := self oneCounterFor: modelIndex experimentIndex: experimentIndex.
 				seconds := Time now asSeconds.
 				ollamaModel getResponseForPrompt: promt.
 				seconds := Time now asSeconds - seconds.
-				"counting terminate.
-				presenter set: index seconds: seconds."
-				lines add: { item,' ', (models at: index). seconds asString. promt. ollamaModel response }
+				counting terminate.
+				presenter model: modelIndex experimentIndex: experimentIndex seconds: seconds.
+				lines add: { (#('a' 'b' 'c') at: experimentIndex),':    ', (models at: modelIndex). 
+								seconds asString. promt. ollamaModel response }
 			]
 		].
-		self  writeAsHTML: lines toFile: file.
-	] fork.
-]
-
-{ #category : 'writing' }
-OllamaApiExperiments >> runModelsWithPrompt_old: promt saveToFile: file [
-	"I run the prompt on all the models. 
-	As it takes time, progress is shown in my Presenter.
-	To be able to see the result and its basics, I store it in file"
-	lines := OrderedCollection new.
-	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
-	presenter := OllamaApiExperimentsPresenter new.
-	presenter experiments: self.
-	presenter open.
-	World doOneCycle.
-	ollamaProcess := [1 to: models size do: [ :index | | seconds counting |
-			ollamaModel model: (models at: index).
-			presenter set: index seconds: 0.
-			counting := [  |fibbe| 
-					fibbe := 0.
-					[ 1 > 0 ] whileTrue: [
-						(Delay forSeconds: 1) wait.
-						fibbe := fibbe + 1.
-						presenter set: index seconds: fibbe.
-						World doOneCycle.] ] fork.
-			seconds := Time now asSeconds.
-			ollamaModel getResponseForPrompt: promt.
-			seconds := Time now asSeconds - seconds.
-			counting terminate.
-			presenter set: index seconds: seconds.
-			lines add: { (models at: index). seconds asString. promt. ollamaModel response }
-		]. 
 		self  writeAsHTML: lines toFile: file.
 	] fork.
 ]
@@ -242,16 +206,6 @@ OllamaApiExperiments >> tableOn: html on: list [
 								
 							]].] 
 					] 
-]
-
-{ #category : 'experiments' }
-OllamaApiExperiments >> threeExperimentsOf: experiment [
-	"Can the models calculate the prompt"
-	#('a' "'b' 'c'") do: [ :item |
-		self initializeOllamaModel.
-		experiment value: item.
-		presenter closePresenter.
-	]
 ]
 
 { #category : 'writing' }

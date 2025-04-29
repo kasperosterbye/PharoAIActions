@@ -4,7 +4,9 @@ Class {
 	#instVars : [
 		'experiments',
 		'modelList',
-		'secondsList'
+		'secondsList',
+		'currentSecondList',
+		'arraySecondsList'
 	],
 	#category : 'AI-OllamaKasper-Eksperiments',
 	#package : 'AI-OllamaKasper',
@@ -22,6 +24,7 @@ OllamaApiExperimentsPresenter class >> open [
 OllamaApiExperimentsPresenter >> closePresenter [
 	"Stop the experiemnter class, and close this Presenter"
 	experiments ollamaProcess terminate.
+	Transcript show: 'We are closing, but not';cr;flush.
 	super window close.
 ]
 
@@ -48,8 +51,9 @@ OllamaApiExperimentsPresenter >> initializePresenters [
     | quitButton |
     
     modelList := SpListPresenter new items: OllamaApi modelNames.
-    secondsList := SpListPresenter new items: {0}.
-    quitButton := SpButtonPresenter new
+    arraySecondsList := {{ 0. 0. 0 }. { 0. 0. 0 }. { 0. 0. 0 }. { 0. 0. 0 }. { 0. 0. 0 }.}.
+    secondsList := SpListPresenter new items: arraySecondsList .
+	 quitButton := SpButtonPresenter new
         label: 'Stop & Quit';
         action: [ self closePresenter ].  "or whatever stop you want"
 
@@ -65,9 +69,44 @@ OllamaApiExperimentsPresenter >> initializePresenters [
 ]
 
 { #category : 'as yet unclassified' }
-OllamaApiExperimentsPresenter >> set: index seconds: secs [
+OllamaApiExperimentsPresenter >> model: modelIndex experimentIndex: experimentIndex seconds: secs [
+	"Index is the index of the model, seconds is how much it has spend on it last."
+	(arraySecondsList at: modelIndex) at: experimentIndex put: secs.
+	secondsList items: arraySecondsList " (resultList items copyWith: '0' )"
+	
+]
+
+{ #category : 'as yet unclassified' }
+OllamaApiExperimentsPresenter >> model_old2: modelIndex experimentIndex: experimentIndex seconds: secs [
+	"Index is the index of the model, seconds is how much it has spend on it last."
+	(arraySecondsList at: modelIndex) at: experimentIndex put: secs.
+	secondsList items: arraySecondsList " (resultList items copyWith: '0' )"
+	
+]
+
+{ #category : 'as yet unclassified' }
+OllamaApiExperimentsPresenter >> model_old: modelIndex experimentIndex: experimentIndex seconds: secs [
+	"Index is the index of the model, seconds is how much it has spend on it last."
 	| list |
-	list := secondsList items.
+	list := secondsList items. "{ {3. 4. 3}. {4. 2} }" 
+	modelIndex > list size 
+		ifTrue: [ 
+			"new item in the list"
+			list := list, { {secs} } ]
+		ifFalse: [ 
+			"new secs element"
+			experimentIndex > (list at: modelIndex) size 
+				ifTrue:  [ list at: modelIndex put: { secs } ]
+				ifFalse: [ (list at: modelIndex) at: experimentIndex put: secs] ].
+	secondsList items: list " (resultList items copyWith: '0' )"
+	
+]
+
+{ #category : 'as yet unclassified' }
+OllamaApiExperimentsPresenter >> set_old: index seconds: secs [
+	"Index is the index of the model, seconds is how much it has spend on it last."
+	| list |
+	list := secondsList items. "{ {3. 4. 3}. {4. 2} }" 
 	index = (list size + 1) 
 		ifTrue: [ list := list, { secs } ]
 		ifFalse: [ list at: index put: secs ].
