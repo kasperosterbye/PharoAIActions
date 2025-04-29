@@ -11,7 +11,6 @@ Class {
 		'lines',
 		'models',
 		'ollamaProcess',
-		'sema',
 		'presenter'
 	],
 	#category : 'AI-OllamaKasper-Eksperiments',
@@ -30,6 +29,14 @@ OllamaApiExperiments >> cancelOllamaPrompt [
 
 { #category : 'experiments' }
 OllamaApiExperiments >> fiveForAlleModeller [
+	"Can the models calculate the prompt"
+	| prompt|
+	prompt := '2+3. What is the result'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> fiveForAlleModeller_old [
 	"Can the models calculate the prompt"
 	| prompt|
 	self threeExperimentsOf: [ :item | 
@@ -60,7 +67,7 @@ OllamaApiExperiments >> html: html title: title do: block [
 { #category : 'initialization' }
 OllamaApiExperiments >> initializeOllamaModel [
 	"I am called at the beginning of one of the experiments"
-	models := OllamaApi modelNames " atAll: #(1 2 )".
+	models := OllamaApi modelNames atAll: #(1 2 ).
 	ollamaModel := OllamaApi new.
 ]
 
@@ -153,12 +160,47 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 	"I run the prompt on all the models. 
 	As it takes time, progress is shown in my Presenter.
 	To be able to see the result and its basics, I store it in file"
+	self initializeOllamaModel.
 	lines := OrderedCollection new.
 	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
-	sema := Semaphore new.
 	presenter := OllamaApiExperimentsPresenter new.
 	presenter experiments: self.
 	presenter open.
+	World doOneCycle.
+	ollamaProcess := [1 to: models size do: [ :index | | seconds counting |
+			ollamaModel model: (models at: index).
+			#('a' 'b' 'c') do: [ :item |
+				presenter set: index seconds: 0.
+				"counting := [  |fibbe| 
+						fibbe := 0.
+						[ 1 > 0 ] whileTrue: [
+							(Delay forSeconds: 1) wait.
+							fibbe := fibbe + 1.
+							presenter set: index seconds: fibbe.
+							World doOneCycle.] ] fork."
+				seconds := Time now asSeconds.
+				ollamaModel getResponseForPrompt: promt.
+				seconds := Time now asSeconds - seconds.
+				"counting terminate.
+				presenter set: index seconds: seconds."
+				lines add: { item,' ', (models at: index). seconds asString. promt. ollamaModel response }
+			]
+		].
+		self  writeAsHTML: lines toFile: file.
+	] fork.
+]
+
+{ #category : 'writing' }
+OllamaApiExperiments >> runModelsWithPrompt_old: promt saveToFile: file [
+	"I run the prompt on all the models. 
+	As it takes time, progress is shown in my Presenter.
+	To be able to see the result and its basics, I store it in file"
+	lines := OrderedCollection new.
+	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
+	presenter := OllamaApiExperimentsPresenter new.
+	presenter experiments: self.
+	presenter open.
+	World doOneCycle.
 	ollamaProcess := [1 to: models size do: [ :index | | seconds counting |
 			ollamaModel model: (models at: index).
 			presenter set: index seconds: 0.
@@ -177,20 +219,7 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 			lines add: { (models at: index). seconds asString. promt. ollamaModel response }
 		]. 
 		self  writeAsHTML: lines toFile: file.
-		sema signal.
 	] fork.
-]
-
-{ #category : 'accessing' }
-OllamaApiExperiments >> sema [
-
-	^ sema
-]
-
-{ #category : 'accessing' }
-OllamaApiExperiments >> sema: anObject [
-
-	sema := anObject
 ]
 
 { #category : 'writing' }
@@ -218,10 +247,9 @@ OllamaApiExperiments >> tableOn: html on: list [
 { #category : 'experiments' }
 OllamaApiExperiments >> threeExperimentsOf: experiment [
 	"Can the models calculate the prompt"
-	#('a' 'b' 'c') do: [ :item |
+	#('a' "'b' 'c'") do: [ :item |
 		self initializeOllamaModel.
 		experiment value: item.
-		sema wait.
 		presenter closePresenter.
 	]
 ]
