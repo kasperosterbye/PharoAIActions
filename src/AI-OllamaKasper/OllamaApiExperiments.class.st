@@ -36,6 +36,24 @@ OllamaApiExperiments >> fiveForAlleModeller [
 	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
 ]
 
+{ #category : 'experiments' }
+OllamaApiExperiments >> fiveForAlleModeller_a [
+	"Can the models calculate the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	prompt := '2+3. What is the result'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test01a'.
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> fiveForAlleModeller_b [
+	"Can the models calculate the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	prompt := '2+3. What is the result. just the number'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test01b'.
+]
+
 { #category : 'writing' }
 OllamaApiExperiments >> html: html title: title do: block [
 	"Initial html"
@@ -133,6 +151,28 @@ OllamaApiExperiments >> pharoManualTestForModeller_c [
 ]
 
 { #category : 'experiments' }
+OllamaApiExperiments >> pharoManualTestForModeller_d [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	prompt := 'In Pharo there three kinds of methods (functions).
+			In Pharo all methods are sendt to an object.
+			In Pharo every instance is an object.
+			A unary method has the form "obj methodName". 
+			An example of a unary method is "5 factorial", 
+				that return the factorial of 5, which is 120.
+			A binary method has the form "obj1 operator obj2.
+			An example of a binary method is "55 + 5.
+				plus "+" is the binary method, that on object 55 gets 5 as argument, and return 60.
+			The keyword method is on an object, and takes 1 to several arguments.
+				A keyword method has the form "obj1 devide: obj2 precision: obj3.
+			What is an Unary Message in Pharo'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test02d'.
+	
+	
+]
+
+{ #category : 'experiments' }
 OllamaApiExperiments >> pharoWhatIsAnInstanceVariable [
 	"Can the models produce a response for the prompt"
 	| prompt|
@@ -141,6 +181,20 @@ OllamaApiExperiments >> pharoWhatIsAnInstanceVariable [
 			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test03'.
+	
+	
+	
+]
+
+{ #category : 'experiments' }
+OllamaApiExperiments >> pharoWhatIsAnInstanceVariable_b [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeOllamaModel.
+	ollamaModel
+			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+	prompt := 'What is an Instance Variable in Pharo. Give an example. No explanation.'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test03b'.
 	
 	
 	
@@ -159,7 +213,7 @@ OllamaApiExperiments >> presenter: anObject [
 ]
 
 { #category : 'writing' }
-OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
+OllamaApiExperiments >> runModelsWithPrompt: prompt saveToFile: file [
 	"I run the prompt on all the models. 
 	As it takes time, progress is shown in my Presenter.
 	To be able to see the result and its basics, I store it in file"
@@ -171,15 +225,57 @@ OllamaApiExperiments >> runModelsWithPrompt: promt saveToFile: file [
 	World doOneCycle.
 	ollamaProcess := [1 to: models size do: [ :modelIndex | | seconds counting |
 			ollamaModel model: (models at: modelIndex).
-			1 to: 3 do: [ :experimentIndex |
+			1 to: 4 do: [ :experimentIndex | 
 				counting := self oneCounterFor: modelIndex experimentIndex: experimentIndex.
+				World doOneCycle.
 				seconds := Time now asSeconds.
-				ollamaModel getResponseForPrompt: promt.
+				experimentIndex = 1
+					ifTrue: [ ollamaModel getResponseForPrompt: '2+3. What is the result. just the number' ]
+					ifFalse: [ ollamaModel getResponseForPrompt: prompt].
 				seconds := Time now asSeconds - seconds.
 				counting terminate.
 				presenter model: modelIndex experimentIndex: experimentIndex seconds: seconds.
-				lines add: { (#('a' 'b' 'c') at: experimentIndex),':    ', (models at: modelIndex). 
-								seconds asString. promt. ollamaModel response }
+				experimentIndex = 1
+					ifTrue: [ lines add: { (#('x' 'a' 'b' 'c') at: experimentIndex),
+									':    ', (models at: modelIndex). 
+								seconds asString. 'Loading model'. 'Loading model' } ]
+					ifFalse: [lines add: { (#('x' 'a' 'b' 'c') at: experimentIndex),
+									':    ', (models at: modelIndex). 
+								seconds asString. prompt. ollamaModel response }].
+			]
+		].
+		self  writeAsHTML: lines toFile: file.
+	] fork.
+]
+
+{ #category : 'writing' }
+OllamaApiExperiments >> runModelsWithPrompt_old: prompt saveToFile: file [
+	"I run the prompt on all the models. 
+	As it takes time, progress is shown in my Presenter.
+	To be able to see the result and its basics, I store it in file"
+	lines := OrderedCollection new.
+	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
+	presenter := OllamaApiExperimentsPresenter new.
+	presenter experiments: self.
+	presenter open.
+	World doOneCycle.
+	ollamaProcess := [1 to: models size do: [ :modelIndex | | seconds counting |
+			ollamaModel model: (models at: modelIndex).
+			1 to: 3 do: [ :experimentIndex | 
+				counting := self oneCounterFor: modelIndex experimentIndex: experimentIndex.
+				World doOneCycle.
+				seconds := Time now asSeconds.
+				experimentIndex = 1
+					ifTrue: [ ollamaModel getResponseForPrompt: '2+3. What is the result. just the number' ]
+					ifFalse: [ ollamaModel getResponseForPrompt: prompt].
+				seconds := Time now asSeconds - seconds.
+				counting terminate.
+				presenter model: modelIndex experimentIndex: experimentIndex seconds: seconds.
+				experimentIndex = 1
+					ifTrue: [ lines add: { (#('x' 'a' 'b') at: experimentIndex),':    ', (models at: modelIndex). 
+								seconds asString. 'Loading model'. 'Loading model' } ]
+					ifFalse: [lines add: { (#('x' 'a' 'b') at: experimentIndex),':    ', (models at: modelIndex). 
+								seconds asString. prompt. ollamaModel response }].
 			]
 		].
 		self  writeAsHTML: lines toFile: file.

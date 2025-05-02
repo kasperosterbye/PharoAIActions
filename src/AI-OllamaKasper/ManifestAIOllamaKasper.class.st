@@ -10,6 +10,13 @@ Class {
 }
 
 { #category : 'code-critics' }
+ManifestAIOllamaKasper class >> ruleAssignmentInIfTrueRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#'AI-OllamaKasper')) #'2025-04-30T09:58:59.39927+02:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIOllamaKasper class >> ruleCascadedNextPutAllsRuleV1FalsePositive [
 
 	<ignoreForCoverage>
@@ -41,7 +48,7 @@ ManifestAIOllamaKasper class >> ruleLongMethodsRuleV1FalsePositive [
 ManifestAIOllamaKasper class >> ruleStringConcatenationRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments01 #femForAlleModeller #false)) #'2025-04-25T08:14:19.855603+02:00') )
+	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments01 #femForAlleModeller #false)) #'2025-04-25T08:14:19.855603+02:00') #(#(#RGPackageDefinition #(#'AI-OllamaKasper')) #'2025-04-30T09:59:05.951065+02:00') )
 ]
 
 { #category : 'code-critics' }
@@ -49,4 +56,11 @@ ManifestAIOllamaKasper class >> ruleUnclassifiedMethodsRuleV1FalsePositive [
 
 	<ignoreForCoverage>
 	^ #(#(#(#RGMethodDefinition #(#OllamaApiExperiments01 #femForAlleModeller #false)) #'2025-04-25T08:14:16.379263+02:00') #(#(#RGMethodDefinition #(#OllamaApiExperiments #html:on: #false)) #'2025-04-25T17:42:36.56681+02:00') )
+]
+
+{ #category : 'code-critics' }
+ManifestAIOllamaKasper class >> ruleUsesWorldGlobalRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#'AI-OllamaKasper')) #'2025-04-30T09:59:14.29659+02:00') )
 ]
