@@ -218,21 +218,21 @@ MistralApiExperiments >> runModelsWithPrompt: prompt saveToFile: file [
 	As it takes time, progress is shown in my Presenter.
 	To be able to see the result and its basics, I store it in file"
 	lines := OrderedCollection new.
-	lines add: {'model name'. 'seconds'. 'prompt'. 'response'}.
-	presenter := OllamaApiExperimentsPresenter new.
+	lines add: {'model name'. 'milisecs'. 'prompt'. 'response'}.
+	presenter := MistralApiExperimentsPresenter new.
 	presenter experiments: self.
 	presenter open.
 	World doOneCycle.
-	mistralModel := [1 to: models size do: [ :modelIndex | | seconds counting |
+	mistralProcess := [1 to: models size do: [ :modelIndex | | seconds counting |
 			mistralModel model: (models at: modelIndex).
 			1 to: 4 do: [ :experimentIndex | 
 				counting := self oneCounterFor: modelIndex experimentIndex: experimentIndex.
 				World doOneCycle.
-				seconds := Time now asSeconds.
+				seconds := Time millisecondClockValue.
 				experimentIndex = 1
-					ifTrue: [ mistralModel getResponseForPrompt: '2+3. What is the result. just the number' ]
+					ifTrue: [ mistralModel getResponseForPrompt: '4+5. What is the result. just the number' ]
 					ifFalse: [ mistralModel getResponseForPrompt: prompt].
-				seconds := Time now asSeconds - seconds.
+				seconds := (Time millisecondClockValue - seconds).
 				counting terminate.
 				presenter model: modelIndex experimentIndex: experimentIndex seconds: seconds.
 				experimentIndex = 1

@@ -1,5 +1,5 @@
 Class {
-	#name : 'OllamaApiExperimentsPresenter',
+	#name : 'MistralApiExperimentsPresenter',
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'experiments',
@@ -14,14 +14,14 @@ Class {
 }
 
 { #category : 'examples' }
-OllamaApiExperimentsPresenter class >> open [
+MistralApiExperimentsPresenter class >> open [
 	<example>
 	
 	^ self new open
 ]
 
 { #category : 'as yet unclassified' }
-OllamaApiExperimentsPresenter >> closePresenter [
+MistralApiExperimentsPresenter >> closePresenter [
 	"Stop the experiemnter class, and close this Presenter"
 	experiments ollamaProcess terminate.
 	Transcript show: 'We are closing, but not';cr;flush.
@@ -29,29 +29,30 @@ OllamaApiExperimentsPresenter >> closePresenter [
 ]
 
 { #category : 'accessing' }
-OllamaApiExperimentsPresenter >> experiments [
+MistralApiExperimentsPresenter >> experiments [
 
 	^ experiments
 ]
 
 { #category : 'accessing' }
-OllamaApiExperimentsPresenter >> experiments: anObject [
+MistralApiExperimentsPresenter >> experiments: anObject [
 
 	experiments := anObject
 ]
 
 { #category : 'initialization' }
-OllamaApiExperimentsPresenter >> initialize [
+MistralApiExperimentsPresenter >> initialize [
 	super initialize.
-	titleHolder := 'Ollama Experiment Runner'.
+	titleHolder := 'Mistral Experiment Runner'.
 ]
 
 { #category : 'initialization' }
-OllamaApiExperimentsPresenter >> initializePresenters [
+MistralApiExperimentsPresenter >> initializePresenters [
     | quitButton |
     
-    modelList := SpListPresenter new items: OllamaApi modelNames.
-    arraySecondsList := {{ 0. 0. 0. 0 }. { 0. 0. 0. 0 }. { 0. 0. 0. 0 }. { 0. 0. 0. 0 }. { 0. 0. 0. 0 }.}.
+    modelList := SpListPresenter new items: MistralApi modelNames.
+    arraySecondsList := Array new: modelList items size.
+	 1 to: arraySecondsList size do: [ :i | arraySecondsList at: i put: { 0. 0. 0. 0 }  ].
     secondsList := SpListPresenter new items: arraySecondsList .
 	 quitButton := SpButtonPresenter new
         label: 'Stop & Quit';
@@ -69,21 +70,9 @@ OllamaApiExperimentsPresenter >> initializePresenters [
 ]
 
 { #category : 'as yet unclassified' }
-OllamaApiExperimentsPresenter >> model: modelIndex experimentIndex: experimentIndex seconds: secs [
+MistralApiExperimentsPresenter >> model: modelIndex experimentIndex: experimentIndex seconds: secs [
 	"Index is the index of the model, seconds is how much it has spend on it last."
 	(arraySecondsList at: modelIndex) at: experimentIndex put: secs.
-	secondsList items: arraySecondsList " (resultList items copyWith: '0' )"
-	
-]
-
-{ #category : 'as yet unclassified' }
-OllamaApiExperimentsPresenter >> set_old: index seconds: secs [
-	"Index is the index of the model, seconds is how much it has spend on it last."
-	| list |
-	list := secondsList items. "{ {3. 4. 3}. {4. 2} }" 
-	index = (list size + 1) 
-		ifTrue: [ list := list, { secs } ]
-		ifFalse: [ list at: index put: secs ].
-	secondsList items: list " (resultList items copyWith: '0' )"
+	secondsList items: arraySecondsList
 	
 ]

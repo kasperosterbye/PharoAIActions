@@ -33,7 +33,7 @@ MistralApi class >> modelNames [
 )
 ]
 
-{ #category : 'ollama models' }
+{ #category : 'mistral models' }
 MistralApi >> getResponseForPrompt: prompt [
 	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
 	"Split the method into parts, it is a bit too long now..."
@@ -52,8 +52,8 @@ MistralApi >> getResponseForPrompt: prompt [
 		}.
 	requestBody := (STONJSON toString: requestDictionary).
 	[ | mistralKode |
-	mistralKode := (FileSystem disk workingDirectory / '../../mistralkode.txt' readStream contents trimBoth)
-							readStream contents. 
+	mistralKode := (FileSystem disk workingDirectory / '../../mistralkode.txt' readStream contents trimBoth) 
+			readStream contents.
 	jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
 	  	 headerAt: 'Authorization' put: mistralKode;
@@ -69,6 +69,14 @@ MistralApi >> getResponseForPrompt: prompt [
 	^ self response.
 ]
 
+{ #category : 'initialization' }
+MistralApi >> initialize [ 
+	super initialize.
+	self model: (self class modelNames) first.
+	self system: ''.
+	self promptPrefix: ''.
+]
+
 { #category : 'accessing' }
 MistralApi >> model [
 
@@ -79,6 +87,11 @@ MistralApi >> model [
 MistralApi >> model: anObject [
 
 	model := anObject
+]
+
+{ #category : 'printing' }
+MistralApi >> printOn: string [
+	string << 'MistralApi: ' << self model.
 ]
 
 { #category : 'accessing' }
