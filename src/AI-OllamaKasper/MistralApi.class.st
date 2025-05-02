@@ -51,10 +51,12 @@ MistralApi >> getResponseForPrompt: prompt [
 	    'stream' -> false.
 		}.
 	requestBody := (STONJSON toString: requestDictionary).
-	[ 
+	[ | mistralKode |
+	mistralKode := (FileSystem disk workingDirectory / '../../mistralkode.txt' readStream contents trimBoth)
+							readStream contents. 
 	jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
-	  	 headerAt: 'Authorization' put: 'Bearer 1rQmOK2ugF9ekIQFexfgjYJejP8tzuFL';
+	  	 headerAt: 'Authorization' put: mistralKode;
 	    headerAt: 'Content-Type' put: 'application/json';
 	    entity: (ZnEntity json: requestBody);
 	    post;

@@ -31,7 +31,7 @@ MistralApiExperiments >> cancelMistralPrompt [
 MistralApiExperiments >> fiveForAlleModeller [
 	"Can the models calculate the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	prompt := '2+3. What is the result'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
 ]
@@ -40,7 +40,7 @@ MistralApiExperiments >> fiveForAlleModeller [
 MistralApiExperiments >> fiveForAlleModeller_a [
 	"Can the models calculate the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	prompt := '2+3. What is the result'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test01a'.
 ]
@@ -49,7 +49,7 @@ MistralApiExperiments >> fiveForAlleModeller_a [
 MistralApiExperiments >> fiveForAlleModeller_b [
 	"Can the models calculate the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	prompt := '2+3. What is the result. just the number'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test01b'.
 ]
@@ -118,7 +118,7 @@ MistralApiExperiments >> pharoManualTestForModeller_a [
 MistralApiExperiments >> pharoManualTestForModeller_b [
 	"Can the models produce a response for the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	mistralModel
 			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Unary Message in Pharo'.
@@ -131,7 +131,7 @@ MistralApiExperiments >> pharoManualTestForModeller_b [
 MistralApiExperiments >> pharoManualTestForModeller_c [
 	"Can the models produce a response for the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	mistralModel
 			system: 'In Pharo there three kinds of methods (functions).
 			In Pharo all methods are sendt to an object.
@@ -154,7 +154,7 @@ MistralApiExperiments >> pharoManualTestForModeller_c [
 MistralApiExperiments >> pharoManualTestForModeller_d [
 	"Can the models produce a response for the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	prompt := 'In Pharo there three kinds of methods (functions).
 			In Pharo all methods are sendt to an object.
 			In Pharo every instance is an object.
@@ -176,7 +176,7 @@ MistralApiExperiments >> pharoManualTestForModeller_d [
 MistralApiExperiments >> pharoWhatIsAnInstanceVariable [
 	"Can the models produce a response for the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	mistralModel
 			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo'.
@@ -190,7 +190,7 @@ MistralApiExperiments >> pharoWhatIsAnInstanceVariable [
 MistralApiExperiments >> pharoWhatIsAnInstanceVariable_b [
 	"Can the models produce a response for the prompt"
 	| prompt|
-	self initializeOllamaModel.
+	self initializeMistralModel.
 	mistralModel
 			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo. Give an example. No explanation.'.
