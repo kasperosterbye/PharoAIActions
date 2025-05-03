@@ -105,6 +105,18 @@ MistralApiExperiments >> oneCounterFor: modelIndex experimentIndex: experimentIn
 ]
 
 { #category : 'experiments' }
+MistralApiExperiments >> pharoEvaQuestion [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeMistralModel.
+	prompt := 'Give an example of how to store and later retrieve a value using a Dictionary in Pharo. No explanation.'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test04b'.
+	
+	
+	
+]
+
+{ #category : 'experiments' }
 MistralApiExperiments >> pharoManualTestForModeller_a [
 	"Can the models produce a response for the prompt"
 	| prompt|
@@ -173,6 +185,29 @@ MistralApiExperiments >> pharoManualTestForModeller_d [
 ]
 
 { #category : 'experiments' }
+MistralApiExperiments >> pharoNumberIsReleasedEachYear [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeMistralModel.
+	prompt := 'There are many Pharo models, Pharo8, Pharo9, etc. What is the highest you have heard about. Give an Pharo number. No explanation.'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test04a'.
+	
+	
+	
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> pharoOperationsTest [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeMistralModel.
+	prompt := 'In Pharo Smalltalk, operators are evaluated left to right, without precedence. What is the result of 2 + 3 * 4? Just give the result'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test05a'.
+	
+	
+]
+
+{ #category : 'experiments' }
 MistralApiExperiments >> pharoWhatIsAnInstanceVariable [
 	"Can the models produce a response for the prompt"
 	| prompt|
@@ -195,6 +230,20 @@ MistralApiExperiments >> pharoWhatIsAnInstanceVariable_b [
 			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo. Give an example. No explanation.'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test03b'.
+	
+	
+	
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> pharoWhatIsAnInstanceVariable_b2 [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeMistralModel.
+	mistralModel
+			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+	prompt := 'What is an Instance Variable in Pharo. Give an example. No explanation.'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test03b2'.
 	
 	
 	
@@ -274,7 +323,7 @@ MistralApiExperiments >> tableOn: html on: list [
 MistralApiExperiments >> writeAsHTML: list toFile: fileName [
 	| out html path|
 	
-	out := ('ollama/', fileName, '.html') asFileReference.
+	out := ('mistral/', fileName, '.html') asFileReference.
 	out deleteIfAbsent: [  ].
 	path := out pathString.
 	out := out writeStream .

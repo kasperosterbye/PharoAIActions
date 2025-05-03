@@ -61,6 +61,24 @@ AI_PackagesAsOllamaSystem >> for: aPackageList [
 { #category : 'accessing' }
 AI_PackagesAsOllamaSystem >> forClass: aClass [
 	"The input is aClass, return ollama system input."
+	| metaClass |
+	responce := WriteStream on: ''.
+	responce << '## Class: ' << aClass name asString << String cr.
+	self instanceVariablesFor: aClass.
+	self methodsFor: aClass.
+	responce << String cr.
+	metaClass := aClass class.
+	responce << '## Class: ' << metaClass name asString << String cr.
+	self instanceVariablesFor: metaClass.
+	self methodsFor: metaClass.
+	responce << String cr.
+	^ responce contents
+	
+]
+
+{ #category : 'accessing' }
+AI_PackagesAsOllamaSystem >> forClass_old: aClass [
+	"The input is aClass, return ollama system input."
 	responce := WriteStream on: ''.
 	responce << '## Class: ' << aClass name asString << String cr.
 	self instanceVariablesFor: aClass.

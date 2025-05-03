@@ -16,6 +16,14 @@ Class {
 MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
+	
+	^ self models collect: [ :model | model at: 'name' ]
+]
+
+{ #category : 'ollama models' }
+MistralApi class >> modelNames_old [
+	"returns an array with one item per model."
+	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	^ #(
   'codestral-latest'
   'mistral-large-latest'
@@ -33,6 +41,28 @@ MistralApi class >> modelNames [
 )
 ]
 
+{ #category : 'accessing' }
+MistralApi class >> models [
+	"Return a list of available Mistral models from the API"
+	| url response |
+	url := 'https://api.mistral.ai/v1/models'.
+	response := ZnClient new
+		url: url;
+		headerAt: 'Authorization' put: self token;
+		get;
+		contents.
+	^ (STONJSON fromString: response) at: 'data'
+]
+
+{ #category : 'accessing' }
+MistralApi class >> token [
+	"Return the API token for Mistral, read from a local file.
+	The file should contain only the Bearer token string (no quotes or extra lines).
+	Used to authenticate API requests."
+	^ (FileSystem disk workingDirectory / '../../mistralkode.txt')
+		readStream contents trimBoth.
+]
+
 { #category : 'mistral models' }
 MistralApi >> getResponseForPrompt: prompt [
 	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
@@ -42,12 +72,17 @@ MistralApi >> getResponseForPrompt: prompt [
 	"apiGenerateUrl := 'https://api.mistral.ai/v1/completions'."
 	requestDictionary := Dictionary newFrom: {
 	    'model' -> 'codestral-latest'.
-	    'messages' -> { 
-	        Dictionary newFrom: { 
-	            'role' -> 'user'. 
-	            'content' -> prompt 
-	        } 
+	    'messages' -> {
+				Dictionary newFrom: {
+					'role' -> 'system'.
+					'content' -> self system
+				}. 
+		      Dictionary newFrom: { 
+		         'role' -> 'user'. 
+		         'content' -> prompt 
+		      } 
 	    }.
+		'temperature' -> 0.
 	    'stream' -> false.
 		}.
 	requestBody := (STONJSON toString: requestDictionary).
@@ -72,7 +107,8 @@ MistralApi >> getResponseForPrompt: prompt [
 { #category : 'initialization' }
 MistralApi >> initialize [ 
 	super initialize.
-	self model: (self class modelNames) first.
+	"self model: (self class modelNames) first."
+	self model: 'codestral-latest'.
 	self system: ''.
 	self promptPrefix: ''.
 ]
