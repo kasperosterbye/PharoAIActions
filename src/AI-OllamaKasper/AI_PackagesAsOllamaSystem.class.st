@@ -35,6 +35,15 @@ Class {
 	#tag : 'Eksperiments'
 }
 
+{ #category : 'as yet unclassified' }
+AI_PackagesAsOllamaSystem >> classHeaderFor: aClass [
+
+	responce << '## Class: ' << aClass name asString << String cr.
+	responce << '### Class definition: ' << String cr << 
+			((FluidClassDefinitionPrinter for: aClass) classDefinitionString ) << String cr.
+		
+]
+
 { #category : 'internal' }
 AI_PackagesAsOllamaSystem >> classesInPackage: aPackage [
 	"Adds class name, instance variables, and method definitions to response"
@@ -60,30 +69,53 @@ AI_PackagesAsOllamaSystem >> for: aPackageList [
 
 { #category : 'accessing' }
 AI_PackagesAsOllamaSystem >> forClass: aClass [
-	"The input is aClass, return ollama system input."
+	"The input is aClass, return AI model system input."
+	
+	^ self forClasses: { aClass }
+	
+]
+
+{ #category : 'accessing' }
+AI_PackagesAsOllamaSystem >> forClasses: aClassList [
 	| metaClass |
 	responce := WriteStream on: ''.
-	responce << '## Class: ' << aClass name asString << String cr.
-	self instanceVariablesFor: aClass.
-	self methodsFor: aClass.
-	responce << String cr.
-	metaClass := aClass class.
-	responce << '## Class: ' << metaClass name asString << String cr.
-	self instanceVariablesFor: metaClass.
-	self methodsFor: metaClass.
-	responce << String cr.
+	aClassList do: [ :aClass | 
+		self classHeaderFor: aClass.
+		responce << '### Class comment: ' << aClass comment << String cr.
+		self instanceVariablesFor: aClass.
+		self methodsFor: aClass.
+		responce << String cr.
+		metaClass := aClass class.
+		self classHeaderFor: metaClass.
+		self instanceVariablesFor: metaClass.
+		self methodsFor: metaClass.
+		responce << String cr.
+	].
 	^ responce contents
 	
 ]
 
 { #category : 'accessing' }
-AI_PackagesAsOllamaSystem >> forClass_old: aClass [
-	"The input is aClass, return ollama system input."
+AI_PackagesAsOllamaSystem >> forClasses_old: aClassList [
+	"The input is aClassList."
+	| metaClass |
 	responce := WriteStream on: ''.
-	responce << '## Class: ' << aClass name asString << String cr.
-	self instanceVariablesFor: aClass.
-	self methodsFor: aClass.
-	responce << String cr.
+	aClassList do: [ :aClass | 
+		responce << '## Class: ' << aClass name asString << String cr.
+		responce << '### Class definition: ' << String cr << 
+			((FluidClassDefinitionPrinter for: aClass) classDefinitionString ) << String cr.
+		responce << '### Class comment: ' << aClass comment << String cr.
+		self instanceVariablesFor: aClass.
+		self methodsFor: aClass.
+		responce << String cr.
+		metaClass := aClass class.
+		responce << '## Class: ' << metaClass name asString << String cr.
+		responce << '### Class definition: ' << String cr << 
+			((FluidClassDefinitionPrinter for: metaClass) classDefinitionString ) << String cr.
+		self instanceVariablesFor: metaClass.
+		self methodsFor: metaClass.
+		responce << String cr.
+	].
 	^ responce contents
 	
 ]
@@ -103,8 +135,8 @@ AI_PackagesAsOllamaSystem >> methodsFor: aClass [
 	responce << '### Methods for ' << aClass name asString << ':' << String cr.
 	aClass protocolNames asSortedCollection do: [:protocol |
 		responce  << '#### Protocol: ' << protocol << String cr.
-		(aClass selectorsInProtocol: protocol) do: [:selector |
-			responce << (aClass >> selector) sourceCode << String cr << String cr.
+		(aClass selectorsInProtocol: protocol) do: [:methodName |
+			responce << (aClass >> methodName) sourceCode << String cr << String cr.
 		].
 	].
 ]

@@ -1,11 +1,32 @@
+"
+MistralApi is a class designed to interact with the Mistral AI API.
+
+This class provides methods to send prompts to the Mistral AI API, retrieve responses, and manage available models. It handles authentication using a Bearer token stored in a local file and supports various operations such as fetching model information and generating responses based on user prompts.
+
+Instance Variables:
+    prompt: <String> - The user prompt to be sent to the API.
+
+Class Variables:
+    None
+
+Usage:
+    | api response models token|
+    api := MistralApi new.
+    response := api getResponseForPrompt: 'What is the capital of France?'.
+    Transcript show: response; cr.
+
+    models := MistralApi models.
+    Transcript show: models; cr.
+
+    token := MistralApi token.
+    Transcript show: token; cr.
+
+"
 Class {
 	#name : 'MistralApi',
-	#superclass : 'Object',
+	#superclass : 'AilienApi',
 	#instVars : [
-		'model',
-		'system',
-		'promptPrefix',
-		'response'
+		'prompt'
 	],
 	#category : 'AI-OllamaKasper-Eksperiments',
 	#package : 'AI-OllamaKasper',
@@ -17,7 +38,7 @@ MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
-	^ self models collect: [ :model | model at: 'name' ]
+	^ super modelNames 
 ]
 
 { #category : 'ollama models' }
@@ -44,6 +65,29 @@ MistralApi class >> modelNames_old [
 { #category : 'accessing' }
 MistralApi class >> models [
 	"Return a list of available Mistral models from the API"
+	| url response sorted |
+	url := 'https://api.mistral.ai/v1/models'.
+	response := ZnClient new
+		url: url;
+		headerAt: 'Authorization' put: self token;
+		get;
+		contents.
+	sorted := Dictionary new.
+	((STONJSON fromString: response) at: 'data') do: [ :model | 
+		sorted at: (model at: 'name') put: model
+		].
+	^ sorted values
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi class >> modelsBy: id [
+	"returns an array with one item per model."
+	^ self models collect: [ :model | model at: id ]
+]
+
+{ #category : 'accessing' }
+MistralApi class >> models_old [
+	"Return a list of available Mistral models from the API"
 	| url response |
 	url := 'https://api.mistral.ai/v1/models'.
 	response := ZnClient new
@@ -64,18 +108,14 @@ MistralApi class >> token [
 ]
 
 { #category : 'mistral models' }
-MistralApi >> getResponseForPrompt: prompt [
-	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
-	"Split the method into parts, it is a bit too long now..."
-	| apiGenerateUrl jsonResponse requestDictionary requestBody|
-	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	"apiGenerateUrl := 'https://api.mistral.ai/v1/completions'."
-	requestDictionary := Dictionary newFrom: {
+MistralApi >> bodyForEntityWithPrompt [
+	| requestDictionary |
+	requestDictionary :=Dictionary newFrom: {
 	    'model' -> 'codestral-latest'.
 	    'messages' -> {
 				Dictionary newFrom: {
 					'role' -> 'system'.
-					'content' -> self system
+					'content' -> system
 				}. 
 		      Dictionary newFrom: { 
 		         'role' -> 'user'. 
@@ -85,83 +125,36 @@ MistralApi >> getResponseForPrompt: prompt [
 		'temperature' -> 0.
 	    'stream' -> false.
 		}.
-	requestBody := (STONJSON toString: requestDictionary).
-	[ | mistralKode |
-	mistralKode := (FileSystem disk workingDirectory / '../../mistralkode.txt' readStream contents trimBoth) 
-			readStream contents.
-	jsonResponse := ZnClient new
+	^ ZnEntity json: (STONJSON toString: requestDictionary).
+]
+
+{ #category : 'mistral models' }
+MistralApi >> getResponseForPrompt: userPrompt [
+	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
+	"Split the method into parts, it is a bit too long now..."
+	| apiGenerateUrl jsonResponse |
+	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
+	prompt := userPrompt.
+	[  jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
-	  	 headerAt: 'Authorization' put: mistralKode;
+	  	 headerAt: 'Authorization' put: self class token;
 	    headerAt: 'Content-Type' put: 'application/json';
-	    entity: (ZnEntity json: requestBody);
+	    entity: self bodyForEntityWithPrompt;
 	    post;
 	    contents.
-		"self response: ((STONJSON fromString: jsonResponse) at: 'response') contents ."
-		self response: ((((STONJSON fromString: jsonResponse) at: 'choices') first at: 'message') at: 'content').
+		response := self responseOf: jsonResponse .
 	] on: Error do: [ :ex |
-   		self response: ex messageText.
+   		response := ex messageText.
 	].
-	^ self response.
+	^ response.
 ]
 
 { #category : 'initialization' }
 MistralApi >> initialize [ 
 	super initialize.
-	"self model: (self class modelNames) first."
-	self model: 'codestral-latest'.
-	self system: ''.
-	self promptPrefix: ''.
 ]
 
-{ #category : 'accessing' }
-MistralApi >> model [
-
-	^ model
-]
-
-{ #category : 'accessing' }
-MistralApi >> model: anObject [
-
-	model := anObject
-]
-
-{ #category : 'printing' }
-MistralApi >> printOn: string [
-	string << 'MistralApi: ' << self model.
-]
-
-{ #category : 'accessing' }
-MistralApi >> promptPrefix [
-
-	^ promptPrefix
-]
-
-{ #category : 'accessing' }
-MistralApi >> promptPrefix: anObject [
-
-	promptPrefix := anObject
-]
-
-{ #category : 'accessing' }
-MistralApi >> response [
-
-	^ response
-]
-
-{ #category : 'accessing' }
-MistralApi >> response: anObject [
-
-	response := anObject
-]
-
-{ #category : 'accessing' }
-MistralApi >> system [
-
-	^ system
-]
-
-{ #category : 'accessing' }
-MistralApi >> system: anObject [
-
-	system := anObject
+{ #category : 'mistral models' }
+MistralApi >> responseOf: jsonResponse [
+	^ ((((STONJSON fromString: jsonResponse) at: 'choices') first at: 'message') at: 'content')
 ]

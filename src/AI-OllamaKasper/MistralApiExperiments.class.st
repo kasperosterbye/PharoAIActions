@@ -117,6 +117,18 @@ MistralApiExperiments >> pharoEvaQuestion [
 ]
 
 { #category : 'experiments' }
+MistralApiExperiments >> pharoIsYourName [
+	"Can the models produce a response for the prompt"
+	| prompt|
+	self initializeMistralModel.
+	prompt := 'You are an AIlien. What is your name. Just give the name'.
+	self runModelsWithPrompt: prompt saveToFile: 'Test05b'.
+	
+	
+	
+]
+
+{ #category : 'experiments' }
 MistralApiExperiments >> pharoManualTestForModeller_a [
 	"Can the models produce a response for the prompt"
 	| prompt|

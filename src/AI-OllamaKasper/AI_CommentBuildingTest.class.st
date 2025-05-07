@@ -32,9 +32,9 @@ AI_CommentBuildingTest >> testAddCommentToUncommented [
 	| testCommentText comment res |
 	"RxParser >> #signalParseError does not contain a comment"
 	testCommentText := (RxParser >> #signalParseError) sourceCode.
-	comment := 'To be "or" not to be'.
+	comment := 	'To be "or" not to be'.
 	res := commentBuilder addComment: comment toUncommented: testCommentText.
-	self assert: res lines second equals: comment asComment
+	self assert: res lines second asComment equals: comment asComment
 	
 ]
 
