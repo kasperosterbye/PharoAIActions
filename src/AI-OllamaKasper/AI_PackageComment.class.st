@@ -16,12 +16,12 @@ Class {
 }
 
 { #category : 'accessing - comment' }
-AI_PackageComment class >> comment: commentName [
-	^ self new comment: commentName 
+AI_PackageComment class >> setComment: commentName [
+	^ self new setComment: commentName 
 ]
 
 { #category : 'accessing' }
-AI_PackageComment >> comment: aPackageName [
+AI_PackageComment >> setComment: aPackageName [
 	| mistral  |
 	packageSource := AI_PackagesAsOllamaSystem new for: { aPackageName }.
 	prompt := 'This is a Pharo question. Can your give a package comment for ' , 

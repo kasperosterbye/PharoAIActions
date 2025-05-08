@@ -11,13 +11,6 @@ Class {
 	#tag : 'Eksperiments'
 }
 
-{ #category : 'instance creation' }
-AI_CommentBuilding class >> commentClass: aClass [
-	"Change class cl, so all its uncommented methods, gets a comment"
-	^ self new initialize: aClass
-	
-]
-
 { #category : 'as yet unclassified' }
 AI_CommentBuilding class >> mistralComment01 [
 	"Fist example of the result from AI_PackageComment comment: 'AI-OllamaKasper'"
