@@ -140,6 +140,12 @@ In this example, the comment provides contextual information, usage examples, pr
 The best comments in Pharo (or any other language) are those that provide a balance between explaining the method''s purpose, its usage, and its implementation details. Understanding the tests can be a valuable input to the comments, as they often cover a wide range of scenarios and can help ensure that the comments are accurate and comprehensive.'
 ]
 
+{ #category : 'initialization' }
+AI_MethodComment class >> setComment: method [
+	"This method creates a new instance of AI_MethodComment and sets the comment for the given method."
+	^ self new setComment: method 
+]
+
 { #category : 'accessing' }
 AI_MethodComment >> commentSourceFor: aCompiledMethod [
 	"The method commentSourceFor takes a compiled method, formats its class name and source code, and returns the formatted string."

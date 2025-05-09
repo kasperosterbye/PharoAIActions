@@ -41,6 +41,7 @@ Implementation Points'
 
 { #category : 'accessing - comment' }
 AI_ClassComment class >> setComment: aComment [
+	"Sets a comment for a new instance of AI_ClassComment."
 	^ self new setComment: aComment 
 ]
 

@@ -35,13 +35,12 @@ Class {
 	#tag : 'Comment builder'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AI_PackagesAsOllamaSystem >> classHeaderFor: aClass [
-
-	responce << '## Class: ' << aClass name asString << String cr.
-	responce << '### Class definition: ' << String cr << 
-			((FluidClassDefinitionPrinter for: aClass) classDefinitionString ) << String cr.
-		
+	"Returns the class header for a given class."
+	
+	^ self forClasses: { aClass }
+	
 ]
 
 { #category : 'internal' }
@@ -69,7 +68,7 @@ AI_PackagesAsOllamaSystem >> for: aPackageList [
 
 { #category : 'accessing' }
 AI_PackagesAsOllamaSystem >> forClass: aClass [
-	"The input is aClass, return AI model system input."
+	"Returns a package for a single class."
 	
 	^ self forClasses: { aClass }
 	
@@ -77,6 +76,7 @@ AI_PackagesAsOllamaSystem >> forClass: aClass [
 
 { #category : 'accessing' }
 AI_PackagesAsOllamaSystem >> forClasses: aClassList [
+	"Generates a formatted string describing the classes and their meta-classes in aClassList."
 	| metaClass |
 	responce := WriteStream on: ''.
 	aClassList do: [ :aClass | 
@@ -87,31 +87,6 @@ AI_PackagesAsOllamaSystem >> forClasses: aClassList [
 		responce << String cr.
 		metaClass := aClass class.
 		self classHeaderFor: metaClass.
-		self instanceVariablesFor: metaClass.
-		self methodsFor: metaClass.
-		responce << String cr.
-	].
-	^ responce contents
-	
-]
-
-{ #category : 'accessing' }
-AI_PackagesAsOllamaSystem >> forClasses_old: aClassList [
-	"The input is aClassList."
-	| metaClass |
-	responce := WriteStream on: ''.
-	aClassList do: [ :aClass | 
-		responce << '## Class: ' << aClass name asString << String cr.
-		responce << '### Class definition: ' << String cr << 
-			((FluidClassDefinitionPrinter for: aClass) classDefinitionString ) << String cr.
-		responce << '### Class comment: ' << aClass comment << String cr.
-		self instanceVariablesFor: aClass.
-		self methodsFor: aClass.
-		responce << String cr.
-		metaClass := aClass class.
-		responce << '## Class: ' << metaClass name asString << String cr.
-		responce << '### Class definition: ' << String cr << 
-			((FluidClassDefinitionPrinter for: metaClass) classDefinitionString ) << String cr.
 		self instanceVariablesFor: metaClass.
 		self methodsFor: metaClass.
 		responce << String cr.
