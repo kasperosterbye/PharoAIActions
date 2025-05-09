@@ -61,8 +61,8 @@ AI_PackagesAsOllamaSystem >> classesInPackage: aPackage [
 AI_PackagesAsOllamaSystem >> for: aPackageList [
 	"The input is {package1. package2. package3}."
 	responce := WriteStream on: ''.
-	"aPackageList do: [ :pack | self classesInPackage: (RPackageSet named: pack) ]."
-	aPackageList do: [ :pack | self classesInPackage: (PackageOrganizer default packageNamed: pack) ].
+	aPackageList do: [ :package | 
+			self classesInPackage: (PackageOrganizer default packageNamed: package) ].
 	^ responce contents
 	
 ]
