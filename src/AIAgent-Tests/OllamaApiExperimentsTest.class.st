@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'ollamaApi'
 	],
-	#category : 'AIActions-TestOfEksperiments',
-	#package : 'AIActions',
-	#tag : 'TestOfEksperiments'
+	#category : 'AIAgent-Tests-OldAndShouldBeRedone-Tests',
+	#package : 'AIAgent-Tests',
+	#tag : 'OldAndShouldBeRedone-Tests'
 }
 
 { #category : 'running' }

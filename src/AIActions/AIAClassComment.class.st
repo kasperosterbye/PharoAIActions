@@ -1,19 +1,19 @@
 "
-Sofus has left
+Killroy test
 "
 Class {
-	#name : 'AI_ClassComment',
-	#superclass : 'AI_CommentBuilding',
+	#name : 'AIAClassComment',
+	#superclass : 'AIACommentBuilding',
 	#instVars : [
 		'classSource'
 	],
-	#category : 'AIActions-Comment builder',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'Comment builder'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'accessing - comment' }
-AI_ClassComment class >> pharo11classCommentOutline [
+AIAClassComment class >> pharo11classCommentOutline [
 	"This seems to have been omitted in Pharo12 and later. But can be build using Mistral"
 	^ 'Class: MyClass
                                                                                                     
@@ -40,16 +40,16 @@ Implementation Points'
 ]
 
 { #category : 'accessing - comment' }
-AI_ClassComment class >> setComment: aComment [
+AIAClassComment class >> setComment: aComment [
 	"Sets a comment for a new instance of AI_ClassComment."
 	^ self new setComment: aComment 
 ]
 
 { #category : 'accessing' }
-AI_ClassComment >> setComment: aClass [
+AIAClassComment >> getComment: aClass [
 	"Builds a comment for aClass."
 	| mistral  |
-	classSource := AI_PackagesAsOllamaSystem new forClass: aClass.
+	classSource := AIASourceCodeBuilder new forClass: aClass.
 	
 	prompt := 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
@@ -57,6 +57,14 @@ AI_ClassComment >> setComment: aClass [
 	mistral := MistralApi new.
 	mistral system: classSource.
 	response := mistral getResponseForPrompt: prompt.
+	^ response 
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> setComment: aClass [
+	"Builds a comment for aClass."
+	self getComment: aClass.
 	aClass comment: response.
 	^ response 
 	

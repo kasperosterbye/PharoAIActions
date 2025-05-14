@@ -5,31 +5,37 @@ If given the name of a Package, I will implement an overall comment for that pac
 I am activated as AI_PackageComment comment: 'commentName'
 "
 Class {
-	#name : 'AI_PackageComment',
-	#superclass : 'AI_CommentBuilding',
+	#name : 'AIAPackageComment',
+	#superclass : 'AIACommentBuilding',
 	#instVars : [
 		'packageSource'
 	],
-	#category : 'AIActions-Comment builder',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'Comment builder'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'accessing - comment' }
-AI_PackageComment class >> setComment: commentName [
+AIAPackageComment class >> setComment: commentName [
 	"Sets a new comment for the package."
 	^ self new setComment: commentName 
 ]
 
-{ #category : 'accessing' }
-AI_PackageComment >> setComment: aPackageName [
+{ #category : 'internals' }
+AIAPackageComment >> getComment: aPackageName [
 	"The method sets a package comment using Mistral API."
 	| mistral  |
-	packageSource := AI_PackagesAsOllamaSystem new for: { aPackageName }.
+	packageSource := AIASourceCodeBuilder new for: { aPackageName }.
 	prompt := 'This is a Pharo question. Can your give a package comment for ' , 
 		aPackageName, '. It can be up to 2 pages. Please respond in markdown'.
 	mistral := MistralApi new.
 	mistral system: packageSource.
 	response := mistral getResponseForPrompt: prompt.
+	^ response
+]
+
+{ #category : 'internals' }
+AIAPackageComment >> setComment: aPackageName [
+	self getComment: aPackageName.
 	(Package named: aPackageName) packageComment: response 
 ]

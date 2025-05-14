@@ -1,26 +1,67 @@
 "
-MistralApi is a class designed to interact with the Mistral AI API.
+# Class Comment for MistralApi
 
-This class provides methods to send prompts to the Mistral AI API, retrieve responses, and manage available models. It handles authentication using a Bearer token stored in a local file and supports various operations such as fetching model information and generating responses based on user prompts.
+## Overview
 
-Instance Variables:
-    prompt: <String> - The user prompt to be sent to the API.
+The `MistralApi` class is designed to interact with the Mistral AI API, allowing users to send prompts and receive responses from various AI models. This class handles the initialization, configuration, and communication with the Mistral API, including sending requests and processing responses.
 
-Class Variables:
-    None
+## Key Features
 
-Usage:
-    | api response models token|
-    api := MistralApi new.
-    response := api getResponseForPrompt: 'What is the capital of France?'.
-    Transcript show: response; cr.
+- **Initialization**: The class initializes with the latest model (`codestral-latest`) by default.
+- **Prompt Handling**: Users can send prompts to the API and receive responses.
+- **Model Management**: The class provides methods to retrieve available models from the API and manage model configurations.
+- **Error Handling**: The class includes error handling to manage exceptions that may occur during API communication.
 
-    models := MistralApi models.
-    Transcript show: models; cr.
+## Methods
 
-    token := MistralApi token.
-    Transcript show: token; cr.
+### Initialization
 
+- **`initialize`**: Initializes the `MistralApi` instance with the latest model.
+
+### Prompt Handling
+
+- **`getResponseForPrompt:`**: Sends a user prompt to the Mistral API and returns the response. This method handles the construction of the request, sending it to the API, and processing the JSON response.
+- **`bodyForEntityWithPrompt`**: Constructs the JSON body for the API request based on the user prompt.
+
+### Model Management
+
+- **`models`**: Retrieves a list of available Mistral models from the API and returns them as a sorted collection.
+- **`models_old`**: An older version of the `models` method that returns the raw list of models from the API.
+- **`modelsBy:`**: Returns an array with one item per model, based on a specified key.
+- **`modelNames`**: Returns an array of model names. This method is a placeholder that currently calls the superclass method.
+- **`modelNames_old`**: Returns an array of model names, including various Mistral models.
+
+### Utility Methods
+
+- **`responseOf:`**: Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response.
+- **`token`**: Returns the API token for Mistral, read from a local file.
+
+### Printing
+
+- **`printOn:`**: Prints a string representation of the `MistralApi` instance, including the model name.
+
+## Usage Example
+
+```smalltalk
+| api response |
+api := MistralApi new.
+response := api getResponseForPrompt: 'What is the capital of France?'.
+Transcript show: response; cr.
+```
+
+This example initializes the `MistralApi` class, sends a prompt to the API, and prints the response to the Transcript.
+
+## Dependencies
+
+- **ZnClient**: Used for making HTTP requests to the Mistral API.
+- **STONJSON**: Used for parsing and constructing JSON data.
+
+## Notes
+
+- Ensure that the API token is correctly stored in the specified file (`../../mistralkode.txt`) for authentication.
+- The class is part of the `AIActions` package and is tagged with `AIApi`.
+
+By following this class comment, users can understand the purpose, features, and usage of the `MistralApi` class, making it easier to integrate and utilize in their projects.
 "
 Class {
 	#name : 'MistralApi',
@@ -109,6 +150,7 @@ MistralApi class >> token [
 
 { #category : 'mistral models' }
 MistralApi >> bodyForEntityWithPrompt [
+	"Creates a JSON entity for an API request with a system message and user prompt."
 	| requestDictionary |
 	requestDictionary :=Dictionary newFrom: {
 	    'model' -> 'codestral-latest'.
@@ -151,10 +193,30 @@ MistralApi >> getResponseForPrompt: userPrompt [
 
 { #category : 'initialization' }
 MistralApi >> initialize [ 
+	"Initializes MistralApi with the latest model."
 	super initialize.
+	self model: 'codestral-latest'.
+]
+
+{ #category : 'printing' }
+MistralApi >> printOn: aStream [
+	aStream << 'MistralApi: ' << self model.
+]
+
+{ #category : 'accessing' }
+MistralApi >> prompt [
+
+	^ prompt
+]
+
+{ #category : 'accessing' }
+MistralApi >> prompt: anObject [
+
+	prompt := anObject
 ]
 
 { #category : 'mistral models' }
 MistralApi >> responseOf: jsonResponse [
-	^ ((((STONJSON fromString: jsonResponse) at: 'choices') first at: 'message') at: 'content')
+	"Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response."
+	^ (((STONJSON fromString: jsonResponse) at: 'choices') first at: 'message') at: 'content'
 ]

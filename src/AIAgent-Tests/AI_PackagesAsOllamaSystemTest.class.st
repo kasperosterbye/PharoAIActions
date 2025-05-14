@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'killRoy'
 	],
-	#category : 'AIActions-TestOfEksperiments',
-	#package : 'AIActions',
-	#tag : 'TestOfEksperiments'
+	#category : 'AIAgent-Tests-OldAndShouldBeRedone-Tests',
+	#package : 'AIAgent-Tests',
+	#tag : 'OldAndShouldBeRedone-Tests'
 }
 
 { #category : 'tests' }
@@ -15,7 +15,7 @@ AI_PackagesAsOllamaSystemTest >> testClassesInPackage [
 	| result generator package classNames |
 
 	result := WriteStream on: ''.  "Create an in-memory stream to collect output"
-	generator := AI_PackagesAsOllamaSystem new.
+	generator := AIASourceCodeBuilder new.
 	generator instVarNamed: #responce put: result.  "Redirect output to our stream"
 
 	package := RPackageSet named: 'AI-OllamaKasper'.  "Find the package to test"
@@ -34,7 +34,7 @@ AI_PackagesAsOllamaSystemTest >> testFor [
 	"Test that the for: method includes expected class names"
 
 	| generator result |
-	generator := AI_PackagesAsOllamaSystem new.
+	generator := AIASourceCodeBuilder new.
 	result := generator for: { 'AI-OllamaKasper' }.
 
 	self assert: (result includesSubstring: '## Class: AI_PackagesAsOllamaSystem').
@@ -43,7 +43,7 @@ AI_PackagesAsOllamaSystemTest >> testFor [
 { #category : 'tests' }
 AI_PackagesAsOllamaSystemTest >> testForClass [
 	| resourse |
-	resourse := (AI_PackagesAsOllamaSystem new forClass: RxParser) lines.
+	resourse := (AIASourceCodeBuilder new forClass: RxParser) lines.
 	self assert: (resourse first beginsWith: '## Class: RxParser').
 	self assert: (resourse second beginsWith: '### Instance').
 	self assert: (resourse third beginsWith: '### Methods').
@@ -57,7 +57,7 @@ AI_PackagesAsOllamaSystemTest >> testInstanceVariablesFor [
 	| result |
 	result := WriteStream on: ''.
 	"Create an instance with a redirected response stream, so instanceVariablesFor: appends its output to result."
-	AI_PackagesAsOllamaSystem new
+	AIASourceCodeBuilder new
 		instVarNamed: #responce put: result;
 		instanceVariablesFor: self class.
 
@@ -73,7 +73,7 @@ AI_PackagesAsOllamaSystemTest >> testMethodsFor [
 	result := WriteStream on: ''.
 	methodNames := self class methodDictionary keys collect: #asString.
 
-	AI_PackagesAsOllamaSystem new
+	AIASourceCodeBuilder new
 		instVarNamed: #responce put: result;
 		methodsFor: self class.
 

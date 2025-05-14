@@ -4,5 +4,5 @@ Extension { #name : 'Behavior' }
 Behavior >> addAIBasedComments [
 	"Adds AI/Ollama based comments to my instance variables and methods"
 
-	(AI_CommentBuilding commentClass: self) extendClassWithComments
+	(AIACommentBuilding commentClass: self) extendClassWithComments
 ]

@@ -1,50 +1,26 @@
-"
-This class generates structured text suitable as input for AI models, helping them understand a given set of classes across one or more packages.
-
-Use the for: method with a list of package names like { 'My-PackageName1'. 'AnotherPackage' }.
-
-Each package will be expanded to:
-	•	Class names
-	•	Instance variables
-	•	Method definitions
-		
-AI_PackagesAsOllamaSystem new for: { 'RTree' }
-
-## Class: RTNilNode
-### Instance variables for RTNilNode: 
-### Methods for RTNilNode:
-#### Protocol: adding
-addChild: anRTEntry
-	^ RTNode new: anRTEntry
-
-#### Protocol: testing
-isNilNode
-	^ true
-
-
-## Class: RTEntry...
-"
 Class {
-	#name : 'AI_PackagesAsOllamaSystem',
+	#name : 'AIASourceCodeBuilder',
 	#superclass : 'Object',
 	#instVars : [
 		'responce'
 	],
-	#category : 'AIActions-Comment builder',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'Comment builder'
+	#tag : 'CommentBuilder'
 }
 
-{ #category : 'accessing' }
-AI_PackagesAsOllamaSystem >> classHeaderFor: aClass [
-	"Returns the class header for a given class."
-	
-	^ self forClasses: { aClass }
-	
+{ #category : 'internal' }
+AIASourceCodeBuilder >> classHeaderFor: aClass [
+	"Returns a string with the class name and definition for aClass."
+
+	responce << '## Class: ' << aClass name asString << String cr.
+	responce << '### Class definition: ' << String cr << 
+			((FluidClassDefinitionPrinter for: aClass) classDefinitionString ) << String cr.
+		
 ]
 
 { #category : 'internal' }
-AI_PackagesAsOllamaSystem >> classesInPackage: aPackage [
+AIASourceCodeBuilder >> classesInPackage: aPackage [
 	"Adds class name, instance variables, and method definitions to response"
 
 	| aClassCollection |
@@ -57,7 +33,7 @@ AI_PackagesAsOllamaSystem >> classesInPackage: aPackage [
 ]
 
 { #category : 'accessing' }
-AI_PackagesAsOllamaSystem >> for: aPackageList [
+AIASourceCodeBuilder >> for: aPackageList [
 	"The input is {package1. package2. package3}."
 	responce := WriteStream on: ''.
 	aPackageList do: [ :package | 
@@ -67,7 +43,7 @@ AI_PackagesAsOllamaSystem >> for: aPackageList [
 ]
 
 { #category : 'accessing' }
-AI_PackagesAsOllamaSystem >> forClass: aClass [
+AIASourceCodeBuilder >> forClass: aClass [
 	"Returns a package for a single class."
 	
 	^ self forClasses: { aClass }
@@ -75,7 +51,7 @@ AI_PackagesAsOllamaSystem >> forClass: aClass [
 ]
 
 { #category : 'accessing' }
-AI_PackagesAsOllamaSystem >> forClasses: aClassList [
+AIASourceCodeBuilder >> forClasses: aClassList [
 	"Generates a formatted string describing the classes and their meta-classes in aClassList."
 	| metaClass |
 	responce := WriteStream on: ''.
@@ -96,7 +72,7 @@ AI_PackagesAsOllamaSystem >> forClasses: aClassList [
 ]
 
 { #category : 'internal' }
-AI_PackagesAsOllamaSystem >> instanceVariablesFor: aClass [
+AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 	"Add all the instance variables of aClass to response"
 	responce  << '### Instance variables for ' << aClass name asString << ': '.
 	aClass instVarNames  collect: [:each | 
@@ -105,7 +81,7 @@ AI_PackagesAsOllamaSystem >> instanceVariablesFor: aClass [
 ]
 
 { #category : 'internal' }
-AI_PackagesAsOllamaSystem >> methodsFor: aClass [
+AIASourceCodeBuilder >> methodsFor: aClass [
 	"Add all methods grouped by protocol, including full source code"
 	responce << '### Methods for ' << aClass name asString << ':' << String cr.
 	aClass protocolNames asSortedCollection do: [:protocol |

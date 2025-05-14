@@ -144,7 +144,7 @@ MistralApiExperiments >> pharoManualTestForModeller_b [
 	| prompt|
 	self initializeMistralModel.
 	mistralModel
-			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+			system: (AIACommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Unary Message in Pharo'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test02b'.
 	
@@ -225,7 +225,7 @@ MistralApiExperiments >> pharoWhatIsAnInstanceVariable [
 	| prompt|
 	self initializeMistralModel.
 	mistralModel
-			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+			system: (AIACommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test03'.
 	
@@ -239,7 +239,7 @@ MistralApiExperiments >> pharoWhatIsAnInstanceVariable_b [
 	| prompt|
 	self initializeMistralModel.
 	mistralModel
-			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+			system: (AIACommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo. Give an example. No explanation.'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test03b'.
 	
@@ -253,7 +253,7 @@ MistralApiExperiments >> pharoWhatIsAnInstanceVariable_b2 [
 	| prompt|
 	self initializeMistralModel.
 	mistralModel
-			system: (AI_CommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
+			system: (AIACommentBuilding ollamaSystem03 replaceAll: String cr with: '<br>').
 	prompt := 'What is an Instance Variable in Pharo. Give an example. No explanation.'.
 	self runModelsWithPrompt: prompt saveToFile: 'Test03b2'.
 	

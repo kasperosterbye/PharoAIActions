@@ -1,18 +1,23 @@
+"
+# Class Comment for AI_CommentBuilding
+
+The `AI_CommentBuilding` class is designed to generate comments for classes and methods using AI models. It leverages AI capabilities to provide intelligent suggestions and documentation, enhancing the development experience by automating the creation of comments and ensuring that code is well-documented. The class uses instance variables to store the system prompt and response, which are essential for generating accurate and context-aware comments.
+"
 Class {
-	#name : 'AI_CommentBuilding',
+	#name : 'AIACommentBuilding',
 	#superclass : 'Object',
 	#instVars : [
 		'system',
 		'prompt',
 		'response'
 	],
-	#category : 'AIActions-Comment builder',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'Comment builder'
+	#tag : 'CommentBuilder'
 }
 
-{ #category : 'as yet unclassified' }
-AI_CommentBuilding class >> mistralComment01 [
+{ #category : 'ollama system' }
+AIACommentBuilding class >> mistralComment01 [
 	"Fist example of the result from AI_PackageComment comment: 'AI-OllamaKasper'"
 	^ 'The `AI-OllamaKasper` package is designed to integrate AI capabilities into the Pharo programming environment, specifically focusing on generating and managing comments for classes and methods. This package leverages advanced AI models to provide intelligent suggestions and documentation, enhancing the development experience by automating the creation of comments and ensuring that code is well-documented.
 
@@ -72,7 +77,7 @@ The `AI-OllamaKasper` package is a powerful tool for enhancing the documentation
 ]
 
 { #category : 'ollama system' }
-AI_CommentBuilding class >> numberExample [
+AIACommentBuilding class >> numberExample [
 	"Just an experiment on 2+3*4, which in Pharo is 20"
 	| a b c op1 op2 operators res prefix|
 	operators := { #+. #-. #*. #/}.
@@ -105,7 +110,7 @@ AI_CommentBuilding class >> numberExample [
 ]
 
 { #category : 'ollama system' }
-AI_CommentBuilding class >> ollamaSystem01 [
+AIACommentBuilding class >> ollamaSystem01 [
 	"returns a system variable"
 	^ '
 Your name is OPharo.
@@ -182,7 +187,7 @@ It accesses data from RBSharedPoolForTestData and includes behavior from RBTDumm
 ]
 
 { #category : 'ollama system' }
-AI_CommentBuilding class >> ollamaSystem02 [
+AIACommentBuilding class >> ollamaSystem02 [
 	^ 'Pharo''s class definition syntax is quite unique, and it can be a bit 
 challenging to understand at first. Based on the examples you provided, I''d 
 like to break down some common patterns and suggestions for improving Pharo''s 
@@ -245,7 +250,7 @@ improve and expand its functionality to better serve developers.'
 ]
 
 { #category : 'ollama system' }
-AI_CommentBuilding class >> ollamaSystem03 [
+AIACommentBuilding class >> ollamaSystem03 [
 	^ '
 Your name is OPharo.
 Only think about Pharo, smalltalk and smalltalk-96. Ignore all other programming languages.
@@ -494,31 +499,50 @@ Support for Domain Specific Languages'
 ]
 
 { #category : 'ollama system' }
-AI_CommentBuilding class >> ollamaSystem04 [
+AIACommentBuilding class >> ollamaSystem04 [
 	^ 'This is for Pharo13. This is how a new class is defined.', String cr, 
-			(AI_PackagesAsOllamaSystem new forClass: ShiftClassBuilder), String cr, 'Always use this Pharo13 if if you can', String cr 
+			(AIASourceCodeBuilder new forClass: ShiftClassBuilder), String cr, 'Always use this Pharo13 if if you can', String cr 
+]
+
+{ #category : 'initialization' }
+AIACommentBuilding >> initialize [
+	system := ''.
+	prompt := ''.
+	response := ''
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> prompt [
+AIACommentBuilding >> prompt [
 	"Instance variable getting/setting"
 	^ prompt
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> prompt: anObject [
+AIACommentBuilding >> prompt: anObject [
 	"Instance variable getting/setting"
 	prompt := anObject
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> system [
+AIACommentBuilding >> response [
+
+	^ response
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding >> response: anObject [
+
+	response := anObject
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding >> system [
 	"Instance variable getting/setting"
 	^ system
 ]
 
 { #category : 'accessing' }
-AI_CommentBuilding >> system: anObject [
+AIACommentBuilding >> system: anObject [
 	"Instance variable getting/setting"
 	system := anObject
 ]
