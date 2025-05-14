@@ -504,6 +504,16 @@ AIACommentBuilding class >> ollamaSystem04 [
 			(AIASourceCodeBuilder new forClass: ShiftClassBuilder), String cr, 'Always use this Pharo13 if if you can', String cr 
 ]
 
+{ #category : 'as yet unclassified' }
+AIACommentBuilding class >> setComment: commentName [ 
+	^ self subclassResponsibility
+]
+
+{ #category : 'as yet unclassified' }
+AIACommentBuilding >> getComment: aPackageName [ 
+	^ self subclassResponsibility
+]
+
 { #category : 'initialization' }
 AIACommentBuilding >> initialize [
 	system := ''.

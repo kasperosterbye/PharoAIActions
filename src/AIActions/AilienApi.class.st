@@ -83,6 +83,11 @@ AilienApi class >> models [
 	self subclassResponsibility
 ]
 
+{ #category : 'as yet unclassified' }
+AilienApi >> getResponseForPrompt: userPrompt [ 
+	^ self subclassResponsibility
+]
+
 { #category : 'initialization' }
 AilienApi >> initialize [ 
 	super initialize.
