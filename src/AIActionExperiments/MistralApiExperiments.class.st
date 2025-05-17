@@ -8,9 +8,8 @@ Class {
 		'mistralProcess',
 		'presenter'
 	],
-	#category : 'AIActions-Eksperiments',
-	#package : 'AIActions',
-	#tag : 'Eksperiments'
+	#category : 'AIActionExperiments',
+	#package : 'AIActionExperiments'
 }
 
 { #category : 'experiments' }

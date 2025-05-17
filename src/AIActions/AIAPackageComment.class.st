@@ -26,7 +26,8 @@ AIAPackageComment >> getComment: aPackageName [
 	| mistral  |
 	packageSource := AIASourceCodeBuilder new for: { aPackageName }.
 	prompt := 'This is a Pharo question. Can your give a package comment for ' , 
-		aPackageName, '. It can be up to 1 page. Please respond in markdown'.
+		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
+		AIACommentBuilding language.
 	mistral := MistralApi new.
 	mistral system: packageSource.
 	response := mistral getResponseForPrompt: prompt.

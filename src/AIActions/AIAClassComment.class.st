@@ -88,6 +88,38 @@ AIAClassComment >> getComment: aClass [
 	
 	prompt := 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
+		'. Please respond according to the recommendations. Write the answer in MarkDown. Please response in ',
+		AIACommentBuilding language.
+	mistral := MistralApi new.
+	mistral system: classSource.
+	response := mistral getResponseForPrompt: prompt.
+	^ response 
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> getComment_dansk: aClass [
+	"Builds a comment for aClass."
+	| mistral  |
+	classSource := AIASourceCodeBuilder new forClass: aClass.
+	
+	prompt := 'Dette er et spørgsmål om en Pharo klasse kommentar for ', aClass asString, 
+		'. Vær venlig at svare svare i følge anbefalingerne. Skriv svaret i MarkDown. Svaret skal være på Dansk'.
+	mistral := MistralApi new.
+	mistral system: classSource.
+	response := mistral getResponseForPrompt: prompt.
+	^ response 
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> getComment_old: aClass [
+	"Builds a comment for aClass."
+	| mistral  |
+	classSource := AIASourceCodeBuilder new forClass: aClass.
+	
+	prompt := 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
 		'. Please respond according to the recommendations. Write the answer in MarkDown'.
 	mistral := MistralApi new.
 	mistral system: classSource.

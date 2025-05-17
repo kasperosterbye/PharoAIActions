@@ -182,7 +182,8 @@ AIAMethodComment >> getComment: aCompiledMethod [
 	methodSource := (self commentSourceFor: compiledMethod) .
 	prompt := 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
-			'. Your response should be 60 chacters, and only letters'.
+			'. Your response should be 250 chacters, and only letters. Please response in ',
+		AIACommentBuilding language.
 	mistral := MistralApi new.
 	mistral system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
 	response := mistral getResponseForPrompt: prompt.

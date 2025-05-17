@@ -11,6 +11,9 @@ Class {
 		'prompt',
 		'response'
 	],
+	#classInstVars : [
+		'commentLanguage'
+	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
 	#tag : 'CommentBuilder'
@@ -24,6 +27,17 @@ AIACommentBuilding class >> existingComment: item [
 { #category : 'as yet unclassified' }
 AIACommentBuilding class >> getComment: item [ 
 	^ self new getComment: item
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding class >> language [
+	commentLanguage ifNil: [ commentLanguage := 'British' ].
+	^ commentLanguage
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding class >> language: language [
+	commentLanguage := language
 ]
 
 { #category : 'ollama system' }

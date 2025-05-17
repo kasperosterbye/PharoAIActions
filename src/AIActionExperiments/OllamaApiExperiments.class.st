@@ -13,9 +13,8 @@ Class {
 		'ollamaProcess',
 		'presenter'
 	],
-	#category : 'AIActions-Eksperiments',
-	#package : 'AIActions',
-	#tag : 'Eksperiments'
+	#category : 'AIActionExperiments',
+	#package : 'AIActionExperiments'
 }
 
 { #category : 'actions' }
@@ -76,8 +75,8 @@ OllamaApiExperiments >> html: html title: title do: block [
 { #category : 'initialization' }
 OllamaApiExperiments >> initializeOllamaModel [
 	"I am called at the beginning of one of the experiments"
-	models := OllamaApi modelNames "atAll: #(1 2 )".
-	ollamaModel := OllamaApi new.
+	models := OllamaModelsApi modelNames "atAll: #(1 2 )".
+	ollamaModel := OllamaModelsApi new.
 ]
 
 { #category : 'accessing' }
