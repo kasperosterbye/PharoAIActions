@@ -20,9 +20,10 @@ AIAPackageCommentTest >> setUp [
 
 { #category : 'tests' }
 AIAPackageCommentTest >> testGetComment [
-	packageCommenter getComment: 'AIAgent-Tests' .
-	self assert: (packageCommenter response includesSubstring: '# Package: AIAgent-Tests').
-	self assert: (packageCommenter response includesSubstring: '## Example')
+	| response |
+	response := AIAPackageComment getComment: 'AIAgent-Tests' .
+	self assert: (response includesSubstring: '# Package: AIAgent-Tests').
+	self assert: (response includesSubstring: '## Example')
 ]
 
 { #category : 'tests' }

@@ -29,6 +29,12 @@ AIAMethodComment class >> for: method [
 	^ self new initialize: method 
 ]
 
+{ #category : 'initialization' }
+AIAMethodComment class >> for_old: method [
+	"This method creates a new instance of AI_MethodComment"
+	^ self new initialize: method 
+]
+
 { #category : 'accessing - comment' }
 AIAMethodComment class >> methodCommentOutline [
 	^ 'In Pharo, it is a common practice to include a comment on the second line of a method to describe its purpose or behavior. While there is no strict outline enforced by the system, there are some conventions and best practices that developers follow to ensure that comments are clear and useful. Here are some guidelines for writing method comments in Pharo:
@@ -146,12 +152,6 @@ In this example, the comment provides contextual information, usage examples, pr
 The best comments in Pharo (or any other language) are those that provide a balance between explaining the method''s purpose, its usage, and its implementation details. Understanding the tests can be a valuable input to the comments, as they often cover a wide range of scenarios and can help ensure that the comments are accurate and comprehensive.'
 ]
 
-{ #category : 'initialization' }
-AIAMethodComment class >> setComment: method [
-	"This method creates a new instance of AI_MethodComment and sets the comment for the given method."
-	^ self new setComment: method 
-]
-
 { #category : 'internals' }
 AIAMethodComment >> commentSourceFor: aCompiledMethod [
 	"The method commentSourceFor takes a compiled method, formats its class name and source code, and returns the formatted string."
@@ -169,18 +169,22 @@ AIAMethodComment >> compiledMethod [
 ]
 
 { #category : 'internals' }
+AIAMethodComment >> existingComment: aCompiledMethod [
+	aCompiledMethod comment ifNil: [^ ''].
+	^ aCompiledMethod comment  	
+]
+
+{ #category : 'internals' }
 AIAMethodComment >> getComment: aCompiledMethod [
-	"Sets a comment for a compiled method if none exists."
 	| mistral |
 	compiledMethod := aCompiledMethod.
-	compiledMethod comment ifNotNil: [ ^ nil ].
 	
 	methodSource := (self commentSourceFor: compiledMethod) .
 	prompt := 'This is a Pharo question. Can your give a method comment for ' , 
-		(self commentSourceFor: compiledMethod), 
+		aCompiledMethod name, 
 			'. Your response should be 60 chacters, and only letters'.
 	mistral := MistralApi new.
-	mistral system: self methodSource.
+	mistral system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
 	response := mistral getResponseForPrompt: prompt.
 	^ response
 ]
@@ -211,21 +215,9 @@ AIAMethodComment >> methodSourceAddComment: comment [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> sendersOf_old: aCompiledMethod [
-	"This method finds senders of a compiled method within the same package prefix, then returns their comments as a string."
-	| senders package sendersSource|
-	package := aCompiledMethod methodClass package name.
-	senders := aCompiledMethod senders select: [ :sender |
-		(sender methodClass package name copyUpToSubstring: '-') 
-			= (package copyUpToSubstring: '-').].
-	sendersSource := WriteStream on: ''.
-	senders do: [ :sender | 
-		sendersSource << (self commentSourceFor: sender) << String cr. String cr. ].
-	^ sendersSource contents 
-]
-
-{ #category : 'internals' }
 AIAMethodComment >> setComment: aCompiledMethod [
+	
+	aCompiledMethod comment ifNotNil: [ ^ nil ].
 	self getComment: aCompiledMethod.
 	compiledMethod methodClass
 		compile: (self methodSourceAddComment: response)

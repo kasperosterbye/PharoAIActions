@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"this is just an example method"
+	"This method initializes a variable foo with the value 88 and returns the result of adding 12 to foo."
 	| foo |
 	foo := 88.
 	^ foo + 12.

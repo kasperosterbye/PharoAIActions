@@ -15,10 +15,9 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'accessing - comment' }
-AIAPackageComment class >> setComment: commentName [
-	"Sets a new comment for the package."
-	^ self new setComment: commentName 
+{ #category : 'internals' }
+AIAPackageComment >> existingComment: aPackageName [
+	^ (PackageOrganizer default packageNamed: aPackageName ) packageComment 	
 ]
 
 { #category : 'internals' }
@@ -27,14 +26,14 @@ AIAPackageComment >> getComment: aPackageName [
 	| mistral  |
 	packageSource := AIASourceCodeBuilder new for: { aPackageName }.
 	prompt := 'This is a Pharo question. Can your give a package comment for ' , 
-		aPackageName, '. It can be up to 2 pages. Please respond in markdown'.
+		aPackageName, '. It can be up to 1 page. Please respond in markdown'.
 	mistral := MistralApi new.
 	mistral system: packageSource.
 	response := mistral getResponseForPrompt: prompt.
 	^ response
 ]
 
-{ #category : 'internals' }
+{ #category : 'accessing' }
 AIAPackageComment >> setComment: aPackageName [
 	self getComment: aPackageName.
 	(Package named: aPackageName) packageComment: response 

@@ -1,8 +1,3 @@
-"
-Fix this - it ended as nonsence...
-
-I convert the result of some doing the experiement (system+prompt -> result) on multiple Ollama models.
-"
 Class {
 	#name : 'MistralApiExperiments',
 	#superclass : 'Object',
@@ -17,6 +12,132 @@ Class {
 	#package : 'AIActions',
 	#tag : 'Eksperiments'
 }
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment: methodToComment [
+	| fibbe |
+	self initializeMistralModel.
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodCommentExperiment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodCommentExperiment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af6'
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment: methodToComment file: file [
+	| fibbe |
+	self initializeMistralModel.
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodCommentExperiment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodCommentExperiment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: file
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment_01 [
+	| fibbe methodToComment|
+	self initializeMistralModel.
+	methodToComment := (Object >> #at:put: ).
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodCommentExperiment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodCommentExperiment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodCommentExperiment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af'
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment_02 [
+	| fibbe methodToComment|
+	self initializeMistralModel.
+	methodToComment := (Object >> #veryDeepCopyWith: ).
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodComment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodComment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af2'
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment_03 [
+	| fibbe methodToComment|
+	self initializeMistralModel.
+	methodToComment := (Dictionary>>#includesKey:).
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodComment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodComment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af3'
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment_04 [
+	| fibbe methodToComment|
+	self initializeMistralModel.
+	methodToComment := (WriteStream>>#nextPutAll:).
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodComment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodComment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af4'
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment_05 [
+	| fibbe methodToComment|
+	self initializeMistralModel.
+	methodToComment := (Character>>#isOctetCharacter).
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodComment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodComment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af5'
+]
+
+{ #category : 'experiments' }
+MistralApiExperiments >> aiaMethodComment_06 [
+	| fibbe methodToComment|
+	self initializeMistralModel.
+	methodToComment := (AIAMethodComment>>#methodSourceAddComment:).
+	fibbe := OrderedCollection new.
+	fibbe add: {'Item'. 'response'. 'prompt'. 'system' }.
+	fibbe add: (AIAMethodComment new getComment_A: methodToComment).
+	fibbe add: (AIAMethodComment new getComment_B: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_C: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_D: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_E: methodToComment). 
+	fibbe add: (AIAMethodComment new getComment_F: methodToComment).
+	self writeAsHTML_2: fibbe toFile: 'Test10af6'
+]
 
 { #category : 'actions' }
 MistralApiExperiments >> cancelMistralPrompt [
@@ -325,8 +446,8 @@ MistralApiExperiments >> tableOn: html on: list [
 						tag: #tr
 						do: [ 
 							1 to: (list at: id) size do: [ :x |
-								html tag: #td with: ((list at: id) at: x).
-								
+								"html tag: #td with: ((list at: id) at: x)."
+								html tag: #td do: [ html tag: #pre with: ((list at: id) at: x) ].
 							]].] 
 					] 
 ]
@@ -349,6 +470,23 @@ MistralApiExperiments >> writeAsHTML: list toFile: fileName [
 	html tag: #pre with: mistralModel promptPrefix.
 	html tag: #h3 with: 'System'.
 	html tag: #pre with: mistralModel system.
+	html flush; close.
+	WebBrowser openOn: ('file://', path) asZnUrl .
+]
+
+{ #category : 'writing' }
+MistralApiExperiments >> writeAsHTML_2: list toFile: fileName [
+	| out html path|
+	
+	out := ('mistral/', fileName, '.html') asFileReference.
+	out deleteIfAbsent: [  ].
+	path := out pathString.
+	out := out writeStream .
+	html := ZnHtmlOutputStream on: out.
+	self 
+		html: html
+		title: (fileName)
+		do: [self tableOn: html on: list ].
 	html flush; close.
 	WebBrowser openOn: ('file://', path) asZnUrl .
 ]

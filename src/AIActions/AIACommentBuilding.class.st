@@ -16,6 +16,16 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
+{ #category : 'as yet unclassified' }
+AIACommentBuilding class >> existingComment: item [ 
+	^ self new existingComment: item
+]
+
+{ #category : 'as yet unclassified' }
+AIACommentBuilding class >> getComment: item [ 
+	^ self new getComment: item
+]
+
 { #category : 'ollama system' }
 AIACommentBuilding class >> mistralComment01 [
 	"Fist example of the result from AI_PackageComment comment: 'AI-OllamaKasper'"
@@ -505,8 +515,8 @@ AIACommentBuilding class >> ollamaSystem04 [
 ]
 
 { #category : 'as yet unclassified' }
-AIACommentBuilding class >> setComment: commentName [ 
-	^ self subclassResponsibility
+AIACommentBuilding class >> setComment: item [ 
+	^ self new setComment: item
 ]
 
 { #category : 'as yet unclassified' }
