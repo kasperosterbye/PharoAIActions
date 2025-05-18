@@ -16,7 +16,7 @@ BaselineOfPharoAIActions >> baseline: spec [
         	package: 'AIAgent-Tests' 
 			with: [ spec requires: #('AIActions') ].
       spec
-			package: 'AIActionsExperiments' 
+			package: 'AIActionExperiments' 
 			with: [ spec requires: #('AIActions') ].
     ]
 ]
