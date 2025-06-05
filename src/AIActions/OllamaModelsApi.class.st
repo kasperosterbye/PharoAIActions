@@ -1,51 +1,3 @@
-"
-# Class Comment for `OllamaApi`
-
-The `OllamaApi` class is designed to interact with the Ollama API, providing a convenient interface for sending prompts and retrieving responses from various language models. This class encapsulates the necessary details for configuring and sending requests to the Ollama API, including model selection, system prompts, and response handling.
-
-## Key Features
-
-- **Model Selection**: Allows the selection of different language models available through the Ollama API.
-- **System and Prompt Prefix**: Supports the configuration of system prompts and prefix text to guide the model's responses.
-- **Response Handling**: Manages the sending of prompts and the retrieval of responses, including error handling for network issues or API errors.
-- **Model Information**: Provides detailed and short information about the selected model, including architecture, parameter count, and context length.
-- **Initialization**: Initializes the class with default values for model, system prompt, and prompt prefix.
-
-## Usage
-
-To use the `OllamaApi` class, you can create an instance and configure it with the desired model, system prompt, and prompt prefix. You can then send prompts to the API and retrieve responses. The class also provides methods to retrieve detailed information about the selected model.
-
-## Example
-
-```smalltalk
-| api response |
-api := OllamaApi new.
-api model: 'example-model'.
-api system: 'You are a helpful assistant.'.
-api promptPrefix: 'Please answer the following question:'.
-response := api getResponseForPrompt: 'What is the capital of France?'.
-Transcript show: response; cr.
-```
-
-## Methods
-
-- **Accessing**: Methods to get and set the model, system prompt, prompt prefix, and response.
-- **Initialization**: Method to initialize the class with default values.
-- **Ollama Models**: Methods to send prompts to the API, retrieve model information, and get short model information.
-- **Printing**: Method to print the class and its model.
-
-## Class Methods
-
-- **Instance Creation**: Methods to create instances of `OllamaApi` with specific models, system prompts, and prompt prefixes.
-- **Ollama Models**: Methods to retrieve the list of available models and the Ollama version.
-
-## Dependencies
-
-- **ZnClient**: Used for making HTTP requests to the Ollama API.
-- **STONJSON**: Used for parsing JSON responses from the API.
-
-This class is part of the `AI-ChatPharo` package and is tagged with 'Ollama'.
-"
 Class {
 	#name : 'OllamaModelsApi',
 	#superclass : 'AilienApi',
@@ -54,13 +6,13 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'ollama models' }
+{ #category : 'AI models' }
 OllamaModelsApi class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :ollamaModel | ollamaModel at: 'name' ]
 ]
 
-{ #category : 'ollama models' }
+{ #category : 'AI models' }
 OllamaModelsApi class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"
 	| response  |
@@ -90,7 +42,7 @@ OllamaModelsApi class >> newSystem: synstemText promptPrefix: promptPrefixText [
 	^ prompter 
 ]
 
-{ #category : 'ollama models' }
+{ #category : 'AI models' }
 OllamaModelsApi class >> ollamaVersion [
 	"Retrieve the Ollama version"
 	| response  |

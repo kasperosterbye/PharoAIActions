@@ -74,33 +74,12 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'ollama models' }
+{ #category : 'AI models' }
 MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
 	^ super modelNames 
-]
-
-{ #category : 'ollama models' }
-MistralApi class >> modelNames_old [
-	"returns an array with one item per model."
-	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
-	^ #(
-  'codestral-latest'
-  'mistral-large-latest'
-  'pixtral-large-latest'
-  'mistral-saba-latest'
-  'ministral-3b-latest'
-  'ministral-8b-latest'
-  'mistral-embed'
-  'mistral-moderation-latest'
-  'mistral-ocr-latest'
-  'mistral-small-latest'
-  'pixtral-12b-2409'
-  'open-mistral-nemo'
-  'open-codestral-mamba'
-)
 ]
 
 { #category : 'accessing' }
@@ -120,23 +99,10 @@ MistralApi class >> models [
 	^ sorted values
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'AI models' }
 MistralApi class >> modelsBy: id [
 	"returns an array with one item per model."
 	^ self models collect: [ :model | model at: id ]
-]
-
-{ #category : 'accessing' }
-MistralApi class >> models_old [
-	"Return a list of available Mistral models from the API"
-	| url response |
-	url := 'https://api.mistral.ai/v1/models'.
-	response := ZnClient new
-		url: url;
-		headerAt: 'Authorization' put: self token;
-		get;
-		contents.
-	^ (STONJSON fromString: response) at: 'data'
 ]
 
 { #category : 'accessing' }
@@ -144,7 +110,7 @@ MistralApi class >> token [
 	"Return the API token for Mistral, read from a local file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
-	^ (FileSystem disk workingDirectory / '../../mistralkode.txt')
+	^ (FileSystem disk workingDirectory / '../../mistralcode.txt')
 		readStream contents trimBoth.
 ]
 

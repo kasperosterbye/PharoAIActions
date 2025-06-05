@@ -1,39 +1,5 @@
 "
-# Class: AIAClassComment
-
-## Summary
-I am responsible for generating and managing class comments for Pharo classes using AI-generated content.
-
-## Responsibilities
-- I build and set class comments for given classes.
-- I retrieve existing class comments.
-- I generate new class comments using AI models like Mistral.
-
-## Collaborators
-- **AIASourceCodeBuilder**: I use this to obtain the source code of a class.
-- **MistralApi**: I interact with this to generate AI-based class comments.
-
-## Public API and Key Messages
-
-- `setComment: aClass`: Sets a new AI-generated comment for the given class.
-- `getComment: aClass`: Generates a new AI-based comment for the given class.
-- `existingComment: aClass`: Retrieves the existing comment of the given class.
-
-## Example
-```smalltalk
-| commentBuilder |
-commentBuilder := AIAClassComment new.
-commentBuilder setComment: MyClass.
-```
-
-## Internal Representation and Key Implementation Points
-- **Instance Variables**:
-  - `classSource`: Holds the source code of the class for which the comment is being generated.
-
-- **Key Implementation Points**:
-  - The `getComment:` method constructs a prompt for the Mistral API, which is then used to generate a class comment.
-  - The `setComment:` method sets the generated comment to the class.
-  - The `existingComment:` method simply returns the current comment of the class.
+Killroy test
 "
 Class {
 	#name : 'AIAClassComment',

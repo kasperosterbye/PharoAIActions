@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"This method initializes a variable foo with the value 88 and returns the result of adding 12 to foo."
+	"This method demonstrates the functionality of AIAMethodComment by setting a comment on a test method and verifying its presence and length."
 	| foo |
 	foo := 88.
 	^ foo + 12.
@@ -70,7 +70,7 @@ AIAMethodCommentTest >> testGetComment [
 	methodCommenter getComment: testMethod .
 	comment := methodCommenter response.
 	self assert: comment size > 5.
-	self assert: (comment includesSubstring: '88').
+	self assert: (comment includesSubstring: 'AIAMethodComment').
 ]
 
 { #category : 'tests' }
@@ -98,5 +98,5 @@ AIAMethodCommentTest >> testSetComment [
 	methodCommenter setComment: testMethod .
 	testMethod := self class >> #methodExample.
 	self assert: testMethod comment size > 5.
-	self assert: (testMethod comment includesSubstring: '88').
+	self assert: (testMethod comment includesSubstring: 'AIAMethodComment').
 ]

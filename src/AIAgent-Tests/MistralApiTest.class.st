@@ -9,7 +9,7 @@ Class {
 	#tag : 'AIAPI-Tests'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'running' }
 MistralApiTest >> jsonResponse [
 	"returns a fixed jsonResponse"
 	^ '{"id":"f5e209e379814358adbd652e8c4af086","object":"chat.completion","created":1746867952,"model":"codestral-latest","choices":[{"index":0,"message":{"role":"assistant","tool_calls":null,"content":"It seems like you''re referring to a classic internet meme. \"Killroy was here\" is a phrase that originated from World War II. It was used by American soldiers to mark their presence in occupied areas. The phrase is often associated with a fictional character named \"Killroy,\" who was said to be a spy or saboteur. The exact origin of the phrase is unclear, but it has become a popular internet meme, often used to indicate that someone has been in a particular place or has made changes."},"finish_reason":"stop"}],"usage":{"prompt_tokens":12,"total_tokens":118,"completion_tokens":106}}'

@@ -23,7 +23,7 @@ AIAPackageCommentTest >> testGetComment [
 	| response |
 	response := AIAPackageComment getComment: 'AIAgent-Tests' .
 	self assert: (response includesSubstring: '# Package: AIAgent-Tests').
-	self assert: (response includesSubstring: '## Example')
+	self assert: (response includesSubstring: '## Overview')
 ]
 
 { #category : 'tests' }

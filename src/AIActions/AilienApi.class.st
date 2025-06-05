@@ -71,7 +71,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'ollama models' }
+{ #category : 'AI models' }
 AilienApi class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :model | model at: 'name' ]
