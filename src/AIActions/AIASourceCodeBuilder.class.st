@@ -52,7 +52,7 @@ Class {
 	#name : 'AIASourceCodeBuilder',
 	#superclass : 'Object',
 	#instVars : [
-		'responce'
+		'response'
 	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
@@ -63,8 +63,8 @@ Class {
 AIASourceCodeBuilder >> classHeaderFor: aClass [
 	"Returns a string with the class name and definition for aClass."
 
-	responce << '## Class: ' << aClass name asString << String cr.
-	responce << '### Class definition: ' << String cr << 
+	response << '## Class: ' << aClass name asString << String cr.
+	response << '### Class definition: ' << String cr << 
 			((FluidClassDefinitionPrinter for: aClass) classDefinitionString ) << String cr.
 		
 ]
@@ -76,19 +76,19 @@ AIASourceCodeBuilder >> classesInPackage: aPackage [
 	| aClassCollection |
 	aClassCollection := aPackage definedClasses asArray.
 	aClassCollection do: [ :cl |
-			responce << '## Class: ' << cl name asString <<String cr.
+			response << '## Class: ' << cl name asString <<String cr.
 			self instanceVariablesFor: cl.
 			self methodsFor: cl.
-			responce << String cr ]
+			response << String cr ]
 ]
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> for: aPackageList [
 	"The input is {package1. package2. package3}."
-	responce := WriteStream on: ''.
+	response := WriteStream on: ''.
 	aPackageList do: [ :package | 
 			self classesInPackage: (PackageOrganizer default packageNamed: package) ].
-	^ responce contents
+	^ response contents
 	
 ]
 
@@ -104,20 +104,20 @@ AIASourceCodeBuilder >> forClass: aClass [
 AIASourceCodeBuilder >> forClasses: aClassList [
 	"Generates a formatted string describing the classes and their meta-classes in aClassList."
 	| metaClass |
-	responce := WriteStream on: ''.
+	response := WriteStream on: ''.
 	aClassList do: [ :aClass | 
 		self classHeaderFor: aClass.
-		responce << '### Class comment: ' << aClass comment << String cr.
+		response << '### Class comment: ' << aClass comment << String cr.
 		self instanceVariablesFor: aClass.
 		self methodsFor: aClass.
-		responce << String cr.
+		response << String cr.
 		metaClass := aClass class.
 		self classHeaderFor: metaClass.
 		self instanceVariablesFor: metaClass.
 		self methodsFor: metaClass.
-		responce << String cr.
+		response << String cr.
 	].
-	^ responce contents
+	^ response contents
 	
 ]
 
@@ -136,36 +136,45 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 	^ self systemForMethod: aMethod usedIn: callersInMyPackage
 ]
 
+{ #category : 'initialization' }
+AIASourceCodeBuilder >> initialize [
+	response := WriteStream on: ''.
+]
+
 { #category : 'internal' }
 AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 	"Add all the instance variables of aClass to response"
-	responce  << '### Instance variables for ' << aClass name asString << ': '.
+	response  << '### Instance variables for ' << aClass name asString << ': '.
 	aClass instVarNames  collect: [:each | 
-		responce  << each asString << ' '].
-	responce nextPutAll: String cr.
+		response  << each asString << ' '].
+	response nextPutAll: String cr.
 ]
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> methodsFor: aClass [
 	"Add all methods grouped by protocol, including full source code"
-	responce << '### Methods for ' << aClass name asString << ':' << String cr.
+	response << '### Methods for ' << aClass name asString << ':' << String cr.
 	aClass protocolNames asSortedCollection do: [:protocol |
-		responce  << '#### Protocol: ' << protocol << String cr.
+		response  << '#### Protocol: ' << protocol << String cr.
 		(aClass selectorsInProtocol: protocol) do: [:methodName |
-			responce << (aClass >> methodName) sourceCode << String cr << String cr.
+			response << (aClass >> methodName) sourceCode << String cr << String cr.
 		].
 	].
 ]
 
 { #category : 'accessing' }
+AIASourceCodeBuilder >> response [
+	^ response 
+]
+
+{ #category : 'internal' }
 AIASourceCodeBuilder >> systemForMethod: aMethod usedIn: callersInMyPackage [
-	
-	responce := WriteStream on: ''.
-	responce << '## Method calling ' << aMethod selector << String cr.
+	response := WriteStream on: ''.
+	response << '## Method calling ' << aMethod selector << String cr.
 	callersInMyPackage do: [ :caller |
-		responce << '### Called in:' << String cr.
-		responce << caller sourceCode  << String cr << String cr.
+		response << '### Called in:' << String cr.
+		response << caller sourceCode  << String cr << String cr.
 	].
-	^ responce contents
+	^ response contents
 	
 ]
