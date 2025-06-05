@@ -533,8 +533,8 @@ AIACommentBuilding class >> setComment: item [
 	^ self new setComment: item
 ]
 
-{ #category : 'as yet unclassified' }
-AIACommentBuilding >> getComment: aPackageName [ 
+{ #category : 'abstract' }
+AIACommentBuilding >> getComment: toBeCommented [ 
 	^ self subclassResponsibility
 ]
 

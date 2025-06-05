@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"This method demonstrates the functionality of AIAMethodComment by setting a comment on a test method and verifying its presence and length."
+	"this is just an example method"
 	| foo |
 	foo := 88.
 	^ foo + 12.
@@ -58,8 +58,7 @@ AIAMethodCommentTest >> setUp [
 AIAMethodCommentTest >> testCommentSourceFor [
 	|  commentSource |
 	commentSource := methodCommenter commentSourceFor: testMethod .
-	self assert: commentSource lines first equals: 'AIAMethodCommentTest >> #methodExample'.
-	
+	self assert: commentSource lines first equals: 'AIAMethodCommentTest >> #methodExample'.	
 	self assert: commentSource lines second equals: '	"this is just an example method"'
 ]
 

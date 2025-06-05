@@ -56,6 +56,7 @@ AIASourceCodeBuilderTest >> testForClass [
 
 { #category : 'tests' }
 AIASourceCodeBuilderTest >> testForClasses [
+	"This test verifies the behaviour of the forClasses method in the AIASourceCodeBuilder class. It checks that the response is empty when an empty collection is passed and that the response contains specific substrings when a collection of classes is passed."
 	| res |
 	builder forClasses: {}.
 	res := builder response contents.

@@ -6,7 +6,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'AI models' }
+{ #category : 'ollama models' }
 OllamaModelsApi class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :ollamaModel | ollamaModel at: 'name' ]
@@ -126,5 +126,5 @@ OllamaModelsApi >> modelShortInfo [
 
 { #category : 'printing' }
 OllamaModelsApi >> printOn: string [
-	string << 'OllamaApi: ' << self model.
+	string << 'OllamaModelsApi: ' << self model.
 ]
