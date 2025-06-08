@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIAMethodCommentTest',
-	#superclass : 'AIACommentBuildingTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'testMethod',
 		'methodCommenter'
@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"this is just an example method"
+	"This method demonstrates the functionality of AIAMethodComment."
 	| foo |
 	foo := 88.
 	^ foo + 12.
@@ -48,34 +48,30 @@ AIAMethodCommentTest >> setUp [
 	super setUp.
 
 	"Put here a common initialization logic for tests"
+	methodCommenter := AIAMethodComment new. 
 	testMethod := self class >> #methodExample.
 	self methodExampleSetComment.
-	methodCommenter := AIAMethodComment for: testMethod 
 	
 ]
 
 { #category : 'tests' }
-AIAMethodCommentTest >> testCommentSourceFor [
-	|  commentSource |
-	commentSource := methodCommenter commentSourceFor: testMethod .
-	self assert: commentSource lines first equals: 'AIAMethodCommentTest >> #methodExample'.	
-	self assert: commentSource lines second equals: '	"this is just an example method"'
-]
-
-{ #category : 'tests' }
-AIAMethodCommentTest >> testGetComment [
+AIAMethodCommentTest >> testAiaComment [
 	|  comment |
 	self methodExampleRemoveComment.
-	methodCommenter getComment: testMethod .
+	methodCommenter aiaComment: testMethod .
 	comment := methodCommenter response.
 	self assert: comment size > 5.
 	self assert: (comment includesSubstring: 'AIAMethodComment').
 ]
 
 { #category : 'tests' }
-AIAMethodCommentTest >> testInitialize [
-	self assert: methodCommenter compiledMethod equals: testMethod .
-	self assert: (methodCommenter methodSource includesSubstring: '^ foo + 12.')
+AIAMethodCommentTest >> testAiaWhiteComment [
+	|  comment |
+	self methodExampleRemoveComment.
+	methodCommenter aiaComment: testMethod .
+	comment := methodCommenter response.
+	self assert: comment size > 5.
+	self assert: (comment includesSubstring: 'demonstrates').
 ]
 
 { #category : 'tests' }
@@ -87,7 +83,7 @@ AIAMethodCommentTest >> testMethodSourceAddComment [
 		source := String cr join: source
 	].
 	commentedSource := methodCommenter 
-		methodSourceAddComment: '"this is just an example method"'.
+		methodSource: testMethod addComment: '"this is just an example method"'.
 	self assert: (commentedSource includesSubstring: 'is just an example')
 ]
 
@@ -98,4 +94,13 @@ AIAMethodCommentTest >> testSetComment [
 	testMethod := self class >> #methodExample.
 	self assert: testMethod comment size > 5.
 	self assert: (testMethod comment includesSubstring: 'AIAMethodComment').
+]
+
+{ #category : 'tests' }
+AIAMethodCommentTest >> testSetWhiteComment [
+	self methodExampleRemoveComment.
+	methodCommenter setComment: testMethod .
+	testMethod := self class >> #methodExample.
+	self assert: testMethod comment size > 5.
+	self assert: (testMethod comment includesSubstring: 'demonstra').
 ]

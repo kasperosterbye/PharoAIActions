@@ -1,10 +1,12 @@
 Extension { #name : 'String' }
 
 { #category : '*AIActions' }
-String >> getAIComment [
+String >> aiaComment [
 	| package |
-	package := (PackageOrganizer default packageNamed: self ifAbsent: [^ 'No package named: ', self]).
-	^ AIAPackageComment new getComment: self
+	package := PackageOrganizer default 
+		packageNamed: self 
+		ifAbsent: [^ 'No package named: ', self].
+	^ (AIAPackageComment new aiaComment: self) response
 ]
 
 { #category : '*AIActions' }

@@ -66,9 +66,6 @@ By following this class comment, users can understand the purpose, features, and
 Class {
 	#name : 'MistralApi',
 	#superclass : 'AilienApi',
-	#instVars : [
-		'prompt'
-	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -137,12 +134,10 @@ MistralApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'mistral models' }
-MistralApi >> getResponseForPrompt: userPrompt [
-	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
-	"Split the method into parts, it is a bit too long now..."
+MistralApi >> getResponse [
+	"Sends a prompt to the Mistral API and returns the response. Handles request construction, sending, and response processing."
 	| apiGenerateUrl jsonResponse |
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	prompt := userPrompt.
 	[  jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
 	  	 headerAt: 'Authorization' put: self class token;
@@ -154,7 +149,6 @@ MistralApi >> getResponseForPrompt: userPrompt [
 	] on: Error do: [ :ex |
    		response := ex messageText.
 	].
-	^ response.
 ]
 
 { #category : 'initialization' }
@@ -167,18 +161,6 @@ MistralApi >> initialize [
 { #category : 'printing' }
 MistralApi >> printOn: aStream [
 	aStream << 'MistralApi: ' << self model.
-]
-
-{ #category : 'accessing' }
-MistralApi >> prompt [
-
-	^ prompt
-]
-
-{ #category : 'accessing' }
-MistralApi >> prompt: anObject [
-
-	prompt := anObject
 ]
 
 { #category : 'mistral models' }

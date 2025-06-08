@@ -14,11 +14,6 @@ This class implements AI based comment generations for methods. There are severa
 Class {
 	#name : 'AIAMethodComment',
 	#superclass : 'AIACommentBuilding',
-	#instVars : [
-		'compiledMethod',
-		'methodSource',
-		'commentType'
-	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
 	#tag : 'CommentBuilder'
@@ -31,7 +26,29 @@ AIAMethodComment class >> for: method [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> commentSourceFor: aCompiledMethod [
+AIAMethodComment >> aiaComment: aCompiledMethod [
+	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
+		aCompiledMethod name, 
+			'. Your response should be 100 chacters, and only letters.', 
+			' Please response in ', AIACommentBuilding language.
+	self getResponse.
+	^ self 
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> aiaWhiteComment: aCompiledMethod [
+	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
+	
+	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
+		aCompiledMethod name, 
+			'. Your response should be 140 chacters, and only letters.', 
+			' Please response in ', AIACommentBuilding language.
+	self getResponse
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> commentSourceFor_old: aCompiledMethod [
 	"The method commentSourceFor takes a compiled method, formats its class name and source code, and returns the formatted string."
 	| sourceString |
 	sourceString := WriteStream on: ''.
@@ -40,98 +57,14 @@ AIAMethodComment >> commentSourceFor: aCompiledMethod [
 	^ sourceString contents
 ]
 
-{ #category : 'tests - accessing' }
-AIAMethodComment >> compiledMethod [
-
-	^ compiledMethod
-]
-
 { #category : 'internals' }
-AIAMethodComment >> existingComment: aCompiledMethod [
+AIAMethodComment >> existingComment_old: aCompiledMethod [
 	aCompiledMethod comment ifNil: [^ ''].
 	^ aCompiledMethod comment  	
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> getBlackComment: aCompiledMethod [
-	| mistral |
-	compiledMethod := aCompiledMethod.
-	
-	methodSource := (self commentSourceFor: compiledMethod) .
-	prompt := 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should be 250 chacters, and only letters. Please response in ',
-		AIACommentBuilding language.
-	mistral := MistralApi new.
-	mistral system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
-	response := mistral getResponseForPrompt: prompt.
-	^ response
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> getComment: aCompiledMethod [
-	| mistral |
-	compiledMethod := aCompiledMethod.
-	
-	methodSource := (self commentSourceFor: compiledMethod) .
-	prompt := 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should be 100 chacters, and only letters. Please response in ',
-		AIACommentBuilding language.
-	mistral := MistralApi new.
-	mistral system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
-	response := mistral getResponseForPrompt: prompt.
-	^ response
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> getWhiteComment [
-	| mistral |
-	
-	methodSource := (self commentSourceFor: compiledMethod) .
-	prompt := 'This is a Pharo question. Can your give a method comment for ' , 
-		compiledMethod name, 
-			'. Your response should be 140 chacters, and only letters. Please response in ',
-		AIACommentBuilding language.
-	mistral := MistralApi new.
-	mistral system: (AIASourceCodeBuilder new forClass: compiledMethod methodClass).
-	response := mistral getResponseForPrompt: prompt.
-	^ response
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> getWhiteComment: aCompiledMethod [
-	| mistral |
-	compiledMethod := aCompiledMethod.
-	
-	methodSource := (self commentSourceFor: compiledMethod) .
-	prompt := 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should be 140 chacters, and only letters. Please response in ',
-		AIACommentBuilding language.
-	mistral := MistralApi new.
-	mistral system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	response := mistral getResponseForPrompt: prompt.
-	^ response
-]
-
-{ #category : 'initialization' }
-AIAMethodComment >> initialize: method [
-	super initialize.
-	compiledMethod := method.
-	methodSource := compiledMethod sourceCode.
-	commentType := #blackComment
-	
-]
-
-{ #category : 'tests - accessing' }
-AIAMethodComment >> methodSource [
-
-	^ methodSource
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> methodSourceAddComment: comment [
+AIAMethodComment >> methodSource: compiledMethod addComment: comment [
 	"Adds a comment to the method source code."
 	| sourceLines safeComment |
 	safeComment := comment copyWithoutAll: '"'.
@@ -145,18 +78,18 @@ AIAMethodComment >> methodSourceAddComment: comment [
 AIAMethodComment >> setComment: aCompiledMethod [
 	
 	aCompiledMethod comment ifNotNil: [ ^ nil ].
-	self getComment: aCompiledMethod.
-	compiledMethod methodClass
-		compile: (self methodSourceAddComment: response)
-		classified: compiledMethod protocol
+	self aiaComment: aCompiledMethod.
+	aCompiledMethod methodClass
+		compile: (self methodSource: aCompiledMethod addComment: self response)
+		classified: aCompiledMethod protocol
 ]
 
 { #category : 'internals' }
 AIAMethodComment >> setWhiteComment: aCompiledMethod [
 	
 	aCompiledMethod comment ifNotNil: [ ^ nil ].
-	self getWhiteComment: aCompiledMethod.
-	compiledMethod methodClass
-		compile: (self methodSourceAddComment: response)
-		classified: compiledMethod protocol
+	self aiaWhiteComment: aCompiledMethod.
+	aCompiledMethod methodClass
+		compile: (self methodSource: aCompiledMethod addComment: self response)
+		classified: aCompiledMethod protocol
 ]

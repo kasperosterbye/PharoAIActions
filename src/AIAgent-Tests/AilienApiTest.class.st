@@ -12,7 +12,7 @@ AilienApiTest >> testInitilize [
 	ailien := AilienApi new.
 	self assert: ailien model equals: ''.
 	self assert: ailien system equals: ''.
-	self assert: ailien promptPrefix equals: ''.
+	self assert: ailien prompt equals: ''.
 	self assert: ailien response equals: ''.
 ]
 

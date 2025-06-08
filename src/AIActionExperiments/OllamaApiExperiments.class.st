@@ -29,10 +29,9 @@ OllamaApiExperiments >> cancelOllamaPrompt [
 { #category : 'experiments' }
 OllamaApiExperiments >> fiveForAlleModeller [
 	"Can the models calculate the prompt"
-	| prompt|
 	self initializeOllamaModel.
-	prompt := '2+3. What is the result'.
-	self runModelsWithPrompt: prompt saveToFile: 'Test01'.
+	ollamaModel prompt: '2+3. What is the result'.
+	self runModelsWithPrompt: ollamaModel prompt saveToFile: 'Test01'.
 ]
 
 { #category : 'experiments' }
@@ -307,7 +306,7 @@ OllamaApiExperiments >> tableOn: html on: list [
 OllamaApiExperiments >> writeAsHTML: list toFile: fileName [
 	| out html path|
 	
-	out := ('ollama/', fileName, '.html') asFileReference.
+	out := ('AIAExperiments/', fileName, '.html') asFileReference.
 	out deleteIfAbsent: [  ].
 	path := out pathString.
 	out := out writeStream .
@@ -318,7 +317,7 @@ OllamaApiExperiments >> writeAsHTML: list toFile: fileName [
 		do: [self tableOn: html on: list ].
 		
 	html tag: #h3 with: 'Prompt'.
-	html tag: #pre with: ollamaModel promptPrefix.
+	html tag: #pre with: ollamaModel prompt.
 	html tag: #h3 with: 'System'.
 	html tag: #pre with: ollamaModel system.
 	html flush; close.

@@ -1,17 +1,28 @@
 "
-# Class Comment for AI_CommentBuilding
+# Notes for building this
 
-The `AI_CommentBuilding` class is designed to generate comments for classes and methods using AI models. It leverages AI capabilities to provide intelligent suggestions and documentation, enhancing the development experience by automating the creation of comments and ensuring that code is well-documented. The class uses instance variables to store the system prompt and response, which are essential for generating accurate and context-aware comments.
+- Method comments in black (default) and white (aiaWhiteComment og setWhiteComment)
+- The class side need to be cleaned, and tested
+- The human language need to be tested
+- There need to be a list of examples - it seems like simply starting the method name with example on the class side does the trick.
+- There is a trick error for method comments
+
+1. √ There are comments for Package, Class and Method. And no others!
+2. √ 'PackageName' aiaComment, ClassName aiaComment, (ClassName >> #method) aiaComment.
+3. √ Same as above, but setAIAComment for all three.
+4. – AIACommentBuilder aiaComment: 'PackageName' , ClassName , (ClassName >> #method) selects based on the type of the argument - clumsey idea. #2 was better...
+5. √ Unify the tree getComment methods - it seems like they do nearly the same. Split it into system and prompt setter, and the call to AIApi looks very similar too.
+6. √ Set the system such that AIACommentBuilder is the only class to be used. Well, it is not necessary now.
+
 "
 Class {
 	#name : 'AIACommentBuilding',
 	#superclass : 'Object',
 	#instVars : [
-		'system',
-		'prompt',
-		'response'
+		'aiaApi'
 	],
 	#classInstVars : [
+		'ailienApi',
 		'commentLanguage'
 	],
 	#category : 'AIActions-CommentBuilder',
@@ -19,14 +30,37 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'as yet unclassified' }
-AIACommentBuilding class >> existingComment: item [ 
-	^ self new existingComment: item
+{ #category : 'accessing' }
+AIACommentBuilding class >> ailienAPI [
+	ailienApi ifNil: [ ailienApi := MistralApi ].
+	^ ailienApi
 ]
 
-{ #category : 'as yet unclassified' }
-AIACommentBuilding class >> getComment: item [ 
-	^ self new getComment: item
+{ #category : 'accessing' }
+AIACommentBuilding class >> ailienApi: api [
+	^ ailienApi := api
+]
+
+{ #category : 'examples' }
+AIACommentBuilding class >> exampleAIClassComment [
+	self getAIComment inspect
+]
+
+{ #category : 'examples' }
+AIACommentBuilding class >> exampleAIMethodComment [
+	(EpLog >> #priorEntriesFrom:do:) getAIComment inspect
+]
+
+{ #category : 'examples' }
+AIACommentBuilding class >> exampleAIPackageComment [
+	'Epicea' getAIComment inspect
+]
+
+{ #category : 'examples' }
+AIACommentBuilding class >> exampleSetAIMethodComment [
+	| method |
+	method := EpLog >> #priorEntriesFrom:do:.
+	method aiaComment inspect.
 ]
 
 { #category : 'accessing' }
@@ -40,7 +74,7 @@ AIACommentBuilding class >> language: language [
 	commentLanguage := language
 ]
 
-{ #category : 'ollama system' }
+{ #category : 'model system' }
 AIACommentBuilding class >> mistralComment01 [
 	"Fist example of the result from AI_PackageComment comment: 'AI-OllamaKasper'"
 	^ 'The `AI-OllamaKasper` package is designed to integrate AI capabilities into the Pharo programming environment, specifically focusing on generating and managing comments for classes and methods. This package leverages advanced AI models to provide intelligent suggestions and documentation, enhancing the development experience by automating the creation of comments and ensuring that code is well-documented.
@@ -100,7 +134,7 @@ To use the `AI-OllamaKasper` package, developers can leverage the provided class
 The `AI-OllamaKasper` package is a powerful tool for enhancing the documentation of Pharo codebases. By leveraging AI models to generate comments, developers can save time and effort while ensuring that their code is well-documented and easy to understand. The package''s extensibility and comprehensive testing make it a valuable addition to any Pharo development environment.'
 ]
 
-{ #category : 'ollama system' }
+{ #category : 'model system' }
 AIACommentBuilding class >> numberExample [
 	"Just an experiment on 2+3*4, which in Pharo is 20"
 	| a b c op1 op2 operators res prefix|
@@ -133,7 +167,7 @@ AIACommentBuilding class >> numberExample [
 	^ res contents.
 ]
 
-{ #category : 'ollama system' }
+{ #category : 'model system' }
 AIACommentBuilding class >> ollamaSystem01 [
 	"returns a system variable"
 	^ '
@@ -210,7 +244,7 @@ Response:
 It accesses data from RBSharedPoolForTestData and includes behavior from RBTDummy.'''
 ]
 
-{ #category : 'ollama system' }
+{ #category : 'model system' }
 AIACommentBuilding class >> ollamaSystem02 [
 	^ 'Pharo''s class definition syntax is quite unique, and it can be a bit 
 challenging to understand at first. Based on the examples you provided, I''d 
@@ -273,7 +307,7 @@ well-suited for smalltalk programming, there are certainly opportunities to
 improve and expand its functionality to better serve developers.'
 ]
 
-{ #category : 'ollama system' }
+{ #category : 'model system' }
 AIACommentBuilding class >> ollamaSystem03 [
 	^ '
 Your name is OPharo.
@@ -522,61 +556,55 @@ Three kinds of messages
 Support for Domain Specific Languages'
 ]
 
-{ #category : 'ollama system' }
+{ #category : 'model system' }
 AIACommentBuilding class >> ollamaSystem04 [
 	^ 'This is for Pharo13. This is how a new class is defined.', String cr, 
 			(AIASourceCodeBuilder new forClass: ShiftClassBuilder), String cr, 'Always use this Pharo13 if if you can', String cr 
 ]
 
-{ #category : 'as yet unclassified' }
-AIACommentBuilding class >> setComment: item [ 
+{ #category : 'model system' }
+AIACommentBuilding class >> setComment_old: item [ 
 	^ self new setComment: item
 ]
 
-{ #category : 'abstract' }
-AIACommentBuilding >> getComment: toBeCommented [ 
-	^ self subclassResponsibility
+{ #category : 'accessing' }
+AIACommentBuilding >> getResponse [ 
+	aiaApi getResponse 
 ]
 
 { #category : 'initialization' }
-AIACommentBuilding >> initialize [
-	system := ''.
-	prompt := ''.
-	response := ''
+AIACommentBuilding >> initialize [ 
+	"Initializes MistralApi with the latest model."
+	super initialize.
+	aiaApi := self class ailienAPI new.
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> prompt [
-	"Instance variable getting/setting"
-	^ prompt
+
+	^ aiaApi prompt
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> prompt: anObject [
-	"Instance variable getting/setting"
-	prompt := anObject
+
+	aiaApi prompt: anObject
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> response [
 
-	^ response
-]
-
-{ #category : 'accessing' }
-AIACommentBuilding >> response: anObject [
-
-	response := anObject
+	^ aiaApi response
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> system [
-	"Instance variable getting/setting"
-	^ system
+
+	^ aiaApi system
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> system: anObject [
-	"Instance variable getting/setting"
-	system := anObject
+
+	aiaApi system: anObject
 ]

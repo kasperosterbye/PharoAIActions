@@ -115,7 +115,7 @@ AIASourceCodeBuilderTest >> testResponse [
 AIASourceCodeBuilderTest >> testSystemForMethodUsedIn [
 	| res |
 	builder systemForMethod: (AIASourceCodeBuilder >> #forMethod:) 
-			  usedIn: { AIAMethodComment >> #getComment:  }.
+			  usedIn: { AIAMethodComment >> #aiaComment:  }.
 	res := builder response contents.
 	self assert: res isNotEmpty.
 	self assert: (res  includesSubstring: '## Method calling forMethod:').

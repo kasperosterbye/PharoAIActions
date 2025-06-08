@@ -52,7 +52,7 @@ OllamaModelsApi class >> ollamaVersion [
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> getResponseForPrompt: prompt [
+OllamaModelsApi >> getResponseForPrompt: promptAdd [
 	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
 	"Split the method into parts, it is a bit too long now..."
 	| apiGenerateUrl jsonResponse requestDictionary requestBody|
@@ -60,7 +60,7 @@ OllamaModelsApi >> getResponseForPrompt: prompt [
 	requestDictionary := Dictionary newFrom:  { 
 		#model -> model.
 		#system -> self system.
-		#prompt -> (self promptPrefix , ' ', prompt).
+		#prompt -> (self prompt , ' ', promptAdd).
 		#stream -> false.
 		#options -> (Dictionary newFrom: {
     		#temperature -> 0})
@@ -83,8 +83,6 @@ OllamaModelsApi >> getResponseForPrompt: prompt [
 OllamaModelsApi >> initialize [ 
 	super initialize.
 	self model: (self class modelNames) first.
-	self system: ''.
-	self promptPrefix: ''.
 ]
 
 { #category : 'ollama models' }

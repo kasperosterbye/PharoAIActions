@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIAClassCommentTest',
-	#superclass : 'AIACommentBuildingTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'classCommenter'
 	],
@@ -19,8 +19,8 @@ AIAClassCommentTest >> setUp [
 ]
 
 { #category : 'tests' }
-AIAClassCommentTest >> testGetComment [
-	classCommenter getComment: AIAClassCommentTest .
+AIAClassCommentTest >> testAiaComment [
+	classCommenter aiaComment: AIAClassCommentTest .
 	self assert: (classCommenter response includesSubstring: self class name asString).
 	self assert: (classCommenter response includesSubstring: '## Example')
 ]

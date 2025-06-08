@@ -1,6 +1,11 @@
 Extension { #name : 'Class' }
 
 { #category : '*AIActions' }
-Class >> getAIComment [
-	^ AIAClassComment new getComment: self
+Class >> aiaComment [
+	^ (AIAClassComment new aiaComment: self) response
+]
+
+{ #category : '*AIActions' }
+Class >> setAIAComment [
+	AIAClassComment new setComment: self
 ]

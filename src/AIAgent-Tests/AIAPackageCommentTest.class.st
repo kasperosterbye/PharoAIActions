@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIAPackageCommentTest',
-	#superclass : 'AIACommentBuildingTest',
+	#superclass : 'TestCase',
 	#instVars : [
 		'packageCommenter'
 	],
@@ -19,11 +19,10 @@ AIAPackageCommentTest >> setUp [
 ]
 
 { #category : 'tests' }
-AIAPackageCommentTest >> testGetComment [
-	| response |
-	response := AIAPackageComment getComment: 'AIAgent-Tests' .
-	self assert: (response includesSubstring: '# Package: AIAgent-Tests').
-	self assert: (response includesSubstring: '## Overview')
+AIAPackageCommentTest >> testAiaComment [
+	packageCommenter := AIAPackageComment new aiaComment: 'AIAgent-Tests' .
+	self assert: (packageCommenter response includesSubstring: '# Package: AIAgent-Tests').
+	self assert: (packageCommenter response includesSubstring: '## Overview')
 ]
 
 { #category : 'tests' }

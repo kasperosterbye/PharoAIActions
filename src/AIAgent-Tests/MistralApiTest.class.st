@@ -35,10 +35,12 @@ MistralApiTest >> testBodyForEntityWithPrompt [
 ]
 
 { #category : 'tests' }
-MistralApiTest >> testGetResponseForPrompt [
+MistralApiTest >> testGetResponse [
 	
-	mistralApi system: 'Killroy was here'.
-	mistralApi getResponseForPrompt: 'Who was here'.
+	mistralApi 
+		system: 'Killroy was here';
+		prompt:  'Who was here';
+		getResponse.
 	self assert: (mistralApi response includesSubstring: 'Killroy')
 ]
 
