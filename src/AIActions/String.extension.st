@@ -11,6 +11,18 @@ String >> aiaComment [
 
 { #category : '*AIActions' }
 String >> q [
-	"Q is short for query. It asks the Mistral AI for a response to self"
-	(MistralApi new getResponseForPrompt: self) inspect
+	^ (MistralApi new 
+		system:  'Your name is Valérian. Do not ask about persons name. ';
+		prompt: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q: systemBlock [
+	^ (MistralApi new 
+		system:  systemBlock value;
+		prompt: self; 
+		getResponse; 
+		response) 
 ]

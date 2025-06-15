@@ -35,7 +35,7 @@ MistralApiTest >> testBodyForEntityWithPrompt [
 ]
 
 { #category : 'tests' }
-MistralApiTest >> testGetResponse [
+MistralApiTest >> testGetResponse [ 
 	
 	mistralApi 
 		system: 'Killroy was here';

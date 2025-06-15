@@ -134,9 +134,9 @@ MistralApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'mistral models' }
-MistralApi >> getResponse [
-	"Sends a prompt to the Mistral API and returns the response. Handles request construction, sending, and response processing."
+MistralApi >> getResponse [ 
 	| apiGenerateUrl jsonResponse |
+	
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
 	[  jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
