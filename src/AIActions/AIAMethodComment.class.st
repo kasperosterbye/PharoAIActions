@@ -26,7 +26,7 @@ AIAMethodComment class >> for: method [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> aiaComment: aCompiledMethod [
+AIAMethodComment >> aiaComment: aCompiledMethod [ 
 	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
 	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 

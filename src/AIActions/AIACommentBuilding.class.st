@@ -21,9 +21,9 @@ Class {
 	#instVars : [
 		'aiaApi'
 	],
-	#classInstVars : [
-		'ailienApi',
-		'commentLanguage'
+	#classVars : [
+		'AilienApi',
+		'CommentLanguage'
 	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
@@ -31,29 +31,29 @@ Class {
 }
 
 { #category : 'accessing' }
-AIACommentBuilding class >> ailienAPI [
-	ailienApi ifNil: [ ailienApi := MistralApi ].
-	^ ailienApi
+AIACommentBuilding class >> ailienApi [
+	AilienApi ifNil: [ self ailienApi: MistralApi ].
+	^ AilienApi
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding class >> ailienApi: api [
-	^ ailienApi := api
+	^ AilienApi := api
 ]
 
 { #category : 'examples' }
 AIACommentBuilding class >> exampleAIClassComment [
-	self getAIComment inspect
+	self aiaComment inspect
 ]
 
 { #category : 'examples' }
 AIACommentBuilding class >> exampleAIMethodComment [
-	(EpLog >> #priorEntriesFrom:do:) getAIComment inspect
+	(EpLog >> #priorEntriesFrom:do:) aiaComment inspect
 ]
 
 { #category : 'examples' }
 AIACommentBuilding class >> exampleAIPackageComment [
-	'Epicea' getAIComment inspect
+	'Epicea' aiaComment inspect
 ]
 
 { #category : 'examples' }
@@ -65,13 +65,13 @@ AIACommentBuilding class >> exampleSetAIMethodComment [
 
 { #category : 'accessing' }
 AIACommentBuilding class >> language [
-	commentLanguage ifNil: [ commentLanguage := 'British' ].
-	^ commentLanguage
+	CommentLanguage ifNil: [ CommentLanguage := 'British' ].
+	^ CommentLanguage 
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding class >> language: language [
-	commentLanguage := language
+	CommentLanguage := language
 ]
 
 { #category : 'model system' }
@@ -576,7 +576,7 @@ AIACommentBuilding >> getResponse [
 AIACommentBuilding >> initialize [ 
 	"Initializes MistralApi with the latest model."
 	super initialize.
-	aiaApi := self class ailienAPI new.
+	aiaApi := self class ailienApi new.
 ]
 
 { #category : 'accessing' }
