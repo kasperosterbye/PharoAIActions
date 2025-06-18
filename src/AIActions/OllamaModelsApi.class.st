@@ -52,37 +52,42 @@ OllamaModelsApi class >> ollamaVersion [
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> getResponseForPrompt: promptAdd [
+OllamaModelsApi >> bodyForEntityWithPrompt [
 	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
 	"Split the method into parts, it is a bit too long now..."
-	| apiGenerateUrl jsonResponse requestDictionary requestBody|
+	| apiGenerateUrl  requestDictionary |
 	apiGenerateUrl := 'http://localhost:11434/api/generate'.
 	requestDictionary := Dictionary newFrom:  { 
 		#model -> model.
 		#system -> self system.
-		#prompt -> (self prompt , ' ', promptAdd).
+		#prompt -> self prompt.
 		#stream -> false.
 		#options -> (Dictionary newFrom: {
     		#temperature -> 0})
 	} .
-	requestBody := (STONJSON toString: requestDictionary).
-	[jsonResponse := ZnClient new
+	^ ZnEntity json: (STONJSON toString: requestDictionary).
+]
+
+{ #category : 'ollama models' }
+OllamaModelsApi >> getResponse [ 
+	| apiGenerateUrl jsonResponse |
+	apiGenerateUrl := 'http://localhost:11434/api/generate'.
+	[  jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
-	    entity: (ZnEntity with: requestBody);
-		 timeout: (ZnNetworkingUtils defaultSocketStreamTimeout * 5);
+	    entity: self bodyForEntityWithPrompt;
+		 "timeout: (ZnNetworkingUtils defaultSocketStreamTimeout * 5);"
 	    post;
 	    contents.
-		self response: ((STONJSON fromString: jsonResponse) at: 'response') contents .
+		response := self responseOf: jsonResponse .
 	] on: Error do: [ :ex |
-   		self response: ex messageText.
+   		response := ex messageText.
 	].
-	^ self response.
 ]
 
 { #category : 'initialization' }
 OllamaModelsApi >> initialize [ 
 	super initialize.
-	self model: (self class modelNames) first.
+	self model: (self class modelNames) second.
 ]
 
 { #category : 'ollama models' }
@@ -125,4 +130,10 @@ OllamaModelsApi >> modelShortInfo [
 { #category : 'printing' }
 OllamaModelsApi >> printOn: string [
 	string << 'OllamaModelsApi: ' << self model.
+]
+
+{ #category : 'mistral models' }
+OllamaModelsApi >> responseOf: jsonResponse [
+	"Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response."
+	^ (STONJSON fromString: jsonResponse) at: 'response'
 ]
