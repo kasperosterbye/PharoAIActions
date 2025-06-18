@@ -26,15 +26,6 @@ AIAMethodComment class >> for: method [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> aiaBlackTest: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
-	self prompt: 'This is a Pharo question. Can you give a method test method for ' , 
-		aCompiledMethod name, ' in class "', aCompiledMethod methodClass asString,
-			'" . The test class exists. Just return the code for the test method, no explanation please '.
-	self getResponse
-]
-
-{ #category : 'internals' }
 AIAMethodComment >> aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
 	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 

@@ -11,8 +11,9 @@ String >> aiaComment [
 
 { #category : '*AIActions' }
 String >> q [
+	"'What is 2+2?' q >>> 'The answer is 4.'"
 	^ (MistralApi new 
-		system:  'Your name is Valérian. Do not ask about persons name. ';
+		system:  'Your name is Valérian. Do not ask about persons name. In Pharo, operations never follow standard mathematics, never operations (PEMDAS/BODMAS rules), but are evaluated strictly from left to right. Please response in ', AIACommentBuilding language;
 		prompt: self; 
 		getResponse; 
 		response) 
@@ -25,4 +26,9 @@ String >> q: systemBlock [
 		prompt: self; 
 		getResponse; 
 		response) 
+]
+
+{ #category : '*AIActions' }
+String >> setAIAComment [
+	AIAPackageComment new setComment: self
 ]
