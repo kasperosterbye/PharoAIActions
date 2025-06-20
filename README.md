@@ -1,15 +1,23 @@
-# AIActions comment maker
+# AIActions – AI-based Comment Generator for Pharo
 
-To load the `PharoAIActions` package and use it to create comments for methods, classes, and packages, you need to follow these steps:
+**AIActions** is a Pharo tool that uses AI to generate meaningful comments for methods, classes, and packages.  
+It integrates with AI APIs (such as Mistral and Ollama) to enhance code documentation and improve readability and maintainability.
 
-### **Load the `PharoAIActions` package using Metacello:**
+## Installation
 
-   Open a Playground in Pharo and execute the following code to load the `PharoAIActions` package:
+To load the AIActions package in Pharo using Metacello, open a Playground and run:
 
-   ```smalltalk
-   Metacello new
-       githubUser: 'kasperosterbye' project: 'PharoAIActions' commitish: 'master' path: 'src';
-       baseline: 'PharoAIActions';
-       load.
-   ```
-[This is an example of comment generated for the **AIActions** package](AIActionsCommentExample.md)
+```smalltalk
+Metacello new
+    githubUser: 'kasperosterbye' project: 'PharoAIActions' commitish: 'master' path: 'src';
+    baseline: 'PharoAIActions';
+    load.
+```
+Here’s an example of an AI-generated comment for the package itself:
+
+> The AIActions package is designed to facilitate the generation and management of comments for various elements within a Pharo environment, leveraging AI-driven tools.
+> This package includes classes and methods that interact with external AI APIs to automatically generate comments for classes, methods, and packages.
+> The primary goal is to enhance code documentation by providing meaningful and context-aware comments, thereby improving code readability and maintainability.
+
+
+For more details, see [AIActionsCommentExample.md](AIActionsCommentExample.md)
