@@ -12,4 +12,4 @@ To load the `PharoAIActions` package and use it to create comments for methods, 
        baseline: 'PharoAIActions';
        load.
    ```
-[This is an example of comment generated for the **AIActions** package](AIActionsCommentExample)
+[This is an example of comment generated for the **AIActions** package](AIActionsCommentExample.md)
