@@ -47,31 +47,6 @@ AIAMethodComment >> aiaWhiteComment: aCompiledMethod [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> aiaWhiteTest: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self prompt: 'This is a Pharo question. Can you give a method test method for ' , 
-		aCompiledMethod name, ' in class "', aCompiledMethod methodClass asString,
-			'" . The test class exists. Just return the code for the test method, no explanation please '.
-	self getResponse
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> commentSourceFor_old: aCompiledMethod [
-	"The method commentSourceFor takes a compiled method, formats its class name and source code, and returns the formatted string."
-	| sourceString |
-	sourceString := WriteStream on: ''.
-	sourceString << aCompiledMethod methodClass name << ' >> #'.
-	sourceString << aCompiledMethod sourceCode << String cr << String cr.
-	^ sourceString contents
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> existingComment_old: aCompiledMethod [
-	aCompiledMethod comment ifNil: [^ ''].
-	^ aCompiledMethod comment  	
-]
-
-{ #category : 'internals' }
 AIAMethodComment >> methodSource: compiledMethod addComment: comment [
 	"Adds a comment to the method source code."
 	| sourceLines safeComment |
