@@ -23,7 +23,11 @@ EpLog aiaComment.
 ## Setting Comments
 ```smalltalk
 (EpLog >> #priorEntriesFrom:upTo:) setWhiteComment.
+"→ sets the white comment into the source of the method"
+
 'Epicea' setAIAComment.
+"→ sets the package comment into the Epicea package"
+
 ```
 
 ## Language Variants
