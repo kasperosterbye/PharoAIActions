@@ -71,6 +71,14 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+MistralApi class >> esug [
+	"Return the API token for Mistral, read from a maarumlam https file.
+	The file should contain only the Bearer token string (no quotes or extra lines).
+	Used to authenticate API requests."
+	^ ZnClient new url: 'https://maarumlam.dk/pharoCommentsByMistral.txt'; get.
+]
+
 { #category : 'AI models' }
 MistralApi class >> modelNames [
 	"returns an array with one item per model."
@@ -86,7 +94,7 @@ MistralApi class >> models [
 	url := 'https://api.mistral.ai/v1/models'.
 	response := ZnClient new
 		url: url;
-		headerAt: 'Authorization' put: self token;
+		headerAt: 'Authorization' put: self esug;
 		get;
 		contents.
 	sorted := Dictionary new.
@@ -140,7 +148,7 @@ MistralApi >> getResponse [
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
 	[  jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
-	  	 headerAt: 'Authorization' put: self class token;
+	  	 headerAt: 'Authorization' put: self class esug;
 	    headerAt: 'Content-Type' put: 'application/json';
 	    entity: self bodyForEntityWithPrompt;
 	    post;
