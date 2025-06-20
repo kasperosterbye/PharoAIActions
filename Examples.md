@@ -56,22 +56,23 @@ It is possible to treat a string as a prompt by the **q** method
 
 
 ## Source-Based Prompts
-It is possible to set the special system background to be used in the questions using **q:**
+It is possible to set the special system background to be used in the questions using **q:**. 
 
 ```smalltalk
 'In Pharo, what is the instance variables of class EpLog. Just the result, no comments' q.
-"→ #(#name #level #message #timeStamp)"
-
+"→ #(#name #level #message #timeStamp) // which is wrong..."
 
 'In Pharo, what is the instance variables of class EpLog. Just the result, no comments' q: [
    AIASourceCodeBuilder new forClass: EpLog.
 ].
+"→ #(#announcer #commentByEntryReference #store) // which is correct"
 
 'What is this code about, and who wrote this code' q: [
    ZnClient new
       url: 'https://raw.githubusercontent.com/pharo-project/pharo/refs/heads/Pharo14/doc/Regex/7-History.md';
       get.
 ].
+"→ It is indeed possible to in Pharo to ask question based on a specific web page"
 ```
 
 
