@@ -23,7 +23,7 @@ AIASourceCodeBuilderTest >> testClassHeaderFor [
 	| res |
 	builder classHeaderFor: self class.
 	res := builder response contents.
-	self assert: (res  includesSubstring: '### Class definition: ').
+	self assert: (res  includesSubstring: '### Class definition:').
 	self assert: (res  includesSubstring: 'slots: { #builder };').
 ]
 
@@ -118,6 +118,6 @@ AIASourceCodeBuilderTest >> testSystemForMethodUsedIn [
 			  usedIn: { AIAMethodComment >> #aiaComment:  }.
 	res := builder response contents.
 	self assert: res isNotEmpty.
-	self assert: (res  includesSubstring: '## Method calling forMethod:').
+	self assert: (res  includesSubstring: '## Calling methods:').
 	self assert: (res  includesSubstring: 'This is a Pharo question.').
 ]

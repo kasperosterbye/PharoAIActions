@@ -24,6 +24,21 @@ AIAPackageComment >> aiaComment: aPackageName [
 ]
 
 { #category : 'accessing' }
+AIAPackageComment >> aiaCommentMany: aPackageNames [
+	"The method sets a package comment using Mistral API."
+	self system:  (AIASourceCodeBuilder new for: aPackageNames).
+	self prompt: 'This is a Pharo question. 
+		Please write a single package comment that covers the
+		purpose and relationship between the following packages: {#' ,
+		('. #' join: aPackageNames), 
+		'}. Start with the most package without experiements and without tests. 
+		Keep the response within two pages. Please use markdown format and respond in ', 
+	AIACommentBuilding language.
+	self getResponse.
+	^ self
+]
+
+{ #category : 'accessing' }
 AIAPackageComment >> setComment: aPackageName [
 	self aiaComment: aPackageName.
 	(Package named: aPackageName) packageComment: self response 

@@ -6,13 +6,16 @@
 **AIASourceCodeBuilder** is a utility class designed to generate formatted source code descriptions for Pharo classes and packages. It is particularly useful for documentation and code analysis purposes. The class provides methods to generate detailed descriptions of classes, including their instance variables, methods, and meta-classes.
 
 ### Key Features:
+
 - **Package-Level Generation**: Generates source code descriptions for a list of packages.
 - **Class-Level Generation**: Generates source code descriptions for individual classes or a list of classes.
 - **Detailed Descriptions**: Includes class definitions, instance variables, and methods grouped by protocol.
 - **Meta-Class Support**: Generates descriptions for both the class and its meta-class.
 
 ### Usage:
+
 To use `AIASourceCodeBuilder`, you can call its class-side methods to generate descriptions for specific packages or classes. For example:
+
 ```smalltalk
 | builder packageList classList |
 builder := AIASourceCodeBuilder new.
@@ -30,6 +33,7 @@ builder forClasses: classList.
 ```
 
 ### Methods:
+
 - **`for: aPackageList`**: Generates a formatted string describing the classes in the given list of packages.
 - **`forClass: aClass`**: Generates a formatted string describing the given class.
 - **`forClasses: aClassList`**: Generates a formatted string describing the given list of classes.
@@ -39,6 +43,7 @@ builder forClasses: classList.
 - **`classHeaderFor: aClass`**: Internal method to return a string with the class name and definition for a class.
 
 ### Example:
+
 ```smalltalk
 | builder description |
 builder := AIASourceCodeBuilder new.
@@ -46,7 +51,7 @@ description := builder forClass: SomeClass.
 Transcript show: description.
 ```
 
-This class comment provides an overview of the `AIASourceCodeBuilder` class, its features, usage, and key methods. It is intended to help users understand how to utilize the class effectively for generating source code descriptions.
+This class comment provides an overview of the `AIASourceCodeBuilder` class, its features, usage, and key methods. It is intended to help users understand how to utilise the class effectively for generating source code descriptions.
 "
 Class {
 	#name : 'AIASourceCodeBuilder',
@@ -67,9 +72,9 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 
 	aClass isMeta ifFalse: [
 		response << '### Class comment:' << String cr.
-		response << '```comment' << String cr.
+		response << '````markdown' << String cr.
 		response << aClass comment << String cr.
-		response << '```' << String cr
+		response << '````' << String cr
 	].
 
 	response << '### Class definition:' << String cr.
@@ -90,14 +95,21 @@ AIASourceCodeBuilder >> classesInPackage: aPackage [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> for: aPackageList [
-	"The input is {package1. package2. package3}."
+AIASourceCodeBuilder >> for: packages [
+	"Generates a formatted string describing the classes in the given list of packages."
+	
 	response := WriteStream on: ''.
-	aPackageList do: [ :package |
-			response << ('# Package: ', package) << String cr.
-			self classesInPackage: (PackageOrganizer default packageNamed: package) ].
+	((packages isString and: [ (packages beginsWith: '*') ] )
+			ifTrue: [ PackageOrganizer default packages
+		               select: [ :p |
+		               p name beginsWith: packages copyWithoutFirst ]
+		               thenCollect: #name ]
+			ifFalse: [ packages ])
+	 do: [ :package |
+			response << '# Package: ' << package  << String cr.
+			self classesInPackage:
+				(PackageOrganizer default packageNamed: package) ].
 	^ response contents
-
 ]
 
 { #category : 'accessing' }
@@ -128,14 +140,11 @@ AIASourceCodeBuilder >> forClasses: aClassList [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forMethod: aMethod [
-	| selector myClass myPackage callers callersInMyPackage|
-	selector := aMethod selector.
-	myClass := aMethod methodClass.
-	myPackage := myClass packageName.
-	callers := SystemNavigation default allCallsOn: selector.
+	|  callers callersInMyPackage|
+	callers := SystemNavigation default allCallsOn: (aMethod selector).
 	callersInMyPackage := OrderedCollection new.
 	callers do: [ :caller | 
-		caller methodClass packageName = myPackage 
+		(caller methodClass packageName alike: aMethod methodClass packageName ) > 4
 			ifTrue: [ callersInMyPackage add: caller ]
 	].
 	^ self systemForMethod: aMethod usedIn: callersInMyPackage

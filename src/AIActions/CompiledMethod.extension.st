@@ -1,6 +1,11 @@
 Extension { #name : 'CompiledMethod' }
 
 { #category : '*AIActions' }
+CompiledMethod >> aiaBlackComment [
+	^ (AIAMethodComment new aiaBlackComment: self) response.
+]
+
+{ #category : '*AIActions' }
 CompiledMethod >> aiaComment [
 	^ (AIAMethodComment new aiaComment: self) response.
 ]

@@ -26,18 +26,18 @@ AIAMethodComment class >> for: method [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> aiaComment: aCompiledMethod [ 
+AIAMethodComment >> aiaBlackComment: aCompiledMethod [ 
 	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
 	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
-			'. Your response should be 100 chacters, and only letters.', 
+			'. Your response should be 140 chacters, and only letters.', 
 			' Please response in ', AIACommentBuilding language.
 	self getResponse.
 	^ self 
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> aiaWhiteComment: aCompiledMethod [
+AIAMethodComment >> aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
 	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
@@ -58,20 +58,20 @@ AIAMethodComment >> methodSource: compiledMethod addComment: comment [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> setComment: aCompiledMethod [
+AIAMethodComment >> setBlackComment: aCompiledMethod [
 	
 	aCompiledMethod comment ifNotNil: [ ^ nil ].
-	self aiaComment: aCompiledMethod.
+	self aiaBlackComment: aCompiledMethod.
 	aCompiledMethod methodClass
 		compile: (self methodSource: aCompiledMethod addComment: self response)
 		classified: aCompiledMethod protocol
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> setWhiteComment: aCompiledMethod [
+AIAMethodComment >> setComment: aCompiledMethod [
 	
 	aCompiledMethod comment ifNotNil: [ ^ nil ].
-	self aiaWhiteComment: aCompiledMethod.
+	self aiaComment: aCompiledMethod.
 	aCompiledMethod methodClass
 		compile: (self methodSource: aCompiledMethod addComment: self response)
 		classified: aCompiledMethod protocol

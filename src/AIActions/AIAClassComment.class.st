@@ -16,6 +16,22 @@ AIAClassComment >> aiaComment: aClass [
 	
 	self prompt: 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
+		'. Use Markdown format, and include a usage example suitable for the Playground. ',
+		'Prefer code that ends with an expression to be inspected using ⌘I. ',
+		'Please write the response in ',
+		AIACommentBuilding language.
+	self getResponse.
+	^ self.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> aiaComment_old: aClass [
+	"Builds a comment for aClass."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self prompt: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
 		'. Please respond according to the recommendations. Write the answer in MarkDown. Please response in ',
 		AIACommentBuilding language.
 	self getResponse.

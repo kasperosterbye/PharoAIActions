@@ -3,10 +3,18 @@ Extension { #name : 'String' }
 { #category : '*AIActions' }
 String >> aiaComment [
 	| package |
-	package := PackageOrganizer default 
-		packageNamed: self 
-		ifAbsent: [^ 'No package named: ', self].
-	^ (AIAPackageComment new aiaComment: self) response
+	(self beginsWith: '*')
+		ifTrue: [ 
+			^  (PackageOrganizer default packages 
+				select: [:p| p name beginsWith: self copyWithoutFirst ] 
+				thenCollect: #name) aiaComment ]
+		ifFalse: [
+			package := PackageOrganizer default 
+				packageNamed: self 
+				ifAbsent: [^ 'No package named: ', self].
+				^ (AIAPackageComment new aiaComment: self) response
+		].
+	
 ]
 
 { #category : '*AIActions' }
