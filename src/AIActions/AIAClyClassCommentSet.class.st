@@ -21,7 +21,6 @@ AIAClyClassCommentSet class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyClassCommentSet >> execute [
-	"This method executes the command to set an AI comment for the selected class in the browser."
 	self element browserItem actualObject setAIAComment.
 	
 ]
