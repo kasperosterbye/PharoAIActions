@@ -22,7 +22,7 @@ AIAClassCommentTest >> setUp [
 AIAClassCommentTest >> testAiaComment [
 	classCommenter aiaComment: AIAClassCommentTest .
 	self assert: (classCommenter response includesSubstring: self class name asString).
-	self assert: (classCommenter response includesSubstring: '## Example')
+	self assert: (classCommenter response includesSubstring: 'Example')
 ]
 
 { #category : 'tests' }

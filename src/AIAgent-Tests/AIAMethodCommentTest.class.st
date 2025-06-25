@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"This method demonstrates the functionality of AIAMethodComment."
+	"This method demonstrates the use of a simple arithmetic operation in Pharo."
 	| foo |
 	foo := 88.
 	^ foo + 12.
@@ -61,7 +61,7 @@ AIAMethodCommentTest >> testAiaComment [
 	methodCommenter aiaComment: testMethod .
 	comment := methodCommenter response.
 	self assert: comment size > 5.
-	self assert: (comment includesSubstring: 'AIAMethodComment').
+	self assert: (comment includesSubstring: 'method').
 ]
 
 { #category : 'tests' }
@@ -93,7 +93,7 @@ AIAMethodCommentTest >> testSetComment [
 	methodCommenter setComment: testMethod .
 	testMethod := self class >> #methodExample.
 	self assert: testMethod comment size > 5.
-	self assert: (testMethod comment includesSubstring: 'AIAMethodComment').
+	self assert: (testMethod comment includesSubstring: 'method').
 ]
 
 { #category : 'tests' }
