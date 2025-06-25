@@ -11,16 +11,11 @@ CompiledMethod >> aiaComment [
 ]
 
 { #category : '*AIActions' }
-CompiledMethod >> aiaWhiteComment [
-	^ (AIAMethodComment new aiaWhiteComment: self) response.
-]
-
-{ #category : '*AIActions' }
 CompiledMethod >> setAIAComment [
 	^ AIAMethodComment new setComment: self.
 ]
 
 { #category : '*AIActions' }
-CompiledMethod >> setWhiteComment [
-	^ AIAMethodComment new setWhiteComment: self.
+CompiledMethod >> setBlackComment [
+	^ AIAMethodComment new setBlackComment: self.
 ]

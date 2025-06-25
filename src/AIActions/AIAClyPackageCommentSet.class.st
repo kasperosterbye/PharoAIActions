@@ -80,7 +80,7 @@ AIAClyPackageCommentSet class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyPackageCommentSet >> execute [
-	self element browserItem actualObject methodClass packageName asString setAIAComment.
+	self element browserItem actualObject name asString setAIAComment.
 	
 ]
 
