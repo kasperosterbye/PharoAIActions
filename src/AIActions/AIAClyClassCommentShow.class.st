@@ -1,3 +1,9 @@
+"
+# Class Comment for `AIAClyClassCommentShow`
+
+The `AIAClyClassCommentShow` class is designed to display the comments associated with a class in a Pharo system. This class is part of the `AIActions` package and is tagged with `BrowserAIAComments`. It provides functionality to read parameters from a context and execute the display of class comments.
+
+"
 Class {
 	#name : 'AIAClyClassCommentShow',
 	#superclass : 'AIAClyCommentShow',

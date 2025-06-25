@@ -17,7 +17,8 @@ AIAClassComment >> aiaComment: aClass [
 	self prompt: 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
 		'. Use Markdown format, and include a usage example suitable for the Playground. ',
-		'Prefer code that ends with an expression to be inspected using ⌘I. ',
+		'Prefer code that ends with an expression to be inspected using command-I. ',
+		'When givin an example using the definition of a class, use: ', (ShiftClassBuilder comment),
 		'Please write the response in ',
 		AIACommentBuilding language.
 	self getResponse.
