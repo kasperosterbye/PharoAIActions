@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIACommentPresenter',
-	#superclass : 'SpTextPresenter',
+	#superclass : 'MicrodownPresenter',
 	#instVars : [
 		'commentName'
 	],
@@ -13,7 +13,18 @@ Class {
 }
 
 { #category : 'instance creation' }
-AIACommentPresenter class >> onText: aText [
+AIACommentPresenter class >> onText: aString [
+	commentPresenter ifNotNil: [ commentPresenter delete].
+	commentPresenter := self basicNew.
+	commentPresenter
+		commentName: ((aString lines first takeFirst: 20), '...');
+		initialize;
+		text: (Microdown asRichText: aString );
+		open 
+]
+
+{ #category : 'instance creation' }
+AIACommentPresenter class >> onText_old: aText [
 	commentPresenter ifNotNil: [ commentPresenter delete].
 	commentPresenter := self basicNew.
 	commentPresenter
