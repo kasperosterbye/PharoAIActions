@@ -2,6 +2,11 @@
 
 This file contains example usages of the AIActions package and sample AI-generated responses.
 
+The below code examples show how it is done in Pharo Playground or inside methods. In addition they can be activated
+inside the Browser with "AI comment" that whows the comment, and "AI set comment" that inserts the ai generated code in
+the the method, class or package. 
+
+
 
 ## Method and Class Comments
 
