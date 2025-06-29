@@ -69,7 +69,8 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 	"Returns a string with the class name and definition for aClass."
 
 	response << '## Class: ' << aClass name asString << String cr.
-
+	response << ((FluidClassDefinitionPrinter for: aClass) classDefinitionString) << String cr << String cr.
+	
 	aClass isMeta ifFalse: [
 		response << '### Class comment:' << String cr.
 		response << '````markdown' << String cr.
@@ -77,8 +78,7 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 		response << '````' << String cr
 	].
 
-	response << '### Class definition:' << String cr.
-	response << ((FluidClassDefinitionPrinter for: aClass) classDefinitionString) << String cr << String cr.
+	
 ]
 
 { #category : 'internal' }

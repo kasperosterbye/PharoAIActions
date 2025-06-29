@@ -23,17 +23,6 @@ AIACommentPresenter class >> onText: aString [
 		open 
 ]
 
-{ #category : 'instance creation' }
-AIACommentPresenter class >> onText_old: aText [
-	commentPresenter ifNotNil: [ commentPresenter delete].
-	commentPresenter := self basicNew.
-	commentPresenter
-		commentName: ((aText lines first takeFirst: 20), '...');
-		initialize;
-		text: aText ;
-		open 
-]
-
 { #category : 'accessing' }
 AIACommentPresenter >> commentName [
 

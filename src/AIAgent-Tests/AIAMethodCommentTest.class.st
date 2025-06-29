@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"This method demonstrates the use of a simple arithmetic operation in Pharo."
+	"this is just an example method"
 	| foo |
 	foo := 88.
 	^ foo + 12.

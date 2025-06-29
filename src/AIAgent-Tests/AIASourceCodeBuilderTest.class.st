@@ -23,7 +23,6 @@ AIASourceCodeBuilderTest >> testClassHeaderFor [
 	| res |
 	builder classHeaderFor: self class.
 	res := builder response contents.
-	self assert: (res  includesSubstring: '### Class definition:').
 	self assert: (res  includesSubstring: 'slots: { #builder };').
 ]
 
