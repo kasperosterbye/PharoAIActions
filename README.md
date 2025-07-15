@@ -14,6 +14,10 @@ Metacello new
     load
 ```
 
+## A YouTube from 2025
+https://maarumlam.dk/ESUG25-Kasper03.mp4
+
+
 ## Examples
 
 Here’s an example of an AI-generated comment for the package itself:
