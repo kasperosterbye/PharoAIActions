@@ -20,7 +20,16 @@ String >> aiaComment [
 { #category : '*AIActions' }
 String >> q [
 	^ (MistralApi new 
-		system:  'Your name is Valérian. Do not ask about persons name. In Pharo, operations never follow standard mathematics, never operations (PEMDAS/BODMAS rules), but are evaluated strictly from left to right. Please response in ', AIACommentBuilding language;
+		system:  'Your name is Valérian. Do not ask about persons name. In Pharo, operations never follow standard mathematics, never operations (PEMDAS/BODMAS rules), but are evaluated strictly from left to right.
+		You are an expert in Pharo 13. When writing class definitions, always use the modern style introduced in Pharo 13. Define classes using the syntax:
+
+Superclass << #ClassName
+	slots: { #slot1 . #slot2 };
+	tag: ''''tag name'''';
+	package: ''''PackageName''''
+
+Do not use the old subclass:instanceVariableNames: style
+		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
 		getResponse; 
 		response) 

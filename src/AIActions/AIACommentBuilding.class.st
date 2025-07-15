@@ -568,8 +568,26 @@ AIACommentBuilding class >> setComment_old: item [
 ]
 
 { #category : 'accessing' }
-AIACommentBuilding >> getResponse [ 
-	aiaApi getResponse 
+AIACommentBuilding >> getResponse [
+	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
+	| aiProcess |
+	aiProcess := [ aiaApi getResponse ] newProcess.
+	aiProcess resume.
+	[ :job |
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job title: 'Waiting for AI response...'.
+		job interruptBlock: [ 
+			aiProcess terminate.
+			aiaApi response: 'AI based response Terminated'.
+			^ self
+		].
+		1 to: 300 do: [:each |
+			job
+				progress: ((1/300) * each) ;
+				title: 'AI working ', (each/10) asFloat printString, ' of 30'.
+				aiaApi response ifEmpty: [100 milliSeconds wait].
+		].
+	] asJob run.
 ]
 
 { #category : 'initialization' }
