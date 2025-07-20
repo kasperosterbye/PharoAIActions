@@ -15,7 +15,7 @@ Class {
 { #category : 'accessing' }
 AIAPackageComment >> aiaComment: aPackageName [
 	"The method sets a package comment using Mistral API."
-	self system:  (AIASourceCodeBuilder new for: { aPackageName }).
+	self system:  (AIASourceCodeBuilder new for: { aPackageName. (aPackageName ,'-Tests') }).
 	self prompt: 'This is a Pharo question. Can your give a package comment for ' , 
 		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
 		AIACommentBuilding language.
@@ -36,6 +36,17 @@ AIAPackageComment >> aiaCommentMany: aPackageNames [
 	AIACommentBuilding language.
 	self getResponse.
 	^ self
+]
+
+{ #category : 'accessing' }
+AIAPackageComment >> aiaComment_old: aPackageName [
+	"The method sets a package comment using Mistral API."
+	self system:  (AIASourceCodeBuilder new for: { aPackageName }).
+	self prompt: 'This is a Pharo question. Can your give a package comment for ' , 
+		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
+		AIACommentBuilding language.
+	self getResponse.
+	^ self.
 ]
 
 { #category : 'accessing' }

@@ -90,8 +90,11 @@ TestCase << #{2}Test
 	package: ''{2}-Tests''
 You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test methos is called before the test is executed.
+Insert comments in the test method you create.
 Just return the test method. Do not explain.' 
-	format: { sourceMethod name .  sourceMethod methodClass name. self promptGeneratorMethods }).
+	format: { sourceMethod name .  
+				sourceMethod methodClass name. 
+				self promptGeneratorMethods }).
 ]
 
 { #category : 'as yet unclassified' }
@@ -135,8 +138,26 @@ Notes:
 ]
 
 { #category : 'as yet unclassified' }
+AIATestGenerator >> promptGenerator_old [
+	self prompt: ('Please build a test case for method "{1}".
+	{3}.
+	The test method will be places in 
+TestCase << #{2}Test
+	slots: \{ #log . #logBuilder };
+	tag: ''Log'';
+	package: ''{2}-Tests''
+You must only use code that you know is existing in Pharo, never use figurative code.
+The setUp method of any test methos is called before the test is executed.
+Just return the test method. Do not explain.' 
+	format: { sourceMethod name .  sourceMethod methodClass name. self promptGeneratorMethods }).
+]
+
+{ #category : 'as yet unclassified' }
 AIATestGenerator >> systemGenerator [
-	self system: (AIASourceCodeBuilder new for: { 
+	self system: 
+		'All background code and documentation is written in Markdown.
+		This includes Pharo packages, classes, and methods.', String cr, 
+	(AIASourceCodeBuilder new for: { 
 		sourceMethod methodClass class packageName asString. 
 		sourceMethod methodClass packageName asString , '-Tests' }).
 ]

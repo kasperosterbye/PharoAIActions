@@ -98,7 +98,7 @@ AIASourceCodeBuilder >> classesInPackage: aPackage [
 AIASourceCodeBuilder >> for: packages [
 	"Generates a formatted string describing the classes in the given list of packages."
 	
-	response := WriteStream on: ''.
+	"response := WriteStream on: ''."
 	((packages isString and: [ (packages beginsWith: '*') ] )
 			ifTrue: [ PackageOrganizer default packages
 		               select: [ :p |
@@ -124,7 +124,7 @@ AIASourceCodeBuilder >> forClass: aClass [
 AIASourceCodeBuilder >> forClasses: aClassList [
 	"Generates a formatted string describing the classes and their meta-classes in aClassList."
 	| metaClass |
-	response := WriteStream on: ''.
+	"response := WriteStream on: ''."
 	aClassList do: [ :aClass | 
 		self classHeaderFor: aClass.
 		self methodsFor: aClass.
@@ -152,7 +152,11 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 
 { #category : 'initialization' }
 AIASourceCodeBuilder >> initialize [
-	response := WriteStream on: ''.
+	response := WriteStream on: ''."
+	response << 
+'All background code and documentation is written in Markdown.
+This includes Pharo packages, classes, and methods.'.
+	response << String cr."
 ]
 
 { #category : 'internal' }
@@ -183,7 +187,7 @@ AIASourceCodeBuilder >> response [
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> systemForMethod: aMethod usedIn: callersInMyPackage [
-	response := WriteStream on: ''.
+	"response := WriteStream on: ''."
 	response << '## Calling methods: ' << 
 		aMethod methodClass name asString << ' >> #' <<aMethod selector << String cr.
 	callersInMyPackage do: [ :caller |

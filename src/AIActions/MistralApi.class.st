@@ -333,6 +333,29 @@ MistralApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'mistral models' }
+MistralApi >> bodyForEntityWithPrompt_withTools [
+	"Creates a JSON entity for an API request with a system message and user prompt."
+	| requestDictionary |
+	requestDictionary :=Dictionary newFrom: {
+	    'model' -> 'codestral-latest'.
+	    'messages' -> {
+				Dictionary newFrom: {
+					'role' -> 'system'.
+					'content' -> system
+				}. 
+		      Dictionary newFrom: { 
+		         'role' -> 'user'. 
+		         'content' -> prompt 
+		      } 
+	    }.
+		'tools' -> self toolsExperiment.
+		'temperature' -> 0.
+	    'stream' -> false.
+		}.
+	^ ZnEntity json: (STONJSON toString: requestDictionary).
+]
+
+{ #category : 'mistral models' }
 MistralApi >> getResponse [ 
 	"Sends a prompt to the Mistral API and returns the response. Handles request construction, sending, and response processing."
 	| apiGenerateUrl jsonResponse |
@@ -356,6 +379,16 @@ MistralApi >> initialize [
 	"Initializes MistralApi with the latest model."
 	super initialize.
 	self model: 'codestral-latest'.
+	"self model: 'mistral-medium-2505'."
+	"self model: 'magistral-medium-2506'".
+	"self model: 'devstral-medium-2507'."
+	"self model: 'mistral-large-latest'."
+	"self model: 'devstral-small-lates'."
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> killroyWasHere: toolCalls [
+	^ 'Mistral asked Kasper about Killroy'
 ]
 
 { #category : 'printing' }
@@ -365,6 +398,55 @@ MistralApi >> printOn: aStream [
 
 { #category : 'mistral models' }
 MistralApi >> responseOf: jsonResponse [
+	| parsed message toolCalls |
+	parsed := STONJSON fromString: jsonResponse.
+	message := (parsed at: 'choices') first at: 'message'.
+	toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
+
+	toolCalls isNil
+		ifTrue: [ ^ message at: 'content' ] "normalt svar"
+		ifFalse: [ ^ self killroyWasHere: toolCalls ] "tool-kald – skal behandles særskilt"
+]
+
+{ #category : 'mistral models' }
+MistralApi >> responseOf_old: jsonResponse [
 	"Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response."
 	^ (((STONJSON fromString: jsonResponse) at: 'choices') first at: 'message') at: 'content'
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> toolsExperiment [
+	^ {
+	Dictionary newFrom: {
+		"'type' -> 'function'."
+		'function' -> (Dictionary newFrom: {
+			'name' -> 'killroyAnswer'.
+			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
+			'parameters' -> Dictionary new.
+		})
+	}
+}.
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> toolsExperiment_old [
+	^ {
+	Dictionary newFrom: {
+		'type' -> 'function'.
+		'function' -> (Dictionary newFrom: {
+			'name' -> 'killroyAnswer'.
+			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
+			'parameters' -> (Dictionary newFrom: {
+				'type' -> 'object'.
+				'properties' -> (Dictionary newFrom: {
+					'topic' -> (Dictionary newFrom: {
+						'type' -> 'string'.
+						'description' -> 'What the user wants to know about Killroy.'
+					})
+				}).
+				'required' -> #('topic')
+			})
+		})
+	}
+}.
 ]

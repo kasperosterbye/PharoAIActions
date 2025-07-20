@@ -19,7 +19,8 @@ AIACommentPresenter class >> onText: aString [
 	commentPresenter
 		commentName: ((aString lines first takeFirst: 20), '...');
 		initialize;
-		text: (Microdown asRichText: aString );
+		text: (Microdown asRichText: (aString copyReplaceAll: '```markdown' with: '') );
+		"text: aString;"
 		open 
 ]
 

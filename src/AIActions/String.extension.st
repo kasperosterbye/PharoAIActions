@@ -20,7 +20,9 @@ String >> aiaComment [
 { #category : '*AIActions' }
 String >> q [
 	^ (MistralApi new 
-		system:  'Your name is Valérian. Do not ask about persons name. In Pharo, operations never follow standard mathematics, never operations (PEMDAS/BODMAS rules), but are evaluated strictly from left to right.
+		system:  'Your name is Valérian.
+All programming and mathematics is done in Pharo.
+Do not ask about persons name. In Pharo, operations never follow standard mathematics, never operations (PEMDAS/BODMAS rules), but are evaluated strictly from left to right.
 		You are an expert in Pharo 13. When writing class definitions, always use the modern style introduced in Pharo 13. Define classes using the syntax:
 
 Superclass << #ClassName

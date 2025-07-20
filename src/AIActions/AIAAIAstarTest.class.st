@@ -15,6 +15,84 @@ AIAAIAstarTest >> setUp [
 	astar := AIAstar new
 ]
 
+{ #category : 'tests' }
+AIAAIAstarTest >> testHeuristicFromTo [
+	| graphType graph dijkstra addEdges pathD use |
+	graphType := AICyclicWeightedSimpleFixture new.
+	graph := graphType aseCircuitWeightedGraph.
+	dijkstra := AIDijkstra new.
+	dijkstra nodes: graph nodes.
+	dijkstra edges: graph edges
+		from: #first
+		to: #second
+		weight: #third.
+	use := OrderedCollection new.
+	use add: $a.
+	use add: $h.
+	dijkstra start: use first.
+	dijkstra end: use second.
+	dijkstra run.
+	pathD := (dijkstra findNode: $h) pathDistance.
+	self assert: pathD equals: 5
+]
+
+{ #category : 'tests' }
+AIAAIAstarTest >> testHeuristicFromTo01 [
+	| graphType graph dijkstra addEdges pathD use |
+	graphType := AIWeightedDAGFixture new.
+	graph := graphType withoutCyclesComplexWeightedGraph.
+	dijkstra := AIDijkstra new.
+	dijkstra nodes: (graph nodes first to: graph nodes last).
+	dijkstra edges: graph edges
+		from: [ :each | each first ]
+		to: [ :each | each second ]
+		weight: [ :each | each third ].
+	use := OrderedCollection new.
+	use add: $b.
+	use add: $r.
+	dijkstra start: use first.
+	dijkstra end: use second.
+	dijkstra run.
+	pathD := (dijkstra findNode: $r) pathDistance.
+	self assert: pathD equals: 41
+]
+
+{ #category : 'tests' }
+AIAAIAstarTest >> testHeuristicFromTo02 [
+	| graphType graph dijkstra addEdges pathD use |
+	graphType := AICyclicWeightedSimpleFixture new.
+	graph := graphType aseCircuitWeightedGraph.
+	dijkstra := AIDijkstra new.
+	dijkstra nodes: graph nodes.
+	dijkstra edges: graph edges from: #first to: #second weight: #third.
+	use := OrderedCollection new.
+	use add: $a.
+	use add: $b.
+	dijkstra start: use first.
+	dijkstra end: use second.
+	dijkstra run.
+	pathD := (dijkstra findNode: $b) pathDistance.
+	self assert: pathD equals: 1
+]
+
+{ #category : 'tests' }
+AIAAIAstarTest >> testHeuristicFromTo03 [
+	| graphType graph dijkstra addEdges pathD use |
+	graphType := AICyclicWeightedSimpleFixture new.
+	graph := graphType aseCircuitWeightedGraph.
+	dijkstra := AIDijkstra new.
+	dijkstra nodes: graph nodes.
+	dijkstra edges: graph edges from: #first to: #second weight: #third.
+	use := OrderedCollection new.
+	use add: $a.
+	use add: $h.
+	dijkstra start: use first.
+	dijkstra end: use second.
+	dijkstra run.
+	pathD := (dijkstra findNode: use second) pathDistance.
+	self assert: pathD equals: 5
+]
+
 { #category : 'nil' }
 AIAAIAstarTest >> testReconstructPath [
 	| graphType graph shortestPath |
@@ -52,6 +130,22 @@ AIAAIAstarTest >> testReset [
 	self assert: (astar findNode: 3) pathDistance equals: Float infinity.
 	self assert: (astar findNode: 4) pathDistance equals: Float infinity.
 	self assert: (astar findNode: 5) pathDistance equals: Float infinity.
+]
+
+{ #category : 'tests' }
+AIAAIAstarTest >> testRun [
+	| graphType graph |
+	graphType := AICyclicWeightedSimpleFixture new.
+	graph := graphType simpleWeightedGraph.
+	astar nodes: graph nodes.
+	astar
+		edges: graph edges
+		from: #first
+		to: #second
+		weight: #third.
+	astar runFrom: 1 to: 5.
+	self assert: (astar findNode: 5) pathDistance equals: 3.
+	self assertCollection: astar reconstructPath asArray equals: #(1 5)
 ]
 
 { #category : 'tests' }
