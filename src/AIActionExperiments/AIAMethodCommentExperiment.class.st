@@ -1,8 +1,9 @@
 Class {
 	#name : 'AIAMethodCommentExperiment',
 	#superclass : 'AIAMethodComment',
-	#category : 'AIActionExperiments',
-	#package : 'AIActionExperiments'
+	#category : 'AIActionExperiments-CommentsExperiments',
+	#package : 'AIActionExperiments',
+	#tag : 'CommentsExperiments'
 }
 
 { #category : 'internals' }

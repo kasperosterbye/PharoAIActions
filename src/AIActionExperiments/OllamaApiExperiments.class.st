@@ -13,8 +13,9 @@ Class {
 		'ollamaProcess',
 		'presenter'
 	],
-	#category : 'AIActionExperiments',
-	#package : 'AIActionExperiments'
+	#category : 'AIActionExperiments-BasicExperiments',
+	#package : 'AIActionExperiments',
+	#tag : 'BasicExperiments'
 }
 
 { #category : 'actions' }

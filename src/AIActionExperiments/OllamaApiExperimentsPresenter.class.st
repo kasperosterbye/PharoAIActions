@@ -8,8 +8,9 @@ Class {
 		'currentSecondList',
 		'arraySecondsList'
 	],
-	#category : 'AIActionExperiments',
-	#package : 'AIActionExperiments'
+	#category : 'AIActionExperiments-BasicExperiments',
+	#package : 'AIActionExperiments',
+	#tag : 'BasicExperiments'
 }
 
 { #category : 'examples' }

@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'astar'
 	],
-	#category : 'AIActions-CommentBuilder',
-	#package : 'AIActions',
-	#tag : 'CommentBuilder'
+	#category : 'AIActionExperiments-TestExperiments',
+	#package : 'AIActionExperiments',
+	#tag : 'TestExperiments'
 }
 
 { #category : 'running' }

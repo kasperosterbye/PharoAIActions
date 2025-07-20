@@ -5,7 +5,7 @@ Class {
 		'log',
 		'logBuilder'
 	],
-	#category : 'AIActions-CommentBuilder',
-	#package : 'AIActions',
-	#tag : 'CommentBuilder'
+	#category : 'AIActionExperiments-TestExperiments',
+	#package : 'AIActionExperiments',
+	#tag : 'TestExperiments'
 }
