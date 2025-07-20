@@ -14,8 +14,10 @@ Class {
 
 { #category : 'accessing' }
 AIAPackageComment >> aiaComment: aPackageName [
-	"The method sets a package comment using Mistral API."
-	self system:  (AIASourceCodeBuilder new for: { aPackageName. (aPackageName ,'-Tests') }).
+	"The method aiaComment: generates a package comment for a given package name using AI. It checks if the package is a test package and adjusts the source code accordingly."
+	(aPackageName endsWith: '-Tests')
+		ifFalse: [ self system:  (AIASourceCodeBuilder new for: { aPackageName. (aPackageName ,'-Tests') })]
+		ifTrue: [ self system:  (AIASourceCodeBuilder new for: { aPackageName }) ].
 	self prompt: 'This is a Pharo question. Can your give a package comment for ' , 
 		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
 		AIACommentBuilding language.
