@@ -66,6 +66,9 @@ By following this class comment, users can understand the purpose, features, and
 Class {
 	#name : 'MistralApi',
 	#superclass : 'AilienApi',
+	#instVars : [
+		'messagePart'
+	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -316,17 +319,8 @@ MistralApi >> bodyForEntityWithPrompt [
 	| requestDictionary |
 	requestDictionary :=Dictionary newFrom: {
 	    'model' -> 'codestral-latest'.
-	    'messages' -> {
-				Dictionary newFrom: {
-					'role' -> 'system'.
-					'content' -> system
-				}. 
-		      Dictionary newFrom: { 
-		         'role' -> 'user'. 
-		         'content' -> prompt 
-		      } 
-	    }.
-		'temperature' -> 0.
+	    'messages' -> self messagePart.
+		 'temperature' -> 0.
 	    'stream' -> false.
 		}.
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
@@ -358,14 +352,15 @@ MistralApi >> bodyForEntityWithPrompt_withTools [
 { #category : 'mistral models' }
 MistralApi >> getResponse [ 
 	"Sends a prompt to the Mistral API and returns the response. Handles request construction, sending, and response processing."
-	| apiGenerateUrl jsonResponse |
+	| apiGenerateUrl jsonResponse bodyEntiry |
 	
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	[  jsonResponse := ZnClient new
+	[  bodyEntiry := self bodyForEntityWithPrompt.
+		jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
 	  	 headerAt: 'Authorization' put: self class esug;
 	    headerAt: 'Content-Type' put: 'application/json';
-	    entity: self bodyForEntityWithPrompt;
+	    entity: bodyEntiry;
 	    post;
 	    contents.
 		response := self responseOf: jsonResponse .
@@ -391,6 +386,29 @@ MistralApi >> killroyWasHere: toolCalls [
 	^ 'Mistral asked Kasper about Killroy'
 ]
 
+{ #category : 'as yet unclassified' }
+MistralApi >> messagePart [
+	messagePart 
+		ifNil: [ ^ {
+				Dictionary newFrom: {
+					'role' -> 'system'.
+					'content' -> system
+				}. 
+		      Dictionary newFrom: { 
+		         'role' -> 'user'. 
+		         'content' -> prompt 
+		      }
+			}]
+		ifNotNil: [ 
+			^ messagePart 
+		]
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> messagePart: message [
+	messagePart := message
+]
+
 { #category : 'printing' }
 MistralApi >> printOn: aStream [
 	aStream << 'MistralApi: ' << self model.
@@ -398,6 +416,14 @@ MistralApi >> printOn: aStream [
 
 { #category : 'mistral models' }
 MistralApi >> responseOf: jsonResponse [
+	| parsed message  |
+	parsed := STONJSON fromString: jsonResponse.
+	message := (parsed at: 'choices') first at: 'message'.
+	^ message at: 'content' 
+]
+
+{ #category : 'mistral models' }
+MistralApi >> responseOf_tool: jsonResponse [
 	| parsed message toolCalls |
 	parsed := STONJSON fromString: jsonResponse.
 	message := (parsed at: 'choices') first at: 'message'.
@@ -406,12 +432,6 @@ MistralApi >> responseOf: jsonResponse [
 	toolCalls isNil
 		ifTrue: [ ^ message at: 'content' ] "normalt svar"
 		ifFalse: [ ^ self killroyWasHere: toolCalls ] "tool-kald – skal behandles særskilt"
-]
-
-{ #category : 'mistral models' }
-MistralApi >> responseOf_old: jsonResponse [
-	"Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response."
-	^ (((STONJSON fromString: jsonResponse) at: 'choices') first at: 'message') at: 'content'
 ]
 
 { #category : 'as yet unclassified' }
@@ -423,29 +443,6 @@ MistralApi >> toolsExperiment [
 			'name' -> 'killroyAnswer'.
 			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
 			'parameters' -> Dictionary new.
-		})
-	}
-}.
-]
-
-{ #category : 'as yet unclassified' }
-MistralApi >> toolsExperiment_old [
-	^ {
-	Dictionary newFrom: {
-		'type' -> 'function'.
-		'function' -> (Dictionary newFrom: {
-			'name' -> 'killroyAnswer'.
-			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
-			'parameters' -> (Dictionary newFrom: {
-				'type' -> 'object'.
-				'properties' -> (Dictionary newFrom: {
-					'topic' -> (Dictionary newFrom: {
-						'type' -> 'string'.
-						'description' -> 'What the user wants to know about Killroy.'
-					})
-				}).
-				'required' -> #('topic')
-			})
 		})
 	}
 }.
