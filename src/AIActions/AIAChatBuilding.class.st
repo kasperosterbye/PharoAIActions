@@ -14,6 +14,11 @@ AIAChatBuilding >> assistant: aString [
 	history add: 'assistant' -> aString
 ]
 
+{ #category : 'accessing' }
+AIAChatBuilding >> history [
+	^ history 
+]
+
 { #category : 'initialization' }
 AIAChatBuilding >> initialize [ 
 	"Initializes MistralApi with the latest model."

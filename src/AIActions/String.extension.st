@@ -93,7 +93,7 @@ String >> c3 [
 	chat user: self.
 	chat jsonHistory.
 	res :=  chat response.
-	^(Smalltalk compiler evaluate: res) asString.
+	^res, ': ', (Smalltalk compiler evaluate: res) asString.
 ]
 
 { #category : '*AIActions' }
