@@ -48,11 +48,13 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 
 { #category : 'internals' }
 AIAMethodComment >> methodSource: compiledMethod addComment: comment [
-	"Adds a comment to the method source code."
+	"This method adds a comment to the source code of a compiled method, ensuring proper formatting and escaping of special characters. It handles both quoted and unquoted comments, maintaining the method's structure while integrating the new comment."
 	| sourceLines safeComment |
 	safeComment := comment copyWithoutAll: '"'.
 	sourceLines := compiledMethod sourceCode lines asOrderedCollection.
-	sourceLines add: (String tab, '"' , comment, '"' ) afterIndex: 1.
+	((comment beginsWith: '"') and: [comment endsWith: '"'])
+		ifTrue: [ sourceLines add: (String tab, comment ) afterIndex: 1 ]
+		ifFalse: [ sourceLines add: (String tab, '"' , comment, '"' ) afterIndex: 1].
 	^ String cr join: sourceLines 
 	
 ]

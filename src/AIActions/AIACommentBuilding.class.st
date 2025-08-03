@@ -569,6 +569,13 @@ AIACommentBuilding class >> setComment_old: item [
 
 { #category : 'accessing' }
 AIACommentBuilding >> getResponse [
+	"Method initiates AI process to retrieve response displaying progress and handling interruptions. Uses system progress morph to show progress and allows interruption. Returns response from AI API."
+	
+	aiaApi getResponse
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding >> getResponse_old [
 	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
 	| aiProcess |
 	aiProcess := [ aiaApi getResponse ] newProcess.

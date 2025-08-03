@@ -66,19 +66,16 @@ Class {
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> classHeaderFor: aClass [
-	"Returns a string with the class name and definition for aClass."
 
-	response << '## Class: ' << aClass name asString << String cr.
-	response << ((FluidClassDefinitionPrinter for: aClass) classDefinitionString) << String cr << String cr.
-	
-	aClass isMeta ifFalse: [
-		response << '### Class comment:' << String cr.
-		response << '````markdown' << String cr.
-		response << aClass comment << String cr.
-		response << '````' << String cr
-	].
+	response << '## Class: ' << aClass name asString << String cr
+		<< (FluidClassDefinitionPrinter for: aClass) classDefinitionString
+		<< String cr << String cr.
 
-	
+	aClass isMeta ifTrue: [ ^ self ].
+	response << '### Class comment:' << String cr
+		<< '````markdown' << String cr
+		<< aClass comment << String cr
+		<< '````' << String cr
 ]
 
 { #category : 'internal' }
@@ -140,7 +137,8 @@ AIASourceCodeBuilder >> forClasses: aClassList [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forMethod: aMethod [
-	|  callers callersInMyPackage|
+	"Returns a formatted string describing the callers of aMethod within the same package, including the method's source code."
+	|  callers ": OrderedCollection" callersInMyPackage ": OrderedCollection"|
 	callers := SystemNavigation default allCallsOn: (aMethod selector).
 	callersInMyPackage := OrderedCollection new.
 	callers do: [ :caller | 
@@ -152,16 +150,12 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 
 { #category : 'initialization' }
 AIASourceCodeBuilder >> initialize [
-	response := WriteStream on: ''."
-	response << 
-'All background code and documentation is written in Markdown.
-This includes Pharo packages, classes, and methods.'.
-	response << String cr."
+	response := WriteStream on: ''.
 ]
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> instanceVariablesFor: aClass [
-	"Add all the instance variables of aClass to response"
+	"Adds instance variables of aClass to response, formatted as a list."
 	response  << '### Instance variables for ' << aClass name asString << ': '.
 	aClass instVarNames  collect: [:each | 
 		response  << each asString << ' '].

@@ -79,50 +79,15 @@ Unary methods has higher priority than Binary methods. And Binary methods has hi
 String >> c2 [
 	| chat |
 	chat := AIAChatBuilding new.
-	chat system: 'Your name is Valérian'.
+	chat system: 'Your name is Valérian.'.
 	chat user: self.
 	^ chat jsonHistory.
-]
-
-{ #category : '*AIActions' }
-String >> c3 [
-	| chat res |
-	chat := AIAChatBuilding new.
-	chat user: 'Does this prompt contain an expression? 77+2 If it does, what is the expression, do not calculate it, just give me the expression, no text. If no expression is found, say NONE'.
-	chat assistant: '77+2'.
-	chat user: self.
-	chat jsonHistory.
-	res :=  chat response.
-	^res, ': ', (Smalltalk compiler evaluate: res) asString.
 ]
 
 { #category : '*AIActions' }
 String >> q [
 	^ (MistralApi new 
 		system:  'Your name is Valérian.
-In Pharo and Smalltalk there are three types of methods
-
-Unary Messages: These have the highest precedence. They are messages that do not take any arguments, such as anObject size.
-
-Binary Messages: These have the next highest precedence. Binary messages are typically represented by symbols like +, -, *, /, <=, **, //, % etc., and take a single argument. For example, 2 + 3 sends the binary message + to the object 2 with 3 as the argument.
-
-Keyword Messages: These have the lowest precedence. Keyword messages include colons and take one or more arguments, such as anObject at: 1 put: ''value''.
-
-Unary Messages has higher priority than Binary Messages. And Binary Messages has hither priority than Keyword messages.
-
-All programming and mathematics is done in Pharo.
-Do not ask about persons name. In Pharo, operations never follow standard mathematics, never operations (PEMDAS/BODMAS rules), but are evaluated strictly from left to right.
-
-
-To correctly evaluate an expression in Pharo, group operations from left to right using parentheses, and then compute the result. 
-		You are an expert in Pharo 13. When writing class definitions, always use the modern style introduced in Pharo 13. Define classes using the syntax:
-
-Superclass << #ClassName
-	slots: { #slot1 . #slot2 };
-	tag: ''''tag name'''';
-	package: ''''PackageName''''
-
-Do not use the old subclass:instanceVariableNames: style
 		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
 		getResponse; 
@@ -133,6 +98,26 @@ Do not use the old subclass:instanceVariableNames: style
 String >> q: systemBlock [
 	^ (MistralApi new 
 		system:  systemBlock value;
+		prompt: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q_old [
+	^ (MistralApi new 
+		system:  'Your name is Valérian.
+In Pharo and Smalltalk there are three types of methods
+
+Unary Messages: These have the highest precedence. They are messages that do not take any arguments, such as anObject size.
+
+Superclass << #ClassName
+	slots: { #slot1 . #slot2 };
+	tag: ''''tag name'''';
+	package: ''''PackageName''''
+
+Do not use the old subclass:instanceVariableNames: style
+		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
 		getResponse; 
 		response) 

@@ -31,6 +31,7 @@ AIATestGenerator >> build: aMethod [
 	[aiTestClass compile: testMethod classified: 'AI generated test']
 		on: Error
 		do: [ ].
+	^ self history
 ]
 
 { #category : 'test builder' }
@@ -73,36 +74,12 @@ AIATestGenerator >> generateTest [
 	self systemGenerator.
 	self hist1GeneratorMethods.
 	self hist2WhereToPlaceTestMethod.
-	self hist3WhatIsTheBasics.
+	"self hist3WhatIsTheBasics."
+	self hist50WhatIsTheBasics.
+	self hist51WhatIsTheBasics.
+	"self hist99WhatIsTheBasics."
 	self promptGenerator.
 	chatBuilder jsonHistory .
-	testMethod := chatBuilder response .
-	(chatBuilder response = 'Data receive timed out.') ifTrue: [
-		chatBuilder response: ''.
-		self systemGeneratorClasses.
-		chatBuilder getResponse.
-		testMethod := chatBuilder response .
-		 ]
-]
-
-{ #category : 'instance creation' }
-AIATestGenerator >> generateTest_old [
-	self systemGenerator.
-	chatBuilder user: 'What are the important rules for me to follow when making pharo methods'.
-	chatBuilder assistant: self aideGeneratorMethods.
-	"chatBuilder user: 'What should I know about test method writing'.
-	chatBuilder assistant: self promptGeneratorMethods."
-	chatBuilder user: 'What are the main issues when I want to build a test method'.
-	chatBuilder assistant: self aideBuildingTests.
-	chatBuilder user: ('In Pharo, when I class {1}, what is its test class named' 
-			format: {self sourceClassStringName}).
-	chatBuilder assistant: ('For class {1} its test class is named {1}Test' 
-			format: {self sourceClassStringName}).
-	chatBuilder user: ('I want to write a test method for method {1} in class {2}. How do I do it' 
-			format: {self sourceMethodStringName . self sourceClassStringName }).
-	chatBuilder assistant: self aideInstanceVariables.
-	chatBuilder user: self promptGenerator. 
-	chatBuilder getResponse.
 	testMethod := chatBuilder response .
 	(chatBuilder response = 'Data receive timed out.') ifTrue: [
 		chatBuilder response: ''.
@@ -125,7 +102,7 @@ When writing Pharo code or tests:
 “I cannot complete this without more information about the available methods.”
 
 
-In Pharo  method names follow three distinct syntactic forms:
+In Pharo, method names follow three distinct syntactic forms:
 	1.	Unary methods – no arguments:
 Example:
 
@@ -156,12 +133,18 @@ Notes:
 { #category : 'test builder' }
 AIATestGenerator >> hist2WhereToPlaceTestMethod [
 	chatBuilder user: 
-		('I want to write a test method for {1} in class {2}. 
-		In what test class do I place it, and what do I name the test method'
-			format: {self sourceMethodStringName . self sourceClassStringName }).
+('I want to write a test method for {1} in class {2}. 
+In what test class do I place it, and what do I name the test method'
+format: {self sourceMethodStringName . self sourceClassStringName }).
 	chatBuilder assistant: ('There is an existing test class named {1} which is to be used. 
-		The name of the test method is {2}'
-		format: {self sourceClassStringName , 'AITest'. self testMethodName })
+The name of the test method is {2}'
+		format: {self sourceClassStringName , 'AITest'. self testMethodName }), String cr, 
+('In addition, the superclass {1} of {2} has an instance variable {3} that is set up to an instance of {4}, 
+so you should not declare a local variable in the test method, but use {3}' 
+			format:{self sourceClassStringName,'Test'. 
+			self sourceClassStringName,'AITest'. 
+			(Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables first name.
+			self sourceClassStringName. }).
 	
 ]
 
@@ -169,9 +152,48 @@ AIATestGenerator >> hist2WhereToPlaceTestMethod [
 AIATestGenerator >> hist3WhatIsTheBasics [
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
+The setUp method of any test method is called before the test is executed.
+Do not declare variables in the method that are already provided as instance variables.'
+	
+]
+
+{ #category : 'test builder' }
+AIATestGenerator >> hist50WhatIsTheBasics [
+	chatBuilder user: ('For making a test for method {1} in class {2}, what does {1} return'
+			format: {self sourceMethodStringName . self sourceClassStringName }).
+	chatBuilder assistant: ('In general, if there is no "^" syntax, the method return the object of the method. If there is a "^" the method returns the result of the expression after "^". In your case, if there is no "^", the return of {1} is an instance of {2}, otherwise you need to examine the expression after "^"'
+			format: {self sourceMethodStringName . self sourceClassStringName }).
+	
+]
+
+{ #category : 'test builder' }
+AIATestGenerator >> hist51WhatIsTheBasics [
+	chatBuilder user: 'Is this Pharo object {''aaa'' -> 77. ''bbb''->88 } an array or a dictionary'.
+	chatBuilder assistant: 'The syntax {...} is always an array, not a dictionary. And ''aaa'' -> 77 is an association object. So {''aaa'' -> 77. ''bbb''->88 } is an array of associations.'.
+	chatBuilder user: 'How do I convert an array of associations to an ordered dictionary, how do I do that'.
+	chatBuilder assistant: 
+	'If you have an arrays of associtions you can convert it to an ordered dictionary symply by sending it the method asOrderedDictionary. And if you do not know if it is already an ordered dictionary, the function asOrderedDictionary works also for something which is already an ordered dictionary'.
+	
+]
+
+{ #category : 'test builder' }
+AIATestGenerator >> hist99WhatIsTheBasics [
+	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
+	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test methos is called before the test is executed.
 Do not declare variables in the method that are already provided as instance variables.'
 	
+]
+
+{ #category : 'accessing' }
+AIATestGenerator >> history [
+	| historyText |
+	historyText := WriteStream on: ''.
+	chatBuilder history allButFirst do: [ :item | 
+		historyText << '## ' << item key << String cr
+			<< item value << String cr << String cr
+		 ].
+	^ historyText contents
 ]
 
 { #category : 'initialization' }
@@ -186,15 +208,16 @@ AIATestGenerator >> initialize [
 AIATestGenerator >> promptGenerator [
 	| methodName |
 	methodName := sourceMethod name .
-	chatBuilder user: ('Please build a test case for method "{1}".
-	{3}.
-	The test method might replace an existing test method. It will be places in 
-{2}.
-You must only use code that you know is existing in Pharo, never use figurative code.
+	chatBuilder user: ('You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test methos is called before the test is executed.
-Do not redeclare variables like dinic that are already provided as instance variables. 
+Do not declare local variables that are already provided as instance variables. 
 Insert comments in the test method you create.
-Just return the test method. Do not explain.' 
+Just return the test method. Do not explain.
+Please build a test case for method "{1}".
+{3}.
+The test method might replace an existing test method. It will be placed in 
+{2}.
+' 
 	format: { sourceMethod name .  
 				sourceMethod methodClass definitionString. 
 				self hist2WhereToPlaceTestMethod }).
@@ -216,18 +239,18 @@ Just return the test method. Do not explain.'
 AIATestGenerator >> promptGenerator_old [
 	| methodName |
 	methodName := sourceMethod name .
-	chatBuilder prompt: ('Please build a test case for method "{1}".
-	{3}.
-	The test method might replace an existing test method. It will be places in 
+	chatBuilder user: ('Please build a test case for method "{1}".
+{3}.
+The test method might replace an existing test method. It will be placed in 
 {2}.
 You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test methos is called before the test is executed.
-Do not redeclare variables like dinic that are already provided as instance variables. 
+Do not declare local variables that are already provided as instance variables. 
 Insert comments in the test method you create.
 Just return the test method. Do not explain.' 
 	format: { sourceMethod name .  
 				sourceMethod methodClass definitionString. 
-				self promptGeneratorMethods }).
+				self hist2WhereToPlaceTestMethod }).
 ]
 
 { #category : 'test builder' }

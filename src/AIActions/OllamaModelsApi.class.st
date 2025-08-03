@@ -53,8 +53,7 @@ OllamaModelsApi class >> ollamaVersion [
 
 { #category : 'ollama models' }
 OllamaModelsApi >> bodyForEntityWithPrompt [
-	"Sends a prompt to an API, receives JSON response, and extracts the 'response' value"
-	"Split the method into parts, it is a bit too long now..."
+	"Constructs a JSON entity for the API request, including model, system, prompt, and options."
 	| apiGenerateUrl  requestDictionary |
 	apiGenerateUrl := 'http://localhost:11434/api/generate'.
 	requestDictionary := Dictionary newFrom:  { 
@@ -70,12 +69,12 @@ OllamaModelsApi >> bodyForEntityWithPrompt [
 
 { #category : 'ollama models' }
 OllamaModelsApi >> getResponse [ 
+	"Retrieves the response from the Ollama API using the constructed JSON entity, handling errors and returning the extracted content."
 	| apiGenerateUrl jsonResponse |
 	apiGenerateUrl := 'http://localhost:11434/api/generate'.
 	[  jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
 	    entity: self bodyForEntityWithPrompt;
-		 "timeout: (ZnNetworkingUtils defaultSocketStreamTimeout * 5);"
 	    post;
 	    contents.
 		response := self responseOf: jsonResponse .
@@ -92,8 +91,7 @@ OllamaModelsApi >> initialize [
 
 { #category : 'ollama models' }
 OllamaModelsApi >> modelInformation [
-	"Show information about a model including details, modelfile, template, parameters, license, system prompt."
-	"Check https://github.com/ollama/ollama/blob/main/docs/api.md#show-model-information for details"
+	"Returns detailed information about the current model by querying the Ollama API and parsing the JSON response."
 	| url jsonResponse requestBody |
 	url := 'http://localhost:11434/api/show'.
 
@@ -110,8 +108,8 @@ OllamaModelsApi >> modelInformation [
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> modelShortInfo [
-	"Return a short array of modelName, architecture, parameters, context_length"
+OllamaModelsApi >> modelShortInfo [	
+	"Returns a dictionary with the model's name, architecture, parameter count in billions, and context length."
 	| info architecture parameters context_length |
 	info := self modelInformation at: 'model_info'.
 	architecture := info at: 'general.architecture'.
