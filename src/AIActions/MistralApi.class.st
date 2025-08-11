@@ -213,7 +213,7 @@ MistralApi >> loadResponse [
 
 { #category : 'as yet unclassified' }
 MistralApi >> messagePart [
-	"Returns the message part for the API request, either from the provided message or a default system and user message."
+	"Returns the message part for the API request, either from the stored message or creates a new one with system and user roles."
 	messagePart 
 		ifNil: [ ^ {
 				Dictionary newFrom: {

@@ -94,8 +94,7 @@ AIASourceCodeBuilder >> classesInPackage: aPackage [
 { #category : 'accessing' }
 AIASourceCodeBuilder >> for: packages [
 	"Generates a formatted string describing the classes in the given list of packages."
-	
-	"response := WriteStream on: ''."
+
 	((packages isString and: [ (packages beginsWith: '*') ] )
 			ifTrue: [ PackageOrganizer default packages
 		               select: [ :p |
@@ -103,9 +102,11 @@ AIASourceCodeBuilder >> for: packages [
 		               thenCollect: #name ]
 			ifFalse: [ packages ])
 	 do: [ :package |
-			response << '# Package: ' << package  << String cr.
-			self classesInPackage:
-				(PackageOrganizer default packageNamed: package) ].
+			(PackageOrganizer default hasPackage: package) 
+				ifTrue: [ 
+					response << '# Package: ' << package  << String cr.
+					self classesInPackage:
+						(PackageOrganizer default packageNamed: package) ]].
 	^ response contents
 ]
 

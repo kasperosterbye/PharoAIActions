@@ -67,9 +67,14 @@ OllamaModelsApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'initialization' }
+OllamaModelsApi >> initialize [ 
+	super initialize.
+	self model: (self class modelNames) second.
+]
+
 { #category : 'ollama models' }
-OllamaModelsApi >> getResponse [ 
-	"Retrieves the response from the Ollama API using the constructed JSON entity, handling errors and returning the extracted content."
+OllamaModelsApi >> loadResponse [ 
 	| apiGenerateUrl jsonResponse |
 	apiGenerateUrl := 'http://localhost:11434/api/generate'.
 	[  jsonResponse := ZnClient new
@@ -81,12 +86,6 @@ OllamaModelsApi >> getResponse [
 	] on: Error do: [ :ex |
    		response := ex messageText.
 	].
-]
-
-{ #category : 'initialization' }
-OllamaModelsApi >> initialize [ 
-	super initialize.
-	self model: (self class modelNames) second.
 ]
 
 { #category : 'ollama models' }
@@ -127,6 +126,7 @@ OllamaModelsApi >> modelShortInfo [
 
 { #category : 'printing' }
 OllamaModelsApi >> printOn: string [
+	"Prints the model name of OllamaModelsApi instance"
 	string << 'OllamaModelsApi: ' << self model.
 ]
 

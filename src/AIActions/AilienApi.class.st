@@ -78,6 +78,29 @@ AilienApi class >> models [
 	self subclassResponsibility
 ]
 
+{ #category : 'ollama models' }
+AilienApi >> getResponse [
+	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
+
+	[ :job | | aiProcess |
+		aiProcess := [ self loadResponse ] newProcess.
+		aiProcess priority: Processor userBackgroundPriority. 
+		aiProcess resume.
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job interruptBlock: [ 
+			aiProcess terminate.
+			self response: 'AI based response Terminated'.
+			^ self
+		].
+		1 to: 300 do: [:each |
+			job
+				progress: ((1/300) * each) ;
+				title: ('AI working {1} of 30' format: {(each/10) asFloat printString}).
+				self response ifEmpty: [100 milliSeconds wait].
+		].
+	] asJob run.
+]
+
 { #category : 'initialization' }
 AilienApi >> initialize [ 
 	"Initialises the instance variables model, system, prompt, and response to empty strings. Ensures the object is ready for use."
@@ -86,6 +109,11 @@ AilienApi >> initialize [
 	self system: ''.
 	self prompt: ''.
 	self response: ''
+]
+
+{ #category : 'mistral models' }
+AilienApi >> loadResponse [
+		self subclassResponsibility
 ]
 
 { #category : 'accessing' }

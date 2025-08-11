@@ -74,10 +74,10 @@ AIATestGenerator >> generateTest [
 	self systemGenerator.
 	self hist1GeneratorMethods.
 	self hist2WhereToPlaceTestMethod.
-	"self hist3WhatIsTheBasics."
+	self hist3WhatIsTheBasics.
 	self hist50WhatIsTheBasics.
 	self hist51WhatIsTheBasics.
-	"self hist99WhatIsTheBasics."
+	self hist99WhatIsTheBasics.
 	self promptGenerator.
 	chatBuilder jsonHistory .
 	testMethod := chatBuilder response .
@@ -143,7 +143,7 @@ The name of the test method is {2}'
 so you should not declare a local variable in the test method, but use {3}' 
 			format:{self sourceClassStringName,'Test'. 
 			self sourceClassStringName,'AITest'. 
-			(Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables first name.
+			self sourceClassFirstInstanceVariable.
 			self sourceClassStringName. }).
 	
 ]
@@ -214,13 +214,11 @@ Do not declare local variables that are already provided as instance variables.
 Insert comments in the test method you create.
 Just return the test method. Do not explain.
 Please build a test case for method "{1}".
-{3}.
 The test method might replace an existing test method. It will be placed in 
 {2}.
 ' 
 	format: { sourceMethod name .  
-				sourceMethod methodClass definitionString. 
-				self hist2WhereToPlaceTestMethod }).
+				sourceMethod methodClass definitionString. }).
 ]
 
 { #category : 'test builder' }
@@ -267,6 +265,16 @@ AIATestGenerator >> repairResponseMethod [
 	repaired := String cr join: repaired lines allButFirst . 
 	repaired := String cr join:  { testMethodName. repaired }.
 	^ repaired 
+]
+
+{ #category : 'accessing' }
+AIATestGenerator >> sourceClassFirstInstanceVariable [
+	| testClassVariables |
+	"(Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables first name."
+	testClassVariables := (Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables.
+	testClassVariables size = 0 
+		ifTrue: [ ^ '' ]
+		ifFalse: [^ testClassVariables first name.]
 ]
 
 { #category : 'accessing' }
