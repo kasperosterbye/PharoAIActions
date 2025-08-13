@@ -16,5 +16,5 @@ OllamaModelsApiTest >> setUp [
 	"Put here a common initialization logic for tests"
 	
 
-	ollamaModelsApi := OllamaModelsApi new.
+	ollamaModelsApi := OllamaApi new.
 ]

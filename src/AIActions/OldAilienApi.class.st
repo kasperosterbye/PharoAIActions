@@ -53,11 +53,13 @@ api response
 This class is designed to be extended and can be used directly to create instances for interacting with AI models.
 "
 Class {
-	#name : 'AilienApi',
+	#name : 'OldAilienApi',
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'history'
+		'system',
+		'prompt',
+		'response'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -65,24 +67,19 @@ Class {
 }
 
 { #category : 'AI models' }
-AilienApi class >> modelNames [
+OldAilienApi class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :model | model at: 'name' ]
 ]
 
 { #category : 'accessing' }
-AilienApi class >> models [
+OldAilienApi class >> models [
 	"Subclasses should implement this to return a list of available models from the API"
 	self subclassResponsibility
 ]
 
-{ #category : 'initialization' }
-AilienApi >> assistant: aString [
-	history add: 'assistant' -> aString
-]
-
 { #category : 'ollama models' }
-AilienApi >> getResponse [
+OldAilienApi >> getResponse [
 	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
 
 	[ :job | | aiProcess |
@@ -92,86 +89,77 @@ AilienApi >> getResponse [
 		SystemProgressMorph uniqueInstance position: 10@20.
 		job interruptBlock: [ 
 			aiProcess terminate.
-			self assistant: 'AI based response Terminated'.
+			self response: 'AI based response Terminated'.
 			^ self
 		].
 		1 to: 300 do: [:each |
 			job
 				progress: ((1/300) * each) ;
 				title: ('AI working {1} of 30' format: {(each/10) asFloat printString}).
-				self response ifNil: [100 milliSeconds wait].
+				self response ifEmpty: [100 milliSeconds wait].
 		].
 	] asJob run.
 ]
 
 { #category : 'initialization' }
-AilienApi >> history [
-	^ history
-]
-
-{ #category : 'initialization' }
-AilienApi >> initialize [ 
+OldAilienApi >> initialize [ 
+	"Initialises the instance variables model, system, prompt, and response to empty strings. Ensures the object is ready for use."
 	super initialize.
 	self model: ''.
-	history := OrderedCollection new.
-]
-
-{ #category : 'accessing' }
-AilienApi >> jsonHistory [
-	| jsonHistory |
-	jsonHistory := OrderedCollection new.
-	history do: [ :item |
-		jsonHistory add: (Dictionary newFrom: 
-			{'role' -> item key.
-			'content' -> item value.})
-	].
-	^ jsonHistory asArray.
+	self system: ''.
+	self prompt: ''.
+	self response: ''
 ]
 
 { #category : 'mistral models' }
-AilienApi >> loadResponse [
+OldAilienApi >> loadResponse [
 		self subclassResponsibility
 ]
 
 { #category : 'accessing' }
-AilienApi >> model [
+OldAilienApi >> model [
 
 	^ model
 ]
 
 { #category : 'accessing' }
-AilienApi >> model: anObject [
+OldAilienApi >> model: anObject [
 
 	model := anObject
 ]
 
-{ #category : 'initialization' }
-AilienApi >> prompt: aString [
-	history add: 'user' -> aString
+{ #category : 'accessing' }
+OldAilienApi >> prompt [
+
+	^ prompt
 ]
 
 { #category : 'accessing' }
-AilienApi >> response [
-	(history last key = 'assistant')
-		ifTrue: [ ^ history last value ]
-		ifFalse: [ ^ nil ]
+OldAilienApi >> prompt: anObject [
+
+	prompt := anObject
 ]
 
 { #category : 'accessing' }
-AilienApi >> system [
-	history isEmpty ifTrue: [ ^ nil ].
-	history first key = 'system'
-		ifTrue: [ ^ history first value ]
-		ifFalse: [ ^ nil ]
+OldAilienApi >> response [
+
+	^ response
 ]
 
-{ #category : 'initialization' }
-AilienApi >> system: aString [
-	history size = 0 ifFalse: [ self error: 'system call must be first' ].
-	history add: 'system' -> aString
+{ #category : 'accessing' }
+OldAilienApi >> response: anObject [
+
+	response := anObject
 ]
 
-{ #category : 'initialization' }
-AilienApi >> user: aString [
-	history add: 'user' -> aString
+{ #category : 'accessing' }
+OldAilienApi >> system [
+
+	^ system
+]
+
+{ #category : 'accessing' }
+OldAilienApi >> system: anObject [
+
+	system := anObject
 ]

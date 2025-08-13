@@ -19,18 +19,17 @@ String >> aiaComment [
 
 { #category : '*AIActions' }
 String >> q [
-	^ (MistralApi new 
+	^ (AIACommentBuilding ailienApi new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations are evaluated left to right without operator precedence.
 		 Please response in ', AIACommentBuilding language;
-		prompt: self, '
-		 Please response in ', AIACommentBuilding language; 
+		prompt: self; 
 		getResponse; 
 		response) 
 ]
 
 { #category : '*AIActions' }
 String >> q: systemBlock [
-	^ (MistralApi new 
+	^ (AIACommentBuilding ailienApi new 
 		system:  systemBlock value;
 		prompt: self; 
 		getResponse; 

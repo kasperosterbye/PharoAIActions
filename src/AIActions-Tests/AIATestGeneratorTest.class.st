@@ -15,7 +15,7 @@ AIATestGeneratorTest >> setUp [
 
 	"Put here a common initialization logic for tests"
 	
-	refTestGenerator := AIATestGenerator new.
+	refTestGenerator := AIAMistralTestGenerator new.
 ]
 
 { #category : 'tests' }

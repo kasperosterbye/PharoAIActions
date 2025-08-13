@@ -64,15 +64,18 @@ This example initializes the `MistralApi` class, sends a prompt to the API, and 
 By following this class comment, users can understand the purpose, features, and usage of the `MistralApi` class, making it easier to integrate and utilize in their projects.
 "
 Class {
-	#name : 'MistralApi',
-	#superclass : 'AilienApi',
+	#name : 'OldMistralApi',
+	#superclass : 'OldAilienApi',
+	#instVars : [
+		'messagePart'
+	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
-MistralApi class >> esug [
+OldMistralApi class >> esug [
 	"Return the API token for Mistral, read from a maarumlam https file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
@@ -80,7 +83,7 @@ MistralApi class >> esug [
 ]
 
 { #category : 'AI models' }
-MistralApi class >> modelNames [
+OldMistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
@@ -88,7 +91,7 @@ MistralApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
-MistralApi class >> models [
+OldMistralApi class >> models [
 	"Returns a sorted collection of models from the Mistral API, authenticated using a token from a local file."
 	| url response sorted |
 	url := 'https://api.mistral.ai/v1/models'.
@@ -105,13 +108,13 @@ MistralApi class >> models [
 ]
 
 { #category : 'AI models' }
-MistralApi class >> modelsBy: id [
+OldMistralApi class >> modelsBy: id [
 	"returns an array with one item per model."
 	^ self models collect: [ :model | model at: id ]
 ]
 
 { #category : 'accessing' }
-MistralApi class >> token [
+OldMistralApi class >> token [
 	"Return the API token for Mistral, read from a local file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
@@ -120,31 +123,53 @@ MistralApi class >> token [
 ]
 
 { #category : 'mistral models' }
-MistralApi >> bodyForEntityWithPrompt [
+OldMistralApi >> bodyForEntityWithPrompt [
 	"Creates a JSON entity for an API request with a system message and user prompt."
 	| requestDictionary |
 	requestDictionary :=Dictionary newFrom: {
 	    'model' -> 'codestral-latest'.
-	    'messages' -> self jsonHistory .
+	    'messages' -> self messagePart.
 		 'temperature' -> 0.
 	    'stream' -> false.
 		}.
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'as yet unclassified' }
+OldMistralApi >> getResponse [
+	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
+
+	[ :job | | aiProcess |
+		aiProcess := [ self loadResponse ] newProcess.
+		aiProcess priority: Processor userBackgroundPriority. 
+		aiProcess resume.
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job interruptBlock: [ 
+			aiProcess terminate.
+			self response: 'AI based response Terminated'.
+			^ self
+		].
+		1 to: 300 do: [:each |
+			job
+				progress: ((1/300) * each) ;
+				title: ('AI working {1} of 30' format: {(each/10) asFloat printString}).
+				self response ifEmpty: [100 milliSeconds wait].
+		].
+	] asJob run.
+]
+
 { #category : 'initialization' }
-MistralApi >> initialize [ 
+OldMistralApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
 	self model: 'codestral-latest'.
 ]
 
 { #category : 'mistral models' }
-MistralApi >> loadResponse [ 
+OldMistralApi >> loadResponse [ 
 	| apiGenerateUrl jsonResponse bodyEntiry |
-
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	[  	bodyEntiry := self bodyForEntityWithPrompt.
+	[  bodyEntiry := self bodyForEntityWithPrompt.
 		jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
 	  	 headerAt: 'Authorization' put: self class esug;
@@ -152,19 +177,43 @@ MistralApi >> loadResponse [
 	    entity: bodyEntiry;
 	    post;
 	    contents.
-		self assistant: (self responseOf: jsonResponse) .
+		response := self responseOf: jsonResponse .
 	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
+   		response := ex messageText.
 	].
 ]
 
+{ #category : 'as yet unclassified' }
+OldMistralApi >> messagePart [
+	"Returns the message part for the API request, either from the stored message or creates a new one with system and user roles."
+	messagePart 
+		ifNil: [ ^ {
+				Dictionary newFrom: {
+					'role' -> 'system'.
+					'content' -> system
+				}. 
+		      Dictionary newFrom: { 
+		         'role' -> 'user'. 
+		         'content' -> prompt 
+		      }
+			}]
+		ifNotNil: [ 
+			^ messagePart 
+		]
+]
+
+{ #category : 'as yet unclassified' }
+OldMistralApi >> messagePart: message [
+	messagePart := message
+]
+
 { #category : 'printing' }
-MistralApi >> printOn: aStream [
+OldMistralApi >> printOn: aStream [
 	aStream << 'MistralApi: ' << self model.
 ]
 
 { #category : 'mistral models' }
-MistralApi >> responseOf: jsonResponse [
+OldMistralApi >> responseOf: jsonResponse [
 	| parsed message  |
 	parsed := STONJSON fromString: jsonResponse.
 	message := (parsed at: 'choices') first at: 'message'.

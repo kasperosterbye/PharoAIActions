@@ -4,6 +4,9 @@ Class {
 	#instVars : [
 		'messagePart'
 	],
+	#classInstVars : [
+		'lastKeyNumber'
+	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -11,27 +14,32 @@ Class {
 
 { #category : 'as yet unclassified' }
 ClaudeApi class >> claudeKey [
-	^ (FileSystem disk workingDirectory / '../../claudecode.txt')
-		readStream contents trimBoth.
+	| fileName |
+	lastKeyNumber ifNil: [ lastKeyNumber := 0 ].
+	lastKeyNumber := lastKeyNumber + 1.
+	lastKeyNumber > 2 ifTrue: [ lastKeyNumber := 0 ].
+	fileName := '../../claudecode0{1}.txt' format: { lastKeyNumber }.
+	^ (FileSystem disk workingDirectory / fileName ) readStream contents trimBoth.
 ]
 
 { #category : 'accessing' }
 ClaudeApi >> bodyForEntityWithPrompt [
-	"Creates a JSON entity for Claude API request with model, max tokens, system prompt, user message, and temperature settings."
-	| requestDictionary |
-	requestDictionary := Dictionary newFrom: {
-	    'model' -> model.
-	    'max_tokens' -> 1024.
-	    'system' -> system.
-	    'messages' -> { 
-	        Dictionary newFrom: {
-	            'role' -> 'user'.
-	            'content' -> prompt
-	        }
-	    }.
-	    'temperature' -> 0
-	}.
-	^ ZnEntity json: (STONJSON toString: requestDictionary).
+	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
+    | requestDictionary systemContent userMessages |
+    
+    "Extract system message and filter out system from messages"
+    systemContent := self system ifNil: [ '' ].
+    userMessages := self jsonHistory select: [ :msg | (msg at: 'role') ~= 'system' ].
+    
+    requestDictionary := Dictionary newFrom: {
+        'model' -> model.
+        'max_tokens' -> 1024.
+        'system' -> systemContent.
+        'messages' -> userMessages.
+        'temperature' -> 0.1.
+    	  'stream' -> false.
+    }.
+    ^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
 { #category : 'accessing' }
@@ -43,45 +51,23 @@ ClaudeApi >> initialize [
 
 { #category : 'accessing' }
 ClaudeApi >> loadResponse [ 
-	| apiGenerateUrl jsonResponse bodyEntity |
+	| apiGenerateUrl jsonResponse bodyEntity key |
 	apiGenerateUrl := 'https://api.anthropic.com/v1/messages'.
 	[  bodyEntity := self bodyForEntityWithPrompt.
+		key := self class claudeKey.
 		jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
-	    headerAt: 'x-api-key' put: self class claudeKey;
+	    headerAt: 'x-api-key' put: key;
 	    headerAt: 'anthropic-version' put: '2023-06-01';
 	    headerAt: 'content-type' put: 'application/json';
 	    entity: bodyEntity;
 	    post;
 	    contents.
-		response := self responseOf: jsonResponse .
+		self assistant: (self responseOf: jsonResponse) .
 	] on: Error do: [ :ex |
-   		response := ex messageText.
+	self halt.
+   		self assistant: ex messageText.
 	].
-]
-
-{ #category : 'accessing' }
-ClaudeApi >> messagePart [
-	"Returns the message part for the API request, either from the stored message or creates a new one with system and user roles."
-	messagePart 
-		ifNil: [ ^ {
-				Dictionary newFrom: {
-					'role' -> 'system'.
-					'content' -> system
-				}. 
-		      Dictionary newFrom: { 
-		         'role' -> 'user'. 
-		         'content' -> prompt 
-		      }
-			}]
-		ifNotNil: [ 
-			^ messagePart 
-		]
-]
-
-{ #category : 'accessing' }
-ClaudeApi >> messagePart: message [
-	messagePart := message
 ]
 
 { #category : 'accessing' }
@@ -94,5 +80,10 @@ ClaudeApi >> responseOf: jsonResponse [
 	"Returns the text content from the parsed Claude API JSON response by extracting the text field from the first content element in the response dictionary"
 	| parsed |
 	parsed := STONJSON fromString: jsonResponse.
-	^ (parsed at: 'content') first at: 'text'
+	(parsed at: 'type') = 'message'
+		ifTrue:[ ^ (parsed at: 'content') first at: 'text'.].
+	(parsed at: 'type') = 'error'
+		ifTrue:[ ^ 'fooIsDeleted', String cr, 
+			('"Error: {1}' format: { (parsed at: 'error') at: 'type' }), String cr, 			('Message: {2}"' format:{ (parsed at: 'error') at: 'message'. }) ].
+	Error signal: 'Got an unexpected type return'.
 ]

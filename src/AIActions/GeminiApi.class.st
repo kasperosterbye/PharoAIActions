@@ -1,9 +1,6 @@
 Class {
 	#name : 'GeminiApi',
 	#superclass : 'AilienApi',
-	#instVars : [
-		'messagePart'
-	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -17,23 +14,15 @@ GeminiApi class >> geminiKey [
 
 { #category : 'ollama models' }
 GeminiApi >> bodyForEntityWithPrompt [
-	"Creates a JSON entity for Gemini API request with contents format"
+
 	| requestDictionary |
-	requestDictionary := Dictionary newFrom: {
-	    'contents' -> {
-	        Dictionary newFrom: {
-	            'parts' -> {
-	                Dictionary newFrom: {
-	                    'text' -> (system, ' ', prompt)
-	                }
-	            }
-	        }
-	    }.
-	    'generationConfig' -> (Dictionary newFrom: {
-	        'temperature' -> 0
-	    })
+	requestDictionary :=Dictionary newFrom: {
+		'contents' -> self jsonHistory.
+		'generationConfig' -> (Dictionary newFrom: {
+			'temperature' -> 0
+		})
 	}.
-	^ ZnEntity json: (STONJSON toString: requestDictionary).
+	^ ZnEntity json: (STONJSON toString: requestDictionary)
 ]
 
 { #category : 'initialization' }
@@ -41,6 +30,25 @@ GeminiApi >> initialize [
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
 	self model: 'gemini-2.0-flash'.
+]
+
+{ #category : 'accessing' }
+GeminiApi >> jsonHistory [
+	"Transforms the message history into a JSON format suitable for the Gemini API, structuring roles and text parts."
+	| jsonHistory geminiHistry|
+	jsonHistory := OrderedCollection new.
+	self system 
+		ifNil: [ 
+			geminiHistry := history ] 
+		ifNotNil: [ 
+			geminiHistry := history deepCopy allButFirst.
+			geminiHistry first value: (history first value, '. ', history second value)] .
+	geminiHistry do: [ :item |
+		jsonHistory add: (Dictionary newFrom: 
+			{'role' -> item key.
+			'parts' -> {Dictionary newFrom: {  'text' -> item value} } } )
+	].
+	^ jsonHistory asArray.
 ]
 
 { #category : 'mistral models' }
@@ -56,34 +64,10 @@ GeminiApi >> loadResponse [
 	    entity: bodyEntity;
 	    post;
 	    contents.
-		response := self responseOf: jsonResponse .
+		self assistant: (self responseOf: jsonResponse) .
 	] on: Error do: [ :ex |
-   		response := ex messageText.
+   		self assistant: ex messageText.
 	].
-]
-
-{ #category : 'accessing' }
-GeminiApi >> messagePart [
-	"Returns the message part for the API request, either from the stored message or creates a new one with system and user roles."
-	messagePart 
-		ifNil: [ ^ {
-				Dictionary newFrom: {
-					'role' -> 'system'.
-					'content' -> system
-				}. 
-		      Dictionary newFrom: { 
-		         'role' -> 'user'. 
-		         'content' -> prompt 
-		      }
-			}]
-		ifNotNil: [ 
-			^ messagePart 
-		]
-]
-
-{ #category : 'accessing' }
-GeminiApi >> messagePart: message [
-	messagePart := message
 ]
 
 { #category : 'accessing' }

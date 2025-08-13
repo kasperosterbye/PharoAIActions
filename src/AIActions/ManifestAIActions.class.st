@@ -10,7 +10,7 @@ Class {
 ManifestAIActions class >> ruleReGuardClauseRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGClassDefinition #(#AIATestGenerator)) #'2025-07-23T12:54:26.010851+02:00') )
+	^ #(#(#(#RGClassDefinition #(#AIAMistralTestGenerator)) #'2025-07-23T12:54:26.010851+02:00') )
 ]
 
 { #category : 'code-critics' }

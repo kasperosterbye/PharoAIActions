@@ -3,7 +3,7 @@
 
 "
 Class {
-	#name : 'AIATestGenerator',
+	#name : 'AIAMistralTestGenerator',
 	#superclass : 'Object',
 	#instVars : [
 		'chatBuilder',
@@ -16,26 +16,37 @@ Class {
 }
 
 { #category : 'instance creation' }
-AIATestGenerator class >> buildAll: aClass [
+AIAMistralTestGenerator class >> buildAll: aClass [
 	aClass methodDict values do: [ :method |
-		self new build: method
+		self new build: method.
 	 ]
 ]
 
 { #category : 'instance creation' }
-AIATestGenerator >> build: aMethod [
+AIAMistralTestGenerator >> build: aMethod [
 	| aiTestClass |
 	aiTestClass := self buildTestForMethod: aMethod.
 	self for: aMethod.
 	testMethod := self repairResponseMethod.
-	[aiTestClass compile: testMethod classified: 'AI generated test']
+	[ aiTestClass compile: testMethod classified: 'AI generated test']
 		on: Error
-		do: [ ].
+		do: [ self buildFromErrorFor: aiTestClass].
 	^ self history
 ]
 
+{ #category : 'as yet unclassified' }
+AIAMistralTestGenerator >> buildFromErrorFor: aiTestClass [
+	"The method attempts to fix and compile a test method that initially failed due to errors by generating a corrected version and retrying compilation."
+	| method2 |
+	method2 := 'There are some errors in the method. Can you suggest one without any errors. Just return the method, no markdown, but keep line shifts' q: [ testMethod  ].
+	method2 := method2 copyReplaceAll: Character lf asString with: Character cr asString.
+	[aiTestClass compile: method2 classified: 'AI generated test']
+		on: Error
+		do: [ self halt].
+]
+
 { #category : 'test builder' }
-AIATestGenerator >> buildTestForMethod: method [
+AIAMistralTestGenerator >> buildTestForMethod: method [
 	| methodClass aiTestClass shifter|
 	methodClass := method methodClass name.
 	aiTestClass := (methodClass , 'AITest' ) asSymbol.
@@ -54,13 +65,26 @@ AIATestGenerator >> buildTestForMethod: method [
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> chatBuilder [
+AIAMistralTestGenerator >> chatBuilder [
 
 	^ chatBuilder
 ]
 
 { #category : 'instance creation' }
-AIATestGenerator >> for: aMethod [
+AIAMistralTestGenerator >> cleanAIResponse: responseText [
+    | lines |
+    lines := responseText lines.
+    
+    "Remove markdown code fences"
+    (lines first beginsWith: '```') ifTrue: [
+        lines := lines allButFirst allButLast
+    ].
+    
+    ^ String cr join: lines
+]
+
+{ #category : 'instance creation' }
+AIAMistralTestGenerator >> for: aMethod [
 	"aMethod is the compiled method to which a test should be renerated."
 	sourceMethod := aMethod.
 	"testClass := sourceMethod methodClass packageName asString , '-Tests'."
@@ -70,17 +94,18 @@ AIATestGenerator >> for: aMethod [
 ]
 
 { #category : 'instance creation' }
-AIATestGenerator >> generateTest [
+AIAMistralTestGenerator >> generateTest [
 	self systemGenerator.
+	self hist92WhatIsTheBasics.
 	self hist1GeneratorMethods.
 	self hist2WhereToPlaceTestMethod.
 	self hist3WhatIsTheBasics.
 	self hist50WhatIsTheBasics.
 	self hist51WhatIsTheBasics.
-	self hist99WhatIsTheBasics.
+	self hist90WhatIsTheBasics.
 	self promptGenerator.
-	chatBuilder jsonHistory .
-	testMethod := chatBuilder response .
+	chatBuilder getResponse.
+	testMethod := self cleanAIResponse: chatBuilder response .
 	(chatBuilder response = 'Data receive timed out.') ifTrue: [
 		chatBuilder response: ''.
 		self systemGeneratorClasses.
@@ -90,7 +115,7 @@ AIATestGenerator >> generateTest [
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> hist1GeneratorMethods [
+AIAMistralTestGenerator >> hist1GeneratorMethods [
 	chatBuilder user: 'I have heard that Pharo have different types of methods, what are they'.
 	chatBuilder assistant:'
 Important Coding Rule
@@ -131,7 +156,7 @@ Notes:
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> hist2WhereToPlaceTestMethod [
+AIAMistralTestGenerator >> hist2WhereToPlaceTestMethod [
 	chatBuilder user: 
 ('I want to write a test method for {1} in class {2}. 
 In what test class do I place it, and what do I name the test method'
@@ -149,7 +174,7 @@ so you should not declare a local variable in the test method, but use {3}'
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> hist3WhatIsTheBasics [
+AIAMistralTestGenerator >> hist3WhatIsTheBasics [
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test method is called before the test is executed.
@@ -158,7 +183,7 @@ Do not declare variables in the method that are already provided as instance var
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> hist50WhatIsTheBasics [
+AIAMistralTestGenerator >> hist50WhatIsTheBasics [
 	chatBuilder user: ('For making a test for method {1} in class {2}, what does {1} return'
 			format: {self sourceMethodStringName . self sourceClassStringName }).
 	chatBuilder assistant: ('In general, if there is no "^" syntax, the method return the object of the method. If there is a "^" the method returns the result of the expression after "^". In your case, if there is no "^", the return of {1} is an instance of {2}, otherwise you need to examine the expression after "^"'
@@ -167,7 +192,7 @@ AIATestGenerator >> hist50WhatIsTheBasics [
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> hist51WhatIsTheBasics [
+AIAMistralTestGenerator >> hist51WhatIsTheBasics [
 	chatBuilder user: 'Is this Pharo object {''aaa'' -> 77. ''bbb''->88 } an array or a dictionary'.
 	chatBuilder assistant: 'The syntax {...} is always an array, not a dictionary. And ''aaa'' -> 77 is an association object. So {''aaa'' -> 77. ''bbb''->88 } is an array of associations.'.
 	chatBuilder user: 'How do I convert an array of associations to an ordered dictionary, how do I do that'.
@@ -177,7 +202,7 @@ AIATestGenerator >> hist51WhatIsTheBasics [
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> hist99WhatIsTheBasics [
+AIAMistralTestGenerator >> hist90WhatIsTheBasics [
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test methos is called before the test is executed.
@@ -185,8 +210,14 @@ Do not declare variables in the method that are already provided as instance var
 	
 ]
 
+{ #category : 'test builder' }
+AIAMistralTestGenerator >> hist92WhatIsTheBasics [
+    chatBuilder user: 'Are there any rules for local variables'.
+    chatBuilder assistant: 'In Pharo, all local variables (| ... |) must be declared in a single block at the top of the method. The variable declaration | pathDistance | is placed in the middle of the code, which is a syntax error that will stop the compiler.'.
+]
+
 { #category : 'accessing' }
-AIATestGenerator >> history [
+AIAMistralTestGenerator >> history [
 	| historyText |
 	historyText := WriteStream on: ''.
 	chatBuilder history allButFirst do: [ :item | 
@@ -197,15 +228,61 @@ AIATestGenerator >> history [
 ]
 
 { #category : 'initialization' }
-AIATestGenerator >> initialize [ 
+AIAMistralTestGenerator >> initialize [ 
 	"Initializes MistralApi with the latest model."
 	super initialize.
-	chatBuilder := AIAChatBuilding new.
+	chatBuilder := AIACommentBuilding ailienApi new.
 	
 ]
 
+{ #category : 'instance creation' }
+AIAMistralTestGenerator >> new_generateTest [
+	self hist2WhereToPlaceTestMethod.
+	self hist50WhatIsTheBasics.
+	self promptGenerator.
+	chatBuilder getResponse.
+	testMethod := self cleanAIResponse: chatBuilder response .
+	(chatBuilder response = 'Data receive timed out.') ifTrue: [
+		chatBuilder response: ''.
+		self systemGeneratorClasses.
+		chatBuilder getResponse.
+		testMethod := chatBuilder response .
+		 ]
+]
+
+{ #category : 'instance creation' }
+AIAMistralTestGenerator >> old_generateTest [
+	self systemGenerator.
+	self hist92WhatIsTheBasics.
+	self hist1GeneratorMethods.
+	self hist2WhereToPlaceTestMethod.
+	self hist3WhatIsTheBasics.
+	self hist50WhatIsTheBasics.
+	self hist51WhatIsTheBasics.
+	self hist90WhatIsTheBasics.
+	self promptGenerator.
+	chatBuilder getResponse.
+	testMethod := self cleanAIResponse: chatBuilder response .
+	(chatBuilder response = 'Data receive timed out.') ifTrue: [
+		chatBuilder response: ''.
+		self systemGeneratorClasses.
+		chatBuilder getResponse.
+		testMethod := chatBuilder response .
+		 ]
+]
+
 { #category : 'test builder' }
-AIATestGenerator >> promptGenerator [
+AIAMistralTestGenerator >> old_systemGenerator [
+	chatBuilder system: 
+		'All background code and documentation is written in Markdown.
+		This includes Pharo packages, classes, and methods.', String cr, 
+	(AIASourceCodeBuilder new for: { 
+		sourceMethod methodClass class packageName asString. 
+		sourceMethod methodClass packageName asString , '-Tests' }).
+]
+
+{ #category : 'test builder' }
+AIAMistralTestGenerator >> promptGenerator [
 	| methodName |
 	methodName := sourceMethod name .
 	chatBuilder user: ('You must only use code that you know is existing in Pharo, never use figurative code.
@@ -222,37 +299,7 @@ The test method might replace an existing test method. It will be placed in
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> promptGenerator_new [
-	| prompt |
-	prompt := 'Please build a test method for method "{1}" in class {2}.
-The by you generated test code must follow the principles you mention to me earlier.
-Insert comments in the test method you create.
-Just return the test method. Do not explain.' 
-	format: { self sourceMethodStringName . self sourceClassStringName }.
-	self halt.
-	chatBuilder user: prompt.
-]
-
-{ #category : 'test builder' }
-AIATestGenerator >> promptGenerator_old [
-	| methodName |
-	methodName := sourceMethod name .
-	chatBuilder user: ('Please build a test case for method "{1}".
-{3}.
-The test method might replace an existing test method. It will be placed in 
-{2}.
-You must only use code that you know is existing in Pharo, never use figurative code.
-The setUp method of any test methos is called before the test is executed.
-Do not declare local variables that are already provided as instance variables. 
-Insert comments in the test method you create.
-Just return the test method. Do not explain.' 
-	format: { sourceMethod name .  
-				sourceMethod methodClass definitionString. 
-				self hist2WhereToPlaceTestMethod }).
-]
-
-{ #category : 'test builder' }
-AIATestGenerator >> repairResponseMethod [
+AIAMistralTestGenerator >> repairResponseMethod [
 	| repaired testMethodName |
 	"should update the method generated method name so first, and those after : is kapital letter"
 	testMethodName := 'test', 
@@ -268,7 +315,7 @@ AIATestGenerator >> repairResponseMethod [
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> sourceClassFirstInstanceVariable [
+AIAMistralTestGenerator >> sourceClassFirstInstanceVariable [
 	| testClassVariables |
 	"(Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables first name."
 	testClassVariables := (Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables.
@@ -278,29 +325,29 @@ AIATestGenerator >> sourceClassFirstInstanceVariable [
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> sourceClassStringName [
+AIAMistralTestGenerator >> sourceClassStringName [
 	^ sourceMethod  methodClass asString
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> sourceMethod [
+AIAMistralTestGenerator >> sourceMethod [
 
 	^ sourceMethod
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> sourceMethod: anObject [
+AIAMistralTestGenerator >> sourceMethod: anObject [
 
 	sourceMethod := anObject
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> sourceMethodStringName [
+AIAMistralTestGenerator >> sourceMethodStringName [
 	^ sourceMethod selector asString
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> systemGenerator [
+AIAMistralTestGenerator >> systemGenerator [
 	chatBuilder system: 
 		'All background code and documentation is written in Markdown.
 		This includes Pharo packages, classes, and methods.', String cr, 
@@ -310,7 +357,7 @@ AIATestGenerator >> systemGenerator [
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> systemGeneratorClasses [
+AIAMistralTestGenerator >> systemGeneratorClasses [
 	"Only called in timeout"
 	self system: (AIASourceCodeBuilder new forClasses: { 
 		sourceMethod methodClass class. 
@@ -318,19 +365,19 @@ AIATestGenerator >> systemGeneratorClasses [
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> testMethod [
+AIAMistralTestGenerator >> testMethod [
 
 	^ testMethod
 ]
 
 { #category : 'accessing' }
-AIATestGenerator >> testMethod: anObject [
+AIAMistralTestGenerator >> testMethod: anObject [
 
 	testMethod := anObject
 ]
 
 { #category : 'test builder' }
-AIATestGenerator >> testMethodName [
+AIAMistralTestGenerator >> testMethodName [
 	^ 'test', ((self sourceMethodStringName keywords collect: [:kw | 
 		(kw copyReplaceAll: ':' with: '') capitalized]) joinUsing: '')
 ]

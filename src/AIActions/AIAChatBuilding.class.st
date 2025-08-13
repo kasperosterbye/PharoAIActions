@@ -23,6 +23,7 @@ AIAChatBuilding >> history [
 AIAChatBuilding >> initialize [ 
 	"Initializes MistralApi with the latest model."
 	super initialize.
+	self halt.
 	history := OrderedCollection new.
 ]
 

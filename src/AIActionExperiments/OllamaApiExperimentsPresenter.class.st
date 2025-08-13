@@ -50,7 +50,7 @@ OllamaApiExperimentsPresenter >> initialize [
 OllamaApiExperimentsPresenter >> initializePresenters [
     | quitButton |
     
-    modelList := SpListPresenter new items: OllamaModelsApi modelNames.
+    modelList := SpListPresenter new items: OllamaApi modelNames.
     arraySecondsList := {{ 0. 0. 0. 0 }. { 0. 0. 0. 0 }. { 0. 0. 0. 0 }. { 0. 0. 0. 0 }. { 0. 0. 0. 0 }.}.
     secondsList := SpListPresenter new items: arraySecondsList .
 	 quitButton := SpButtonPresenter new

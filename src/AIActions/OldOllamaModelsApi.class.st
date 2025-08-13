@@ -1,19 +1,19 @@
 Class {
-	#name : 'OllamaModelsApi',
-	#superclass : 'AilienApi',
+	#name : 'OldOllamaModelsApi',
+	#superclass : 'OldAilienApi',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'ollama models' }
-OllamaModelsApi class >> modelNames [
+OldOllamaModelsApi class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :ollamaModel | ollamaModel at: 'name' ]
 ]
 
 { #category : 'AI models' }
-OllamaModelsApi class >> models [
+OldOllamaModelsApi class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"
 	| response  |
 
@@ -22,7 +22,7 @@ OllamaModelsApi class >> models [
 ]
 
 { #category : 'instance creation' }
-OllamaModelsApi class >> newModel: modelNumber [
+OldOllamaModelsApi class >> newModel: modelNumber [
 	"make an instance of OllamaApi based on a specfic Ollama model installed"
 	| selectedModel |
 	
@@ -33,7 +33,7 @@ OllamaModelsApi class >> newModel: modelNumber [
 ]
 
 { #category : 'instance creation' }
-OllamaModelsApi class >> newSystem: synstemText promptPrefix: promptPrefixText [
+OldOllamaModelsApi class >> newSystem: synstemText promptPrefix: promptPrefixText [
 	"Create and return an instance with predefined system and prompt prefix for Ollama queries."
 	| prompter |
 	prompter := self new.
@@ -43,7 +43,7 @@ OllamaModelsApi class >> newSystem: synstemText promptPrefix: promptPrefixText [
 ]
 
 { #category : 'AI models' }
-OllamaModelsApi class >> ollamaVersion [
+OldOllamaModelsApi class >> ollamaVersion [
 	"Retrieve the Ollama version"
 	| response  |
 	
@@ -52,7 +52,7 @@ OllamaModelsApi class >> ollamaVersion [
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> bodyForEntityWithPrompt [
+OldOllamaModelsApi >> bodyForEntityWithPrompt [
 	"Constructs a JSON entity for the API request, including model, system, prompt, and options."
 	| apiGenerateUrl  requestDictionary |
 	apiGenerateUrl := 'http://localhost:11434/api/generate'.
@@ -68,13 +68,13 @@ OllamaModelsApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'initialization' }
-OllamaModelsApi >> initialize [ 
+OldOllamaModelsApi >> initialize [ 
 	super initialize.
 	self model: (self class modelNames) second.
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> loadResponse [ 
+OldOllamaModelsApi >> loadResponse [ 
 	| apiGenerateUrl jsonResponse |
 	apiGenerateUrl := 'http://localhost:11434/api/generate'.
 	[  jsonResponse := ZnClient new
@@ -89,7 +89,7 @@ OllamaModelsApi >> loadResponse [
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> modelInformation [
+OldOllamaModelsApi >> modelInformation [
 	"Returns detailed information about the current model by querying the Ollama API and parsing the JSON response."
 	| url jsonResponse requestBody |
 	url := 'http://localhost:11434/api/show'.
@@ -107,7 +107,7 @@ OllamaModelsApi >> modelInformation [
 ]
 
 { #category : 'ollama models' }
-OllamaModelsApi >> modelShortInfo [	
+OldOllamaModelsApi >> modelShortInfo [	
 	"Returns a dictionary with the model's name, architecture, parameter count in billions, and context length."
 	| info architecture parameters context_length |
 	info := self modelInformation at: 'model_info'.
@@ -125,13 +125,13 @@ OllamaModelsApi >> modelShortInfo [
 ]
 
 { #category : 'printing' }
-OllamaModelsApi >> printOn: string [
+OldOllamaModelsApi >> printOn: string [
 	"Prints the model name of OllamaModelsApi instance"
 	string << 'OllamaModelsApi: ' << self model.
 ]
 
 { #category : 'mistral models' }
-OllamaModelsApi >> responseOf: jsonResponse [
+OldOllamaModelsApi >> responseOf: jsonResponse [
 	"Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response."
 	^ (STONJSON fromString: jsonResponse) at: 'response'
 ]
