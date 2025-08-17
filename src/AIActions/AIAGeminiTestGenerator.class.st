@@ -1,15 +1,44 @@
 "
-## Class Comment for AIATestGenerator
+## Class Comment for AIAGeminiTestGenerator
+
+The `AIAGeminiTestGenerator` class is responsible for automatically generating test methods for existing Smalltalk methods using the Gemini AI model. It leverages the `AIACommentBuilding` class to interact with the AI and constructs test methods based on the source code and documentation of the method being tested. The generated test methods are then compiled and can be used to improve the test coverage of a project.
+
+**Usage Example:**
+
+```smalltalk
+| generator sourceMethod testMethod |
+
+""Assume you have a method named 'add:' in a class named 'Calculator'""
+sourceMethod := Calculator>>#add:.
+
+""Create an instance of the test generator""
+generator := AIAGeminiTestGenerator new.
+
+""Generate a test method for the 'add:' method""
+testMethod := generator build: sourceMethod.
+
+""Inspect the generated test method""
+testMethod inspect.
+
+""Example of building all tests for a class""
+AIAGeminiTestGenerator buildAll: Calculator.
+```
+
+**Explanation:**
+
+1.  We retrieve a compiled method from the system.
+2.  We create an instance of `AIAGeminiTestGenerator`.
+3.  We call the `build:` method, passing the source method as an argument. This triggers the AI-powered test generation process.
+4.  The generated test method is returned as a string and can be inspected.
+5.  The `buildAll:` method can be used to generate tests for all methods in a class.
+
+**Note:** This example assumes that the `Calculator` class and its `add:` method already exist in the system. The generated test method will need to be manually added to the appropriate test class and compiled.
+```
 
 "
 Class {
 	#name : 'AIAGeminiTestGenerator',
-	#superclass : 'Object',
-	#instVars : [
-		'chatBuilder',
-		'sourceMethod',
-		'testMethod'
-	],
+	#superclass : 'AIATestGenerator',
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
 	#tag : 'CommentBuilder'
@@ -46,22 +75,43 @@ AIAGeminiTestGenerator >> buildFromErrorFor: aiTestClass [
 ]
 
 { #category : 'test builder' }
-AIAGeminiTestGenerator >> buildTestForMethod: method [
-	| methodClass aiTestClass shifter|
-	methodClass := method methodClass name.
-	aiTestClass := (methodClass , 'AITest' ) asSymbol.
-	Smalltalk globals at: (methodClass , 'Test') asSymbol 
-		ifAbsent: [ self error: 'There should be a test class: ', methodClass , 'Test' ].
-	^ Smalltalk globals at: aiTestClass 
-	ifAbsent: [
-		shifter := ShiftClassBuilder new.
-		shifter 
-			superclassName: (methodClass , 'Test') asSymbol;
-			name: aiTestClass;
-			slots: { "method methodClass name "};
-			package: 'AIATestExperiments'.
-		^ shifter install .
-	]
+AIAGeminiTestGenerator >> buildTestForMethod: aMethod [
+    "The method creates or finds a test class for a given method, ensuring it exists in the correct package and has the necessary structure for AI-generated tests."
+
+    | testClass superClass newTestClassName shifter instanceVarName |
+    
+    "Identify the name of the new test class based on the method's class."
+    newTestClassName := aMethod methodClass name , 'AITest'.
+    
+    "The name of the instance variable to hold the reference to the test class."
+    instanceVarName := 'ref', aMethod methodClass name.
+    
+    "Try to find an existing test class."
+    testClass := Smalltalk globals at: newTestClassName asSymbol ifAbsent: [ nil ].
+    
+    "If the test class does not exist, create a new one."
+    testClass isNil
+        ifTrue: [
+            "Check if a super test class exists (e.g., AIDijkstraTest)."
+            superClass := Smalltalk globals at: (aMethod methodClass name , 'Test') asSymbol ifAbsent: [ TestCase ].
+            
+            shifter := ShiftClassBuilder new.
+            shifter
+                superclassName: superClass name;
+                name: newTestClassName asSymbol;
+                slots: { instanceVarName asSymbol };
+                package: 'AIATestExperiments'.
+            
+            testClass := shifter install.
+            
+            "Compile an initialize method to set up the instance variable."
+            testClass compile: ('setUp' , String cr,
+                                  'super setUp.' , String cr,
+                                  instanceVarName , ' := ' , aMethod methodClass name , ' new.'
+                                 ) classified: 'initialization'.
+        ].
+    
+    ^ testClass
 ]
 
 { #category : 'accessing' }
@@ -242,6 +292,7 @@ Do not declare variables in the method that are already provided as instance var
 
 { #category : 'test builder' }
 AIAGeminiTestGenerator >> hist92WhatIsTheBasics [
+	"Records a user query about local variable rules and the AI's response regarding variable declaration placement in Pharo."
     chatBuilder user: 'Are there any rules for local variables'.
     chatBuilder assistant: 'In Pharo, all local variables (| ... |) must be declared in a single block at the top of the method. The variable declaration | pathDistance | is placed in the middle of the code, which is a syntax error that will stop the compiler.'.
 ]
@@ -288,6 +339,25 @@ AIAGeminiTestGenerator >> old1_generateTest [
 		chatBuilder getResponse.
 		testMethod := chatBuilder response .
 		 ]
+]
+
+{ #category : 'test builder' }
+AIAGeminiTestGenerator >> old_buildTestForMethod: method [
+	| methodClass aiTestClass shifter|
+	methodClass := method methodClass name.
+	aiTestClass := (methodClass , 'AITest' ) asSymbol.
+	Smalltalk globals at: (methodClass , 'Test') asSymbol 
+		ifAbsent: [ self error: 'There should be a test class: ', methodClass , 'Test' ].
+	^ Smalltalk globals at: aiTestClass 
+	ifAbsent: [
+		shifter := ShiftClassBuilder new.
+		shifter 
+			superclassName: (methodClass , 'Test') asSymbol;
+			name: aiTestClass;
+			slots: { "method methodClass name "};
+			package: 'AIATestExperiments'.
+		^ shifter install .
+	]
 ]
 
 { #category : 'test builder' }

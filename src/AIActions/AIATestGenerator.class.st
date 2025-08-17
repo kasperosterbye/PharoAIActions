@@ -52,22 +52,27 @@ generator history
 This class is particularly useful for developers who want to quickly generate test cases for existing methods without manually writing each test, while maintaining high quality and coverage standards.
 "
 Class {
-	#name : 'AIAMistralTestGenerator',
-	#superclass : 'AIATestGenerator',
+	#name : 'AIATestGenerator',
+	#superclass : 'Object',
+	#instVars : [
+		'chatBuilder',
+		'sourceMethod',
+		'testMethod'
+	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
 	#tag : 'CommentBuilder'
 }
 
 { #category : 'instance creation' }
-AIAMistralTestGenerator class >> buildAll: aClass [
+AIATestGenerator class >> buildAll: aClass [
 	aClass methodDict values do: [ :method |
 		self new build: method.
 	 ]
 ]
 
 { #category : 'instance creation' }
-AIAMistralTestGenerator >> build: aMethod [
+AIATestGenerator >> build: aMethod [
 	"The build method generates a test method for a given source method using AI. It creates or finds a test class, generates the test code, and compiles it. The method handles errors and provides feedback."
 	| aiTestClass |
 	aiTestClass := self buildTestForMethod: aMethod.
@@ -79,8 +84,8 @@ AIAMistralTestGenerator >> build: aMethod [
 	^ self history
 ]
 
-{ #category : 'as yet unclassified' }
-AIAMistralTestGenerator >> buildFromErrorFor: aiTestClass [
+{ #category : 'test builder' }
+AIATestGenerator >> buildFromErrorFor: aiTestClass [
 	"The method attempts to fix and compile a test method that initially failed due to errors by generating a corrected version and retrying compilation."
 	| method2 |
 	method2 := 'There are some errors in the method. Can you suggest one without any errors. In particular, no | variable | inside the code, only at the rop. Just return the method, no markdown, but keep line shifts' q: [ testMethod  ].
@@ -94,7 +99,7 @@ AIAMistralTestGenerator >> buildFromErrorFor: aiTestClass [
 ]
 
 { #category : 'test builder' }
-AIAMistralTestGenerator >> buildTestForMethod: aMethod [
+AIATestGenerator >> buildTestForMethod: aMethod [
     "The method creates or finds a test class for a given method, ensuring it exists in the correct package and has the necessary structure for AI-generated tests."
 
     | testClass superClass newTestClassName shifter instanceVarName |
@@ -134,14 +139,14 @@ AIAMistralTestGenerator >> buildTestForMethod: aMethod [
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> chatBuilder [
+AIATestGenerator >> chatBuilder [
 	"The chatBuilder method returns the AI comment building instance used to generate test methods. It initializes with a new instance of AIACommentBuilding and ailienApi."
 
 	^ chatBuilder
 ]
 
 { #category : 'instance creation' }
-AIAMistralTestGenerator >> cleanAIResponse: responseText [
+AIATestGenerator >> cleanAIResponse: responseText [
 	"The cleanAIResponse method removes markdown code fences from AI responses, ensuring clean test method generation. It processes the response text to extract only the relevant code."
     | lines |
     lines := responseText lines.
@@ -150,35 +155,23 @@ AIAMistralTestGenerator >> cleanAIResponse: responseText [
     (lines first beginsWith: '```') ifTrue: [
         lines := lines allButFirst allButLast
     ].
-    
-    ^ String cr join: lines
+	 lines := String cr join: lines.
+    ^ lines
 ]
 
 { #category : 'instance creation' }
-AIAMistralTestGenerator >> for: aMethod [
+AIATestGenerator >> for: aMethod [
 	"aMethod is the compiled method to which a test should be renerated."
 	sourceMethod := aMethod.
-	"testClass := sourceMethod methodClass packageName asString , '-Tests'."
 	self generateTest.
 	
 	^ testMethod 
 ]
 
 { #category : 'instance creation' }
-AIAMistralTestGenerator >> generateTest [
+AIATestGenerator >> generateTest [
 	"The generateTest method uses AI to create test methods for source methods by combining system context and specific prompts to produce clean test code."
 	self systemGenerator.
-	self hist92WhatIsTheBasics.
-	self hist1GeneratorMethods.
-	self hist2WhereToPlaceTestMethod.
-	self hist3WhatIsTheBasics.
-	self hist50WhatIsTheBasics.
-	self hist51WhatIsTheBasics.
-	self hist60ArrangeMethod.
-	self hist62ArrangeMethod.
-	self hist63CorrectNodeSetup.
-	self hist70ReferenceToOrigin.
-	self hist90WhatIsTheBasics.
 	self promptGenerator.
 	chatBuilder getResponse.
 	testMethod := self cleanAIResponse: chatBuilder response .
@@ -190,150 +183,8 @@ AIAMistralTestGenerator >> generateTest [
 		 ]
 ]
 
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist1GeneratorMethods [
-	"The hist1GeneratorMethods method provides context about Pharo method types unary binary and keyword to ensure accurate test generation."
-	chatBuilder user: 'I have heard that Pharo have different types of methods, what are they'.
-	chatBuilder assistant:'
-Important Coding Rule
-
-When writing Pharo code or tests:
-	•	Only use methods that are explicitly described in the provided context or documentation.
-	•	If unsure whether a method exists, do not invent one.
-	•	If no valid method is known, respond with:
-“I cannot complete this without more information about the available methods.”
-
-
-In Pharo, method names follow three distinct syntactic forms:
-	1.	Unary methods – no arguments:
-Example:
-
-clock reset
-
-Here, reset is a unary method.
-
-	2.	Binary methods – typically symbolic, take one argument:
-Example:
-
-3 + 4
-
-Here, + is a binary method. Other examples include &, =, or @.
-
-	3.	Keyword methods – take one or more arguments, each labeled:
-Example:
-
-painter mix: red with: blue
-
-Here, the full method name is mix:with: and it takes two arguments.
-
-Notes:
-	•	Method names in keyword form always end in colons.
-	•	Method lookup uses the full name including colons.
-	•	Special characters like + or & are valid binary selectors.'
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist2WhereToPlaceTestMethod [
-	"The hist2WhereToPlaceTestMethod method provides context about test class placement and naming rules for AI generated test methods."
-	chatBuilder user: 
-('I want to write a test method for {1} in class {2}. 
-In what test class do I place it, and what do I name the test method'
-format: {self sourceMethodStringName . self sourceClassStringName }).
-	chatBuilder assistant: ('There is an existing test class named {1} which is to be used. 
-The name of the test method is {2}'
-		format: {self sourceClassStringName , 'AITest'. self testMethodName }), String cr, 
-('In addition, the superclass {1} of {2} has an instance variable {3} that is set up to an instance of {4}, 
-so you should not declare a local variable in the test method, but use {3}' 
-			format:{self sourceClassStringName,'Test'. 
-			self sourceClassStringName,'AITest'. 
-			self sourceClassFirstInstanceVariable.
-			self sourceClassStringName. }).
-	
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist3WhatIsTheBasics [
-	"The hist3WhatIsTheBasics method provides context about building test methods in Pharo including rules for using existing code and handling instance variables."
-	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
-	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
-The setUp method of any test method is called before the test is executed.
-Do not declare variables in the method that are already provided as instance variables.'
-	
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist50WhatIsTheBasics [
-	"The hist50WhatIsTheBasics method provides context about method return values in Pharo, explaining the difference between implicit and explicit returns using the caret symbol."
-	chatBuilder user: ('For making a test for method {1} in class {2}, what does {1} return'
-			format: {self sourceMethodStringName . self sourceClassStringName }).
-	chatBuilder assistant: ('In general, if there is no "^" syntax, the method return the object of the method. If there is a "^" the method returns the result of the expression after "^". In your case, if there is no "^", the return of {1} is an instance of {2}, otherwise you need to examine the expression after "^"'
-			format: {self sourceMethodStringName . self sourceClassStringName }).
-	
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist51WhatIsTheBasics [
-	"The hist51WhatIsTheBasics method provides context about converting arrays of associations to ordered dictionaries in Pharo, explaining the asOrderedDictionary method."
-	chatBuilder user: 'Is this Pharo object {''aaa'' -> 77. ''bbb''->88 } an array or a dictionary'.
-	chatBuilder assistant: 'The syntax {...} is always an array, not a dictionary. And ''aaa'' -> 77 is an association object. So {''aaa'' -> 77. ''bbb''->88 } is an array of associations.'.
-	chatBuilder user: 'How do I convert an array of associations to an ordered dictionary, how do I do that'.
-	chatBuilder assistant: 
-	'If you have an arrays of associtions you can convert it to an ordered dictionary symply by sending it the method asOrderedDictionary. And if you do not know if it is already an ordered dictionary, the function asOrderedDictionary works also for something which is already an ordered dictionary'.
-	
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist60ArrangeMethod [
-	chatBuilder user: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
-If the method you are testing depends on a collection (like a dictionary), you need to make sure the collection contains the data needed for the test to pass.'.
-	chatBuilder assistant: 'Yes, I understand. I will add the necessary data to the collection in the "Arrange" part of the test to prevent the test from failing due to missing data.'
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist61ArrangeMethod [
-	chatBuilder user: 'Are there some special rules I need to be aware of regarding the data used in a test'.
-	chatBuilder assistant: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
-If the method you are testing depends on a collection (like a dictionary), you need to make sure the collection contains the data needed for the test to pass.'
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist62ArrangeMethod [
-	chatBuilder user: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
-If the method you are testing depends on a collection (like a dictionary), you need to make sure the collection contains the data needed for the test to pass.'.
-	chatBuilder assistant: 'Yes, I understand. I will add the necessary data to the collection in the "Arrange" part of the test to prevent the test from failing due to missing data.'
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist63CorrectNodeSetup [
-	chatBuilder user: 'When adding nodes to the graph, you must use the public method, for example, "addNode: anObject". Do not access the internal instance variables like "nodeDictionary" directly.'.
-	chatBuilder assistant: 'Yes, I understand. I will use the public methods, such as `addNode:`, to add nodes to the graph in the Arrange section of the test.'
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist70ReferenceToOrigin [
-	chatBuilder user: 'A test method often need a reference to the original. How do I find the original class?'.
-	chatBuilder assistant: ('You need to use the local variable of the test class {1}, which in this class is ref{1}. ' format: { self sourceClassStringName})
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist90WhatIsTheBasics [
-	"The hist90WhatIsTheBasics method provides context about building test methods in Pharo including rules for using existing code and handling instance variables."
-	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
-	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
-The setUp method of any test methos is called before the test is executed.
-Do not declare variables in the method that are already provided as instance variables.'
-	
-]
-
-{ #category : 'test builder' }
-AIAMistralTestGenerator >> hist92WhatIsTheBasics [
-	"The hist92WhatIsTheBasics method provides context about local variable rules in Pharo methods ensuring proper syntax and declaration."
-    chatBuilder user: 'Are there any rules for local variables'.
-    chatBuilder assistant: 'In Pharo, all local variables (| ... |) must be declared in a single block at the top of the method. The variable declaration | pathDistance | is placed in the middle of the code, which is a syntax error that will stop the compiler.'.
-]
-
 { #category : 'accessing' }
-AIAMistralTestGenerator >> history [
+AIATestGenerator >> history [
 	"The history method returns a string containing all interactions with the AI, formatted with headers and line breaks for readability. It excludes the first item in the chat history."
 	| historyText |
 	historyText := WriteStream on: ''.
@@ -345,7 +196,7 @@ AIAMistralTestGenerator >> history [
 ]
 
 { #category : 'initialization' }
-AIAMistralTestGenerator >> initialize [ 
+AIATestGenerator >> initialize [ 
 	"Initializes MistralApi with the latest model."
 	super initialize.
 	chatBuilder := AIACommentBuilding ailienApi new.
@@ -353,7 +204,7 @@ AIAMistralTestGenerator >> initialize [
 ]
 
 { #category : 'instance creation' }
-AIAMistralTestGenerator >> new_generateTest [
+AIATestGenerator >> new_generateTest [
 	"The new_generateTest method generates test methods using AI by combining system context and specific prompts to produce clean test code. It handles timeouts and cleans AI responses."
 	self hist2WhereToPlaceTestMethod.
 	self hist50WhatIsTheBasics.
@@ -368,19 +219,8 @@ AIAMistralTestGenerator >> new_generateTest [
 		 ]
 ]
 
-{ #category : 'as yet unclassified' }
-AIAMistralTestGenerator >> old_buildFromErrorFor: aiTestClass [
-	"The method attempts to fix and compile a test method that initially failed due to errors by generating a corrected version and retrying compilation."
-	| method2 |
-	method2 := 'There are some errors in the method. Can you suggest one without any errors. Just return the method, no markdown, but keep line shifts' q: [ testMethod  ].
-	method2 := method2 copyReplaceAll: Character lf asString with: Character cr asString.
-	[aiTestClass compile: method2 classified: 'AI generated test']
-		on: Error
-		do: [ self halt].
-]
-
 { #category : 'test builder' }
-AIAMistralTestGenerator >> promptGenerator [
+AIATestGenerator >> promptGenerator [
 	"The promptGenerator method creates a user prompt for AI test generation, combining method name and class definition to guide AI in generating appropriate test cases."
 	| methodName |
 	methodName := sourceMethod name .
@@ -399,7 +239,7 @@ Do not use Mock tests!
 ]
 
 { #category : 'test builder' }
-AIAMistralTestGenerator >> repairResponseMethod [
+AIATestGenerator >> repairResponseMethod [
 	"Repairs AI-generated test method by ensuring proper formatting, naming conventions, and removing markdown fences. Handles method name capitalization and line breaks for Pharo compatibility."
 	| repaired testMethodName |
 	"should update the method generated method name so first, and those after : is kapital letter"
@@ -416,7 +256,7 @@ AIAMistralTestGenerator >> repairResponseMethod [
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> sourceClassFirstInstanceVariable [
+AIATestGenerator >> sourceClassFirstInstanceVariable [
 	"This method returns the first instance variable of the test class associated with the source method. It handles cases where the test class has no instance variables by returning an empty string."
 	| testClassVariables |
 	"(Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables first name."
@@ -427,33 +267,33 @@ AIAMistralTestGenerator >> sourceClassFirstInstanceVariable [
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> sourceClassStringName [
+AIATestGenerator >> sourceClassStringName [
 	"Returns the name of the class associated with the source method as a string. Used to identify the class context for test generation."
 	^ sourceMethod  methodClass asString
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> sourceMethod [
+AIATestGenerator >> sourceMethod [
 	"Returns the source method for which a test is being generated. Used to access method details like class and selector for test creation."
 
 	^ sourceMethod
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> sourceMethod: anObject [
+AIATestGenerator >> sourceMethod: anObject [
 	"The sourceMethod method assigns the method to be tested and initializes the AI chat builder for test generation. It sets up the context for AI to generate appropriate test cases."
 
 	sourceMethod := anObject
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> sourceMethodStringName [
+AIATestGenerator >> sourceMethodStringName [
 	"The sourceMethodStringName method returns the selector of the source method as a string. It is used to identify the method for which a test is being generated."
 	^ sourceMethod selector asString
 ]
 
 { #category : 'test builder' }
-AIAMistralTestGenerator >> systemGenerator [
+AIATestGenerator >> systemGenerator [
 	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."
 	chatBuilder system: 
 		'All background code and documentation is written in Markdown.
@@ -464,7 +304,7 @@ AIAMistralTestGenerator >> systemGenerator [
 ]
 
 { #category : 'test builder' }
-AIAMistralTestGenerator >> systemGeneratorClasses [
+AIATestGenerator >> systemGeneratorClasses [
 	"Only called in timeout"
 	self system: (AIASourceCodeBuilder new forClasses: { 
 		sourceMethod methodClass class. 
@@ -472,21 +312,21 @@ AIAMistralTestGenerator >> systemGeneratorClasses [
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> testMethod [
+AIATestGenerator >> testMethod [
 	"The testMethod method returns the generated test method for the source method. It is compiled into the test class and can be executed to verify the source method's functionality."
 
 	^ testMethod
 ]
 
 { #category : 'accessing' }
-AIAMistralTestGenerator >> testMethod: anObject [
+AIATestGenerator >> testMethod: anObject [
 	"Assigns the generated test method to the instance variable testMethod, storing it for later compilation and execution."
 
 	testMethod := anObject
 ]
 
 { #category : 'test builder' }
-AIAMistralTestGenerator >> testMethodName [
+AIATestGenerator >> testMethodName [
 	"The testMethodName method constructs a test method name by capitalizing the source method's keywords and prefixing with 'test'. It ensures proper naming conventions for AI-generated test methods."
 	^ 'test', ((self sourceMethodStringName keywords collect: [:kw | 
 		(kw copyReplaceAll: ':' with: '') capitalized]) joinUsing: '')
