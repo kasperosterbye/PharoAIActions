@@ -66,16 +66,43 @@ Class {
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> classHeaderFor: aClass [
-
 	response << '## Class: ' << aClass name asString << String cr
 		<< (FluidClassDefinitionPrinter for: aClass) classDefinitionString
-		<< String cr << String cr.
+		<< String cr.
+	response << '### Instance variables: ' << 
+		(aClass instanceVariables collect: [:iv | '#',iv name asString, ' '])
+		 << String cr.
 
 	aClass isMeta ifTrue: [ ^ self ].
 	response << '### Class comment:' << String cr
 		<< '````markdown' << String cr
 		<< aClass comment << String cr
 		<< '````' << String cr
+]
+
+{ #category : 'internal' }
+AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
+
+	| meta |
+	superComment << '## Superclass: ' << aClass name asString
+	<< ' for class: ' << current name asString << String cr
+	<< (FluidClassDefinitionPrinter for: aClass) classDefinitionString
+	<< String cr << String cr.
+	aClass methods size > 0 ifTrue: [
+			superComment << '### Methods of ' << aClass name asString
+			<< String cr.
+			aClass methods do: [ :method | self methodNameAndCommentFor: method in: superComment ] ].
+	meta := aClass class.
+	(meta methods size > 0 or: [ meta instVarNames size > 0 ]) ifFalse: [
+		^ self ].
+	superComment << '### ' << aClass name asString << ' has meta class: '
+	<< String cr
+	<< (FluidClassDefinitionPrinter for: meta) classDefinitionString
+	<< String cr << String cr.
+	meta methods size > 0 ifTrue: [
+			superComment << '### Methods of ' << meta name asString
+			<< String cr.
+			meta methods do: [ :method | self methodNameAndCommentFor: method in: superComment] ]
 ]
 
 { #category : 'internal' }
@@ -112,18 +139,8 @@ AIASourceCodeBuilder >> for: packages [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forClass: aClass [
-	"Returns a package for a single class."
-	
-	^ self forClasses: { aClass }
-	
-]
-
-{ #category : 'accessing' }
-AIASourceCodeBuilder >> forClasses: aClassList [
-	"Generates a formatted string describing the classes and their meta-classes in aClassList."
 	| metaClass |
-	"response := WriteStream on: ''."
-	aClassList do: [ :aClass | 
+
 		self classHeaderFor: aClass.
 		self methodsFor: aClass.
 		response << String cr.
@@ -131,9 +148,15 @@ AIASourceCodeBuilder >> forClasses: aClassList [
 		self classHeaderFor: metaClass.
 		self methodsFor: metaClass.
 		response << String cr.
-	].
+		response << (self forSuperClassesOf: aClass).
 	^ response contents
+		
+]
+
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> forClasses: aClassList [
 	
+	aClassList do: [ :aClass | self forClass: aClass ]
 ]
 
 { #category : 'accessing' }
@@ -149,6 +172,22 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 	^ self systemForMethod: aMethod usedIn: callersInMyPackage
 ]
 
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> forSuperClassesOf: aClass [
+
+	| superComment superClass |
+	aClass = Object  ifTrue: [ ^ '' ].
+	
+	superClass := aClass superclass.
+	superClass = Object ifTrue: [ ^ '' ].
+	
+	superComment := WriteStream on: ''.
+	self classHeaderFor: aClass super: superClass on:  superComment.
+	superComment << (self forSuperClassesOf: superClass) .
+	^ superComment contents
+	
+]
+
 { #category : 'initialization' }
 AIASourceCodeBuilder >> initialize [
 	response := WriteStream on: ''.
@@ -161,6 +200,15 @@ AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 	aClass instVarNames  collect: [:each | 
 		response  << each asString << ' '].
 	response nextPutAll: String cr.
+]
+
+{ #category : 'as yet unclassified' }
+AIASourceCodeBuilder >> methodNameAndCommentFor: method in: superComment [
+
+	superComment << 'Method: ' << method name << String cr.
+	method comment ifNotNil: [
+		superComment << 'comment: "' << method comment << '"' << String cr ].
+	superComment << String cr
 ]
 
 { #category : 'internal' }

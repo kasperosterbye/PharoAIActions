@@ -81,6 +81,28 @@ AilienApi >> assistant: aString [
 	history add: 'assistant' -> aString
 ]
 
+{ #category : 'initialization' }
+AilienApi >> chatAllHistory [
+	| historyText |
+	historyText := WriteStream on: ''.
+	history do: [ :item | 
+		historyText << '## ' << item key << String cr
+			<< item value << String cr << String cr
+		 ].
+	^ historyText contents
+]
+
+{ #category : 'initialization' }
+AilienApi >> chatHistory [
+	| historyText |
+	historyText := WriteStream on: ''.
+	history allButFirst do: [ :item | 
+		historyText << '## ' << item key << String cr
+			<< item value << String cr << String cr
+		 ].
+	^ historyText contents
+]
+
 { #category : 'ollama models' }
 AilienApi >> getResponse [
 	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
