@@ -26,7 +26,7 @@ The `AIAMistralTestBuilder` is an essential tool for developers looking to autom
 
 "
 Class {
-	#name : 'AIAMistralTestBuilder',
+	#name : 'AIAMistralTestBuilder_V1',
 	#superclass : 'AIATestBuilder',
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
@@ -34,7 +34,7 @@ Class {
 }
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist1GeneratorMethods [
+AIAMistralTestBuilder_V1 >> hist1GeneratorMethods [
 	"The hist1GeneratorMethods method provides context about Pharo method types unary binary and keyword to ensure accurate test generation."
 	chatBuilder user: 'I have heard that Pharo have different types of methods, what are they'.
 	chatBuilder assistant:'
@@ -76,7 +76,7 @@ Notes:
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist2WhereToPlaceTestMethod [
+AIAMistralTestBuilder_V1 >> hist2WhereToPlaceTestMethod [
 	"The hist2WhereToPlaceTestMethod method provides context about test class placement and naming rules for AI generated test methods."
 	chatBuilder user: 
 ('I want to write a test method for `{1}` in class `{2}`. 
@@ -95,7 +95,7 @@ The name of the test method is `{2}`'
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist3WhatIsTheBasics [
+AIAMistralTestBuilder_V1 >> hist3WhatIsTheBasics [
 	"The hist3WhatIsTheBasics method provides context about building test methods in Pharo including rules for using existing code and handling instance variables."
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
@@ -105,7 +105,7 @@ Do not declare variables in the method that are already provided as instance var
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist50WhatIsTheBasics [
+AIAMistralTestBuilder_V1 >> hist50WhatIsTheBasics [
 	"The hist50WhatIsTheBasics method provides context about method return values in Pharo, explaining the difference between implicit and explicit returns using the caret symbol."
 	chatBuilder user: ('For making a test for method {1} in class {2}, what does {1} return'
 			format: {self sourceMethodStringName . self sourceClassStringName }).
@@ -116,7 +116,7 @@ So for `{1}`, if there is no caret, it returns the `{2}` instance; if there is o
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist51WhatIsTheBasics [
+AIAMistralTestBuilder_V1 >> hist51WhatIsTheBasics [
 	"The hist51WhatIsTheBasics method provides context about converting arrays of associations to ordered dictionaries in Pharo, explaining the asOrderedDictionary method."
 	chatBuilder user: 'Is this Pharo object {''aaa'' -> 77. ''bbb'' -> 88 } an array or a dictionary?'.
 	chatBuilder assistant: 'The syntax `{...}` always creates an Array in Pharo. Each `''aaa'' -> 77` is an Association, so the result is an Array of Associations.'.
@@ -128,7 +128,7 @@ If the object is already an `OrderedDictionary`, calling `asOrderedDictionary` a
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist60ArrangeMethod [
+AIAMistralTestBuilder_V1 >> hist60ArrangeMethod [
 	"The hist60ArrangeMethod method explains the Arrange step of test writing in Pharo, focusing on preparing data dependencies."
 	^ self.
 	chatBuilder user: 'In Pharo, what does the "Arrange" step mean when writing a test method?'.
@@ -141,7 +141,7 @@ Missing or incorrect setup can cause the test to fail even if the method itself 
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist61ArrangeMethod [
+AIAMistralTestBuilder_V1 >> hist61ArrangeMethod [
 	^ self.
 	chatBuilder user: 'Are there some special rules I need to be aware of regarding the data used in a test'.
 	chatBuilder assistant: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
@@ -149,7 +149,7 @@ If the method you are testing depends on a collection (like a dictionary), you n
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist62ArrangeMethod [
+AIAMistralTestBuilder_V1 >> hist62ArrangeMethod [
 	^ self.
 	chatBuilder user: 'When writing a test, are there specific steps for setting up the data the method depends on?'.
 	chatBuilder assistant: 'Yes. This step is called the "Arrange" part of the test. 
@@ -157,21 +157,21 @@ If the method depends on a collection (like a dictionary), you need to ensure it
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist63CorrectNodeSetup [
+AIAMistralTestBuilder_V1 >> hist63CorrectNodeSetup [
 	^ self.
 	chatBuilder user: 'When adding nodes to the graph, you must use the public method, for example, "addNode: anObject". Do not access the internal instance variables like "nodeDictionary" directly.'.
 	chatBuilder assistant: 'Yes, I understand. I will use the public methods, such as `addNode:`, to add nodes to the graph in the Arrange section of the test.'
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist70ReferenceToOrigin [
+AIAMistralTestBuilder_V1 >> hist70ReferenceToOrigin [
 	^ self.
 	chatBuilder user: 'A test method often need a reference to the original. How do I find the original class?'.
 	chatBuilder assistant: ('You need to use the local variable of the test class {1}, which in this class is ref{1}. ' format: { self sourceClassStringName})
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist71ReferenceToOrigin [
+AIAMistralTestBuilder_V1 >> hist71ReferenceToOrigin [
 	chatBuilder user: 'Could you please give me an example for a test method in Pharo'.
 	chatBuilder assistant: '**Rules:**
 - Only use existing Pharo methods.
@@ -189,25 +189,25 @@ AIAMistralTestBuilder >> hist71ReferenceToOrigin [
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist71TestExample [
+AIAMistralTestBuilder_V1 >> hist71TestExample [
 	chatBuilder user: 'Could you please give me an example for a test method in Pharo'.
 	chatBuilder assistant: '**Rules:**
 - Only use existing Pharo methods.
 - Return ONLY Smalltalk code in ```smalltalk blocks.
 - Follow this test structure:
 ```smalltalk
-  testMethodName
-      "Description of what is tested."
-      | localVars |
-      "Setup (if needed)"
-      self assert: (object method: arg) = expectedValue.
-      "Test edge case"
-      self assert: (object method: invalidArg) = defaultValue.
+testAtIfAbsent
+    "Test that at:ifAbsent: returns the correct value."
+    | dict |
+    dict := Dictionary new.
+    dict at: ''key'' put: ''value''.
+    self assert: (dict at: ''key'' ifAbsent: [Error signal]) equals: ''value''.
+    self assert: (dict at: ''missing'' ifAbsent: [''default'']) equals: ''default''.
 ```'
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist90WhatIsTheBasics [
+AIAMistralTestBuilder_V1 >> hist90WhatIsTheBasics [
 	"The hist90WhatIsTheBasics method provides context about building test methods in Pharo including rules for using existing code and handling instance variables."
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
@@ -217,7 +217,7 @@ Do not declare variables in the method that are already provided as instance var
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist92WhatIsTheBasics [
+AIAMistralTestBuilder_V1 >> hist92WhatIsTheBasics [
 	"The hist92WhatIsTheBasics method provides context about local variable rules in Pharo methods, ensuring proper syntax and declaration."
 	chatBuilder user: 'Are there any rules for local variables in Pharo?'.
 	chatBuilder assistant: 'Yes. In Pharo, all local variables must be declared in a single block at the top of the method using vertical bars, like `| pathDistance |`. 
@@ -225,38 +225,31 @@ Placing the declaration later in the code is a syntax error and will prevent the
 ]
 
 { #category : 'test builder' }
-AIAMistralTestBuilder >> hist93SourceMethodCommentAndCode [
+AIAMistralTestBuilder_V1 >> hist93SourceMethodCommentAndCode [
 	"The hist92WhatIsTheBasics method provides context about local variable rules in Pharo methods, ensuring proper syntax and declaration."
 	chatBuilder user:( 'Are there anything in `{1}` I need to take into account' format: {self sourceMethodStringName}).
 	chatBuilder assistant: ('You are supposed to write a test method of `{1}`, and take its comment: "{2}" into consideration.'
 		format: { self sourceMethodStringName. sourceMethod comment })
 ]
 
-{ #category : 'test builder' }
-AIAMistralTestBuilder >> hist94SourceMethodCommentAndCode [
-	
-	chatBuilder user:( 'What should I test in `{1} given its comment and implementation?' format: {self sourceMethodStringName}).
-	chatBuilder assistant: ('You are supposed to write a test method of `{1}`, and take its comment: "{2}" into consideration.'
-		format: { self sourceMethodStringName. sourceMethod comment })
-]
-
 { #category : 'instance creation' }
-AIAMistralTestBuilder >> historyBuilder [
+AIAMistralTestBuilder_V1 >> historyBuilder [
 
 	self hist92WhatIsTheBasics.
 	self hist1GeneratorMethods.
 	self hist2WhereToPlaceTestMethod.
-	"self hist3WhatIsTheBasics."
+	self hist3WhatIsTheBasics.
 	self hist50WhatIsTheBasics.
-	"self hist51WhatIsTheBasics."
+	self hist51WhatIsTheBasics.
 	self hist70ReferenceToOrigin.
-	"self hist90WhatIsTheBasics."
-	self hist94SourceMethodCommentAndCode.
+	self hist71TestExample.
+	self hist90WhatIsTheBasics.
+	self hist93SourceMethodCommentAndCode.
 	
 ]
 
 { #category : 'initialization' }
-AIAMistralTestBuilder >> initialize [ 
+AIAMistralTestBuilder_V1 >> initialize [ 
 	super initialize.
 	
 ]

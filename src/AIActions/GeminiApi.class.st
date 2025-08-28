@@ -25,11 +25,11 @@ GeminiApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary)
 ]
 
-{ #category : 'initialization' }
+{ #category : 'nil' }
 GeminiApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
-	self model: 'gemini-2.0-flash'.
+	self model: 'gemini-2.0-flash-lite'.
 ]
 
 { #category : 'accessing' }
@@ -80,6 +80,11 @@ GeminiApi >> responseOf: jsonResponse [
 	"Parses the JSON response from the Gemini API and extracts the text content from the first candidate's content part."
 	| parsed message  |
 	parsed := STONJSON fromString: jsonResponse.
+	(parsed includesKey: 'error') ifTrue: [ 
+		self error: 'AI response error: ', 
+			((parsed at: 'error') at: 'code'), 
+			'. Message: ', 
+			((parsed at: 'error') at: 'message') ].
 	message := (parsed at: 'candidates') first at: 'content'.	
 	^  (message at: 'parts' ) first at: 'text' 
 ]

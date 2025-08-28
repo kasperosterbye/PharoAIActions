@@ -1,39 +1,28 @@
 "
-## Class Comment for AIAGeminiTestGenerator
+# Class: AIAMistralTestBuilder
 
-The `AIAGeminiTestGenerator` class is responsible for automatically generating test methods for existing Smalltalk methods using the Gemini AI model. It leverages the `AIACommentBuilding` class to interact with the AI and constructs test methods based on the source code and documentation of the method being tested. The generated test methods are then compiled and can be used to improve the test coverage of a project.
+The `AIAMistralTestBuilder` class is responsible for generating test methods for Pharo methods using the Mistral AI model. It extends the functionality of `AIATestBuilder` by providing specific prompts and context tailored for test generation, ensuring accurate and context-aware test creation.
 
-**Usage Example:**
+## Usage Example
 
-```smalltalk
-| generator sourceMethod testMethod |
-
-""Assume you have a method named 'add:' in a class named 'Calculator'""
-sourceMethod := Calculator>>#add:.
-
-""Create an instance of the test generator""
-generator := AIAGeminiTestGenerator new.
-
-""Generate a test method for the 'add:' method""
-testMethod := generator build: sourceMethod.
-
-""Inspect the generated test method""
-testMethod inspect.
-
-""Example of building all tests for a class""
-AIAGeminiTestGenerator buildAll: Calculator.
+```st
+""Create a test builder for a specific method and generate a test""
+| method testBuilder |
+method := Point >> #x.
+testBuilder := AIAMistralTestBuilder new for: method.
+testBuilder generateTest.
+testBuilder testMethod inspect  ""Inspect the generated test method""
 ```
 
-**Explanation:**
+## Design Decisions
 
-1.  We retrieve a compiled method from the system.
-2.  We create an instance of `AIAGeminiTestGenerator`.
-3.  We call the `build:` method, passing the source method as an argument. This triggers the AI-powered test generation process.
-4.  The generated test method is returned as a string and can be inspected.
-5.  The `buildAll:` method can be used to generate tests for all methods in a class.
+- **AI Integration**: The builder utilises the Mistral AI model to generate test methods, providing context-specific prompts and system information to ensure accurate test creation.
+- **Test Generation**: The builder follows a structured approach to test generation, including arranging test data, acting on the method under test, and asserting expected outcomes.
+- **Context Awareness**: The builder provides specific context about Pharo methods, including method types (unary, binary, keyword), return values, and data structures, to guide AI in generating appropriate test cases.
+- **Error Handling**: The builder includes mechanisms for handling and repairing failed test generations, ensuring robustness in test creation.
+- **Class Integration**: The builder is designed to work seamlessly with Pharo's class and method structures, providing accurate class and method information to the AI model.
 
-**Note:** This example assumes that the `Calculator` class and its `add:` method already exist in the system. The generated test method will need to be manually added to the appropriate test class and compiled.
-```
+The `AIAMistralTestBuilder` is an essential tool for developers looking to automate test generation in Pharo, ensuring comprehensive test coverage and reducing manual testing efforts.
 
 "
 Class {
@@ -44,16 +33,9 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'instance creation' }
-AIAGeminiTestBuilder class >> buildAll: aClass [
-	"Generates test methods for all methods in a class using AIAGeminiTestGenerator"
-	aClass methodDict values do: [ :method |
-		self new build: method.
-	 ]
-]
-
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist1GeneratorMethods [
+	"The hist1GeneratorMethods method provides context about Pharo method types unary binary and keyword to ensure accurate test generation."
 	chatBuilder user: 'I have heard that Pharo have different types of methods, what are they'.
 	chatBuilder assistant:'
 Important Coding Rule
@@ -95,16 +77,17 @@ Notes:
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist2WhereToPlaceTestMethod [
+	"The hist2WhereToPlaceTestMethod method provides context about test class placement and naming rules for AI generated test methods."
 	chatBuilder user: 
-('I want to write a test method for {1} in class {2}. 
+('I want to write a test method for `{1}` in class `{2}`. 
 In what test class do I place it, and what do I name the test method'
 format: {self sourceMethodStringName . self sourceClassStringName }).
-	chatBuilder assistant: ('There is an existing test class named {1} which is to be used. 
-The name of the test method is {2}'
+	chatBuilder assistant: ('There is an existing test class named `{1}` which is to be used. 
+The name of the test method is `{2}`'
 		format: {self sourceClassStringName , 'AITest'. self testMethodName }), String cr, 
-('In addition, the superclass {1} of {2} has an instance variable {3} that is set up to an instance of {4}, 
-so you should not declare a local variable in the test method, but use {3}' 
-			format:{self sourceClassStringName,'Test'. 
+('In the setUp method of `{1}`, the instance variable `{2}` is initialized to an instance of `{3}`,', 
+'so you should not declare a local variable in the test method, but use `{2}` ' 
+			format:{
 			self sourceClassStringName,'AITest'. 
 			self sourceClassFirstInstanceVariable.
 			self sourceClassStringName. }).
@@ -113,6 +96,7 @@ so you should not declare a local variable in the test method, but use {3}'
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist3WhatIsTheBasics [
+	"The hist3WhatIsTheBasics method provides context about building test methods in Pharo including rules for using existing code and handling instance variables."
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test method is called before the test is executed.
@@ -122,52 +106,82 @@ Do not declare variables in the method that are already provided as instance var
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist50WhatIsTheBasics [
+	"The hist50WhatIsTheBasics method provides context about method return values in Pharo, explaining the difference between implicit and explicit returns using the caret symbol."
 	chatBuilder user: ('For making a test for method {1} in class {2}, what does {1} return'
 			format: {self sourceMethodStringName . self sourceClassStringName }).
-	chatBuilder assistant: ('In general, if there is no "^" syntax, the method return the object of the method. If there is a "^" the method returns the result of the expression after "^". In your case, if there is no "^", the return of {1} is an instance of {2}, otherwise you need to examine the expression after "^"'
+	chatBuilder assistant: ( 'In Pharo, if a method does not contain the `^` symbol, it implicitly returns the receiver (self), which in this case is an instance of FuzzyMatcher.
+If the method includes a `^`, it returns the value of the expression following that symbol.
+So for `{1}`, if there is no caret, it returns the `{2}` instance; if there is one, you’ll need to check what expression follows it.'
 			format: {self sourceMethodStringName . self sourceClassStringName }).
-	
 ]
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist51WhatIsTheBasics [
-	chatBuilder user: 'Is this Pharo object {''aaa'' -> 77. ''bbb''->88 } an array or a dictionary'.
-	chatBuilder assistant: 'The syntax {...} is always an array, not a dictionary. And ''aaa'' -> 77 is an association object. So {''aaa'' -> 77. ''bbb''->88 } is an array of associations.'.
-	chatBuilder user: 'How do I convert an array of associations to an ordered dictionary, how do I do that'.
+	"The hist51WhatIsTheBasics method provides context about converting arrays of associations to ordered dictionaries in Pharo, explaining the asOrderedDictionary method."
+	chatBuilder user: 'Is this Pharo object {''aaa'' -> 77. ''bbb'' -> 88 } an array or a dictionary?'.
+	chatBuilder assistant: 'The syntax `{...}` always creates an Array in Pharo. Each `''aaa'' -> 77` is an Association, so the result is an Array of Associations.'.
+	chatBuilder user: 'How do I convert an array of associations to an ordered dictionary?'.
 	chatBuilder assistant: 
-	'If you have an arrays of associtions you can convert it to an ordered dictionary symply by sending it the method asOrderedDictionary. And if you do not know if it is already an ordered dictionary, the function asOrderedDictionary works also for something which is already an ordered dictionary'.
-	
+'Send `asOrderedDictionary` to the array. It converts arrays of associations into an `OrderedDictionary`.  
+For example: `{''a'' -> 1. ''b'' -> 2} asOrderedDictionary` gives an `OrderedDictionary` with keys ''a'' and ''b''.  
+If the object is already an `OrderedDictionary`, calling `asOrderedDictionary` again has no effect.'.
 ]
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist60ArrangeMethod [
-	chatBuilder user: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
-If the method you are testing depends on a collection (like a dictionary), you need to make sure the collection contains the data needed for the test to pass.'.
-	chatBuilder assistant: 'Yes, I understand. I will add the necessary data to the collection in the "Arrange" part of the test to prevent the test from failing due to missing data.'
+	"The hist60ArrangeMethod method explains the Arrange step of test writing in Pharo, focusing on preparing data dependencies."
+	^ self.
+	chatBuilder user: 'In Pharo, what does the "Arrange" step mean when writing a test method?'.
+	chatBuilder assistant: 'The "Arrange" step is where you prepare any data the method depends on. 
+This includes setting up objects, collections, or any other context needed before executing the method under test.'.
+
+	chatBuilder user: 'What if the method depends on a dictionary or other collection?'.
+	chatBuilder assistant: 'You should ensure the collection contains the exact data needed for the test to run correctly. 
+Missing or incorrect setup can cause the test to fail even if the method itself works properly.'.
 ]
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist61ArrangeMethod [
+	^ self.
 	chatBuilder user: 'Are there some special rules I need to be aware of regarding the data used in a test'.
 	chatBuilder assistant: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
 If the method you are testing depends on a collection (like a dictionary), you need to make sure the collection contains the data needed for the test to pass.'
 ]
 
-{ #category : 'instance creation' }
+{ #category : 'test builder' }
 AIAGeminiTestBuilder >> hist62ArrangeMethod [
-	chatBuilder user: 'When writing a test, you need to set up the data that the method depends on. This is called the "Arrange" part of the test.
-If the method you are testing depends on a collection (like a dictionary), you need to make sure the collection contains the data needed for the test to pass.'.
-	chatBuilder assistant: 'Yes, I understand. I will add the necessary data to the collection in the "Arrange" part of the test to prevent the test from failing due to missing data.'
+	^ self.
+	chatBuilder user: 'When writing a test, are there specific steps for setting up the data the method depends on?'.
+	chatBuilder assistant: 'Yes. This step is called the "Arrange" part of the test. 
+If the method depends on a collection (like a dictionary), you need to ensure it contains the necessary data for the test to succeed.'.
 ]
 
-{ #category : 'instance creation' }
+{ #category : 'test builder' }
 AIAGeminiTestBuilder >> hist63CorrectNodeSetup [
+	^ self.
 	chatBuilder user: 'When adding nodes to the graph, you must use the public method, for example, "addNode: anObject". Do not access the internal instance variables like "nodeDictionary" directly.'.
 	chatBuilder assistant: 'Yes, I understand. I will use the public methods, such as `addNode:`, to add nodes to the graph in the Arrange section of the test.'
 ]
 
 { #category : 'test builder' }
+AIAGeminiTestBuilder >> hist70ReferenceToOrigin [
+	^ self.
+	chatBuilder user: 'A test method often need a reference to the original. How do I find the original class?'.
+	chatBuilder assistant: ('You need to use the local variable of the test class {1}, which in this class is ref{1}. ' format: { self sourceClassStringName})
+]
+
+{ #category : 'test builder' }
+AIAGeminiTestBuilder >> hist80VariableAssignment [
+	^ self.
+	chatBuilder user: 'Can I assign a value to the result of a method call in Pharo?'.
+	chatBuilder assistant: 'No. In Pharo, you can only use `:=` to assign values to variables. A method call returns a value, but not a reference you can assign into. For example, writing `foo bar := 42` is invalid, because foo bar is an expression, not a variable.
+
+If bar is meant to be a setter, you must call a method like `foo bar: 42`, and that requires the method `bar:` to be defined'
+]
+
+{ #category : 'test builder' }
 AIAGeminiTestBuilder >> hist90WhatIsTheBasics [
+	"The hist90WhatIsTheBasics method provides context about building test methods in Pharo including rules for using existing code and handling instance variables."
 	chatBuilder user: 'What are the basics of building a test method, any rules for that'.
 	chatBuilder assistant: 'You must only use code that you know is existing in Pharo, never use figurative code.
 The setUp method of any test methos is called before the test is executed.
@@ -177,32 +191,39 @@ Do not declare variables in the method that are already provided as instance var
 
 { #category : 'test builder' }
 AIAGeminiTestBuilder >> hist92WhatIsTheBasics [
-	"Records a user query about local variable rules and the AI's response regarding variable declaration placement in Pharo."
-    chatBuilder user: 'Are there any rules for local variables'.
-    chatBuilder assistant: 'In Pharo, all local variables (| ... |) must be declared in a single block at the top of the method. The variable declaration | pathDistance | is placed in the middle of the code, which is a syntax error that will stop the compiler.'.
+	"The hist92WhatIsTheBasics method provides context about local variable rules in Pharo methods, ensuring proper syntax and declaration."
+	chatBuilder user: 'Are there any rules for local variables in Pharo?'.
+	chatBuilder assistant: 'Yes. In Pharo, all local variables must be declared in a single block at the top of the method using vertical bars, like `| pathDistance |`. 
+Placing the declaration later in the code is a syntax error and will prevent the method from compiling.'.
+]
+
+{ #category : 'test builder' }
+AIAGeminiTestBuilder >> hist93SourceMethodCommentAndCode [
+	"The hist92WhatIsTheBasics method provides context about local variable rules in Pharo methods, ensuring proper syntax and declaration."
+	chatBuilder user:( 'Are there anything in `{1}` I need to take into account' format: {self sourceMethodStringName}).
+	chatBuilder assistant: ('You are supposed to write a test method of `{1}`, and take its comment: "{2}" into consideration.'
+		format: { self sourceMethodStringName. sourceMethod comment })
 ]
 
 { #category : 'instance creation' }
 AIAGeminiTestBuilder >> historyBuilder [
-	
+
 	self hist92WhatIsTheBasics.
+	self hist80VariableAssignment.
 	self hist1GeneratorMethods.
 	self hist2WhereToPlaceTestMethod.
+	self hist3WhatIsTheBasics.
 	self hist50WhatIsTheBasics.
 	self hist51WhatIsTheBasics.
-	self hist60ArrangeMethod.
-	self hist62ArrangeMethod.
-	self hist63CorrectNodeSetup.
+	self hist70ReferenceToOrigin.
 	self hist90WhatIsTheBasics.
+	self hist92WhatIsTheBasics.
+	self hist93SourceMethodCommentAndCode.
+	
 ]
 
 { #category : 'initialization' }
 AIAGeminiTestBuilder >> initialize [ 
-	"Initializes MistralApi with the latest model."
 	super initialize.
-	
-	AIACommentBuilding ailienApi: GeminiApi.
-	chatBuilder := AIACommentBuilding ailienApi new.
-
 	
 ]

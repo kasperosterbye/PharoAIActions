@@ -94,11 +94,13 @@ AilienApi >> chatAllHistory [
 
 { #category : 'initialization' }
 AilienApi >> chatHistory [
-	| historyText |
+	| historyText counter |
 	historyText := WriteStream on: ''.
+	counter := 1.
 	history allButFirst do: [ :item | 
-		historyText << '## ' << item key << String cr
-			<< item value << String cr << String cr
+		historyText << '## ['<< counter asString << '] ' << item key << String cr
+			<< item value << String cr << String cr.
+			counter := counter + 1.
 		 ].
 	^ historyText contents
 ]

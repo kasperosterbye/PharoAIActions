@@ -167,6 +167,11 @@ MistralApi >> printOn: aStream [
 MistralApi >> responseOf: jsonResponse [
 	| parsed message  |
 	parsed := STONJSON fromString: jsonResponse.
+	(parsed includesKey: 'error') ifTrue: [ 
+		self error: 'AI response error: ', 
+			((parsed at: 'error') at: 'code'), 
+			'. Message: ', 
+			((parsed at: 'error') at: 'message') ].
 	message := (parsed at: 'choices') first at: 'message'.
 	^ message at: 'content' 
 ]

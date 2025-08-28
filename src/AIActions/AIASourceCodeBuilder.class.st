@@ -66,6 +66,7 @@ Class {
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> classHeaderFor: aClass [
+	"Generates a formatted class header string for aClass, including its name and definition, and appends it to the response stream."
 	response << '## Class: ' << aClass name asString << String cr
 		<< (FluidClassDefinitionPrinter for: aClass) classDefinitionString
 		<< String cr.
@@ -82,6 +83,7 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
+	"Generates a formatted class header string for aClass, including its name and definition, and appends it to the superComment stream. Includes methods and meta-class details."
 
 	| meta |
 	superComment << '## Superclass: ' << aClass name asString
@@ -139,6 +141,7 @@ AIASourceCodeBuilder >> for: packages [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forClass: aClass [
+	"Generates a formatted string describing the given class including its name definition instance variables methods and meta class details."
 	| metaClass |
 
 		self classHeaderFor: aClass.
@@ -155,8 +158,10 @@ AIASourceCodeBuilder >> forClass: aClass [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forClasses: aClassList [
+	"Generates formatted source code descriptions for a list of classes, including their definitions, instance variables, methods, and meta-class details."
 	
-	aClassList do: [ :aClass | self forClass: aClass ]
+	aClassList do: [ :aClass | self forClass: aClass ].
+	^ response contents 
 ]
 
 { #category : 'accessing' }
@@ -174,6 +179,7 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forSuperClassesOf: aClass [
+	"Generates formatted class header for superclasses of aClass including name definition methods and meta class details."
 
 	| superComment superClass |
 	aClass = Object  ifTrue: [ ^ '' ].
@@ -190,6 +196,7 @@ AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 
 { #category : 'initialization' }
 AIASourceCodeBuilder >> initialize [
+	"Initialises a new instance of AIASourceCodeBuilder with an empty WriteStream for accumulating generated source code descriptions."
 	response := WriteStream on: ''.
 ]
 
@@ -204,6 +211,7 @@ AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 
 { #category : 'as yet unclassified' }
 AIASourceCodeBuilder >> methodNameAndCommentFor: method in: superComment [
+	"Appends method name and comment to superComment stream for aClass. Formats as 'Method: name comment: comment' with newlines. Used in classHeaderFor:super:on:."
 
 	superComment << 'Method: ' << method name << String cr.
 	method comment ifNotNil: [
@@ -225,12 +233,13 @@ AIASourceCodeBuilder >> methodsFor: aClass [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> response [
+	"Returns the WriteStream used to accumulate generated source code descriptions. Initialised in initialize."
 	^ response 
 ]
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> systemForMethod: aMethod usedIn: callersInMyPackage [
-	"response := WriteStream on: ''."
+	"Generates formatted source code description for a method and its callers within the same package. Includes method name, class, and source code. Used for documentation and analysis."
 	response << '## Calling methods: ' << 
 		aMethod methodClass name asString << ' >> #' <<aMethod selector << String cr.
 	callersInMyPackage do: [ :caller |

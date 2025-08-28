@@ -76,9 +76,53 @@ AIABuilder class >> ailienApi: api [
 	^ AilienApi := api
 ]
 
-{ #category : 'printing' }
-AIABuilder class >> definitionString [
-	^ (super definitionString, String cr, "self comment asComment" '"Eva was here"')
+{ #category : 'as yet unclassified' }
+AIABuilder class >> exampleITU [
+	
+	AIACommentPresenter onText: self itu
+]
+
+{ #category : 'as yet unclassified' }
+AIABuilder class >> itu [
+	
+	^ 'AIATestBuilder aITestClassPostfix: ''AITest_a1'' .
+AIAMistralTestBuilder new build: AIAChatBuilding >> #history.
+AIAMistralTestBuilder buildAll: FuzzyMatcher.
+AIATestBuilderExperiments testClass: AIAChatBuilding.
+
+AIAGeminiTestBuilder new build: AIAChatBuilding >> #history.
+AIAGeminiTestBuilder buildAll: AIAChatBuilding .
+
+AIASourceCodeBuilder new forSuperClassesOf: AIAMistralTestBuilder .
+AIASourceCodeBuilder new forClass: FuzzyMatcher .
+
+(AIAMistralTestBuilder new build: (SpMillerColumnPresenter >> #traverseInFocusOrderDo:excluding:);chatBuilder) chatAllHistory .
+
+AIACommentBuilding ailienApi: ClaudeApi.
+AIACommentBuilding ailienApi: MistralApi.
+AIACommentBuilding ailienApi: GeminiApi.
+AIACommentBuilding ailienApi: OllamaApi.
+AIACommentBuilding ailienApi.
+
+
+''What does Andrzej Wasowski do'' q.
+''Which of the universities in Copenhagen is the best'' i.
+''What does Paulo Tell do'' i.
+''Where do I find a horse'' l.
+AIASlotComment for: AIAChatBuilding.
+
+AIACommentBuilding allInstVarNames.
+
+AIAMistralTestBuilder allInstVarNames.
+
+AIAMistralTestBuilder allSelectorsBelow: AIABuilder .
+
+(AIATestBuilder >> #promptGenerator) methodClass.
+(AIATestBuilder >> #promptGenerator) selector asString.
+
+AIATestBuilder name.
+AIATestBuilder class isMeta .
+AIATestBuilder class instVarNames size .' 
 ]
 
 { #category : 'accessing' }
@@ -90,6 +134,11 @@ AIABuilder class >> language [
 { #category : 'accessing' }
 AIABuilder class >> language: language [
 	CommentLanguage := language
+]
+
+{ #category : 'printing' }
+AIABuilder class >> old_definitionString [
+	^ (super definitionString, String cr, "self comment asComment" '"Eva was here"')
 ]
 
 { #category : 'model system' }

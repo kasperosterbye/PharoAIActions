@@ -64,12 +64,48 @@ AIATestResultIllustration >> checkSafety: input [
 	^true
 ]
 
+{ #category : 'as yet unclassified' }
+AIATestResultIllustration >> circleShapeFor: value [
+	"Creates a 7x7 circle shape filled with the given color."
+
+	^ RSEllipse new
+		size: 7@7;
+		color: value;
+		borderColor: Color black;
+		yourself
+]
+
 { #category : 'initialization' }
 AIATestResultIllustration >> initialize [
 	"Initialize a new AIATestResultIllustration with a canvas and grid layout for visualizing test results."
 	super initialize.
 	canvas := RSCanvas new.
 	grid := RSGridLayout new.
+]
+
+{ #category : 'as yet unclassified' }
+AIATestResultIllustration >> old_textShapeFor: value [
+	"Creates a styled text shape for a given value coloring it green if even and red if odd with a font size of 20."
+
+	| textShape |
+	textShape := RSLabel new.
+	textShape text: value asString.
+	value isNumber ifTrue: [
+			value even
+				ifTrue: [ textShape color: Color green ]
+				ifFalse: [ textShape color: Color red ] ].
+	textShape fontSize: 20.
+	^ textShape
+]
+
+{ #category : 'as yet unclassified' }
+AIATestResultIllustration >> old_textShapeForArray: valueArray [
+
+	| textShapes |
+	textShapes := OrderedCollection new.
+	1 to: valueArray size do: [ :index |
+			textShapes add: (self textShapeFor: (valueArray at: index)) ].
+	^ textShapes
 ]
 
 { #category : 'as yet unclassified' }
@@ -92,6 +128,28 @@ AIATestResultIllustration >> open [
 	canvas open.
 ]
 
+{ #category : 'as yet unclassified' }
+AIATestResultIllustration >> othertextShapeFor: color [
+	"Creates a styled text shape for a given value coloring it green if even and red if odd with a font size of 20."
+
+	| textShape |
+	textShape := RSLabel new.
+	textShape text: '©'.
+	textShape color: color.
+	textShape fontSize: 20.
+	^ textShape
+]
+
+{ #category : 'as yet unclassified' }
+AIATestResultIllustration >> othertextShapeForArray: valueArray [
+
+	| textShapes |
+	textShapes := OrderedCollection new.
+	1 to: valueArray size do: [ :index |
+			textShapes add: (self othertextShapeFor: (valueArray at: index)) ].
+	^ textShapes
+]
+
 { #category : 'accessing' }
 AIATestResultIllustration >> resultsRows: rows collumns: cols values: values [
 	"Returns a 2D array of test results with name-value pairs. Even numbers are green, odd numbers are red. Used for visualizing test outcomes in a grid layout."
@@ -101,10 +159,10 @@ AIATestResultIllustration >> resultsRows: rows collumns: cols values: values [
 
 	rowShape := OrderedCollection new.
 	rowShape add:
-		{ (self textShapeFor: ' ') } , (self textShapeForArray: cols).
+		{ (self textShapeFor: '') } , (self textShapeForArray: cols).
 	1 to: values size do: [ :index |
 			rowShape add: { (self textShapeFor: (rows at: index)) }
-				, (self textShapeForArray: (values at: index)) ].
+				, (self othertextShapeForArray: (values at: index)) ].
 	results := rowShape.
 	^ rowShape
 ]
@@ -116,10 +174,6 @@ AIATestResultIllustration >> textShapeFor: value [
 	| textShape |
 	textShape := RSLabel new.
 	textShape text: value asString.
-	value isNumber ifTrue: [
-			value even
-				ifTrue: [ textShape color: Color green ]
-				ifFalse: [ textShape color: Color red ] ].
 	textShape fontSize: 20.
 	^ textShape
 ]

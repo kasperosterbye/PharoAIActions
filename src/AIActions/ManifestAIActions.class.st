@@ -7,6 +7,13 @@ Class {
 }
 
 { #category : 'code-critics' }
+ManifestAIActions class >> ruleCollectionProtocolRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2025-08-27T08:15:54.641638+02:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIActions class >> ruleReGuardClauseRuleV1FalsePositive [
 
 	<ignoreForCoverage>
