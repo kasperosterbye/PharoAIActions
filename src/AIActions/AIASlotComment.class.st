@@ -46,6 +46,12 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
+{ #category : 'accessing' }
+AIASlotComment class >> classSlotCommentDictionary [
+	classSlotCommentDictionary ifNil: [ self initialize ].
+	^ classSlotCommentDictionary 
+]
+
 { #category : 'instance creation' }
 AIASlotComment class >> for: aClass [
 	"Generates AI comments for a class's instance variables. Uses a prompt to request comments from an AI model, then stores them in a dictionary."
@@ -65,7 +71,7 @@ AIASlotComment class >> for: aClass [
 
 { #category : 'instance creation' }
 AIASlotComment class >> hasComments: aClass [
-	classSlotCommentDictionary at: aClass ifAbsent: [ ^ false ].
+	self classSlotCommentDictionary at: aClass ifAbsent: [ ^ false ].
 	^ true
 ]
 
