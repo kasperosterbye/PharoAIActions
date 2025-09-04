@@ -166,7 +166,7 @@ AIASourceCodeBuilder >> forClasses: aClassList [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forMethod: aMethod [
-	"Returns a formatted string describing the callers of aMethod within the same package, including the method's source code."
+	"Returns a formatted description of the given method, including its source code and all callers within the same package, useful for documentation and analysis"
 	|  callers ": OrderedCollection" callersInMyPackage ": OrderedCollection"|
 	callers := SystemNavigation default allCallsOn: (aMethod selector).
 	callersInMyPackage := OrderedCollection new.

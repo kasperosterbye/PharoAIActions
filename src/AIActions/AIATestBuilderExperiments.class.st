@@ -43,16 +43,16 @@ AIATestBuilderExperiments class >> testClass: aClass [
 	mistral := AIAMistralTestBuilder.
 	gemini := AIAGeminiTestBuilder.
 	testResultsDictionary := OrderedDictionary new.
-	7 to: 9 do: [ :y | 
+	1 to: 3 do: [ :y | 
 		AIATestBuilder aITestClassPostfix: 'AITest_m', y asString.
 		mistral buildTestClass: aClass.
 		testResults:= mistral buildAll: aClass.
 		testResultsDictionary at: 'M', y asString put: testResults. 
 		
-		"AIATestBuilder aITestClassPostfix: 'AITest_g', y asString.
+		AIATestBuilder aITestClassPostfix: 'AITest_g', y asString.
 		gemini buildTestClass: aClass.
 		testResults := gemini buildAll: aClass.
-		testResultsDictionary at: 'G', y asString put: testResults "
+		testResultsDictionary at: 'G', y asString put: testResults 
 		 ].
 	self showTestResults 
 ]

@@ -57,6 +57,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
+		'tools',
 		'history'
 	],
 	#category : 'AIActions-AIApi',

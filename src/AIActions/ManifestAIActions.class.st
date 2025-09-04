@@ -14,6 +14,13 @@ ManifestAIActions class >> ruleCollectionProtocolRuleV1FalsePositive [
 ]
 
 { #category : 'code-critics' }
+ManifestAIActions class >> ruleMethodSourceContainsLinefeedsRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGMethodDefinition #(#MistralApi #loadResponse #false)) #'2025-09-02T12:22:15.273687+02:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIActions class >> ruleReGuardClauseRuleV1FalsePositive [
 
 	<ignoreForCoverage>

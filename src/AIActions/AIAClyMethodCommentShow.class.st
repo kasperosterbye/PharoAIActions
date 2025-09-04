@@ -1,11 +1,3 @@
-"
-## Class: AIAClyMethodCommentShow
-
-### Class Comment
-
-The `AIAClyMethodCommentShow` class is designed to display comments associated with methods in a Pharo browser. This class is part of the `AIActions` package and is tagged under `BrowserAIAComments`.
-
-"
 Class {
 	#name : 'AIAClyMethodCommentShow',
 	#superclass : 'AIAClyCommentShow',

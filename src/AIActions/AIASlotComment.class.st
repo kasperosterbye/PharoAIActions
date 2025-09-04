@@ -59,8 +59,12 @@ AIASlotComment class >> for: aClass [
 	|  response slotsCollection|
 	
 	classSlotCommentDictionary ifNil: [ self initialize ].
-	response := (self promtFor: aClass) q: [ AIASourceCodeBuilder new forClass: aClass ].
-	slotsCollection := (response lines collect: [ :f |
+	response := (self promptFor: aClass) q: [ AIASourceCodeBuilder new forClass: aClass ].
+	response := response lines.
+	(response first beginsWith: '```') ifTrue: [
+		response := response copyFrom: 2 to: response size - 1].
+	
+	slotsCollection := (response collect: [ :f |
 				OpalCompiler new
 				        source: f;
 				        evaluate ]) asDictionary.
@@ -81,15 +85,15 @@ AIASlotComment class >> initialize [
 ]
 
 { #category : 'instance creation' }
-AIASlotComment class >> promtFor: aClass [
+AIASlotComment class >> promptFor: aClass [
+	"Generates a prompt for AI to create comments for a class's instance variables. Returns a formatted string with the class name."
 
 	| prompt |
-	prompt := 'For each instance variable in class {1} } and only for that class, write a comment in the format:
+	prompt := 'For each instance variable in class {1} and only for that class, write a comment in the format:
 
 #varName -> ''=> Class. Short description...''
 
-Include the exact class name of the value each variable holds, and a brief explanation of its purpose. Just return the instance variables, not the class own definition'.
-
+Include the exact class name of the value each variable holds, and a brief explanation of its purpose. Just return the instance variables, not the class own definition.'.
 	^ prompt format: { aClass name }.
 ]
 

@@ -1,71 +1,52 @@
 "
 # Class Comment for MistralApi
 
-## Overview
-
-The `MistralApi` class is designed to interact with the Mistral AI API, allowing users to send prompts and receive responses from various AI models. This class handles the initialization, configuration, and communication with the Mistral API, including sending requests and processing responses.
+The `MistralApi` class provides an interface to interact with the Mistral AI API, allowing users to send prompts and receive responses from the AI model. It extends the `AilienApi` superclass and is designed to work with the Mistral AI's chat completion endpoint.
 
 ## Key Features
 
-- **Initialization**: The class initializes with the latest model (`codestral-latest`) by default.
-- **Prompt Handling**: Users can send prompts to the API and receive responses.
-- **Model Management**: The class provides methods to retrieve available models from the API and manage model configurations.
-- **Error Handling**: The class includes error handling to manage exceptions that may occur during API communication.
-
-## Methods
-
-### Initialization
-
-- **`initialize`**: Initializes the `MistralApi` instance with the latest model.
-
-### Prompt Handling
-
-- **`getResponseForPrompt:`**: Sends a user prompt to the Mistral API and returns the response. This method handles the construction of the request, sending it to the API, and processing the JSON response.
-- **`bodyForEntityWithPrompt`**: Constructs the JSON body for the API request based on the user prompt.
-
-### Model Management
-
-- **`models`**: Retrieves a list of available Mistral models from the API and returns them as a sorted collection.
-- **`models_old`**: An older version of the `models` method that returns the raw list of models from the API.
-- **`modelsBy:`**: Returns an array with one item per model, based on a specified key.
-- **`modelNames`**: Returns an array of model names. This method is a placeholder that currently calls the superclass method.
-- **`modelNames_old`**: Returns an array of model names, including various Mistral models.
-
-### Utility Methods
-
-- **`responseOf:`**: Extracts the 'content' from the first 'message' in the 'choices' array of a JSON response.
-- **`token`**: Returns the API token for Mistral, read from a local file.
-
-### Printing
-
-- **`printOn:`**: Prints a string representation of the `MistralApi` instance, including the model name.
+- **Model Interaction**: Communicates with Mistral AI's API to generate responses based on user prompts.
+- **Tool Integration**: Supports tool-based interactions, allowing the AI to call specific functions based on the context.
+- **Response Handling**: Processes JSON responses from the API and extracts relevant content or tool calls.
+- **Error Management**: Handles API errors gracefully and provides meaningful error messages.
 
 ## Usage Example
 
-```smalltalk
-| api response |
-api := MistralApi new.
-response := api getResponseForPrompt: 'What is the capital of France?'.
-Transcript show: response; cr.
+The following example demonstrates how to create and use a `MistralApi` instance in the Pharo Playground:
+
+```st
+""Create a new MistralApi instance""
+mistral := MistralApi new.
+
+""Set the system message and user prompt""
+mistral system: 'You are a helpful assistant.';
+mistral prompt: 'Tell me a joke about programming'.
+
+""Get the AI's response""
+mistral getResponse.
+
+""Inspect the assistant's response""
+mistral assistant
 ```
 
-This example initializes the `MistralApi` class, sends a prompt to the API, and prints the response to the Transcript.
+This example initialises a `MistralApi` instance, sets a system message and user prompt, retrieves the AI's response, and then inspects the response using the `assistant` method.
 
-## Dependencies
+## Design Decisions
 
-- **ZnClient**: Used for making HTTP requests to the Mistral API.
-- **STONJSON**: Used for parsing and constructing JSON data.
+- **Fluid Interface**: The class is designed with a fluid interface, allowing method chaining for a more expressive API.
+- **Tool Support**: The class includes methods to handle tool-based interactions, such as `toolsExperiment` and `killroyWasHere`.
+- **Error Handling**: Comprehensive error handling is implemented to manage API errors and provide feedback to the user.
+- **Configuration**: The class is initialised with the latest Mistral model and supports tooling by default.
 
-## Notes
-
-- Ensure that the API token is correctly stored in the specified file (`../../mistralkode.txt`) for authentication.
-- The class is part of the `AIActions` package and is tagged with `AIApi`.
-
-By following this class comment, users can understand the purpose, features, and usage of the `MistralApi` class, making it easier to integrate and utilize in their projects.
+The `MistralApi` class is part of the `AIActions` package and is tagged with 'AIApi', indicating its role in AI-related functionality within the system.
+```
 "
 Class {
 	#name : 'MistralApi',
 	#superclass : 'AilienApi',
+	#instVars : [
+		'useTooling'
+	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -132,15 +113,36 @@ MistralApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'mistral models' }
+MistralApi >> bodyForEntityWithPrompt_withTools [
+	"Creates a JSON entity for an API request with a system message and user prompt."
+	| requestDictionary |
+	requestDictionary :=Dictionary newFrom: {
+	    'model' -> 'codestral-latest'.
+	    'messages' -> self jsonHistory .
+	
+		 'tools' -> self toolsExperiment.
+		 'temperature' -> 0.
+	    'stream' -> false.
+		}.
+	^ ZnEntity json: (STONJSON toString: requestDictionary).
+]
+
 { #category : 'initialization' }
 MistralApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
 	self model: 'codestral-latest'.
+	useTooling := true
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> killroyWasHere: toolCalls [
+	^ 'Mistral asked Kasper about Killroy'
 ]
 
 { #category : 'mistral models' }
-MistralApi >> loadResponse [ 
+MistralApi >> loadResponse [
 	| apiGenerateUrl jsonResponse bodyEntiry |
 
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
@@ -156,6 +158,60 @@ MistralApi >> loadResponse [
 	] on: Error do: [ :ex |
    		self assistant: ex messageText.
 	].
+]
+
+{ #category : 'mistral models' }
+MistralApi >> loadResponse_notools [ 
+	| apiGenerateUrl jsonResponse bodyEntiry |
+
+	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
+	[  	bodyEntiry := self bodyForEntityWithPrompt.
+		jsonResponse := ZnClient new
+	    url: apiGenerateUrl;
+	  	 headerAt: 'Authorization' put: self class esug;
+	    headerAt: 'Content-Type' put: 'application/json';
+	    entity: bodyEntiry;
+	    post;
+	    contents.
+		self assistant: (self responseOf: jsonResponse) .
+	] on: Error do: [ :ex |
+   		self assistant: ex messageText.
+	].
+]
+
+{ #category : 'mistral models' }
+MistralApi >> loadResponse_tools [
+	| apiGenerateUrl jsonResponse bodyEntiry |
+
+	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
+	[  	bodyEntiry := self bodyForEntityWithPrompt_withTools.
+		jsonResponse := ZnClient new
+	    url: apiGenerateUrl;
+	  	 headerAt: 'Authorization' put: self class esug;
+	    headerAt: 'Content-Type' put: 'application/json';
+	    entity: bodyEntiry;
+	    post;
+	    contents.
+		self assistant: (self responseOf_tool: jsonResponse) .
+	] on: Error do: [ :ex |
+   		self assistant: ex messageText.
+	].
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> old_toolsExperiment [
+
+	^ {
+	Dictionary newFrom: {
+		'type' -> 'function'.
+		'function' -> (Dictionary newFrom: {
+			'name' -> 'killroyAnswer'.
+			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
+			'parameters' -> Dictionary new.
+			'required' -> #('topic')
+		})
+	}
+}.
 ]
 
 { #category : 'printing' }
@@ -174,4 +230,43 @@ MistralApi >> responseOf: jsonResponse [
 			((parsed at: 'error') at: 'message') ].
 	message := (parsed at: 'choices') first at: 'message'.
 	^ message at: 'content' 
+]
+
+{ #category : 'mistral models' }
+MistralApi >> responseOf_tool: jsonResponse [
+	| parsed message  toolCalls|
+	parsed := STONJSON fromString: jsonResponse.
+	(parsed includesKey: 'error') ifTrue: [ 
+		self error: 'AI response error: ', 
+			((parsed at: 'error') at: 'code'), 
+			'. Message: ', 
+			((parsed at: 'error') at: 'message') ].
+	message := (parsed at: 'choices') first at: 'message'.
+	toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
+	toolCalls isNil
+		ifTrue: [ ^ message at: 'content' ] 
+		ifFalse: [ ^ self killroyWasHere: toolCalls ]
+]
+
+{ #category : 'as yet unclassified' }
+MistralApi >> toolsExperiment [
+	^ {
+	Dictionary newFrom: {
+		'type' -> 'function'.
+		'function' -> (Dictionary newFrom: {
+			'name' -> 'killroyAnswer'.
+			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
+			'parameters' -> (Dictionary newFrom: {
+				'type' -> 'object'.
+				'properties' -> (Dictionary newFrom: {
+					'topic' -> (Dictionary newFrom: {
+						'type' -> 'string'.
+						'description' -> 'The topic for the Killroy fact.'.
+					})
+				})
+			}).
+			'required' -> #('topic')
+		})
+	}
+}.
 ]

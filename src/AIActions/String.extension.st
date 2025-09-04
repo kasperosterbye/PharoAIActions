@@ -50,8 +50,26 @@ String >> l [
 { #category : '*AIActions' }
 String >> q [
 	^ (AIACommentBuilding ailienApi new
-		system:  'You are a Pharo Smalltalk expert. In Pharo, operations are evaluated left to right without operator precedence.
+		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
 		 Please response in ', AIACommentBuilding language;
+		prompt: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q0 [
+	^ (AIACommentBuilding ailienApi new
+		system:  '';
+		prompt: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q0: systemBlock [
+	^ (AIACommentBuilding ailienApi new 
+		system:  systemBlock value;
 		prompt: self; 
 		getResponse; 
 		response) 
