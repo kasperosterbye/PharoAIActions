@@ -25,10 +25,9 @@ OllamaApi class >> models [
 OllamaApi class >> newModel: modelNumber [
 	"make an instance of OllamaApi based on a specfic Ollama model installed"
 	| selectedModel |
-	
 	selectedModel := self modelNames 
 		at: modelNumber 
-		ifAbsent: [ self modelNames at: 1 ]. "Select the first one"
+		ifAbsent: [ self modelNames at: 5 ]. "Select the first one"
 	^ self new model: selectedModel 
 ]
 
@@ -68,7 +67,7 @@ OllamaApi >> bodyForEntityWithPrompt [
 { #category : 'initialization' }
 OllamaApi >> initialize [ 
 	super initialize.
-	self model: (self class modelNames) second.
+	self model: (self class modelNames) third .
 ]
 
 { #category : 'ollama models' }
