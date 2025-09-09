@@ -65,7 +65,7 @@ MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
-	^ super modelNames 
+	^ #('codestral-latest'  'mistral-small-latest' 'devstral-medium-2507' 'mistral-medium-2508') 
 ]
 
 { #category : 'accessing' }
@@ -113,7 +113,7 @@ MistralApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
-{ #category : 'mistral models' }
+{ #category : 'mistral tools' }
 MistralApi >> bodyForEntityWithPrompt_withTools [
 	"Creates a JSON entity for an API request with a system message and user prompt."
 	| requestDictionary |
@@ -130,13 +130,12 @@ MistralApi >> bodyForEntityWithPrompt_withTools [
 
 { #category : 'initialization' }
 MistralApi >> initialize [ 
-	"Initialises the MistralApi instance with the latest model."
-	super initialize.
-	self model: 'codestral-latest'.
-	useTooling := true
+    super initialize.
+    self model: (self class modelNames) third.  "eller second, third etc."
+    useTooling := true
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'mistral tools' }
 MistralApi >> killroyWasHere: toolCalls [
 	^ 'Mistral asked Kasper about Killroy'
 ]
@@ -160,7 +159,7 @@ MistralApi >> loadResponse [
 	].
 ]
 
-{ #category : 'mistral models' }
+{ #category : 'mistral tools' }
 MistralApi >> loadResponse_notools [ 
 	| apiGenerateUrl jsonResponse bodyEntiry |
 
@@ -179,7 +178,7 @@ MistralApi >> loadResponse_notools [
 	].
 ]
 
-{ #category : 'mistral models' }
+{ #category : 'mistral tools' }
 MistralApi >> loadResponse_tools [
 	| apiGenerateUrl jsonResponse bodyEntiry |
 
@@ -198,7 +197,7 @@ MistralApi >> loadResponse_tools [
 	].
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'mistral tools' }
 MistralApi >> old_toolsExperiment [
 
 	^ {
@@ -232,7 +231,7 @@ MistralApi >> responseOf: jsonResponse [
 	^ message at: 'content' 
 ]
 
-{ #category : 'mistral models' }
+{ #category : 'mistral tools' }
 MistralApi >> responseOf_tool: jsonResponse [
 	| parsed message  toolCalls|
 	parsed := STONJSON fromString: jsonResponse.
@@ -248,7 +247,7 @@ MistralApi >> responseOf_tool: jsonResponse [
 		ifFalse: [ ^ self killroyWasHere: toolCalls ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'mistral tools' }
 MistralApi >> toolsExperiment [
 	^ {
 	Dictionary newFrom: {

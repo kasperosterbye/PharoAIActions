@@ -22,6 +22,17 @@ ClaudeApi class >> claudeKey [
 	^ (FileSystem disk workingDirectory / fileName ) readStream contents trimBoth.
 ]
 
+{ #category : 'AI models' }
+ClaudeApi class >> modelNames [
+	"returns an array with one item per model."
+	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
+	
+	^ #('claude-3-5-sonnet-20241022' 
+	'claude-3-5-haiku-20241022' 
+	'claude-sonnet-4-20250514' 
+	'claude-3-7-sonnet-20250219') 
+]
+
 { #category : 'accessing' }
 ClaudeApi >> bodyForEntityWithPrompt [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
@@ -65,7 +76,6 @@ ClaudeApi >> loadResponse [
 	    contents.
 		self assistant: (self responseOf: jsonResponse) .
 	] on: Error do: [ :ex |
-	self halt.
    		self assistant: ex messageText.
 	].
 ]

@@ -31,16 +31,6 @@ OllamaApi class >> newModel: modelNumber [
 	^ self new model: selectedModel 
 ]
 
-{ #category : 'instance creation' }
-OllamaApi class >> newSystem: synstemText promptPrefix: promptPrefixText [
-	"Create and return an instance with predefined system and prompt prefix for Ollama queries."
-	| prompter |
-	prompter := self new.
-	prompter system: synstemText.
-	prompter promptPrefix: promptPrefixText.
-	^ prompter 
-]
-
 { #category : 'AI models' }
 OllamaApi class >> ollamaVersion [
 	"Retrieve the Ollama version"
@@ -52,7 +42,7 @@ OllamaApi class >> ollamaVersion [
 
 { #category : 'ollama models' }
 OllamaApi >> bodyForEntityWithPrompt [
-	"Constructs a JSON entity for the API request, including model, system, prompt, and options."
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	|  requestDictionary |
 	requestDictionary := Dictionary newFrom:  { 
 		'model' -> model.
@@ -65,13 +55,15 @@ OllamaApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'initialization' }
-OllamaApi >> initialize [ 
+OllamaApi >> initialize [
+
 	super initialize.
-	self model: (self class modelNames) third .
+	self model: self class defaultModel
 ]
 
 { #category : 'ollama models' }
 OllamaApi >> loadResponse [ 
+	"Send POST request to Ollama API to retrieve response content from parsed JSON."
 	| apiGenerateUrl jsonResponse |
 	apiGenerateUrl := 'http://localhost:11434/api/chat'.
 	[  jsonResponse := ZnClient new
@@ -118,6 +110,12 @@ OllamaApi >> modelShortInfo [
 		'Architecture' -> architecture. 
 		'Parameter count' -> parameters. 
 		'Context length' -> context_length}
+]
+
+{ #category : 'initialization' }
+OllamaApi >> old_initialize [ 
+	super initialize.
+	self model: (self class modelNames) third .
 ]
 
 { #category : 'printing' }
