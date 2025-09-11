@@ -1,3 +1,46 @@
+"
+# Class Comment for ClaudeApi
+
+The `ClaudeApi` class provides an interface to interact with Anthropic's Claude AI models through their API. It extends the `AilienApi` superclass to implement specific functionality for Claude's message-based API.
+
+## Key Features
+
+- **Model Management**: Supports multiple Claude models including the latest versions of Sonnet and Haiku
+- **Conversation History**: Maintains and formats conversation history in JSON format suitable for the API
+- **API Integration**: Handles authentication, request formatting, and response processing
+- **Error Handling**: Gracefully manages API errors and provides meaningful feedback
+
+## Usage Example
+
+```smalltalk
+""Create and configure a Claude API instance""
+api := ClaudeApi new.
+api system: 'You are a helpful assistant that explains programming concepts'.
+api user: 'What is polymorphism in object-oriented programming?'.
+api getResponse.
+
+""Inspect the response""
+api response
+```
+
+## Implementation Notes
+
+- Requires valid API keys stored in `claudecode00.txt`, `claudecode01.txt`, etc.
+- Uses the Anthropic API endpoint at `https://api.anthropic.com/v1/messages`
+- Implements proper request headers including API key and version
+- Processes both successful responses and error conditions
+- Maintains conversation history in chronological order
+
+## Error Handling
+
+The class handles API errors by:
+1. Catching exceptions during API calls
+2. Providing formatted error messages
+3. Preserving conversation context even when errors occur
+
+This implementation provides a robust foundation for integrating Claude's AI capabilities into Pharo applications while maintaining clean separation of concerns with the base `AilienApi` class.
+```
+"
 Class {
 	#name : 'ClaudeApi',
 	#superclass : 'AilienApi',
@@ -36,24 +79,18 @@ ClaudeApi class >> modelNames [
 { #category : 'accessing' }
 ClaudeApi >> bodyForEntityWithPrompt [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
-    | requestDictionary systemContent userMessages |
-    
-    "Extract system message and filter out system from messages"
-    systemContent := self system ifNil: [ '' ].
-    userMessages := self jsonHistory select: [ :msg | (msg at: 'role') ~= 'system' ].
-    
+    | requestDictionary  |
     requestDictionary := Dictionary newFrom: {
         'model' -> model.
         'max_tokens' -> 1024.
-        'system' -> systemContent.
-        'messages' -> userMessages.
+        'messages' -> self jsonHistory.
         'temperature' -> 0.1.
     	  'stream' -> false.
     }.
     ^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
-{ #category : 'accessing' }
+{ #category : 'initialize' }
 ClaudeApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
@@ -62,6 +99,7 @@ ClaudeApi >> initialize [
 
 { #category : 'accessing' }
 ClaudeApi >> loadResponse [ 
+	"Loads response from Claude API, handling API calls, processing results, and managing errors. Updates assistant message in history or sets error message."
 	| apiGenerateUrl jsonResponse bodyEntity key |
 	apiGenerateUrl := 'https://api.anthropic.com/v1/messages'.
 	[  bodyEntity := self bodyForEntityWithPrompt.
@@ -82,6 +120,7 @@ ClaudeApi >> loadResponse [
 
 { #category : 'accessing' }
 ClaudeApi >> printOn: aStream [
+	"Prints the class name and current model to a stream in a readable format for debugging purposes"
 	aStream << 'ClaudeApi: ' << self model.
 ]
 

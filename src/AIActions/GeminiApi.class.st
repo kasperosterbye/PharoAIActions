@@ -1,3 +1,45 @@
+"
+# Class Comment for GeminiApi
+
+## Overview
+`GeminiApi` is a specialized API client for interacting with Google's Gemini large language models. It extends the abstract `AilienApi` class to provide concrete implementations for model-specific operations, including request formatting, response parsing, and conversation history management tailored to the Gemini API's requirements.
+
+## Key Features
+- **Model-Specific Configuration**: Uses Gemini's model endpoints and authentication
+- **Response Handling**: Parses JSON responses from the Gemini API
+- **Conversation Management**: Maintains and formats chat history in Gemini's required format
+- **Error Handling**: Processes API errors and provides meaningful feedback
+
+## Usage Example
+
+```smalltalk
+""Create and configure a new GeminiApi instance""
+gemini := GeminiApi new
+    model: 'gemini-2.0-flash-lite';
+    system: 'You are a helpful assistant';
+    prompt: 'Explain quantum computing in simple terms'.
+
+""Get a response from the API""
+gemini getResponse.
+
+""Inspect the assistant's response""
+gemini response
+```
+
+## Implementation Notes
+- Requires a valid API key stored in `geminicode.txt` in the parent directory
+- Uses the STON library for JSON parsing
+- Implements the abstract methods from `AilienApi` with Gemini-specific logic
+- Maintains conversation history in the format expected by the Gemini API
+
+## See Also
+- `AilienApi` - The abstract superclass providing common AI API functionality
+- `GeminiApi class>>#modelNames` - Lists available Gemini models
+- `GeminiApi class>>#geminiKey` - Manages API key access
+```
+
+This class comment provides a comprehensive overview of the `GeminiApi` class, its purpose, key features, and usage examples that can be directly executed in the Pharo Playground. The example demonstrates the complete workflow from instance creation to obtaining a response, with the final expression (`gemini response`) ready for inspection using the Playground's inspection command.
+"
 Class {
 	#name : 'GeminiApi',
 	#superclass : 'AilienApi',
@@ -22,6 +64,7 @@ GeminiApi class >> modelNames [
 
 { #category : 'ollama models' }
 GeminiApi >> bodyForEntityWithPrompt [
+	"Constructs JSON entity for API request with chat history and generation config. Formats history as role-parts array and sets temperature to 0. Returns ZnEntity with JSON string."
 
 	| requestDictionary |
 	requestDictionary :=Dictionary newFrom: {
@@ -33,7 +76,7 @@ GeminiApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary)
 ]
 
-{ #category : 'nil' }
+{ #category : 'initialize' }
 GeminiApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
@@ -42,27 +85,21 @@ GeminiApi >> initialize [
 
 { #category : 'accessing' }
 GeminiApi >> jsonHistory [
-	"Transforms the message history into a JSON format suitable for the Gemini API, structuring roles and text parts."
-	| jsonHistory geminiHistry|
+	"Converts the chat history into a JSON-formatted array suitable for the Gemini API, structuring each message with role and text content."
+	| jsonHistory |
 	jsonHistory := OrderedCollection new.
-	self system 
-		ifNil: [ 
-			geminiHistry := history ] 
-		ifNotNil: [ 
-			geminiHistry := history deepCopy allButFirst.
-			geminiHistry first value: (history first value, '. ', history second value)] .
-	geminiHistry do: [ :item |
+	history do: [ :item |
 		jsonHistory add: (Dictionary newFrom: 
 			{'role' -> item key.
-			'parts' -> {Dictionary newFrom: {  'text' -> item value} } } )
+			'parts' -> { Dictionary newFrom: {  'text' -> item value} } } )
 	].
 	^ jsonHistory asArray.
 ]
 
 { #category : 'mistral models' }
 GeminiApi >> loadResponse [ 
+	"Loads response from Gemini API, handling JSON parsing, error checking, and updating assistant state. Uses model-specific endpoint and API key for secure communication."
 	| apiGenerateUrl jsonResponse bodyEntity |
-	
 	apiGenerateUrl := 'https://generativelanguage.googleapis.com/v1beta/models/', model, ':generateContent'.
 	[ bodyEntity := self bodyForEntityWithPrompt.
 		jsonResponse := ZnClient new
@@ -80,6 +117,7 @@ GeminiApi >> loadResponse [
 
 { #category : 'accessing' }
 GeminiApi >> printOn: aStream [
+	"Prints the class name and current model to a stream for debugging and inspection purposes."
 	aStream << 'GeminiApi: ' << self model.
 ]
 

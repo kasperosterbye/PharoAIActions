@@ -1,44 +1,35 @@
 "
 # Class Comment for MistralApi
 
-The `MistralApi` class provides an interface to interact with the Mistral AI API, allowing users to send prompts and receive responses from the AI model. It extends the `AilienApi` superclass and is designed to work with the Mistral AI's chat completion endpoint.
+The `MistralApi` class provides an interface to interact with Mistral's AI models, enabling developers to send prompts, receive responses, and utilise tooling capabilities. It extends the `AilienApi` superclass, inheriting core conversation management functionality while specialising in Mistral-specific implementations.
 
 ## Key Features
 
-- **Model Interaction**: Communicates with Mistral AI's API to generate responses based on user prompts.
-- **Tool Integration**: Supports tool-based interactions, allowing the AI to call specific functions based on the context.
-- **Response Handling**: Processes JSON responses from the API and extracts relevant content or tool calls.
-- **Error Management**: Handles API errors gracefully and provides meaningful error messages.
+- **Model Interaction**: Supports multiple Mistral models (e.g., 'codestral-latest', 'mistral-small-latest')
+- **Tool Integration**: Optional tooling capabilities for enhanced functionality
+- **Conversation Management**: Maintains and formats chat history
+- **Error Handling**: Robust error management for API responses
 
 ## Usage Example
 
-The following example demonstrates how to create and use a `MistralApi` instance in the Pharo Playground:
-
-```st
-""Create a new MistralApi instance""
+```smalltalk
+""Create and configure a Mistral API instance""
 mistral := MistralApi new.
-
-""Set the system message and user prompt""
-mistral system: 'You are a helpful assistant.';
-mistral prompt: 'Tell me a joke about programming'.
-
-""Get the AI's response""
-mistral getResponse.
-
-""Inspect the assistant's response""
-mistral assistant
+mistral model: 'mistral-small-latest'.  ""Set the model""
+mistral system: 'You are a helpful assistant'.  ""Set system message""
+mistral user: 'Tell me about Pharo'.  ""Add user prompt""
+mistral getResponse.  ""Get AI response""
+mistral response  ""Inspect the response""
 ```
 
-This example initialises a `MistralApi` instance, sets a system message and user prompt, retrieves the AI's response, and then inspects the response using the `assistant` method.
+## Implementation Notes
 
-## Design Decisions
+- Requires valid API credentials stored in a file
+- Handles both standard and tool-enhanced API requests
+- Maintains conversation history in chronological order
+- Provides formatted output for debugging and display purposes
 
-- **Fluid Interface**: The class is designed with a fluid interface, allowing method chaining for a more expressive API.
-- **Tool Support**: The class includes methods to handle tool-based interactions, such as `toolsExperiment` and `killroyWasHere`.
-- **Error Handling**: Comprehensive error handling is implemented to manage API errors and provide feedback to the user.
-- **Configuration**: The class is initialised with the latest Mistral model and supports tooling by default.
-
-The `MistralApi` class is part of the `AIActions` package and is tagged with 'AIApi', indicating its role in AI-related functionality within the system.
+The class is designed for integration with Pharo's Smalltalk environment, offering a clean interface for AI interactions while handling the complexities of API communication and response processing.
 ```
 "
 Class {
@@ -130,6 +121,7 @@ MistralApi >> bodyForEntityWithPrompt_withTools [
 
 { #category : 'initialization' }
 MistralApi >> initialize [ 
+	"Initialises a new MistralApi instance with default model and tooling enabled, ready for AI interactions. Sets up conversation management and response handling."
     super initialize.
     self model: (self class modelNames) third.  "eller second, third etc."
     useTooling := true
@@ -137,11 +129,13 @@ MistralApi >> initialize [
 
 { #category : 'mistral tools' }
 MistralApi >> killroyWasHere: toolCalls [
+	"Returns a humorous response about Killroy when tool calls are detected, indicating AI's interaction with Kasper for Killroy-related facts."
 	^ 'Mistral asked Kasper about Killroy'
 ]
 
 { #category : 'mistral models' }
 MistralApi >> loadResponse [
+	"Loads response from Mistral API, handling authentication, JSON parsing, and error management. Updates assistant with result or error message."
 	| apiGenerateUrl jsonResponse bodyEntiry |
 
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
@@ -215,11 +209,13 @@ MistralApi >> old_toolsExperiment [
 
 { #category : 'printing' }
 MistralApi >> printOn: aStream [
+	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'MistralApi: ' << self model.
 ]
 
 { #category : 'mistral models' }
 MistralApi >> responseOf: jsonResponse [
+	"Extracts content from Mistral API response, handling errors and tool calls. Returns message content or processes tool calls for Killroy facts."
 	| parsed message  |
 	parsed := STONJSON fromString: jsonResponse.
 	(parsed includesKey: 'error') ifTrue: [ 

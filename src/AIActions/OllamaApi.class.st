@@ -1,3 +1,45 @@
+"
+# Class: OllamaApi
+
+A client interface for interacting with the Ollama API, enabling communication with large language models. This class extends `AilienApi` to provide Ollama-specific functionality, including model management, conversation history handling, and response generation.
+
+## Key Features
+
+- **Model Interaction**: Connects to Ollama's local API to generate responses from specified models
+- **Conversation Management**: Maintains and formats chat history for context-aware interactions
+- **Model Information**: Retrieves detailed metadata about available models
+- **Error Handling**: Gracefully handles API communication errors
+
+## Usage Example
+
+```smalltalk
+""Create and configure an Ollama API instance""
+ollama := OllamaApi newModel: 1.  ""Selects the first available model""
+ollama system: 'You are a helpful assistant'.  ""Set system context""
+ollama user: 'Explain quantum computing in simple terms'.  ""Add user prompt""
+ollama getResponse.  ""Generate and store response""
+ollama response  ""Inspect the assistant's response""
+```
+
+## API Methods
+
+- `responseOf:` - Extracts response content from JSON API responses
+- `bodyForEntityWithPrompt` - Prepares request bodies for API calls
+- `modelInformation` - Retrieves detailed model metadata
+- `modelShortInfo` - Provides concise model specifications
+
+## Class Methods
+
+- `models` - Lists all available Ollama models
+- `ollamaVersion` - Retrieves the installed Ollama version
+- `newModel:` - Creates an instance for a specific model
+- `modelNames` - Returns names of all available models
+
+The class maintains conversation history and handles the complete lifecycle of API interactions with Ollama's local server.
+```
+
+This comment provides a comprehensive overview of the class's purpose, key features, and usage patterns while maintaining the British English style requested. The example demonstrates the complete workflow from instance creation to response retrieval, ending with an expression suitable for inspection in Pharo's Playground.
+"
 Class {
 	#name : 'OllamaApi',
 	#superclass : 'AilienApi',
@@ -110,12 +152,6 @@ OllamaApi >> modelShortInfo [
 		'Architecture' -> architecture. 
 		'Parameter count' -> parameters. 
 		'Context length' -> context_length}
-]
-
-{ #category : 'initialization' }
-OllamaApi >> old_initialize [ 
-	super initialize.
-	self model: (self class modelNames) third .
 ]
 
 { #category : 'printing' }

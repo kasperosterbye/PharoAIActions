@@ -79,7 +79,7 @@ String >> q0: systemBlock [
 String >> q: systemBlock [
 	^ (AIACommentBuilding ailienApi new 
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations are evaluated left to right without operator precedence.
-		 Please response in ', AIACommentBuilding language, String cr, String cr, systemBlock value;
+		 Please response in ', AIACommentBuilding language, String cr, String cr, systemBlock value,'';
 		prompt: self; 
 		getResponse; 
 		response) 

@@ -178,8 +178,7 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forSuperClassesOf: aClass [
-	"Generates formatted class header for superclasses of aClass including name definition methods and meta class details."
-
+	"Generates formatted superclass hierarchy for aClass, including methods and meta-class details, appending to response stream. Recursively processes superclasses until Object."
 	| superComment superClass |
 	aClass = Object  ifTrue: [ ^ '' ].
 	
