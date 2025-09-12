@@ -91,7 +91,7 @@ AIASlotComment class >> promptFor: aClass [
 	| prompt |
 	prompt := 'For each instance variable in class {1} and only for that class, write a comment in the format:
 
-#varName -> ''=> Class. Short description...''
+#varName -> ''=> Class. Short description, around 40 charcters''
 
 Include the exact class name of the value each variable holds, and a brief explanation of its purpose. Just return the instance variables, not the class own definition.'.
 	^ prompt format: { aClass name }.

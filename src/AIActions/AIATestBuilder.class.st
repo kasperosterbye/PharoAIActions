@@ -127,7 +127,6 @@ AIATestBuilder class >> buildTestClass: sourceClass [
 AIATestBuilder >> build: aMethod [
 	"Builds a test for a given method, using AI to generate and validate the test code. Returns the chat history of the AI interaction."
 
-	self class buildTestClass: aMethod methodClass.
 	self for: aMethod.
 	self compileAndChechBuildedTestOf: aMethod.
 	^ self chatHistory 
@@ -210,6 +209,8 @@ AIATestBuilder >> fictiveTestMethod [
 AIATestBuilder >> for: aMethod [
 	"aMethod is the compiled method to which a test should be renerated."
 	sourceMethod := aMethod.
+	self class buildTestClass: aMethod methodClass.
+	
 	self buildTestChat.
 	self generateTest.
 	

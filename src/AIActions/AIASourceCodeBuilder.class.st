@@ -1,63 +1,73 @@
 "
-# Class Comment for AIASourceCodeBuilder
+Here's a class comment for `AIASourceCodeBuilder` in Markdown format, including a usage example suitable for the Playground:
 
-## AIASourceCodeBuilder
+# AIASourceCodeBuilder
 
-**AIASourceCodeBuilder** is a utility class designed to generate formatted source code descriptions for Pharo classes and packages. It is particularly useful for documentation and code analysis purposes. The class provides methods to generate detailed descriptions of classes, including their instance variables, methods, and meta-classes.
+A utility class for generating formatted source code documentation from Pharo classes and packages. It provides methods to extract and format class definitions, instance variables, methods, and superclass hierarchies, making it useful for code analysis, documentation generation, and system exploration.
 
-### Key Features:
+## Key Features
 
-- **Package-Level Generation**: Generates source code descriptions for a list of packages.
-- **Class-Level Generation**: Generates source code descriptions for individual classes or a list of classes.
-- **Detailed Descriptions**: Includes class definitions, instance variables, and methods grouped by protocol.
-- **Meta-Class Support**: Generates descriptions for both the class and its meta-class.
+- Generates human-readable source code documentation from classes and packages
+- Extracts class definitions, instance variables, and method implementations
+- Handles both instance and class-side methods
+- Includes superclass hierarchy information
+- Supports package-level documentation generation
+- Provides method call analysis within the same package
 
-### Usage:
-
-To use `AIASourceCodeBuilder`, you can call its class-side methods to generate descriptions for specific packages or classes. For example:
-
-```smalltalk
-| builder packageList classList |
-builder := AIASourceCodeBuilder new.
-packageList := { 'Package1'. 'Package2' }.
-classList := { SomeClass. AnotherClass }.
-
-""Generate description for a list of packages""
-builder for: packageList.
-
-""Generate description for a single class""
-builder forClass: SomeClass.
-
-""Generate description for a list of classes""
-builder forClasses: classList.
-```
-
-### Methods:
-
-- **`for: aPackageList`**: Generates a formatted string describing the classes in the given list of packages.
-- **`forClass: aClass`**: Generates a formatted string describing the given class.
-- **`forClasses: aClassList`**: Generates a formatted string describing the given list of classes.
-- **`classesInPackage: aPackage`**: Internal method to add class names, instance variables, and method definitions to the response for a given package.
-- **`instanceVariablesFor: aClass`**: Internal method to add all instance variables of a class to the response.
-- **`methodsFor: aClass`**: Internal method to add all methods grouped by protocol, including full source code, to the response.
-- **`classHeaderFor: aClass`**: Internal method to return a string with the class name and definition for a class.
-
-### Example:
+## Usage Example
 
 ```smalltalk
-| builder description |
+""Generate documentation for the Point class and inspect the result""
 builder := AIASourceCodeBuilder new.
-description := builder forClass: SomeClass.
-Transcript show: description.
+builder forClass: Point.
+builder response contents inspect
 ```
 
-This class comment provides an overview of the `AIASourceCodeBuilder` class, its features, usage, and key methods. It is intended to help users understand how to utilise the class effectively for generating source code descriptions.
+```smalltalk
+""Generate documentation for all classes in the Kernel package and inspect the result""
+builder := AIASourceCodeBuilder new.
+builder for: 'Kernel'.
+builder response contents inspect
+```
+
+## Design Notes
+
+- The builder uses a `WriteStream` to accumulate the generated documentation
+- Methods are organized by protocol for better readability
+- Class comments are included in the generated output
+- The builder can handle both direct class references and package names
+- Package names can be specified with wildcards (e.g., '*Kernel*')
+
+## Extensibility
+
+The builder can be extended to:
+- Generate different output formats (HTML, Markdown, etc.)
+- Include additional metadata (author, version, etc.)
+- Filter methods based on specific criteria
+- Generate UML diagrams from the extracted information
+
+## Implementation Notes
+
+- Uses `FluidClassDefinitionPrinter` for class definition formatting
+- Leverages `SystemNavigation` for method call analysis
+- Maintains package boundaries when analyzing method calls
+- Handles both regular classes and metaclasses appropriately
+
+This builder is particularly useful for:
+- Code review and documentation generation
+- System analysis and understanding
+- Educational purposes to explore class structures
+- Creating custom code analysis tools
+```
+
+The example shows how to use the builder to generate documentation for a specific class or package, with the result being inspected in the Playground. The comment provides context about the builder's capabilities, usage patterns, and design decisions.
 "
 Class {
 	#name : 'AIASourceCodeBuilder',
 	#superclass : 'Object',
 	#instVars : [
-		'response'
+		'response',
+		'classList'
 	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
@@ -86,6 +96,7 @@ AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 	"Generates a formatted class header string for aClass, including its name and definition, and appends it to the superComment stream. Includes methods and meta-class details."
 
 	| meta |
+	(classList includes: aClass) ifTrue: [ self halt ].
 	superComment << '## Superclass: ' << aClass name asString
 	<< ' for class: ' << current name asString << String cr
 	<< (FluidClassDefinitionPrinter for: aClass) classDefinitionString
@@ -109,15 +120,11 @@ AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> classesInPackage: aPackage [
-	"Adds class name, instance variables, and method definitions to response"
+	"Generates formatted documentation for all classes in a package, including their definitions, instance variables, and methods, appending to the response stream."
 
 	| aClassCollection |
 	aClassCollection := aPackage definedClasses asArray.
-	aClassCollection do: [ :cl |
-			response << '## Class: ' << cl name asString <<String cr.
-			self instanceVariablesFor: cl.
-			self methodsFor: cl.
-			response << String cr ]
+	aClassCollection do: [ :cl | self forClass: cl]
 ]
 
 { #category : 'accessing' }
@@ -141,13 +148,15 @@ AIASourceCodeBuilder >> for: packages [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forClass: aClass [
-	"Generates a formatted string describing the given class including its name definition instance variables methods and meta class details."
 	| metaClass |
-
+		(classList includes: aClass) 
+			ifTrue: [ ^ response contents ].
+		classList add: aClass.
 		self classHeaderFor: aClass.
 		self methodsFor: aClass.
 		response << String cr.
 		metaClass := aClass class.
+		classList add: metaClass.
 		self classHeaderFor: metaClass.
 		self methodsFor: metaClass.
 		response << String cr.
@@ -184,7 +193,8 @@ AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 	
 	superClass := aClass superclass.
 	superClass = Object ifTrue: [ ^ '' ].
-	
+	(classList includes: superClass) 
+			ifTrue: [ ^ '' ].
 	superComment := WriteStream on: ''.
 	self classHeaderFor: aClass super: superClass on:  superComment.
 	superComment << (self forSuperClassesOf: superClass) .
@@ -196,6 +206,7 @@ AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 AIASourceCodeBuilder >> initialize [
 	"Initialises a new instance of AIASourceCodeBuilder with an empty WriteStream for accumulating generated source code descriptions."
 	response := WriteStream on: ''.
+	classList := Set new.
 ]
 
 { #category : 'internal' }
@@ -207,7 +218,7 @@ AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 	response nextPutAll: String cr.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'internal' }
 AIASourceCodeBuilder >> methodNameAndCommentFor: method in: superComment [
 	"Appends method name and comment to superComment stream for aClass. Formats as 'Method: name comment: comment' with newlines. Used in classHeaderFor:super:on:."
 
@@ -227,6 +238,19 @@ AIASourceCodeBuilder >> methodsFor: aClass [
 			response << (aClass >> methodName) sourceCode << String cr << String cr.
 		].
 	].
+]
+
+{ #category : 'internal' }
+AIASourceCodeBuilder >> old_classesInPackage: aPackage [
+	"Adds class name, instance variables, and method definitions to response"
+
+	| aClassCollection |
+	aClassCollection := aPackage definedClasses asArray.
+	aClassCollection do: [ :cl |
+			response << '## Class: ' << cl name asString <<String cr.
+			self instanceVariablesFor: cl.
+			self methodsFor: cl.
+			response << String cr ]
 ]
 
 { #category : 'accessing' }

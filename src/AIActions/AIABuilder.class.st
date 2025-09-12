@@ -21,13 +21,13 @@ AIABuilder class >> ailienApi: api [
 	^ AilienApi := api
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'model system' }
 AIABuilder class >> exampleITU [
 	
 	AIACommentPresenter onText: self itu
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'model system' }
 AIABuilder class >> itu [
 	
 	^ 'AIATestBuilder aITestClassPostfix: ''AITest_a1'' .

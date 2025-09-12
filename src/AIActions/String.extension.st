@@ -30,7 +30,7 @@ String >> aiaComment [
 { #category : '*AIActions' }
 String >> i [
 	^ (AIACommentBuilding ailienApi new
-		system:  'You are one who like giving short answers. ITU is a Tec University in CPH
+		system:  'You are one who like giving short answers. Inria Lille - Nord Europe, Building B.
 		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
 		getResponse; 

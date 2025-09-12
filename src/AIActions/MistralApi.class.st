@@ -135,7 +135,6 @@ MistralApi >> killroyWasHere: toolCalls [
 
 { #category : 'mistral models' }
 MistralApi >> loadResponse [
-	"Loads response from Mistral API, handling authentication, JSON parsing, and error management. Updates assistant with result or error message."
 	| apiGenerateUrl jsonResponse bodyEntiry |
 
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
