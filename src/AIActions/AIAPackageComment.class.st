@@ -22,7 +22,6 @@ AIAPackageComment >> aiaComment: aPackageName [
 		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
 		AIACommentBuilding language.
 	self getResponse.
-	^ self.
 ]
 
 { #category : 'accessing' }
@@ -53,6 +52,7 @@ AIAPackageComment >> aiaComment_old: aPackageName [
 
 { #category : 'accessing' }
 AIAPackageComment >> setComment: aPackageName [
+	"Sets a package comment using AI-generated content and updates the package's metadata."
 	self aiaComment: aPackageName.
 	(Package named: aPackageName) packageComment: self response 
 ]

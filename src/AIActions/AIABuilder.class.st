@@ -10,17 +10,6 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'accessing' }
-AIABuilder class >> ailienApi [
-	AilienApi ifNil: [ self ailienApi: MistralApi ].
-	^ AilienApi
-]
-
-{ #category : 'accessing' }
-AIABuilder class >> ailienApi: api [
-	^ AilienApi := api
-]
-
 { #category : 'model system' }
 AIABuilder class >> exampleITU [
 	
@@ -79,6 +68,17 @@ AIABuilder class >> language [
 { #category : 'accessing' }
 AIABuilder class >> language: language [
 	CommentLanguage := language
+]
+
+{ #category : 'accessing' }
+AIABuilder class >> old_ailienApi [
+	AilienApi ifNil: [ self ailienApi: MistralApi ].
+	^ AilienApi
+]
+
+{ #category : 'accessing' }
+AIABuilder class >> old_ailienApi: api [
+	^ AilienApi := api
 ]
 
 { #category : 'printing' }

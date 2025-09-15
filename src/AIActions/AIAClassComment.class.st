@@ -23,51 +23,21 @@ AIAClassComment >> aiaComment: aClass [
 		'Please write the response in ',
 		AIACommentBuilding language.
 	self getResponse.
-	^ self.
-	
-]
-
-{ #category : 'accessing' }
-AIAClassComment >> aiaComment_old: aClass [
-	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
-	self system: (AIASourceCodeBuilder new forClass: aClass).
-	
-	self prompt: 'This is a Pharo question. Can your give a class comment for ' , 
-		aClass asString, 
-		'. Use Markdown format, and include a usage example suitable for the Playground. ',
-		'Prefer code that ends with an expression to be inspected using command-I. ',
-		'When givin an example using the definition of a class, use: ', (ShiftClassBuilder comment),
-		'Please write the response in ',
-		AIACommentBuilding language.
-	self getResponse.
-	^ self.
-	
-]
-
-{ #category : 'accessing' }
-AIAClassComment >> old_aiaComment: aClass [
-	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
-	"self system: (AIASourceCodeBuilder new forClass: aClass)."
-	
-	self prompt: 'This is a Pharo question. With this class definition ', (AIASourceCodeBuilder new forClass: aClass), ' 
-	Can your give a class comment for ' , 
-		aClass asString, 
-		'. Use Markdown format, and include a usage example suitable for the Playground. ',
-		'Prefer code that ends with an expression to be inspected using command-I. ',
-		'When givin an example using the definition of a class, use: ', (ShiftClassBuilder comment),
-		'Please write the response in ',
-		AIACommentBuilding language.
-	self getResponse.
-	^ self.
 	
 ]
 
 { #category : 'accessing' }
 AIAClassComment >> setComment: aClass [
-	"Builds a comment for aClass."
+	"Sets the class comment using AI-generated content, cleaning the response to remove markdown formatting and setting it as the class comment."
+	| cleaned response |
 	self aiaComment: aClass.
-	aClass comment: self response.
-	^ self response 
+	"remove upto and included ```. Remove nothing if not found"
+	response := self response.
+	cleaned := (response lines
+		copyFrom: ((response lines findFirst: [:each | each beginsWith: '```']) + 1)
+		to: (response lines findLast: [:each | each beginsWith: '```']) - 1) 
+		asStringWithCr.
+	aClass comment: cleaned .
 	
 ]
 

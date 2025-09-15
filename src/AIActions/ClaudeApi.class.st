@@ -120,7 +120,6 @@ ClaudeApi >> loadResponse [
 
 { #category : 'accessing' }
 ClaudeApi >> printOn: aStream [
-	"Prints the class name and current model to a stream in a readable format for debugging purposes"
 	aStream << 'ClaudeApi: ' << self model.
 ]
 

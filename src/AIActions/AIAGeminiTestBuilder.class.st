@@ -1,29 +1,58 @@
 "
-# Class: AIAMistralTestBuilder
+# AIAGeminiTestBuilder
 
-The `AIAMistralTestBuilder` class is responsible for generating test methods for Pharo methods using the Mistral AI model. It extends the functionality of `AIATestBuilder` by providing specific prompts and context tailored for test generation, ensuring accurate and context-aware test creation.
+A specialized test builder that generates AI-powered unit tests for Pharo methods using the Gemini AI model. This builder automates test creation by analyzing method behavior and generating appropriate test cases.
+
+## Key Features
+
+- Generates complete test methods for any Pharo method
+- Handles different method types (unary, binary, keyword)
+- Follows Pharo testing conventions and best practices
+- Provides context about method behavior and expected results
+- Maintains proper test class structure and naming conventions
 
 ## Usage Example
 
-```st
-""Create a test builder for a specific method and generate a test""
-| method testBuilder |
-method := Point >> #x.
-testBuilder := AIAMistralTestBuilder new for: method.
-testBuilder generateTest.
-testBuilder testMethod inspect  ""Inspect the generated test method""
+```smalltalk
+""Example: Generate a test for a method in the system""
+| builder testClass |
+builder := AIAGeminiTestBuilder new.
+builder for: (Point >> #x).  ""The method to test""
+builder build.  ""Generate the test method""
+testClass := builder sourceClassStringName, 'AITest' asClass.
+testClass debug: builder testMethodName.  ""Inspect the generated test""
 ```
 
-## Design Decisions
+## Design Notes
 
-- **AI Integration**: The builder utilises the Mistral AI model to generate test methods, providing context-specific prompts and system information to ensure accurate test creation.
-- **Test Generation**: The builder follows a structured approach to test generation, including arranging test data, acting on the method under test, and asserting expected outcomes.
-- **Context Awareness**: The builder provides specific context about Pharo methods, including method types (unary, binary, keyword), return values, and data structures, to guide AI in generating appropriate test cases.
-- **Error Handling**: The builder includes mechanisms for handling and repairing failed test generations, ensuring robustness in test creation.
-- **Class Integration**: The builder is designed to work seamlessly with Pharo's class and method structures, providing accurate class and method information to the AI model.
+1. Works with the existing AI builder infrastructure
+2. Maintains proper test class structure and naming
+3. Follows Pharo testing conventions (setUp, test methods)
+4. Handles different method types appropriately
+5. Provides context about method behavior to the AI
 
-The `AIAMistralTestBuilder` is an essential tool for developers looking to automate test generation in Pharo, ensuring comprehensive test coverage and reducing manual testing efforts.
+## Implementation Notes
 
+- Uses the Gemini AI model for test generation
+- Maintains proper test class structure
+- Follows Pharo testing conventions
+- Handles different method types appropriately
+- Provides context about method behavior to the AI
+
+This builder is part of the AI-powered testing framework in Pharo, enabling automated test generation for existing methods.
+```
+
+The example shows how to:
+1. Create a new test builder instance
+2. Specify the method to test
+3. Generate the test method
+4. Access the generated test class and method
+
+The builder will automatically:
+- Create or find the appropriate test class
+- Generate a properly named test method
+- Include all necessary setup and assertions
+- Handle different method types appropriately
 "
 Class {
 	#name : 'AIAGeminiTestBuilder',

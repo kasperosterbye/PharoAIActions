@@ -56,8 +56,8 @@ Class {
 	#name : 'AilienApi',
 	#superclass : 'Object',
 	#instVars : [
+		'provider',
 		'model',
-		'tools',
 		'history'
 	],
 	#classInstVars : [
@@ -68,9 +68,14 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'instance creation' }
+AilienApi class >> default [
+	^ AileinProvider provider new
+]
+
 { #category : 'private' }
 AilienApi class >> defaultModel [
-	modelLLM ifNil: [ modelLLM := self modelNames first ].
+	modelLLM ifNil: [ modelLLM := MistralApi modelNames first ].
 	^ modelLLM 
 ]
 

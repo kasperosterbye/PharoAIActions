@@ -175,7 +175,7 @@ AIACommentBuilding >> getResponse_old [
 AIACommentBuilding >> initialize [ 
 	"Initializes MistralApi with the latest model."
 	super initialize.
-	aiaApi := self class ailienApi new.
+	aiaApi := AileinProvider provider new.
 ]
 
 { #category : 'accessing' }
