@@ -34,6 +34,17 @@ AilienApiTest >> testHistory [
 ]
 
 { #category : 'running' }
+AilienApiTest >> testHistorySet [
+	refAilienApi history add: 'joke' -> 'ohh no'.
+	self 
+		assert: refAilienApi history first key
+		equals: 'joke'.
+	self 
+		assert: refAilienApi history first value
+		equals: 'ohh no'. 
+]
+
+{ #category : 'running' }
 AilienApiTest >> testJsonHistory [
 	| res |
 	refAilienApi user: 'Jim'.

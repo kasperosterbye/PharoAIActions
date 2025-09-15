@@ -71,7 +71,7 @@ Class {
 { #category : 'instance creation' }
 AilienApi class >> default [
 	"Default returns a new instance of AileinProvider provider"
-	^ AileinProvider provider new
+	^ AileinProvider provider
 ]
 
 { #category : 'private' }
@@ -89,6 +89,18 @@ AilienApi class >> defaultModel: modelNumber [
 		ifAbsent: [ modelLLM := self modelNames first ]
 ]
 
+{ #category : 'instance creation' }
+AilienApi class >> defaultProvider [ 
+	AileinProvider provider: self.
+	
+]
+
+{ #category : 'accessing' }
+AilienApi class >> info [
+	"Returns a descriptive string combining the current AI provider name and its default model name to identify the API configuration being used"
+	^ AileinProvider provider name, ': ', AileinProvider provider defaultModel
+]
+
 { #category : 'private' }
 AilienApi class >> initialize [ 
 	modelLLM := ''
@@ -100,16 +112,16 @@ AilienApi class >> modelNames [
 	^ self models collect: [ :model | model at: 'name' ]
 ]
 
-{ #category : 'accessing' }
-AilienApi class >> models [
-	"Subclasses should implement this to return a list of available models from the API"
-	self subclassResponsibility
-]
-
 { #category : 'private' }
 AilienApi class >> noOfModels [
 
 	^ self modelNames size
+]
+
+{ #category : 'accessing' }
+AilienApi class >> old_models [
+	"Subclasses should implement this to return a list of available models from the API"
+	self subclassResponsibility
 ]
 
 { #category : 'initialization' }
@@ -215,6 +227,12 @@ AilienApi >> model: anObject [
 	"Sets the model for AI interactions. Validates input and updates instance state. Preserves existing history. Returns the model name."
 
 	model := anObject
+]
+
+{ #category : 'printing' }
+AilienApi >> printOn: string [
+	"Prints the model name of OllamaModelsApi instance"
+	string << self class name asString << '::::: ' << self model.
 ]
 
 { #category : 'initialization' }

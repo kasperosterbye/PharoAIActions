@@ -98,6 +98,7 @@ OllamaApi >> bodyForEntityWithPrompt [
 
 { #category : 'initialization' }
 OllamaApi >> initialize [
+	"Initializes an OllamaApi instance with default model and empty conversation history ready for API interactions"
 
 	super initialize.
 	self model: self class defaultModel
@@ -157,7 +158,7 @@ OllamaApi >> modelShortInfo [
 { #category : 'printing' }
 OllamaApi >> printOn: string [
 	"Prints the model name of OllamaModelsApi instance"
-	string << 'OllamaModelsApi: ' << self model.
+	string << 'OllamaApi: ' << self model.
 ]
 
 { #category : 'mistral models' }
@@ -165,6 +166,9 @@ OllamaApi >> responseOf: jsonResponse [
 	"Returns the content of the message from parsed JSON response extracting the actual response text from Ollama API nested structure"
 	| parsed message  |
 	parsed := STONJSON fromString: jsonResponse.
-	message := parsed at: 'message'.
-	^ message at: 'content' 
+	[message := parsed at: 'message'.
+	^ message at: 'content' ]
+		on: Error 
+		do: [ ^ 'Error bla bla: ', jsonResponse  ].
+		
 ]

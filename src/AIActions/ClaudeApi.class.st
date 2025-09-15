@@ -98,28 +98,29 @@ ClaudeApi >> initialize [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> loadResponse [ 
+ClaudeApi >> loadResponse [
 	"Loads response from Claude API, handling API calls, processing results, and managing errors. Updates assistant message in history or sets error message."
 	| apiGenerateUrl jsonResponse bodyEntity key |
 	apiGenerateUrl := 'https://api.anthropic.com/v1/messages'.
-	[  bodyEntity := self bodyForEntityWithPrompt.
+	[
+		bodyEntity := self bodyForEntityWithPrompt.
 		key := self class claudeKey.
 		jsonResponse := ZnClient new
-	    url: apiGenerateUrl;
-	    headerAt: 'x-api-key' put: key;
-	    headerAt: 'anthropic-version' put: '2023-06-01';
-	    headerAt: 'content-type' put: 'application/json';
-	    entity: bodyEntity;
-	    post;
-	    contents.
-		self assistant: (self responseOf: jsonResponse) .
-	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
-	].
+			                url: apiGenerateUrl;
+			                headerAt: 'x-api-key' put: key;
+			                headerAt: 'anthropic-version' put: '2023-06-01';
+			                headerAt: 'content-type' put: 'application/json';
+			                entity: bodyEntity;
+			                post;
+			                contents.
+		self assistant: (self responseOf: jsonResponse) ]
+		on: Error
+		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'accessing' }
 ClaudeApi >> printOn: aStream [
+	"Prints the model name of the ClaudeApi instance, showing the current AI model being used for interactions"
 	aStream << 'ClaudeApi: ' << self model.
 ]
 
@@ -128,10 +129,7 @@ ClaudeApi >> responseOf: jsonResponse [
 	"Returns the text content from the parsed Claude API JSON response by extracting the text field from the first content element in the response dictionary"
 	| parsed |
 	parsed := STONJSON fromString: jsonResponse.
-	(parsed at: 'type') = 'message'
-		ifTrue:[ ^ (parsed at: 'content') first at: 'text'.].
-	(parsed at: 'type') = 'error'
-		ifTrue:[ ^ 'fooIsDeleted', String cr, 
-			('"Error: {1}' format: { (parsed at: 'error') at: 'type' }), String cr, 			('Message: {2}"' format:{ (parsed at: 'error') at: 'message'. }) ].
-	Error signal: 'Got an unexpected type return'.
+	[ ^ (parsed at: 'content') first at: 'text'.]
+		on: Error
+		do: [  ^ 'Error bla bla: ', jsonResponse   ]
 ]

@@ -97,22 +97,23 @@ GeminiApi >> jsonHistory [
 ]
 
 { #category : 'mistral models' }
-GeminiApi >> loadResponse [ 
+GeminiApi >> loadResponse [
 	"Loads response from Gemini API, handling JSON parsing, error checking, and updating assistant state. Uses model-specific endpoint and API key for secure communication."
+
 	| apiGenerateUrl jsonResponse bodyEntity |
-	apiGenerateUrl := 'https://generativelanguage.googleapis.com/v1beta/models/', model, ':generateContent'.
-	[ bodyEntity := self bodyForEntityWithPrompt.
+	apiGenerateUrl := 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
+	[
+		bodyEntity := self bodyForEntityWithPrompt.
 		jsonResponse := ZnClient new
-	    url: apiGenerateUrl;
-	    headerAt: 'X-goog-api-key' put: self class geminiKey;
-	    headerAt: 'Content-Type' put: 'application/json';
-	    entity: bodyEntity;
-	    post;
-	    contents.
-		self assistant: (self responseOf: jsonResponse) .
-	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
-	].
+			                url: apiGenerateUrl;
+			                headerAt: 'X-goog-api-key' put: self class geminiKey;
+			                headerAt: 'Content-Type' put: 'application/json';
+			                entity: bodyEntity;
+			                post;
+			                contents.
+		self assistant: (self responseOf: jsonResponse) ]
+		on: Error
+		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'accessing' }
@@ -123,14 +124,11 @@ GeminiApi >> printOn: aStream [
 
 { #category : 'accessing' }
 GeminiApi >> responseOf: jsonResponse [
-	"Parses the JSON response from the Gemini API and extracts the text content from the first candidate's content part."
-	| parsed message  |
+	| parsed message |
 	parsed := STONJSON fromString: jsonResponse.
-	(parsed includesKey: 'error') ifTrue: [ 
-		self error: 'AI response error: ', 
-			((parsed at: 'error') at: 'code'), 
-			'. Message: ', 
-			((parsed at: 'error') at: 'message') ].
-	message := (parsed at: 'candidates') first at: 'content'.	
-	^  (message at: 'parts' ) first at: 'text' 
+	[
+		message := (parsed at: 'candidates') first at: 'content'.
+		^ (message at: 'parts') first at: 'text' ]
+		on: Error
+		do: [ ^ 'Error bla bla: ' , jsonResponse ]
 ]

@@ -59,8 +59,14 @@ MistralApi class >> modelNames [
 	^ #('codestral-latest'  'mistral-small-latest' 'devstral-medium-2507' 'mistral-medium-2508') 
 ]
 
+{ #category : 'AI models' }
+MistralApi class >> modelsBy: id [
+	"returns an array with one item per model."
+	^ self models collect: [ :model | model at: id ]
+]
+
 { #category : 'accessing' }
-MistralApi class >> models [
+MistralApi class >> old_models [
 	"Returns a sorted collection of models from the Mistral API, authenticated using a token from a local file."
 	| url response sorted |
 	url := 'https://api.mistral.ai/v1/models'.
@@ -74,12 +80,6 @@ MistralApi class >> models [
 		sorted at: (model at: 'name') put: model
 		].
 	^ sorted values
-]
-
-{ #category : 'AI models' }
-MistralApi class >> modelsBy: id [
-	"returns an array with one item per model."
-	^ self models collect: [ :model | model at: id ]
 ]
 
 { #category : 'accessing' }
@@ -135,21 +135,21 @@ MistralApi >> killroyWasHere: toolCalls [
 
 { #category : 'mistral models' }
 MistralApi >> loadResponse [
-	| apiGenerateUrl jsonResponse bodyEntiry |
 
+	| apiGenerateUrl jsonResponse bodyEntiry |
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	[  	bodyEntiry := self bodyForEntityWithPrompt.
+	[
+		bodyEntiry := self bodyForEntityWithPrompt.
 		jsonResponse := ZnClient new
-	    url: apiGenerateUrl;
-	  	 headerAt: 'Authorization' put: self class esug;
-	    headerAt: 'Content-Type' put: 'application/json';
-	    entity: bodyEntiry;
-	    post;
-	    contents.
-		self assistant: (self responseOf: jsonResponse) .
-	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
-	].
+			                url: apiGenerateUrl;
+			                headerAt: 'Authorization' put: self class esug;
+			                headerAt: 'Content-Type' put: 'application/json';
+			                entity: bodyEntiry;
+			                post;
+			                contents.
+		self assistant: (self responseOf: jsonResponse) ]
+		on: Error
+		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'mistral tools' }
@@ -214,16 +214,11 @@ MistralApi >> printOn: aStream [
 
 { #category : 'mistral models' }
 MistralApi >> responseOf: jsonResponse [
-	"Extracts content from Mistral API response, handling errors and tool calls. Returns message content or processes tool calls for Killroy facts."
-	| parsed message  |
+	| parsed   |
 	parsed := STONJSON fromString: jsonResponse.
-	(parsed includesKey: 'error') ifTrue: [ 
-		self error: 'AI response error: ', 
-			((parsed at: 'error') at: 'code'), 
-			'. Message: ', 
-			((parsed at: 'error') at: 'message') ].
-	message := (parsed at: 'choices') first at: 'message'.
-	^ message at: 'content' 
+	[^ ((parsed at: 'choices') first at: 'message') at: 'content' ]
+		on: Error 
+		do: [ ^ 'Error bla bla: ', jsonResponse  ].
 ]
 
 { #category : 'mistral tools' }
