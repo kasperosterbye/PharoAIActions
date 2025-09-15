@@ -91,12 +91,12 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 		<< '````' << String cr
 ]
 
-{ #category : 'internal' }
+{ #category : 'accessing' }
 AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 	"Generates a formatted class header string for aClass, including its name and definition, and appends it to the superComment stream. Includes methods and meta-class details."
 
 	| meta |
-	(classList includes: aClass) ifTrue: [ self halt ].
+	(classList includes: aClass) ifTrue: [ self error ].
 	superComment << '## Superclass: ' << aClass name asString
 	<< ' for class: ' << current name asString << String cr
 	<< (FluidClassDefinitionPrinter for: aClass) classDefinitionString
@@ -270,4 +270,14 @@ AIASourceCodeBuilder >> systemForMethod: aMethod usedIn: callersInMyPackage [
 	].
 	^ response contents
 	
+]
+
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> tag: aTagName package: packages [
+	| tagClasses |
+	tagClasses := ((PackageOrganizer default packageNamed: packages) 
+			tagNamed: aTagName
+			ifAbsent: [^ '']) classes. 
+	tagClasses do: [ :cl | self forClass: cl ].
+	^ response contents
 ]
