@@ -72,9 +72,14 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+AileinProvider class >> defaultProvider [
+	^ MistralApi 
+]
+
 { #category : 'class initialization' }
 AileinProvider class >> initialize [
-	defaultProvider := MistralApi 
+	defaultProvider := self defaultProvider 
 ]
 
 { #category : 'accessing' }
