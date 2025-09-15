@@ -245,7 +245,7 @@ AIAMistralTestBuilder >> historyBuilder [
 
 	self hist92WhatIsTheBasics.
 	self hist1GeneratorMethods.
-	self hist2WhereToPlaceTestMethod.
+	"self hist2WhereToPlaceTestMethod."
 	"self hist3WhatIsTheBasics."
 	self hist50WhatIsTheBasics.
 	"self hist51WhatIsTheBasics."

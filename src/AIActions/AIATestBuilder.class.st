@@ -90,10 +90,14 @@ AIATestBuilder class >> buildTestClass: sourceClass [
     |  superClass newTestClassName shifter instanceVarName |
     "Identify the name of the new test class based on the method's class."
 	 AITestClassPostfix ifNil: [ AITestClassPostfix := 'AITest' ].
-    newTestClassName := sourceClass name asString, AITestClassPostfix .
+	sourceClass isMeta 
+		ifFalse: [ newTestClassName := sourceClass name asString, AITestClassPostfix .]
+ 		ifTrue: [ newTestClassName := sourceClass soleInstance name asString,
+			'Class', AITestClassPostfix].
     
     "The name of the instance variable to hold the reference to the test class."
-    instanceVarName := 'ref', sourceClass name asString.
+    instanceVarName := 'ref', (sourceClass) name asString.
+	 sourceClass isMeta ifTrue: [ instanceVarName := instanceVarName allButLast: 6 ].
     
     "Try to find an existing test class."
     AITestClass := Smalltalk globals at: newTestClassName asSymbol ifAbsent: [ nil ].
@@ -165,27 +169,23 @@ AIATestBuilder >> chatHistory [
 ]
 
 { #category : 'instance creation' }
-AIATestBuilder >> compileAndChechBuildedTestOf: aMethod [ 
+AIATestBuilder >> compileAndChechBuildedTestOf: aMethod [
 	"Builds a test method for a given method, retrying up to a specified number of times if compilation or execution fails. Returns the chat history of the AI interaction."
 
-	| testMethodName result  |
-
+	| testMethodName result |
 	self repairResponseMethod.
-	[	
-		testMethodName := AITestClass
-			                  compile: testMethod
-			                  classified: 'AI generated test'."Run the test method using SUnit infrastructure"
+	[
+		testMethodName := AITestClass compile: testMethod classified: 'AI generated test'. "Run the test method using SUnit infrastructure"
 		result := TestResult new.
 		result runCase: (AITestClass selector: testMethodName asSymbol).
 		result passedCount > 0 ifTrue: [ testColor := Color green ].
-		result failureCount > 0 ifTrue: [ testColor:= Color yellow ].
-		result errorCount > 0 ifTrue: [ testColor := Color red ].
-		
-		]
+		result failureCount > 0 ifTrue: [ testColor := Color yellow ].
+		result errorCount > 0 ifTrue: [ testColor := Color red ] ]
 		on: Error
-		do: [ testMethodName := self fictiveTestMethod.
-			testColor := Color black ].
-		
+		do: [
+				testMethodName := self fictiveTestMethod.
+				testColor := Color black ].
+
 
 	^ self chatHistory
 ]
@@ -194,7 +194,7 @@ AIATestBuilder >> compileAndChechBuildedTestOf: aMethod [
 AIATestBuilder >> fictiveTestMethod [
 	"Creates a placeholder test method when AI test generation fails, preserving the original code as a comment."
 
-	| header fictiveTest | 
+	| header fictiveTest |
 	header := 'test'
 	          , ((self sourceMethodStringName keywords collect: [ :kw |
 			            (kw copyReplaceAll: ':' with: '') capitalized ])
@@ -237,7 +237,7 @@ AIATestBuilder >> historyBuilder [
 AIATestBuilder >> initialize [ 
 	"Initializes the AI test builder with a new AI chat builder instance, setting up the foundation for AI-driven test generation."
 	super initialize.
-	chatBuilder := AIABuilder ailienApi new.
+	chatBuilder := AileinProvider provider new.
 	
 ]
 

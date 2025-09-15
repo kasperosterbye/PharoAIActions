@@ -70,12 +70,13 @@ Class {
 
 { #category : 'instance creation' }
 AilienApi class >> default [
+	"Default returns a new instance of AileinProvider provider"
 	^ AileinProvider provider new
 ]
 
 { #category : 'private' }
 AilienApi class >> defaultModel [
-	modelLLM ifNil: [ modelLLM := MistralApi modelNames first ].
+	modelLLM ifNil: [ modelLLM := self models first ].
 	^ modelLLM 
 ]
 
@@ -86,6 +87,11 @@ AilienApi class >> defaultModel: modelNumber [
 	modelLLM := self modelNames 
 		at: modelNumber 
 		ifAbsent: [ modelLLM := self modelNames first ]
+]
+
+{ #category : 'private' }
+AilienApi class >> initialize [ 
+	modelLLM := ''
 ]
 
 { #category : 'AI models' }
