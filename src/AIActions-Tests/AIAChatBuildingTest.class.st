@@ -15,5 +15,5 @@ AIAChatBuildingTest >> setUp [
 
 	"Put here a common initialization logic for tests"
 	
-	chatBuilder := AIAChatBuilding new.
+	chatBuilder := AIADiscussion new.
 ]

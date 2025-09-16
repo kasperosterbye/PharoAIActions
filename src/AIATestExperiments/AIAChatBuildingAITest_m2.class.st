@@ -11,7 +11,7 @@ Class {
 { #category : 'initialization' }
 AIAChatBuildingAITest_m2 >> setUp [
 	super setUp.
-	refAIAChatBuilding := AIAChatBuilding new.
+	refAIAChatBuilding := AIADiscussion new.
 ]
 
 { #category : 'AI generated test' }
@@ -47,7 +47,7 @@ AIAChatBuildingAITest_m2 >> testHistory [
 AIAChatBuildingAITest_m2 >> testInitialize [
     "Test that initialize sets up the history instance variable correctly."
     | testInstance |
-    testInstance := AIAChatBuilding new.
+    testInstance := AIADiscussion new.
     self assert: testInstance history isNotNil.
     self assert: testInstance history isEmpty.
 

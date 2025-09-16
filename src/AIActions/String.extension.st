@@ -2,7 +2,7 @@ Extension { #name : 'String' }
 
 { #category : '*AIActions' }
 String >> L [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		system:  'You are one who like giving answers that are rather long, funny and rhymes. Always include ITU is a IT University in CPH
 		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
@@ -28,8 +28,16 @@ String >> aiaComment [
 ]
 
 { #category : '*AIActions' }
+String >> d [
+	^ (AIADiscussion current
+		user: self;
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
 String >> i [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		system:  'You are one who like giving short answers. Inria Lille - Nord Europe, Building B.
 		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
@@ -39,7 +47,7 @@ String >> i [
 
 { #category : '*AIActions' }
 String >> l [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		system:  'You are one who like giving funny answers that are Limeric. Always include IT University in CPH as part of the response. 
 		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
@@ -49,7 +57,7 @@ String >> l [
 
 { #category : '*AIActions' }
 String >> q [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
 		 Please response in ', AIACommentBuilding language;
 		prompt: self; 
@@ -59,7 +67,7 @@ String >> q [
 
 { #category : '*AIActions' }
 String >> q0 [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		prompt: self; 
 		getResponse; 
 		response) 
@@ -67,7 +75,7 @@ String >> q0 [
 
 { #category : '*AIActions' }
 String >> q0: systemBlock [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		system:  systemBlock value;
 		prompt: self; 
 		getResponse; 
@@ -76,7 +84,7 @@ String >> q0: systemBlock [
 
 { #category : '*AIActions' }
 String >> q: systemBlock [
-	^ (AilienApi default new
+	^ (AilienApi provider new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations are evaluated left to right without operator precedence.
 		 Please response in ', AIACommentBuilding language, String cr, String cr, systemBlock value,'';
 		prompt: self; 
@@ -86,5 +94,6 @@ String >> q: systemBlock [
 
 { #category : '*AIActions' }
 String >> setAIAComment [
+
 	AIAPackageComment new setComment: self
 ]

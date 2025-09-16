@@ -20,6 +20,7 @@ AilienApiClassTest >> setUp [
 
 { #category : 'tests' }
 AilienApiClassTest >> testDefaultModel [
+	"Verifies that the default model of the AilienApi instance is an empty string"
 	self 
 		assert: refAilienApiClass defaultModel  
 		equals: ''
@@ -27,6 +28,7 @@ AilienApiClassTest >> testDefaultModel [
 
 { #category : 'tests' }
 AilienApiClassTest >> testDefaultModelSet [
+	"Verifies that setting a default model raises a SubclassResponsibility error, ensuring the method is properly overridden in subclasses."
 self 
 		should: [refAilienApiClass defaultModel: 'billy'] 
 		raise: SubclassResponsibility.
@@ -34,6 +36,7 @@ self
 
 { #category : 'tests' }
 AilienApiClassTest >> testModelNames [
+	"Verifies that the modelNames method raises a SubclassResponsibility error, ensuring it is properly overridden in subclasses."
 	self 
 		should: [refAilienApiClass modelNames] 
 		raise: SubclassResponsibility
@@ -41,6 +44,7 @@ AilienApiClassTest >> testModelNames [
 
 { #category : 'tests' }
 AilienApiClassTest >> testNoOfModels [
+	"Verifies that the noOfModels method raises a SubclassResponsibility error ensuring it is properly overridden in subclasses"
 	self 
 		should: [refAilienApiClass noOfModels] 
 		raise: SubclassResponsibility

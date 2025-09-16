@@ -11,7 +11,7 @@ Class {
 { #category : 'initialization' }
 AIAChatBuildingAITest_m1 >> setUp [
 	super setUp.
-	refAIAChatBuilding := AIAChatBuilding new.
+	refAIAChatBuilding := AIADiscussion new.
 ]
 
 { #category : 'AI generated test' }

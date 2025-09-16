@@ -91,7 +91,7 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 		<< '````' << String cr
 ]
 
-{ #category : 'accessing' }
+{ #category : 'internal' }
 AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 	"Generates a formatted class header string for aClass, including its name and definition, and appends it to the superComment stream. Includes methods and meta-class details."
 
@@ -185,7 +185,7 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 	^ self systemForMethod: aMethod usedIn: callersInMyPackage
 ]
 
-{ #category : 'accessing' }
+{ #category : 'internal' }
 AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 	"Generates formatted superclass hierarchy for aClass, including methods and meta-class details, appending to response stream. Recursively processes superclasses until Object."
 	| superComment superClass |

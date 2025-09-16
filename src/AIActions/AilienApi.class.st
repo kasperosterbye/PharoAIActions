@@ -84,7 +84,7 @@ AilienApi class >> info [
 
 { #category : 'private' }
 AilienApi class >> initialize [ 
-	modelLLM := ''.
+	modelLLM := MistralApi modelNames first.
 	Provider := MistralApi.
 	
 ]
@@ -188,6 +188,12 @@ AilienApi >> getResponse [
 AilienApi >> history [
 	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
 	^ history
+]
+
+{ #category : 'initialization' }
+AilienApi >> history: aHistory [
+	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
+	^ history := aHistory 
 ]
 
 { #category : 'initialization' }

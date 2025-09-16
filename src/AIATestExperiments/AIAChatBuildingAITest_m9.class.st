@@ -11,14 +11,14 @@ Class {
 { #category : 'initialization' }
 AIAChatBuildingAITest_m9 >> setUp [
 	super setUp.
-	refAIAChatBuilding := AIAChatBuilding new.
+	refAIAChatBuilding := AIADiscussion new.
 ]
 
 { #category : 'AI generated test' }
 AIAChatBuildingAITest_m9 >> testAssistant [
 	| result |
 	"Arrange"
-	refAIAChatBuilding := AIAChatBuilding new.
+	refAIAChatBuilding := AIADiscussion new.
 	
 	"Act"
 	refAIAChatBuilding assistant: 'Hello, world!'.
