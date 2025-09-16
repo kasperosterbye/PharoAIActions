@@ -1,56 +1,44 @@
 "
 # AilienApi
 
-`AilienApi` is an abstract base class for interacting with AI language models, providing a standardised interface for managing conversations, model selection, and response handling. It maintains conversation history, supports multiple AI models, and offers methods for both synchronous and asynchronous response retrieval.
+A base class for AI API providers, managing conversation history and model interactions. This abstract class defines core functionality for AI communication while allowing subclasses to implement provider-specific behavior.
 
 ## Key Features
 
-- **Conversation Management**: Tracks system, user, and assistant messages in chronological order
-- **Model Support**: Abstract interface for different AI model providers (e.g., Mistral, Ollama)
-- **Response Handling**: Methods for both immediate and background response processing
-- **History Formatting**: Multiple output formats for conversation history
+- Maintains conversation history with system, user, and assistant messages
+- Provides model management and response handling
+- Supports multiple AI providers through subclassing
+- Includes progress tracking for AI operations
 
 ## Usage Example
 
 ```smalltalk
-""Create and configure an API instance""
+""Create and configure an AI API instance""
 api := AilienApi new
     system: 'You are a helpful assistant';
-    model: 'llama3';
+    model: 'mistral-tiny';
     prompt: 'Explain quantum computing in simple terms'.
 
-""Get a response (synchronous)""
+""Get the response (this will show progress)""
 api getResponse.
-api response inspect.
 
-""View formatted history""
-api chatAllHistory inspect.
+""Inspect the conversation history""
+api chatAllHistory inspect
 ```
 
 ## Implementation Notes
 
-Subclasses must implement:
-- `loadResponse` for actual API calls
-- `models` to provide available models
-
-The class maintains conversation state and provides multiple history formats for different use cases.
+- Subclasses must implement `loadResponse` to handle provider-specific API calls
+- The class maintains a shared provider reference for all instances
+- History is stored as an ordered collection of role-content pairs
+- Provides multiple formats for accessing conversation history
 
 ## Design Considerations
 
-- Abstract base class for different AI providers
-- Preserves conversation context between interactions
-- Supports both immediate and background response processing
-- Provides multiple history output formats for different needs
-```
-
-The example shows how to:
-1. Create and configure an API instance
-2. Add system message and user prompt
-3. Get a response (synchronous)
-4. Inspect the response
-5. View formatted conversation history
-
-The comment follows British English conventions and provides clear documentation of the class's purpose and usage. The example returns an expression (`api response inspect`) that can be evaluated in the Playground using Command-I.
+- Abstract base class for provider-specific implementations
+- Preserves chronological order of all messages
+- Includes validation for message types and positions
+- Supports both synchronous and asynchronous operations
 "
 Class {
 	#name : 'AilienApi',
