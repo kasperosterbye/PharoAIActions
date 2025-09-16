@@ -59,29 +59,6 @@ MistralApi class >> modelNames [
 	^ #('codestral-latest'  'mistral-small-latest' 'devstral-medium-2507' 'mistral-medium-2508') 
 ]
 
-{ #category : 'AI models' }
-MistralApi class >> modelsBy: id [
-	"returns an array with one item per model."
-	^ self models collect: [ :model | model at: id ]
-]
-
-{ #category : 'accessing' }
-MistralApi class >> old_models [
-	"Returns a sorted collection of models from the Mistral API, authenticated using a token from a local file."
-	| url response sorted |
-	url := 'https://api.mistral.ai/v1/models'.
-	response := ZnClient new
-		url: url;
-		headerAt: 'Authorization' put: self esug;
-		get;
-		contents.
-	sorted := Dictionary new.
-	((STONJSON fromString: response) at: 'data') do: [ :model | 
-		sorted at: (model at: 'name') put: model
-		].
-	^ sorted values
-]
-
 { #category : 'accessing' }
 MistralApi class >> token [
 	"Return the API token for Mistral, read from a local file.

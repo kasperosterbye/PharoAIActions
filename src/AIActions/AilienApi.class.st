@@ -76,8 +76,10 @@ AilienApi class >> default [
 
 { #category : 'private' }
 AilienApi class >> defaultModel [
+	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."
+
 	modelLLM ifNil: [ modelLLM := self models first ].
-	^ modelLLM 
+	^ modelLLM
 ]
 
 { #category : 'private' }
@@ -109,19 +111,13 @@ AilienApi class >> initialize [
 { #category : 'AI models' }
 AilienApi class >> modelNames [
 	"returns an array with one item per model."
-	^ self models collect: [ :model | model at: 'name' ]
+	^ self subclassResponsibility
 ]
 
 { #category : 'private' }
 AilienApi class >> noOfModels [
 
 	^ self modelNames size
-]
-
-{ #category : 'accessing' }
-AilienApi class >> old_models [
-	"Subclasses should implement this to return a list of available models from the API"
-	self subclassResponsibility
 ]
 
 { #category : 'initialization' }
