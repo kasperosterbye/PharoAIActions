@@ -60,6 +60,9 @@ Class {
 		'model',
 		'history'
 	],
+	#classVars : [
+		'Provider'
+	],
 	#classInstVars : [
 		'modelLLM'
 	],
@@ -68,13 +71,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'instance creation' }
-AilienApi class >> default [
-	"Default returns a new instance of AileinProvider provider"
-	^ AileinProvider provider
-]
-
-{ #category : 'private' }
+{ #category : 'AI models' }
 AilienApi class >> defaultModel [
 	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."
 
@@ -82,7 +79,7 @@ AilienApi class >> defaultModel [
 	^ modelLLM
 ]
 
-{ #category : 'private' }
+{ #category : 'AI models' }
 AilienApi class >> defaultModel: modelNumber [
 	"Sets the default model for the Ollama API, ensuring it exists in the available models list. If not, defaults to the first model."
 
@@ -91,21 +88,17 @@ AilienApi class >> defaultModel: modelNumber [
 		ifAbsent: [ modelLLM := self modelNames first ]
 ]
 
-{ #category : 'instance creation' }
-AilienApi class >> defaultProvider [ 
-	AileinProvider provider: self.
-	
-]
-
 { #category : 'accessing' }
 AilienApi class >> info [
 	"Returns a descriptive string combining the current AI provider name and its default model name to identify the API configuration being used"
-	^ AileinProvider provider name, ': ', AileinProvider provider defaultModel
+	^ self provider name, ': ', self provider defaultModel
 ]
 
 { #category : 'private' }
 AilienApi class >> initialize [ 
-	modelLLM := ''
+	modelLLM := ''.
+	Provider := MistralApi.
+	
 ]
 
 { #category : 'AI models' }
@@ -114,10 +107,35 @@ AilienApi class >> modelNames [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'private' }
+{ #category : 'AI models' }
 AilienApi class >> noOfModels [
 
 	^ self modelNames size
+]
+
+{ #category : 'provider' }
+AilienApi class >> provider [
+	Provider ifNil: [ self initialize ].
+	^ Provider 
+]
+
+{ #category : 'provider' }
+AilienApi class >> provider: aProvider [
+
+	| providers |
+	providers := self providers.
+	(providers includes: aProvider) ifTrue: [
+			Provider := aProvider.
+			^ self ].
+	(aProvider isInteger and: [ aProvider > 0 and: [ aProvider < self providers size ] ]) ifTrue: [
+			Provider := providers at: aProvider.
+			^ self ].
+	Provider := MistralApi
+]
+
+{ #category : 'provider' }
+AilienApi class >> providers [
+	^ (self subclasses sort: [:a :b | a name < b name])
 ]
 
 { #category : 'initialization' }

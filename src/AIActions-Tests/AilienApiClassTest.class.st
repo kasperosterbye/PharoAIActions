@@ -50,6 +50,6 @@ AilienApiClassTest >> testNoOfModels [
 AilienApiClassTest >> testNodelNames [
 	"Verifies that the default string representation of the AilienApi instance matches the default string representation of the AileinProvider instance."
 	self 
-		assert: refAilienApiClass default asString 
-		equals: AileinProvider provider default asString
+		assert: refAilienApiClass provider asString 
+		equals: AilienApi provider asString
 ]
