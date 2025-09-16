@@ -109,14 +109,14 @@ OllamaApi >> loadResponse [
 	"Send POST request to Ollama API to retrieve response content from parsed JSON."
 	| apiGenerateUrl jsonResponse |
 	apiGenerateUrl := 'http://localhost:11434/api/chat'.
-	[  jsonResponse := ZnClient new
+	[ jsonResponse := ZnClient new
 	    url: apiGenerateUrl;
 	    entity: self bodyForEntityWithPrompt;
 	    post;
 	    contents.
 		self assistant: (self responseOf: jsonResponse) .
 	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
+   		self assistant: 'Error bla bla: ', ex asString.
 	].
 ]
 

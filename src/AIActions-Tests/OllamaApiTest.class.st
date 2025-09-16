@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'refOllamaApi'
 	],
-	#category : 'AIActions-Tests-AIApi-Tests ',
+	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
-	#tag : 'AIApi-Tests '
+	#tag : 'AIApi-Tests'
 }
 
 { #category : 'running' }
@@ -18,11 +18,11 @@ OllamaApiTest >> setUp [
 	refOllamaApi := OllamaApi new.
 ]
 
-{ #category : 'tests' }
+{ #category : 'nil' }
 OllamaApiTest >> testFakeLoadResponse [
 	refOllamaApi history add: 'jojo' -> 'foo bar bad'.
 	refOllamaApi loadResponse.
-	self assert: (refOllamaApi history second value beginsWith: 'Error bla bla: ') 
+	self deny: (refOllamaApi history second value beginsWith: 'Error bla bla: ') 
 ]
 
 { #category : 'tests' }

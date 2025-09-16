@@ -80,7 +80,7 @@ GeminiApi >> bodyForEntityWithPrompt [
 GeminiApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
-	self model: 'gemini-2.0-flash-lite'.
+    self model: self class defaultModel .
 ]
 
 { #category : 'accessing' }

@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'refGeminiApi'
 	],
-	#category : 'AIActions-Tests-AIApi-Tests ',
+	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
-	#tag : 'AIApi-Tests '
+	#tag : 'AIApi-Tests'
 }
 
 { #category : 'running' }

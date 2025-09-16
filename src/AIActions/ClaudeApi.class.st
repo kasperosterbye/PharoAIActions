@@ -94,7 +94,7 @@ ClaudeApi >> bodyForEntityWithPrompt [
 ClaudeApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
-	self model: 'claude-3-5-sonnet-20241022'.
+    self model: self class defaultModel .
 ]
 
 { #category : 'accessing' }

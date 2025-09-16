@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'refAilienApiClass'
 	],
-	#category : 'AIActions-Tests-AIApi-Tests ',
+	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
-	#tag : 'AIApi-Tests '
+	#tag : 'AIApi-Tests'
 }
 
 { #category : 'running' }
@@ -37,12 +37,6 @@ AilienApiClassTest >> testModelNames [
 	self 
 		should: [refAilienApiClass modelNames] 
 		raise: SubclassResponsibility
-]
-
-{ #category : 'tests' }
-AilienApiClassTest >> testModels [
-	self 
-		should: [refAilienApiClass models] raise: SubclassResponsibility
 ]
 
 { #category : 'tests' }

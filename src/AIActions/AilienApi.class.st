@@ -78,7 +78,7 @@ AilienApi class >> default [
 AilienApi class >> defaultModel [
 	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."
 
-	modelLLM ifNil: [ modelLLM := self models first ].
+	modelLLM ifNil: [ modelLLM := self modelNames first ].
 	^ modelLLM
 ]
 

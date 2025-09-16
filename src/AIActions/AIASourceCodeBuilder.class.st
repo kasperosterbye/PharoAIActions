@@ -189,10 +189,10 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 	"Generates formatted superclass hierarchy for aClass, including methods and meta-class details, appending to response stream. Recursively processes superclasses until Object."
 	| superComment superClass |
-	aClass = Object  ifTrue: [ ^ '' ].
+	(aClass = Object or: [ aClass = TestCase ]) ifTrue: [ ^ '' ].
 	
 	superClass := aClass superclass.
-	superClass = Object ifTrue: [ ^ '' ].
+	(superClass = Object or: [ superClass = TestCase ]) ifTrue: [ ^ '' ].
 	(classList includes: superClass) 
 			ifTrue: [ ^ '' ].
 	superComment := WriteStream on: ''.

@@ -100,7 +100,7 @@ MistralApi >> bodyForEntityWithPrompt_withTools [
 MistralApi >> initialize [ 
 	"Initialises a new MistralApi instance with default model and tooling enabled, ready for AI interactions. Sets up conversation management and response handling."
     super initialize.
-    self model: self class defaultModel .  "eller second, third etc."
+    self model: self class defaultModel .
     useTooling := true
 ]
 
