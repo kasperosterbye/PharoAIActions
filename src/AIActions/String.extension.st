@@ -56,6 +56,11 @@ String >> l [
 ]
 
 { #category : '*AIActions' }
+String >> pharoMarkdown [ | lines | lines := self lines.
+		
+]
+
+{ #category : '*AIActions' }
 String >> q [
 	^ (AilienApi provider new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.

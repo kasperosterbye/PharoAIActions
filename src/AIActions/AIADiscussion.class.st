@@ -20,6 +20,11 @@ AIADiscussion class >> current [
 	^ Current
 ]
 
+{ #category : 'accessing' }
+AIADiscussion class >> currentHistory [
+	^ self current history
+]
+
 { #category : 'class initialization' }
 AIADiscussion class >> histories [
 	^ Histories collect: [ :dis| dis history first value -> dis history ]
@@ -30,6 +35,17 @@ AIADiscussion class >> initialize [
 	
 	Histories := OrderedDictionary new.
 	Current := nil.
+]
+
+{ #category : 'as yet unclassified' }
+AIADiscussion class >> inspectionKillroy: aBuilder [
+	<inspectorPresentationOrder: 100 title: 'Killroy'>
+	
+	^ aBuilder newCode
+		addStyle: 'stCode';
+		syntaxHighlight: false;
+		text: 'Was here';
+		yourself
 ]
 
 { #category : 'class initialization' }
@@ -46,12 +62,13 @@ AIADiscussion class >> next [
 
 { #category : 'adding' }
 AIADiscussion >> addUser: user response: response [
+	"Adds a user message and AI response to the discussion history, updating the conversation context for future interactions."
 	
 ]
 
 { #category : 'adding' }
 AIADiscussion >> getResponse [
-	"Send history to my provider, and insert response into my history"
+	"Retrieves the AI's response from the API, updates the history, and presents the response using AIACommentPresenter. Returns the response text."
 	api history: history.
 	api getResponse.
 	AIACommentPresenter onText: api response.
@@ -60,8 +77,10 @@ AIADiscussion >> getResponse [
 
 { #category : 'accessing' }
 AIADiscussion >> history [
+	"Returns the conversation history as an ordered collection of user and AI messages, maintaining the sequence of the discussion."
 	
 	^ history 
+	"End"
 ]
 
 { #category : 'initialization' }

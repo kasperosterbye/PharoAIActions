@@ -175,7 +175,7 @@ AIACommentBuilding >> getResponse_old [
 AIACommentBuilding >> initialize [ 
 	"Initializes MistralApi with the latest model."
 	super initialize.
-	aiaApi := AileinProvider provider new.
+	aiaApi := AilienApi provider new.
 ]
 
 { #category : 'accessing' }
@@ -192,6 +192,7 @@ AIACommentBuilding >> prompt: anObject [
 
 { #category : 'accessing' }
 AIACommentBuilding >> response [
+	"Returns the AI-generated response from the API, formatted as a string. Handles errors and ensures valid output. Uses the configured AI model for processing."
 
 	^ aiaApi response
 ]

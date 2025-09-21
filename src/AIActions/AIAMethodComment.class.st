@@ -30,7 +30,9 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 		aCompiledMethod name, 
 			'. Your response should be 140 chacters, and only letters.', 
 			' Please response in ', AIACommentBuilding language.
-	self getResponse
+	self getResponse.
+	"If it halts, it is likely because there is markdown that it should not make"
+	(self response beginsWith: '```') ifTrue:[ self halt]
 ]
 
 { #category : 'internals' }
