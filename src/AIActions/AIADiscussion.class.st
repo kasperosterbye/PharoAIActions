@@ -77,10 +77,8 @@ AIADiscussion >> getResponse [
 
 { #category : 'accessing' }
 AIADiscussion >> history [
-	"Returns the conversation history as an ordered collection of user and AI messages, maintaining the sequence of the discussion."
-	
+	"Returns the ordered collection of chat history items, each containing a role and content. Used to track the conversation flow between user and assistant."
 	^ history 
-	"End"
 ]
 
 { #category : 'initialization' }
