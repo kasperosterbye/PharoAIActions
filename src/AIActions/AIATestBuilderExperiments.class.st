@@ -1,3 +1,43 @@
+"
+# AIATestBuilderExperiments
+
+A utility class for generating and comparing AI-generated test cases across different model configurations. This class facilitates the creation of multiple test variants using different AI builders (e.g., Mistral and Gemini) and provides visualisation of test results.
+
+## Key Features
+
+- Generates multiple test variants with different AI model configurations
+- Compares test results across different model versions
+- Provides visualisation of test outcomes
+- Supports both class and instance-side test generation
+
+## Usage Example
+
+```smalltalk
+""Example usage in Playground""
+| testBuilder testClass |
+testClass := Object subclass: #TestExample
+    instanceVariableNames: 'value'
+    classVariableNames: ''
+    package: 'AI-Tests'.
+
+testBuilder := AIATestBuilderExperiments new.
+testBuilder testClass: testClass. ""Generates and compares tests across 3 configurations of each AI model""
+testBuilder. ""Returns the builder instance for inspection""
+```
+
+## Design Notes
+
+- Maintains a dictionary of test results keyed by model configuration
+- Uses `AIATestResultIllustration` for visualising comparison results
+- Follows the builder pattern for test generation
+- Designed for interactive use in development environments
+
+## Implementation Notes
+
+- Results are stored in an ordered dictionary for consistent ordering
+- Visualisation is handled by a separate illustration class
+- Each test variant is generated with a unique postfix identifier
+"
 Class {
 	#name : 'AIATestBuilderExperiments',
 	#superclass : 'Object',

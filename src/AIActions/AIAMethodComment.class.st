@@ -1,3 +1,38 @@
+"
+# AIAMethodComment
+
+`AIAMethodComment` is a builder class responsible for generating and applying AI-generated method comments to Pharo methods. It extends the `AIACommentBuilding` framework to provide automated documentation for method implementations.
+
+## Usage Example
+
+```st
+""Create a new method comment builder and generate a comment for a method""
+builder := AIAMethodComment new.
+builder aiaComment: SomeClass >> #exampleMethod.
+builder response. ""Inspect the generated comment""
+```
+
+## Key Features
+
+- Generates concise (140 character) method summaries using AI
+- Handles both quoted and unquoted comment formats
+- Validates responses to avoid markdown formatting issues
+- Integrates with the broader `AIActions` framework for AI-assisted development
+
+## Design Considerations
+
+The class follows the builder pattern to:
+1. Prepare the AI prompt with method context
+2. Process the response to ensure proper formatting
+3. Apply the comment to the method source
+
+Future improvements may include:
+- More sophisticated comment generation strategies
+- Support for different comment styles
+- Integration with code analysis tools
+
+This class is part of the `AIActions` package and works in conjunction with other AI-assisted development tools in the Pharo ecosystem.
+"
 Class {
 	#name : 'AIAMethodComment',
 	#superclass : 'AIACommentBuilding',
