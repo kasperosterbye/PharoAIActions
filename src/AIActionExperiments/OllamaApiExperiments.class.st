@@ -29,10 +29,10 @@ OllamaApiExperiments >> cancelOllamaPrompt [
 
 { #category : 'experiments' }
 OllamaApiExperiments >> fiveForAlleModeller [
-	"Can the models calculate the prompt"
+	"Can the models calculate the user"
 	self initializeOllamaModel.
-	ollamaModel prompt: '2+3. What is the result'.
-	self runModelsWithPrompt: ollamaModel prompt saveToFile: 'Test01'.
+	ollamaModel user: '2+3. What is the result'.
+	self runModelsWithPrompt: ollamaModel user saveToFile: 'Test01'.
 ]
 
 { #category : 'experiments' }
@@ -318,7 +318,7 @@ OllamaApiExperiments >> writeAsHTML: list toFile: fileName [
 		do: [self tableOn: html on: list ].
 		
 	html tag: #h3 with: 'Prompt'.
-	html tag: #pre with: ollamaModel prompt.
+	html tag: #pre with: ollamaModel user.
 	html tag: #h3 with: 'System'.
 	html tag: #pre with: ollamaModel system.
 	html flush; close.

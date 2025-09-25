@@ -18,7 +18,7 @@ AIAPackageComment >> aiaComment: aPackageName [
 	(aPackageName endsWith: '-Tests')
 		ifFalse: [ self system:  (AIASourceCodeBuilder new for: { aPackageName. (aPackageName ,'-Tests') })]
 		ifTrue: [ self system:  (AIASourceCodeBuilder new for: { aPackageName }) ].
-	self prompt: 'This is a Pharo question. Can your give a package comment for ' , 
+	self user: 'This is a Pharo question. Can your give a package comment for ' , 
 		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
 		AIACommentBuilding language.
 	self getResponse.
@@ -28,7 +28,7 @@ AIAPackageComment >> aiaComment: aPackageName [
 AIAPackageComment >> aiaCommentMany: aPackageNames [
 	"The method sets a package comment using Mistral API."
 	self system:  (AIASourceCodeBuilder new for: aPackageNames).
-	self prompt: 'This is a Pharo question. 
+	self user: 'This is a Pharo question. 
 		Please write a single package comment that covers the
 		purpose and relationship between the following packages: {#' ,
 		('. #' join: aPackageNames), 
@@ -43,7 +43,7 @@ AIAPackageComment >> aiaCommentMany: aPackageNames [
 AIAPackageComment >> aiaComment_old: aPackageName [
 	"The method sets a package comment using Mistral API."
 	self system:  (AIASourceCodeBuilder new for: { aPackageName }).
-	self prompt: 'This is a Pharo question. Can your give a package comment for ' , 
+	self user: 'This is a Pharo question. Can your give a package comment for ' , 
 		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
 		AIACommentBuilding language.
 	self getResponse.

@@ -14,7 +14,7 @@ AIAClassComment >> aiaComment: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 	self system: (AIASourceCodeBuilder new forClass: aClass).
 	
-	self prompt: 'This is a Pharo question. Can your give a class comment for ' , 
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
 		'. Use Markdown format in your response, and include a usage example suitable for the Playground. ',
 		'Prefer code that ends with an expression to be inspected using command-I. ',
@@ -46,7 +46,7 @@ AIAClassComment >> testCommentaiaComment: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 	"self system: (AIASourceCodeBuilder new forClass: aClass)."
 	
-	self prompt: 'This is a Pharo question. With this class definition ', (AIASourceCodeBuilder new forClass: aClass), ' 
+	self user: 'This is a Pharo question. With this class definition ', (AIASourceCodeBuilder new forClass: aClass), ' 
 	Can your give a class comment for ' , 
 		aClass asString, 
 		'. Use Markdown format, and include a usage example suitable for the Playground. ',

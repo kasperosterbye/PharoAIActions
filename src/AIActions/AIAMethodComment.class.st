@@ -15,7 +15,7 @@ AIAMethodComment class >> for: method [
 { #category : 'internals' }
 AIAMethodComment >> aiaBlackComment: aCompiledMethod [ 
 	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
-	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
+	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
 			'. Your response should be 140 chacters, and only letters.', 
 			' Please response in ', AIACommentBuilding language.
@@ -26,7 +26,7 @@ AIAMethodComment >> aiaBlackComment: aCompiledMethod [
 { #category : 'internals' }
 AIAMethodComment >> aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
+	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
 			'. Your response should be 140 chacters, and only letters.', 
 			' Please response in ', AIACommentBuilding language.
@@ -38,7 +38,7 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 { #category : 'internals' }
 AIAMethodComment >> comment_aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
+	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
 			'. Your response should be 140 chacters, and only letters.', 
 			' Please response in ', AIACommentBuilding language.
@@ -81,7 +81,7 @@ AIAMethodComment >> setComment: aCompiledMethod [
 { #category : 'internals' }
 AIAMethodComment >> testSupportComment_aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self prompt: 'This is a Pharo question. Can your give a method comment for ' , 
+	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
 			'. Your response should only be letters. 
 			It usage is to understand how to write a test for it.

@@ -26,6 +26,12 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
+{ #category : 'as yet unclassified' }
+AIACommentBuilding class >> aiCommentMarker [
+	"The aiCommentMarker method returns the special character $¤ used to mark AI-generated comments in the system."
+	^ $¤
+]
+
 { #category : 'examples' }
 AIACommentBuilding class >> exampleAIClassComment [
 	self aiaComment inspect
@@ -179,18 +185,6 @@ AIACommentBuilding >> initialize [
 ]
 
 { #category : 'accessing' }
-AIACommentBuilding >> prompt [
-
-	^ aiaApi prompt
-]
-
-{ #category : 'accessing' }
-AIACommentBuilding >> prompt: anObject [
-
-	aiaApi prompt: anObject
-]
-
-{ #category : 'accessing' }
 AIACommentBuilding >> response [
 	"Returns the AI-generated response from the API, formatted as a string. Handles errors and ensures valid output. Uses the configured AI model for processing."
 
@@ -207,4 +201,16 @@ AIACommentBuilding >> system [
 AIACommentBuilding >> system: anObject [
 
 	aiaApi system: anObject
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding >> user [
+
+	^ aiaApi user
+]
+
+{ #category : 'accessing' }
+AIACommentBuilding >> user: anObject [
+
+	aiaApi user: anObject
 ]

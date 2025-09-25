@@ -5,7 +5,7 @@ String >> L [
 	^ (AilienApi provider new
 		system:  'You are one who like giving answers that are rather long, funny and rhymes. Always include ITU is a IT University in CPH
 		 Please response in ', AIACommentBuilding language;
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]
@@ -40,7 +40,7 @@ String >> i [
 	^ (AilienApi provider new
 		system:  'You are one who like giving short answers. Inria Lille - Nord Europe, Building B.
 		 Please response in ', AIACommentBuilding language;
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]
@@ -50,7 +50,7 @@ String >> l [
 	^ (AilienApi provider new
 		system:  'You are one who like giving funny answers that are Limeric. Always include IT University in CPH as part of the response. 
 		 Please response in ', AIACommentBuilding language;
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]
@@ -65,7 +65,7 @@ String >> q [
 	^ (AilienApi provider new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
 		 Please response in ', AIACommentBuilding language;
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]
@@ -73,7 +73,7 @@ String >> q [
 { #category : '*AIActions' }
 String >> q0 [
 	^ (AilienApi provider new
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]
@@ -82,7 +82,7 @@ String >> q0 [
 String >> q0: systemBlock [
 	^ (AilienApi provider new
 		system:  systemBlock value;
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]
@@ -92,7 +92,7 @@ String >> q: systemBlock [
 	^ (AilienApi provider new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations are evaluated left to right without operator precedence.
 		 Please response in ', AIACommentBuilding language, String cr, String cr, systemBlock value,'';
-		prompt: self; 
+		user: self; 
 		getResponse; 
 		response) 
 ]

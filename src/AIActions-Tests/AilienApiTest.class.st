@@ -75,7 +75,7 @@ AilienApiTest >> testModel [
 { #category : 'running' }
 AilienApiTest >> testPrompt [
 	
-	refAilienApi prompt: 'Banana'.
+	refAilienApi user: 'Banana'.
 	self 
 		assert: refAilienApi history first 
 		equals: 'user' -> 'Banana' 
