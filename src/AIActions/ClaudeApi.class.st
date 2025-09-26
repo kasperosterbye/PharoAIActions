@@ -44,9 +44,6 @@ This implementation provides a robust foundation for integrating Claude's AI cap
 Class {
 	#name : 'ClaudeApi',
 	#superclass : 'AilienApi',
-	#instVars : [
-		'messagePart'
-	],
 	#classInstVars : [
 		'lastKeyNumber'
 	],
@@ -55,7 +52,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'AI models' }
 ClaudeApi class >> claudeKey [
 	| fileName |
 	lastKeyNumber ifNil: [ lastKeyNumber := 0 ].
@@ -94,7 +91,7 @@ ClaudeApi >> bodyForEntityWithPrompt [
 ClaudeApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
-    self model: self class defaultModel .
+   self model: self class defaultModel .
 ]
 
 { #category : 'accessing' }

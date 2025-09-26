@@ -44,7 +44,6 @@ Class {
 	#name : 'AilienApi',
 	#superclass : 'Object',
 	#instVars : [
-		'provider',
 		'model',
 		'history'
 	],
@@ -62,7 +61,7 @@ Class {
 { #category : 'AI models' }
 AilienApi class >> defaultModel [
 	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."
-
+	self = AilienApi ifTrue: [ self error: 'Requires a concrete Api' ].
 	modelLLM ifNil: [ modelLLM := self modelNames first ].
 	^ modelLLM
 ]
@@ -79,7 +78,7 @@ AilienApi class >> defaultModel: modelNumber [
 { #category : 'accessing' }
 AilienApi class >> info [
 	"Returns a descriptive string combining the current AI provider name and its default model name to identify the API configuration being used"
-	^ self provider name, ': ', self provider defaultModel
+	^ self provider name asString, ': ', self provider defaultModel
 ]
 
 { #category : 'private' }
@@ -91,8 +90,17 @@ AilienApi class >> initialize [
 
 { #category : 'AI models' }
 AilienApi class >> modelNames [
-	"returns an array with one item per model."
-	^ self subclassResponsibility
+	"Returns a collection of available model names for the AI provider. Each name represents a distinct AI model that can be used for generating responses. The collection is derived from the provider's model registry and is used to validate and set the default model for the API."
+	self = AilienApi ifTrue: [ ^ self provider modelNames ].
+	
+]
+
+{ #category : 'instance creation' }
+AilienApi class >> newOnModel: modelId [
+	self = AilienApi
+		ifTrue: [ ^ self provider newOnModel: modelId ]
+		ifFalse: [ ^ self new model: (self modelNames at: modelId) ]
+		
 ]
 
 { #category : 'AI models' }
@@ -200,7 +208,7 @@ AilienApi >> history: aHistory [
 AilienApi >> initialize [ 
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
-	self model: ''.
+	self model: self class defaultModel.
 	history := OrderedCollection new.
 ]
 

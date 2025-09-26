@@ -48,7 +48,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'AI models' }
 GeminiApi class >> geminiKey [
 	^ (FileSystem disk workingDirectory / '../../geminicode.txt')
 		readStream contents trimBoth.

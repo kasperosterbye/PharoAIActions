@@ -28,6 +28,13 @@ ManifestAIActions class >> ruleReGuardClauseRuleV1FalsePositive [
 ]
 
 { #category : 'code-critics' }
+ManifestAIActions class >> ruleRefersToClassRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGMetaclassDefinition #(#'AilienApi class' #AilienApi)) #'2025-09-26T17:41:29.131197+02:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIActions class >> ruleSelfSentNotImplementedRuleV1FalsePositive [
 
 	<ignoreForCoverage>
