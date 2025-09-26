@@ -27,9 +27,22 @@ AIASourceCodeBuilderTest >> testClassHeaderFor [
 ]
 
 { #category : 'tests' }
+AIASourceCodeBuilderTest >> testClassHeaderForSuperOn [
+	|  class1 class2  stream string |
+	class1 := AIAPackageComment.
+	class2 := class1 superclass.
+	stream := WriteStream on: ''.
+	builder classHeaderFor: class1 super: class2 on: stream.
+	string := stream contents.
+	self assert: (string  includesSubstring: 'AIABuilder << #AIACommentBuilding').
+	self assert: (string  includesSubstring: 
+		'AIABuilder class << #AIACommentBuilding class').
+]
+
+{ #category : 'tests' }
 AIASourceCodeBuilderTest >> testClassesInPackage [
 	| res |
-	builder classesInPackage: (PackageOrganizer default packageNamed: 'AIAgent-Tests'). 
+	builder classesInPackage: (PackageOrganizer default packageNamed: 'AIActions-Tests'). 
 	res := builder response contents.
 	self assert: (res  includesSubstring: '## Class: AIAMethodCommentTest').
 	self assert: (res  includesSubstring: 'foo := 88.').
@@ -38,7 +51,7 @@ AIASourceCodeBuilderTest >> testClassesInPackage [
 { #category : 'tests' }
 AIASourceCodeBuilderTest >> testFor [
 	| res |
-	builder for: {'AIAgent-Tests'}.
+	builder for: {'AIActions-Tests'}.
 	res := builder response contents.
 	self assert: (res  includesSubstring: '## Class: AIAMethodCommentTest').
 	self assert: (res  includesSubstring: 'foo := 88.').
@@ -70,10 +83,27 @@ AIASourceCodeBuilderTest >> testForClasses [
 { #category : 'tests' }
 AIASourceCodeBuilderTest >> testForMethod [
 	| res |
-	builder forMethod: (self class >> #setUp).
+	builder forMethod: (builder class >> #initialize).
 	res := builder response contents.
-	self assert: (res  includesSubstring: '### Called in:').
-	self assert: (res  includesSubstring: 'packageCommenter := AIAPackageComment new').
+	self assert: (res  includesSubstring: '## Calling methods:').
+	self assert: (res  includesSubstring: 'AIACommentBuilding >> #initialize').
+]
+
+{ #category : 'tests' }
+AIASourceCodeBuilderTest >> testForSuperClassesOf [
+	| stream  |
+	stream := builder forSuperClassesOf: AIAPackageComment.
+	self assert: (stream  includesSubstring: '## Superclass: AIACommentBuilding f').
+	self assert: (stream  includesSubstring: '### AIACommentBuilding has meta class: ').
+]
+
+{ #category : 'tests' }
+AIASourceCodeBuilderTest >> testForWildcard [
+	| res |
+	builder forWildcard: '*AIAc'.
+	res := builder response contents.
+	self assert: (res  includesSubstring: '## Class: AIAMethodCommentTest').
+	self assert: (res  includesSubstring: 'foo := 88.').
 ]
 
 { #category : 'tests' }
@@ -118,5 +148,31 @@ AIASourceCodeBuilderTest >> testSystemForMethodUsedIn [
 	res := builder response contents.
 	self assert: res isNotEmpty.
 	self assert: (res  includesSubstring: '## Calling methods:').
-	self assert: (res  includesSubstring: 'This is a Pharo question.').
+	self assert: (res  includesSubstring: 'AIASourceCodeBuilder >> #forMethod:').
+]
+
+{ #category : 'tests' }
+AIASourceCodeBuilderTest >> testclassHeaderForSuperOn [
+	|method stream  string |
+	method := AIASourceCodeBuilder >> #methodNameAndCommentFor:in:.
+	stream := WriteStream on: ''.
+	builder methodNameAndCommentFor: method in: stream.
+	string := stream contents.
+	self assert: (string  includesSubstring: 
+			'Method: AIASourceCodeBuilder>>#methodNameAndCommentFor:in:').
+	self assert: (string  includesSubstring: 
+		'comment:').
+]
+
+{ #category : 'tests' }
+AIASourceCodeBuilderTest >> testmethodNameAndCommentForIn [
+	|method stream  string |
+	method := AIASourceCodeBuilder >> #methodNameAndCommentFor:in:.
+	stream := WriteStream on: ''.
+	builder methodNameAndCommentFor: method in: stream.
+	string := stream contents.
+	self assert: (string  includesSubstring: 
+			'Method: AIASourceCodeBuilder>>#methodNameAndCommentFor:in:').
+	self assert: (string  includesSubstring: 
+		'comment:').
 ]

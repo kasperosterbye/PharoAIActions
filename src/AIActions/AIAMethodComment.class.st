@@ -48,7 +48,7 @@ AIAMethodComment class >> for: method [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> aiaBlackComment: aCompiledMethod [ 
+AIAMethodComment >> aiaBlackComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
 	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
