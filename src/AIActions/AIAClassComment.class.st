@@ -16,6 +16,32 @@ AIAClassComment >> aiaComment: aClass [
 	
 	self user: 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
+		'. Use Markdown format in your response',
+		' Please a detailed comment with all aspects. Your answer must not contain code, and no description of which class it is for as that is part of the prompt.'.
+	self getResponse.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> new_aiaComment: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
+		'. Use Markdown format in your response',
+		' Please a detailed comment with all aspects. Your answer must not contain code, and no description of which class it is for as that is part of the prompt.'.
+	self getResponse.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> old_aiaComment: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
 		'. Use Markdown format in your response, and include a usage example suitable for the Playground. ',
 		'Prefer code that ends with an expression to be inspected using command-I. ',
 		'When givin an example using the definition of a class, use: ', (ShiftClassBuilder comment),

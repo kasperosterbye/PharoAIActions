@@ -115,7 +115,6 @@ AIASourceCodeBuilder >> for: packages [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forClass: aClass [
-	"Generates formatted class header and methods for aClass, including name definition, instance variables, and class comment, appending to response stream. Handles both regular and meta classes."
 	| metaClass |
 		(classList includes: aClass) 
 			ifTrue: [ ^ response contents ].

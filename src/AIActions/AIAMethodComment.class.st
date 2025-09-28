@@ -63,7 +63,7 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
 	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
-			'. Your response should be 140 chacters, and only letters.', 
+			'. Your response should be 100 chacters, and only letters and spaces.', 
 			' Please response in ', AIACommentBuilding language.
 	self getResponse.
 	"If it halts, it is likely because there is markdown that it should not make"
@@ -91,6 +91,29 @@ AIAMethodComment >> methodSource: compiledMethod addComment: comment [
 		ifFalse: [ sourceLines add: (String tab, '"' , comment, '"' ) afterIndex: 1].
 	^ String cr join: sourceLines 
 	
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> new_aiaComment: aCompiledMethod [
+	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
+	self user: 'This is a Pharo question. Can your give a method comment for ' , 
+		aCompiledMethod name, 
+			'. Please a detailed comment with all aspects. Your answer must not contain code, and no description of which method it is for as that is part of the prompt.'.
+	self getResponse.
+	"If it halts, it is likely because there is markdown that it should not make"
+	(self response beginsWith: '```') ifTrue:[ self halt]
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> old_aiaComment: aCompiledMethod [
+	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
+	self user: 'This is a Pharo question. Can your give a method comment for ' , 
+		aCompiledMethod name, 
+			'. Your response should be 140 chacters, and only letters.', 
+			' Please response in ', AIACommentBuilding language.
+	self getResponse.
+	"If it halts, it is likely because there is markdown that it should not make"
+	(self response beginsWith: '```') ifTrue:[ self halt]
 ]
 
 { #category : 'internals' }
