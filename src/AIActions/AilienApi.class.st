@@ -183,10 +183,10 @@ AilienApi >> getResponse [
 			self assistant: 'AI based response Terminated'.
 			^ self
 		].
-		1 to: 300 do: [:each |
+		1 to: 600 do: [:each |
 			job
-				progress: ((1/300) * each) ;
-				title: ('AI working {1} of 30' format: {(each/10) asFloat printString}).
+				progress: ((1/600) * each) ;
+				title: ('AI working {1} of 60' format: {(each/10) asFloat printString}).
 				self response ifNil: [100 milliSeconds wait].
 		].
 	] asJob run.

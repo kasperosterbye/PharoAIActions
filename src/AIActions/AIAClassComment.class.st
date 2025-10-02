@@ -10,7 +10,7 @@ Class {
 }
 
 { #category : 'accessing' }
-AIAClassComment >> aiaComment: aClass [
+AIAClassComment >> aiaComment01: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 	self system: (AIASourceCodeBuilder new forClass: aClass).
 	
@@ -18,6 +18,45 @@ AIAClassComment >> aiaComment: aClass [
 		aClass asString, 
 		'. Use Markdown format in your response',
 		' Please a detailed comment with all aspects. Your answer must not contain code, and no description of which class it is for as that is part of the prompt.'.
+	self getResponse.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> aiaComment02: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
+		'. Use Markdown format in your response',
+		' The reader of your response is a beginner, so please focus on the key aspects only, and give some examples'.
+	self getResponse.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> aiaComment03: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
+		'. Use Markdown format in your response. ',
+		'The reader is a Pharo expert, so no need to explain simple stuff. Give a short response, with focus on errors that might happen if not used right. Do not present an example'.
+	self getResponse.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> aiaComment: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self user: 'This is a Pharo question. ' , 
+		'. Use Markdown format in your response. ',
+		'The reader is an LLM that will be asked to produce tests for each of its methods. Please make the response all the instructions for writing tests in Pharo for this specific class: ', 
+		aClass asString.
 	self getResponse.
 	
 ]

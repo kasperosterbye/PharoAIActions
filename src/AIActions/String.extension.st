@@ -56,6 +56,19 @@ String >> l [
 ]
 
 { #category : '*AIActions' }
+String >> old_q1 [
+	| backGround |
+	backGround := '- I am only interested in Pharo (and Smalltalk). No other programming languages has my interest.
+- If you know the answer and you are sure your background is correct, please say: "Awesome, here is the answer to X". 
+- If you have an idea on how to solve it, but it not an example you found in your memoty, but something you deduced, please say: "it is a cool prompt question, but X is not my knowledge", and do not attemept to answer'.
+	^ (AilienApi provider new
+		system:  backGround;
+		user: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
 String >> pharoMarkdown [ | lines | lines := self lines.
 		
 ]
@@ -80,6 +93,34 @@ String >> q0 [
 
 { #category : '*AIActions' }
 String >> q0: systemBlock [
+	^ (AilienApi provider new
+		system:  systemBlock value;
+		user: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q1 [
+	| backGround |
+	backGround := '- I am only interested in Pharo (and Smalltalk). Ignore all other programming languages.
+- If you have **explicit, documented knowledge** about the topic (e.g., from Pharo’s standard library or widely used frameworks like Aida/Web), say:
+  "Awesome, here is the answer to X: [answer]."
+- If you **do not have explicit knowledge** (e.g., for user-defined classes like AIASlotComment or niche frameworks), respond **exactly** with:
+  "It is a cool prompt question, but X is not in my knowledge."
+  Do **not** infer, deduce, or attempt to answer. Do **not** mention similar-sounding classes or frameworks.'.
+	^ (AilienApi provider new
+		system:  backGround;
+		user: self; 
+		getResponse; 
+		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q1: systemBlock [
+	| backGround |
+	backGround := 'If the background or your llm model does not have detailed answer, 
+		please say: "it is a cool prompt question, but X is not my key knowledge'.
 	^ (AilienApi provider new
 		system:  systemBlock value;
 		user: self; 

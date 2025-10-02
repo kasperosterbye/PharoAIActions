@@ -158,6 +158,7 @@ AIATestBuilder >> buildTestChatHistoryFor: aMethod [
 
 { #category : 'accessing' }
 AIATestBuilder >> chatBuilder [
+	"Accesses the AI chat builder instance for test generation support."
 	^ chatBuilder 
 ]
 

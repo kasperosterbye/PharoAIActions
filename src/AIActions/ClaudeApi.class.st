@@ -81,7 +81,7 @@ ClaudeApi >> bodyForEntityWithPrompt [
         'model' -> model.
         'max_tokens' -> 1024.
         'messages' -> self jsonHistory.
-        'temperature' -> 0.1.
+        'temperature' -> 0.0.
     	  'stream' -> false.
     }.
     ^ ZnEntity json: (STONJSON toString: requestDictionary).

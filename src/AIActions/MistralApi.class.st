@@ -72,7 +72,7 @@ MistralApi >> bodyForEntityWithPrompt [
 	requestDictionary :=Dictionary newFrom: {
 	    'model' -> 'codestral-latest'.
 	    'messages' -> self jsonHistory .
-		 'temperature' -> 0.
+		 'temperature' -> 0.0.
 	    'stream' -> false.
 		}.
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
