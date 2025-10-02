@@ -48,6 +48,7 @@ Class {
 		'history'
 	],
 	#classVars : [
+		'LastHistory',
 		'Provider'
 	],
 	#classInstVars : [
@@ -86,6 +87,11 @@ AilienApi class >> initialize [
 	modelLLM := MistralApi modelNames first.
 	Provider := MistralApi.
 	
+]
+
+{ #category : 'accessing' }
+AilienApi class >> lastHistory [
+	^ LastHistory
 ]
 
 { #category : 'AI models' }
@@ -186,7 +192,8 @@ AilienApi >> getResponse [
 		1 to: 600 do: [:each |
 			job
 				progress: ((1/600) * each) ;
-				title: ('AI working {1} of 60' format: {(each/10) asFloat printString}).
+				title: ( AilienApi info, ' working {1} of 60' 
+					format: {(each/10) asFloat printString}).
 				self response ifNil: [100 milliSeconds wait].
 		].
 	] asJob run.
@@ -222,6 +229,7 @@ AilienApi >> jsonHistory [
 			{'role' -> item key.
 			'content' -> item value.})
 	].
+	LastHistory := history.
 	^ jsonHistory asArray.
 ]
 
@@ -288,6 +296,7 @@ AilienApi >> user: aString [
 	(history size = 1 and: [ history first key = 'system' ])
 		ifTrue: [ history 
 			at: 1 
-			put: 'user' -> ('[BACKGROUND] ', history first value , '. [QUESTION] ' , aString) ]
+			put: 'user' -> ('[BACKGROUND] ', history first value , String cr, 
+			'[QUESTION] ' , aString) ]
 		ifFalse: [ history add: 'user' -> aString ]
 ]
