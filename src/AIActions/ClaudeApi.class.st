@@ -67,9 +67,10 @@ ClaudeApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
 	
-	^ #('claude-3-5-sonnet-20241022' 
-	'claude-3-5-haiku-20241022' 
+	^ #(
 	'claude-sonnet-4-20250514' 
+	'claude-3-5-sonnet-20241022' 
+	'claude-3-5-haiku-20241022' 
 	'claude-3-7-sonnet-20250219') 
 ]
 

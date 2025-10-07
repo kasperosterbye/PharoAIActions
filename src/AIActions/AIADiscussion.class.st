@@ -1,3 +1,36 @@
+"
+# AIADiscussion Class Comment
+
+The `AIADiscussion` class represents a conversational interface for interacting with an AI assistant, maintaining a structured history of the discussion. It serves as a bridge between user inputs, AI responses, and the underlying API, enabling seamless multi-turn conversations.
+
+## Core Responsibilities
+- **Conversation Management**: Tracks the sequence of user messages and AI responses in an ordered history.
+- **API Integration**: Facilitates communication with the AI provider (e.g., MistralApi) by passing conversation context and retrieving responses.
+- **Context Preservation**: Maintains the state of the discussion to ensure coherent, context-aware interactions.
+- **Response Handling**: Processes and presents AI responses to the user, typically via a presenter (e.g., `AIACommentPresenter`).
+
+## Key Features
+- **History Tracking**: Stores each interaction as a structured record (role + content) for reference and continuity.
+- **Dynamic Updates**: Automatically updates the conversation history after each user-AI exchange.
+- **Session Management**: Supports multiple discussion instances, with a ""current"" session and historical records.
+
+## Usage Scenarios
+- **Interactive AI Assistants**: Enables real-time, back-and-forth discussions with AI models.
+- **Contextual Q&A**: Maintains context across multiple queries to improve response relevance.
+- **Debugging/Inspection**: Provides tools to inspect conversation history for troubleshooting.
+
+## Class Variables
+- **Current**: The active discussion instance.
+- **Histories**: A collection of all past discussions for reference or analysis.
+
+## Methods
+- **Accessing**: Retrieve the conversation history or current state.
+- **Adding**: Append user messages and AI responses to the history.
+- **Initialization**: Set up a new discussion with a fresh history and API connection.
+- **Response Handling**: Fetch, process, and display AI responses.
+
+This class is designed to abstract the complexity of AI interactions, providing a user-friendly interface while ensuring robust conversation management.
+"
 Class {
 	#name : 'AIADiscussion',
 	#superclass : 'Object',
@@ -58,12 +91,6 @@ AIADiscussion class >> next [
 		ifNotNil: [
 				Histories add: Current.
 				Current := self new. ]
-]
-
-{ #category : 'adding' }
-AIADiscussion >> addUser: user response: response [
-	"Adds a user message and AI response to the discussion history, updating the conversation context for future interactions."
-	
 ]
 
 { #category : 'adding' }

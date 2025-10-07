@@ -59,6 +59,21 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'as yet unclassified' }
+AilienApi class >> background01 [
+	^ '[BACKGROUND]
+User is Kasper Østerbye, retired computer science professor with deep experience in programming language design, runtime systems, and AI integration.
+He has written machine code for PDP-12 and Forth on PDP-10, worked with Smalltalk, Simula, Beta, and Interlisp, and now focuses on Pharo because of its tight coupling between language and runtime.
+
+Kasper does not just write prompts or client code – he builds and controls the entire chain from application (Pharo) to API call construction to the raw JSON sent to the LLM.
+He experiments with modifying message roles, metadata, and history structures directly, including non-linear conversation graphs, parallel branches, and custom background/context injection.
+This means he is exploring how the architecture of LLM interaction itself can be shaped, not just how prompts are written.
+
+The user is not a beginner – explanations should assume deep technical knowledge and go straight to the essence.
+Responses must be short, precise, and free of fluff, unless explicitly asked for elaboration.
+Responses must never use emojis or tables. Output should always be plain text or structured text (like Markdown sections), but never tabular formatting.'
+]
+
 { #category : 'AI models' }
 AilienApi class >> defaultModel [
 	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."

@@ -33,6 +33,11 @@ AIAResponses class >> newTitled: aTitle [
 ]
 
 { #category : 'instance creation' }
+AIAResponses class >> resetTitles [
+	responceDictionary := OrderedDictionary new.
+]
+
+{ #category : 'instance creation' }
 AIAResponses class >> titles [
 	^ responceDictionary
 ]
@@ -62,8 +67,33 @@ AIAResponses >> markDownResult [
 	md << '### RESPONSES TABLE START' << String cr << String cr.
 	md << '| Provider | Model | Response |' << String cr.
 	md << '| -------- | ----- | -------- |' << String cr.
-		self providers do: [ :provider |
-		1 to: 4 do: [ :modelId | | responce |
+	self providers do: [ :provider |
+		1 to: (responces at: provider ) size do: [ :modelId | | responce |
+			"self provider: provider model: modelId response: promptBlock"
+			responce := ( responces at: provider at: modelId )
+					copyReplaceAll: String cr with: '<br>';
+					copyReplaceAll: String lf with: '<br>'.
+			md << '| ' << provider asString 
+				<< ' | ' << (provider modelNames at: modelId) 
+				<< ' | ' << responce
+				<< ' | ' << String cr.
+			 ]
+		 ].
+	md << String cr.
+	md << 'This was the responses' << String cr.
+	^ md contents 
+]
+
+{ #category : 'as yet unclassified' }
+AIAResponses >> plainMarkDownResult [
+	| md |
+	md := WriteStream on: ''.
+	md << '## Pure result ' << String cr .
+	md << '### RESPONSES TABLE START' << String cr << String cr.
+	md << '| Provider | Model | Response |' << String cr.
+	md << '| -------- | ----- | -------- |' << String cr.
+	self providers do: [ :provider |
+		1 to: (responces at: provider ) size do: [ :modelId | | responce |
 			"self provider: provider model: modelId response: promptBlock"
 			responce := ( responces at: provider at: modelId )
 					copyReplaceAll: String cr with: '<br>';
@@ -83,7 +113,7 @@ AIAResponses >> markDownResult [
 AIAResponses >> prompt: promptBlock [
 	sharedPrompt := promptBlock.
 	self providers do: [ :provider |
-		1 to: 4 do: [ :modelId |
+		1 to: 1 do: [ :modelId |
 			self provider: provider model: modelId response: sharedPrompt
 			 ]
 		 ]
