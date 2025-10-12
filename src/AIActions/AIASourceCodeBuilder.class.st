@@ -162,10 +162,10 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 	"Generates formatted superclass hierarchy for aClass, including methods and meta-class details, appending to response stream. Recursively processes superclasses until Object."
 	| superComment superClass |
-	(aClass = Object or: [ aClass = TestCase ]) ifTrue: [ ^ '' ].
+	(self stopNow: aClass) ifTrue: [ ^ '' ].
 	
 	superClass := aClass superclass.
-	(superClass = Object or: [ superClass = TestCase ]) ifTrue: [ ^ '' ].
+	(self stopNow: superClass) ifTrue: [ ^ '' ].
 	(classList includes: superClass) 
 			ifTrue: [ ^ '' ].
 	superComment := WriteStream on: ''.
@@ -227,10 +227,40 @@ AIASourceCodeBuilder >> methodsFor: aClass [
 	response << String cr.
 ]
 
+{ #category : 'internal' }
+AIASourceCodeBuilder >> old_forSuperClassesOf: aClass [
+	"Generates formatted superclass hierarchy for aClass, including methods and meta-class details, appending to response stream. Recursively processes superclasses until Object."
+	| superComment superClass |
+	self halt.
+	(((aClass = Object 
+		or: [ aClass = Object class ])
+		or: [ aClass = Metaclass])
+		or: [ aClass = TestCase ]) ifTrue: [ ^ '' ].
+	
+	superClass := aClass superclass.
+	(superClass = Object or: [ superClass = TestCase ]) ifTrue: [ ^ '' ].
+	(classList includes: superClass) 
+			ifTrue: [ ^ '' ].
+	superComment := WriteStream on: ''.
+	self classHeaderFor: aClass super: superClass on:  superComment.
+	superComment << (self forSuperClassesOf: superClass) .
+	^ superComment contents
+	
+]
+
 { #category : 'accessing' }
 AIASourceCodeBuilder >> response [
 	"Returns the WriteStream used to accumulate generated source code descriptions. Initialised in initialize."
 	^ response 
+]
+
+{ #category : 'as yet unclassified' }
+AIASourceCodeBuilder >> stopNow: aClass [
+	(((aClass = Object 
+		or: [ aClass = Object class ])
+		or: [ aClass = Metaclass])
+		or: [ aClass = TestCase ]) ifTrue: [ ^ true ].
+	^ false
 ]
 
 { #category : 'internal' }

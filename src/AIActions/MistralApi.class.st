@@ -93,12 +93,12 @@ MistralApi >> loadResponse [
 	[
 		bodyEntiry := self bodyForEntityWithPrompt.
 		jsonResponse := ZnClient new
-			                url: apiGenerateUrl;
-			                headerAt: 'Authorization' put: self class esug;
-			                headerAt: 'Content-Type' put: 'application/json';
-			                entity: bodyEntiry;
-			                post;
-			                contents.
+			url: apiGenerateUrl;
+			headerAt: 'Authorization' put: self class esug;
+			headerAt: 'Content-Type' put: 'application/json';
+			entity: bodyEntiry;
+			post;
+			contents.
 		self assistant: (self responseOf: jsonResponse) ]
 		on: Error
 		do: [ :ex | self assistant: ex messageText ]
