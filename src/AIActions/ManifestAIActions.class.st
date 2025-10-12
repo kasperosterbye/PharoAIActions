@@ -47,3 +47,10 @@ ManifestAIActions class >> ruleUnclassifiedMethodsRuleV1FalsePositive [
 	<ignoreForCoverage>
 	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2025-07-21T10:30:28.236326+02:00') )
 ]
+
+{ #category : 'code-critics' }
+ManifestAIActions class >> ruleWhileTrueRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2025-10-12T10:01:09.302776-04:00') )
+]

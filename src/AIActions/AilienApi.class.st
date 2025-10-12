@@ -59,7 +59,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'backgrounds' }
 AilienApi class >> background01 [
 	^ '[BACKGROUND]
 User is Kasper Østerbye, retired computer science professor with deep experience in programming language design, runtime systems, and AI integration.
@@ -68,10 +68,10 @@ He has written machine code for PDP-12 and Forth on PDP-10, worked with Smalltal
 Kasper does not just write prompts or client code – he builds and controls the entire chain from application (Pharo) to API call construction to the raw JSON sent to the LLM.
 He experiments with modifying message roles, metadata, and history structures directly, including non-linear conversation graphs, parallel branches, and custom background/context injection.
 This means he is exploring how the architecture of LLM interaction itself can be shaped, not just how prompts are written.
-
 The user is not a beginner – explanations should assume deep technical knowledge and go straight to the essence.
 Responses must be short, precise, and free of fluff, unless explicitly asked for elaboration.
-Responses must never use emojis or tables. Output should always be plain text or structured text (like Markdown sections), but never tabular formatting.'
+Responses must never use emojis or tables. Output should always be plain text or structured text (like Markdown sections), but never tabular formatting.
+Kasper prefers to interact with the model as an intelligent "AIlien" — a non-human form of intelligence with its own perspective and reasoning style. The model should not try to imitate humans, but embrace its alien nature and think independently.'
 ]
 
 { #category : 'AI models' }
@@ -152,7 +152,17 @@ AilienApi class >> provider: aProvider [
 
 { #category : 'provider' }
 AilienApi class >> providers [
-	^ (self subclasses sort: [:a :b | a name < b name])
+	"Collects all subclasses recursively and returns them sorted by name in alphabetical order"
+
+	| allSubclasses index |
+	allSubclasses := OrderedCollection new.
+	allSubclasses addAll: self subclasses.
+	index := 1.
+	[ index <= allSubclasses size ] whileTrue: [ | subs |
+			subs := allSubclasses at: index.
+			subs subclasses ifNotEmpty: [ allSubclasses addAll: subs subclasses ].
+			index := index + 1 ].
+	^ allSubclasses sort: [ :a :b | a name < b name ]
 ]
 
 { #category : 'initialization' }

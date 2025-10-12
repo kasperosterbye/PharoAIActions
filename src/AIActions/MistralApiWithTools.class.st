@@ -71,13 +71,104 @@ MistralApiWithTools >> bodyForEntityWithPrompt_withTools [
 MistralApiWithTools >> initialize [
 
 	super initialize.
-	useTooling := true
+	useTooling := true.
 ]
 
 { #category : 'mistral tools' }
 MistralApiWithTools >> killroyWasHere: toolCalls [
 	"Returns a humorous response about Killroy when tool calls are detected, indicating AI's interaction with Kasper for Killroy-related facts."
 	^ 'Mistral asked Kasper about Killroy'
+]
+
+{ #category : 'mistral tools' }
+MistralApiWithTools >> llmToolFor: method [
+	"Converts a method into a tool dictionary for LLM function calling"
+
+	| selector desc properties tool |
+	selector := method selector asString.
+	desc := method comment ifEmpty: [ 'No description provided.' ].
+	properties := Dictionary new.
+
+	method argumentNames do: [ :arg |
+			properties at: arg put: (Dictionary newFrom: {
+						 ('type' -> 'string').
+						 ('description' -> ('Argument for ' , arg)) }) ].
+	tool := Dictionary newFrom: {
+			'type' -> 'function'.
+			'function' -> (Dictionary newFrom: {
+				'name' -> selector.
+				'description' -> desc.
+				'parameters' -> (Dictionary newFrom: {
+					'type' -> 'object'.
+					'properties' -> properties
+				}).
+				'required' -> method argumentNames
+			})
+		}.
+
+	^ tool
+	
+]
+
+{ #category : 'mistral tools' }
+MistralApiWithTools >> llmToolFor_old2: method [
+
+	| selector desc properties tool |
+	selector := method selector asString.
+	desc := method comment ifEmpty: [ 'No description provided.' ].
+	properties := Dictionary new.
+
+	method argumentNames do: [ :arg |
+			properties at: arg put: (Dictionary newFrom: {
+						 ('type' -> 'string').
+						 ('description' -> ('Argument for ' , arg)) }) ].
+	tool := Dictionary newFrom: {
+			'type' -> 'function'.
+			'function' -> (Dictionary newFrom: {
+				'name' -> selector.
+				'description' -> desc.
+				'parameters' -> (Dictionary newFrom: {
+					'type' -> 'object'.
+					'properties' -> properties
+				}).
+				'required' -> method argumentNames
+			})
+		}.
+	^ tool
+	
+]
+
+{ #category : 'mistral tools' }
+MistralApiWithTools >> llmToolFor_old: method [
+	| selector desc properties |
+		selector := method selector asString.
+		desc := method comment ifEmpty: [ 'No description provided.' ].
+		properties := Dictionary new.
+
+		method argumentNames do: [ :arg |
+			properties at: arg put: (Dictionary newFrom: {
+				'type' -> 'string'.
+				'description' -> ('Argument for ', arg)
+			})
+		].
+]
+
+{ #category : 'mistral tools' }
+MistralApiWithTools >> loadResponse [
+	| apiGenerateUrl jsonResponse bodyEntiry |
+	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
+	[  	bodyEntiry := self bodyForEntityWithPrompt_withTools.
+		jsonResponse := ZnClient new
+	    url: apiGenerateUrl;
+	  	 headerAt: 'Authorization' put: self class esug;
+	    headerAt: 'Content-Type' put: 'application/json';
+	    entity: bodyEntiry;
+	    post;
+	    contents.
+		self assistant: (self responseOf_tool: jsonResponse) .
+	] on: Error do: [ :ex |
+   		self assistant: ex messageText.
+	].
 ]
 
 { #category : 'mistral tools' }

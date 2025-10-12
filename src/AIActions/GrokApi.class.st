@@ -34,6 +34,12 @@ GrokApi >> bodyForEntityWithPrompt [
 
 ]
 
+{ #category : 'as yet unclassified' }
+GrokApi >> computePower: base exponent: exp [
+    "Compute base^exp using Pharo's big integer arithmetic."
+    ^ base raisedTo: exp
+]
+
 { #category : 'initialization' }
 GrokApi >> initialize [
     "Initializes the GrokApi instance with the default model."
