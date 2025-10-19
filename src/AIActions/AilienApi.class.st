@@ -121,10 +121,20 @@ AilienApi class >> providers [
 	^ allSubclasses sort: [ :a :b | a name < b name ]
 ]
 
+{ #category : 'accessing' }
+AilienApi >> apiGenerateUrl [
+	self subclassResponsibility
+]
+
 { #category : 'initialization' }
 AilienApi >> assistant: aString [
 	"Adds an assistant response to the conversation history. Validates the input and updates the history with the assistant's message."
 	history add: 'assistant' -> aString
+]
+
+{ #category : 'accessing' }
+AilienApi >> bodyForEntityWithPrompt [
+	self subclassResponsibility
 ]
 
 { #category : 'initialization' }
@@ -180,6 +190,11 @@ AilienApi >> getResponse [
 	] asJob run.
 ]
 
+{ #category : 'accessing' }
+AilienApi >> headers: foo [
+	self subclassResponsibility
+]
+
 { #category : 'initialization' }
 AilienApi >> history [
 	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
@@ -214,10 +229,22 @@ AilienApi >> jsonHistory [
 	^ jsonHistory asArray.
 ]
 
-{ #category : 'mistral models' }
+{ #category : 'accessing' }
 AilienApi >> loadResponse [
-	"Subclasses must implement this method to load a response from the AI model, handling API calls and processing the result."
-		self subclassResponsibility
+	"Loads response from Claude API, handling API calls, processing results, and managing errors. Updates assistant message in history or sets error message."
+
+	| jsonResponse llmCall |
+	[
+		jsonResponse := ZnClient new
+			                url: self apiGenerateUrl;
+			                entity: self bodyForEntityWithPrompt.
+		self headers: jsonResponse.
+		llmCall := jsonResponse
+			           post;
+			           contents.
+		self assistant: (self responseOf: llmCall) ]
+		on: Error
+		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'accessing' }
@@ -252,6 +279,11 @@ AilienApi >> response [
 	(history last key = 'assistant')
 		ifTrue: [ ^ history last value ]
 		ifFalse: [ ^ nil ]
+]
+
+{ #category : 'accessing' }
+AilienApi >> responseOf: llmCall [
+	self subclassResponsibility
 ]
 
 { #category : 'accessing' }

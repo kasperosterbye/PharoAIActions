@@ -62,6 +62,11 @@ GeminiApi class >> modelNames [
 	^ #('gemini-2.0-flash-lite'  'gemini-2.5-pro' 'gemini-1.5-pro' 'gemini-2.5-flash') 
 ]
 
+{ #category : 'accessing' }
+GeminiApi >> apiGenerateUrl [
+	^ 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
+]
+
 { #category : 'ollama models' }
 GeminiApi >> bodyForEntityWithPrompt [
 	"Constructs JSON entity for API request with chat history and generation config. Formats history as role-parts array and sets temperature to 0. Returns ZnEntity with JSON string."
@@ -74,6 +79,15 @@ GeminiApi >> bodyForEntityWithPrompt [
 		})
 	}.
 	^ ZnEntity json: (STONJSON toString: requestDictionary)
+]
+
+{ #category : 'accessing' }
+GeminiApi >> headers: jsonResponse [
+
+	jsonResponse
+		headerAt: 'X-goog-api-key' put: self class geminiKey;
+		headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonResponse
 ]
 
 { #category : 'initialize' }
@@ -94,26 +108,6 @@ GeminiApi >> jsonHistory [
 			'parts' -> { Dictionary newFrom: {  'text' -> item value} } } )
 	].
 	^ jsonHistory asArray.
-]
-
-{ #category : 'mistral models' }
-GeminiApi >> loadResponse [
-	"Loads response from Gemini API, handling JSON parsing, error checking, and updating assistant state. Uses model-specific endpoint and API key for secure communication."
-
-	| apiGenerateUrl jsonResponse bodyEntity |
-	apiGenerateUrl := 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
-	[
-		bodyEntity := self bodyForEntityWithPrompt.
-		jsonResponse := ZnClient new
-			                url: apiGenerateUrl;
-			                headerAt: 'X-goog-api-key' put: self class geminiKey;
-			                headerAt: 'Content-Type' put: 'application/json';
-			                entity: bodyEntity;
-			                post;
-			                contents.
-		self assistant: (self responseOf: jsonResponse) ]
-		on: Error
-		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'accessing' }

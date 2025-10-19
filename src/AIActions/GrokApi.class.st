@@ -19,6 +19,12 @@ GrokApi class >> modelNames [
     ^ #('grok-code-fast-1' 'grok-4-fast-reasoning' 'grok-4-fast-non-reasoning' 'grok-3-mini').
 ]
 
+{ #category : 'accessing' }
+GrokApi >> apiGenerateUrl [ 
+	^ 'https://api.x.ai/v1/chat/completions'.
+    
+]
+
 { #category : 'ollama models' }
 GrokApi >> bodyForEntityWithPrompt [
     "Creates a JSON request body for Grok API with model, messages, max_tokens, temperature, and no streaming."
@@ -40,32 +46,21 @@ GrokApi >> computePower: base exponent: exp [
     ^ base raisedTo: exp
 ]
 
+{ #category : 'accessing' }
+GrokApi >> headers: jsonResponse [
+
+	jsonResponse
+            headerAt: 'Authorization' put: ('Bearer ', self class grokKey);
+            headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonResponse 
+]
+
 { #category : 'initialization' }
 GrokApi >> initialize [
     "Initializes the GrokApi instance with the default model."
     super initialize.
     self model: self class defaultModel.
 
-]
-
-{ #category : 'ollama models' }
-GrokApi >> loadResponse [
-    "Loads response from Grok API, handling requests, parsing, and errors. Updates assistant message in history."
-    | apiGenerateUrl jsonResponse bodyEntity key |
-    apiGenerateUrl := 'https://api.x.ai/v1/chat/completions'.
-    [ 
-        bodyEntity := self bodyForEntityWithPrompt.
-        key := self class grokKey.
-
-        jsonResponse := ZnClient new
-            url: apiGenerateUrl;
-            headerAt: 'Authorization' put: ('Bearer ', key);
-            headerAt: 'Content-Type' put: 'application/json';
-            entity: bodyEntity;
-            post;
-            contents.
-        self assistant: (self responseOf: jsonResponse)
-    ] on: Error do: [ :ex | self assistant: ex messageText ].
 ]
 
 { #category : 'ollama models' }

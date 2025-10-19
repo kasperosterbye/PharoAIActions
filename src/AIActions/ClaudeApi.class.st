@@ -75,6 +75,11 @@ ClaudeApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
+ClaudeApi >> apiGenerateUrl [ 
+	^ 'https://api.anthropic.com/v1/messages'
+]
+
+{ #category : 'accessing' }
 ClaudeApi >> bodyForEntityWithPrompt [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
     | requestDictionary  |
@@ -88,32 +93,21 @@ ClaudeApi >> bodyForEntityWithPrompt [
     ^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'accessing' }
+ClaudeApi >> headers: jsonResponse [
+
+	jsonResponse
+		headerAt: 'x-api-key' put: self class claudeKey;
+		headerAt: 'anthropic-version' put: '2023-06-01';
+		headerAt: 'content-type' put: 'application/json'.
+	^ jsonResponse 
+]
+
 { #category : 'initialize' }
 ClaudeApi >> initialize [ 
 	"Initialises the MistralApi instance with the latest model."
 	super initialize.
    self model: self class defaultModel .
-]
-
-{ #category : 'accessing' }
-ClaudeApi >> loadResponse [
-	"Loads response from Claude API, handling API calls, processing results, and managing errors. Updates assistant message in history or sets error message."
-	| apiGenerateUrl jsonResponse bodyEntity key |
-	apiGenerateUrl := 'https://api.anthropic.com/v1/messages'.
-	[
-		bodyEntity := self bodyForEntityWithPrompt.
-		key := self class claudeKey.
-		jsonResponse := ZnClient new
-			                url: apiGenerateUrl;
-			                headerAt: 'x-api-key' put: key;
-			                headerAt: 'anthropic-version' put: '2023-06-01';
-			                headerAt: 'content-type' put: 'application/json';
-			                entity: bodyEntity;
-			                post;
-			                contents.
-		self assistant: (self responseOf: jsonResponse) ]
-		on: Error
-		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'accessing' }

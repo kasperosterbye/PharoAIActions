@@ -65,6 +65,12 @@ MistralApi class >> token [
 		readStream contents trimBoth.
 ]
 
+{ #category : 'accessing' }
+MistralApi >> apiGenerateUrl [ 
+	^ 'https://api.mistral.ai/v1/chat/completions'.
+	
+]
+
 { #category : 'mistral models' }
 MistralApi >> bodyForEntityWithPrompt [
 	"Creates a JSON entity for an API request with a system message and user prompt."
@@ -78,30 +84,20 @@ MistralApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'accessing' }
+MistralApi >> headers: jsonResponse [
+
+	jsonResponse
+			headerAt: 'Authorization' put: self class esug;
+			headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonResponse 
+]
+
 { #category : 'initialization' }
 MistralApi >> initialize [ 
 	"Initialises a new MistralApi instance with default model and tooling enabled, ready for AI interactions. Sets up conversation management and response handling."
     super initialize.
     self model: self class defaultModel .
-]
-
-{ #category : 'mistral models' }
-MistralApi >> loadResponse [
-
-	| apiGenerateUrl jsonResponse bodyEntiry |
-	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	[
-		bodyEntiry := self bodyForEntityWithPrompt.
-		jsonResponse := ZnClient new
-			url: apiGenerateUrl;
-			headerAt: 'Authorization' put: self class esug;
-			headerAt: 'Content-Type' put: 'application/json';
-			entity: bodyEntiry;
-			post;
-			contents.
-		self assistant: (self responseOf: jsonResponse) ]
-		on: Error
-		do: [ :ex | self assistant: ex messageText ]
 ]
 
 { #category : 'printing' }

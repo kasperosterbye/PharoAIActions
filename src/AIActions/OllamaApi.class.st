@@ -82,6 +82,12 @@ OllamaApi class >> ollamaVersion [
 	^ (STONJSON fromString: response) at: 'version'  .
 ]
 
+{ #category : 'accessing' }
+OllamaApi >> apiGenerateUrl [ 
+	^ 'http://localhost:11434/api/chat'.
+	
+]
+
 { #category : 'ollama models' }
 OllamaApi >> bodyForEntityWithPrompt [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
@@ -96,28 +102,18 @@ OllamaApi >> bodyForEntityWithPrompt [
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'accessing' }
+OllamaApi >> headers: jsonResponse [
+
+	^ jsonResponse 
+]
+
 { #category : 'initialization' }
 OllamaApi >> initialize [
 	"Initializes an OllamaApi instance with default model and empty conversation history ready for API interactions"
 
 	super initialize.
 	self model: self class defaultModel
-]
-
-{ #category : 'ollama models' }
-OllamaApi >> loadResponse [ 
-	"Send POST request to Ollama API to retrieve response content from parsed JSON."
-	| apiGenerateUrl jsonResponse |
-	apiGenerateUrl := 'http://localhost:11434/api/chat'.
-	[ jsonResponse := ZnClient new
-	    url: apiGenerateUrl;
-	    entity: self bodyForEntityWithPrompt;
-	    post;
-	    contents.
-		self assistant: (self responseOf: jsonResponse) .
-	] on: Error do: [ :ex |
-   		self assistant: 'Error bla bla: ', ex asString.
-	].
 ]
 
 { #category : 'ollama models' }
