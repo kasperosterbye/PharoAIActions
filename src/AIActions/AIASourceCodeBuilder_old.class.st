@@ -176,6 +176,7 @@ AIASourceCodeBuilder_old >> forClasses: aClassList [
 { #category : 'accessing' }
 AIASourceCodeBuilder_old >> forMethod: aMethod [
 	|  callers ": OrderedCollection" callersInMyPackage ": OrderedCollection"|
+	self halt.
 	callers := SystemNavigation default allCallsOn: (aMethod selector).
 	callersInMyPackage := OrderedCollection new.
 	callers do: [ :caller | 

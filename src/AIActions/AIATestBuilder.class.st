@@ -238,7 +238,7 @@ AIATestBuilder >> historyBuilder [
 AIATestBuilder >> initialize [ 
 	"Initializes the AI test builder with a new AI chat builder instance, setting up the foundation for AI-driven test generation."
 	super initialize.
-	chatBuilder := AileinProvider provider new.
+	chatBuilder := AilienApi provider new.
 	
 ]
 

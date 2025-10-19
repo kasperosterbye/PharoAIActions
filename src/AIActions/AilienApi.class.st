@@ -1,45 +1,3 @@
-"
-# AilienApi
-
-A base class for AI API providers, managing conversation history and model interactions. This abstract class defines core functionality for AI communication while allowing subclasses to implement provider-specific behavior.
-
-## Key Features
-
-- Maintains conversation history with system, user, and assistant messages
-- Provides model management and response handling
-- Supports multiple AI providers through subclassing
-- Includes progress tracking for AI operations
-
-## Usage Example
-
-```smalltalk
-""Create and configure an AI API instance""
-api := AilienApi new
-    system: 'You are a helpful assistant';
-    model: 'mistral-tiny';
-    prompt: 'Explain quantum computing in simple terms'.
-
-""Get the response (this will show progress)""
-api getResponse.
-
-""Inspect the conversation history""
-api chatAllHistory inspect
-```
-
-## Implementation Notes
-
-- Subclasses must implement `loadResponse` to handle provider-specific API calls
-- The class maintains a shared provider reference for all instances
-- History is stored as an ordered collection of role-content pairs
-- Provides multiple formats for accessing conversation history
-
-## Design Considerations
-
-- Abstract base class for provider-specific implementations
-- Preserves chronological order of all messages
-- Includes validation for message types and positions
-- Supports both synchronous and asynchronous operations
-"
 Class {
 	#name : 'AilienApi',
 	#superclass : 'Object',
@@ -152,8 +110,6 @@ AilienApi class >> provider: aProvider [
 
 { #category : 'provider' }
 AilienApi class >> providers [
-	"Collects all subclasses recursively and returns them sorted by name in alphabetical order"
-
 	| allSubclasses index |
 	allSubclasses := OrderedCollection new.
 	allSubclasses addAll: self subclasses.
