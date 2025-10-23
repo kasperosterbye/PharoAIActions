@@ -105,7 +105,7 @@ ClaudeApi >> headers: jsonResponse [
 
 { #category : 'initialize' }
 ClaudeApi >> initialize [ 
-	"Initialises the MistralApi instance with the latest model."
+	"Initialises a new ClaudeApi instance with default model and empty history ready for AI interactions"
 	super initialize.
    self model: self class defaultModel .
 ]

@@ -92,7 +92,7 @@ GeminiApi >> headers: jsonResponse [
 
 { #category : 'initialize' }
 GeminiApi >> initialize [ 
-	"Initialises the MistralApi instance with the latest model."
+	"Initialises a new instance with Gemini's default model and empty history ready for AI interactions"
 	super initialize.
     self model: self class defaultModel .
 ]

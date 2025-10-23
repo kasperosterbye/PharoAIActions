@@ -56,7 +56,7 @@ AIACommentBuilding >> getResponse [
 
 { #category : 'initialization' }
 AIACommentBuilding >> initialize [ 
-	"Initializes MistralApi with the latest model."
+	"Initialises the AI comment builder with a new AI API provider, setting up the necessary infrastructure for generating AI-driven comments."
 	super initialize.
 	aiaApi := AilienApi provider new.
 ]

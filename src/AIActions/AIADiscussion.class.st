@@ -110,7 +110,7 @@ AIADiscussion >> history [
 
 { #category : 'initialization' }
 AIADiscussion >> initialize [ 
-	"Initializes MistralApi with the latest model."
+	"Initialises a new AI discussion with empty history and API connection"
 	super initialize.
 	history := OrderedCollection new.
 	api := AilienApi provider new. 

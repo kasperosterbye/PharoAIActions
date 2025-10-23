@@ -42,7 +42,7 @@ AilienApi class >> defaultModel [
 
 { #category : 'AI models' }
 AilienApi class >> defaultModel: modelNumber [
-	"Sets the default model for the Ollama API, ensuring it exists in the available models list. If not, defaults to the first model."
+	"Set the default AI model for the API provider."
 
 	modelLLM := self modelNames 
 		at: modelNumber 
@@ -109,6 +109,21 @@ AilienApi class >> provider: aProvider [
 ]
 
 { #category : 'provider' }
+AilienApi class >> providerAndModels [
+	| allSubclasses index models|
+	allSubclasses := OrderedCollection new.
+	allSubclasses addAll: self subclasses.
+	index := 1.
+	[ index <= allSubclasses size ] whileTrue: [ | subs |
+			subs := allSubclasses at: index.
+			subs subclasses ifNotEmpty: [ allSubclasses addAll: subs subclasses ].
+			index := index + 1 ].
+	models := OrderedCollection new.
+	(allSubclasses sort: [ :a :b | a name < b name ]) do: [ :provider | models add: { provider. provider modelNames} ].
+	^ models asArray asString
+]
+
+{ #category : 'provider' }
 AilienApi class >> providers [
 	| allSubclasses index |
 	allSubclasses := OrderedCollection new.
@@ -118,7 +133,7 @@ AilienApi class >> providers [
 			subs := allSubclasses at: index.
 			subs subclasses ifNotEmpty: [ allSubclasses addAll: subs subclasses ].
 			index := index + 1 ].
-	^ allSubclasses sort: [ :a :b | a name < b name ]
+	^ allSubclasses sort: [ :a :b | a name < b name ]; asArray
 ]
 
 { #category : 'accessing' }
@@ -231,7 +246,7 @@ AilienApi >> jsonHistory [
 
 { #category : 'accessing' }
 AilienApi >> loadResponse [
-	"Loads response from Claude API, handling API calls, processing results, and managing errors. Updates assistant message in history or sets error message."
+	"Loads response from AI model API, handling errors and updating conversation history."
 
 	| jsonResponse llmCall |
 	[
@@ -259,12 +274,6 @@ AilienApi >> model: anObject [
 	"Sets the model for AI interactions. Validates input and updates instance state. Preserves existing history. Returns the model name."
 
 	model := anObject
-]
-
-{ #category : 'printing' }
-AilienApi >> printOn: string [
-	"Prints the model name of OllamaModelsApi instance"
-	string << self class name asString << '::::: ' << self model.
 ]
 
 { #category : 'initialization' }

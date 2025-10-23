@@ -1,37 +1,3 @@
-"
-# Class Comment for MistralApi
-
-The `MistralApi` class provides an interface to interact with Mistral's AI models, enabling developers to send prompts, receive responses, and utilise tooling capabilities. It extends the `AilienApi` superclass, inheriting core conversation management functionality while specialising in Mistral-specific implementations.
-
-## Key Features
-
-- **Model Interaction**: Supports multiple Mistral models (e.g., 'codestral-latest', 'mistral-small-latest')
-- **Tool Integration**: Optional tooling capabilities for enhanced functionality
-- **Conversation Management**: Maintains and formats chat history
-- **Error Handling**: Robust error management for API responses
-
-## Usage Example
-
-```smalltalk
-""Create and configure a Mistral API instance""
-mistral := MistralApi new.
-mistral model: 'mistral-small-latest'.  ""Set the model""
-mistral system: 'You are a helpful assistant'.  ""Set system message""
-mistral user: 'Tell me about Pharo'.  ""Add user prompt""
-mistral getResponse.  ""Get AI response""
-mistral response  ""Inspect the response""
-```
-
-## Implementation Notes
-
-- Requires valid API credentials stored in a file
-- Handles both standard and tool-enhanced API requests
-- Maintains conversation history in chronological order
-- Provides formatted output for debugging and display purposes
-
-The class is designed for integration with Pharo's Smalltalk environment, offering a clean interface for AI interactions while handling the complexities of API communication and response processing.
-```
-"
 Class {
 	#name : 'OpenAIApi',
 	#superclass : 'AilienApi',
@@ -50,21 +16,20 @@ OpenAIApi class >> modelNames [
 
 { #category : 'accessing' }
 OpenAIApi class >> openAI01 [
-	"Return the API token for Mistral, read from a maarumlam https file.
-	The file should contain only the Bearer token string (no quotes or extra lines).
-	Used to authenticate API requests."
+	"Method to read and trim the contents of a file named Eva01.txt."
 	^ (FileSystem disk workingDirectory / '../../Eva01.txt')
 		readStream contents trimBoth.
 ]
 
 { #category : 'accessing' }
 OpenAIApi >> apiGenerateUrl [
+	"Method to generate the API URL for OpenAIApi."
     ^ 'https://api.openai.com/v1/chat/completions'
 ]
 
 { #category : 'mistral models' }
 OpenAIApi >> bodyForEntityWithPrompt [
-    "Creates a JSON request body for Grok API with model, messages, max_tokens, temperature, and no streaming."
+	"Method to create a JSON body with prompt for OpenAIApi."
     | requestDictionary |
     requestDictionary := Dictionary newFrom: {
         'model' -> model.
@@ -74,11 +39,11 @@ OpenAIApi >> bodyForEntityWithPrompt [
         'stream' -> false.
     }.
     ^ ZnEntity json: (STONJSON toString: requestDictionary).
-
 ]
 
 { #category : 'accessing' }
 OpenAIApi >> headers: jsonResponse [
+	"Method to set headers for OpenAIApi request."
 
 	jsonResponse
 			headerAt: 'Authorization' put: self class openAI01;
@@ -90,19 +55,20 @@ OpenAIApi >> headers: jsonResponse [
 
 { #category : 'initialization' }
 OpenAIApi >> initialize [ 
-	"Initialises a new MistralApi instance with default model and tooling enabled, ready for AI interactions. Sets up conversation management and response handling."
-    super initialize.
+	"Initialises the OpenAI API instance by calling superclass initialiser and setting default model for AI interactions"
+	 super initialize.
     self model: self class defaultModel .
 ]
 
 { #category : 'printing' }
 OpenAIApi >> printOn: aStream [
-	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
+	"Method to print the model name of OpenAIApi instance."
 	aStream << 'OpenAIApi: ' << self model.
 ]
 
 { #category : 'mistral models' }
 OpenAIApi >> responseOf: jsonResponse [
+	"Method to parse JSON response and extract content, handling errors gracefully."
 	| parsed   |
 	parsed := STONJSON fromString: jsonResponse.
 	[^ ((parsed at: 'choices') first at: 'message') at: 'content' ]

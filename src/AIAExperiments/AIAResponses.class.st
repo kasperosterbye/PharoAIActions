@@ -129,8 +129,8 @@ AIAResponses >> provider: p model: m response: r [
 
 { #category : 'provider' }
 AIAResponses >> providers [
-	"AilienApi providers  "
-	^ {ClaudeApi. GeminiApi. GrokApi. MistralApi}.
+	^AilienApi providers  
+	"^ {ClaudeApi. GeminiApi. GrokApi. MistralApi}."
 ]
 
 { #category : 'as yet unclassified' }
