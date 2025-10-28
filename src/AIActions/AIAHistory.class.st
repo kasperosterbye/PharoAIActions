@@ -40,7 +40,7 @@ Class {
 { #category : 'accessing' }
 AIAHistory >> api [
 	"Returns the API provider instance or defaults to the AilienApi provider if the instance is nil"
-	api ifNil: [ ^ AilienApi provider ].
+	api ifNil: [ ^ AilienApi provider new ].
 	^ api
 ]
 
@@ -55,10 +55,15 @@ AIAHistory >> apiMessageList [
 	"Returns an ordered list of all messages with first and last roles included"
 	| messageList |
 	messageList := OrderedCollection new.
-	firstRoles keysAndValuesDo: [ :key :value | messageList add: key -> value ].
+	firstRoles keysAndValuesDo: [ :key :value | messageList add: 'user' -> ('[',key,'] ',  value) ].
 	messages do: [ :m | messageList add: m ].
-	lastRoles  keysAndValuesDo: [ :key :value | messageList add: key -> value ].
+	lastRoles  keysAndValuesDo: [ :key :value | messageList add: 'user' -> ('[',key,'] ',  value) ].
 	^ messageList
+]
+
+{ #category : 'initialization' }
+AIAHistory >> assistant: aString [
+	messages add: 'assistant' -> aString
 ]
 
 { #category : 'context roles' }
@@ -72,9 +77,49 @@ AIAHistory >> background: string [
 ]
 
 { #category : 'initialization' }
+AIAHistory >> chatHistory [
+	"Returns formatted chat history excluding system message, with numbered entries for user and assistant messages. Preserves chronological order."
+	| historyText counter |
+	historyText := WriteStream on: ''.
+	counter := 1.
+	self apiMessageList do: [ :item | 
+		historyText << '## ['<< counter asString << '] ' << item key << String cr
+			<< item value << String cr << String cr.
+			counter := counter + 1.
+		 ].
+	^ historyText contents
+]
+
+{ #category : 'ollama models' }
+AIAHistory >> getResponse [
+	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
+	self apiMessageList ifEmpty: [ 
+		self assistant: 'No answer, as I was not asked'.
+		^ self ].
+	[ :job | | aiProcess |
+		aiProcess := [ self api history: self; loadResponse ] newProcess.
+		aiProcess priority: Processor userBackgroundPriority. 
+		aiProcess resume.
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job interruptBlock: [ 
+			aiProcess terminate.
+			self assistant: 'AI based response Terminated'.
+			^ self
+		].
+		1 to: 600 do: [:each |
+			job
+				progress: ((1/600) * each) ;
+				title: ( AilienApi info, ' working {1} of 60' 
+					format: {(each/10) asFloat printString}).
+				self response ifNil: [100 milliSeconds wait].
+		].
+	] asJob run.
+]
+
+{ #category : 'initialization' }
 AIAHistory >> initialize [
 	super initialize.
-	api := AilienApi provider.
+	"api := AilienApi provider".
 	messages := OrderedCollection new.
 	firstRoles := OrderedDictionary new.
 	lastRoles := OrderedDictionary new.
@@ -83,6 +128,13 @@ AIAHistory >> initialize [
 { #category : 'accessing' }
 AIAHistory >> messages [
 	^ messages 
+]
+
+{ #category : 'ollama models' }
+AIAHistory >> old_getResponse [
+	self api
+		history: self;
+		getResponse.
 ]
 
 { #category : 'accessing' }
@@ -99,7 +151,7 @@ AIAHistory >> responseType [
 
 { #category : 'context roles' }
 AIAHistory >> responseType: string [
-	lastRoles at: 'responseType:' put: string 
+	lastRoles at: 'responseType' put: string 
 ]
 
 { #category : 'context roles' }

@@ -3,10 +3,11 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'messages'
+		'messagesx',
+		'history'
 	],
 	#classVars : [
-		'LastHistory',
+		'LastHistoryx',
 		'Provider'
 	],
 	#classInstVars : [
@@ -157,8 +158,8 @@ AilienApi >> apiGenerateUrl [
 
 { #category : 'initialization' }
 AilienApi >> assistant: aString [
-	"Adds an assistant response to the conversation history. Validates the input and updates the history with the assistant's message."
-	messages add: 'assistant' -> aString
+	
+	history assistant: aString
 ]
 
 { #category : 'accessing' }
@@ -167,35 +168,14 @@ AilienApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'initialization' }
-AilienApi >> chatAllHistory [
-	"Returns a formatted string of all conversation history, with each entry prefixed by its role and separated by newlines. Preserves system, user, and assistant messages in chronological order."
-	| historyText |
-	historyText := WriteStream on: ''.
-	messages do: [ :item | 
-		historyText << '## ' << item key << String cr
-			<< item value << String cr << String cr
-		 ].
-	^ historyText contents
-]
-
-{ #category : 'initialization' }
 AilienApi >> chatHistory [
-	"Returns formatted chat history excluding system message, with numbered entries for user and assistant messages. Preserves chronological order."
-	| historyText counter |
-	historyText := WriteStream on: ''.
-	counter := 1.
-	messages allButFirst do: [ :item | 
-		historyText << '## ['<< counter asString << '] ' << item key << String cr
-			<< item value << String cr << String cr.
-			counter := counter + 1.
-		 ].
-	^ historyText contents
+	^ history chatHistory
 ]
 
 { #category : 'ollama models' }
 AilienApi >> getResponse [
 	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
-	self history ifEmpty: [ 
+	self history apiMessageList ifEmpty: [ 
 		self assistant: 'No answer, as I was not asked'.
 		^ self ].
 	
@@ -227,13 +207,12 @@ AilienApi >> headers: foo [
 { #category : 'initialization' }
 AilienApi >> history [
 	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
-	^ messages
+	^ history
 ]
 
 { #category : 'initialization' }
 AilienApi >> history: aHistory [
-	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
-	^ messages := aHistory 
+	^ history := aHistory 
 ]
 
 { #category : 'initialization' }
@@ -241,7 +220,6 @@ AilienApi >> initialize [
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
 	self model: self class defaultModel.
-	messages := OrderedCollection new.
 ]
 
 { #category : 'accessing' }
@@ -249,12 +227,12 @@ AilienApi >> jsonHistory [
 	"Returns the conversation history as a JSON array of role-content dictionaries, preserving chronological order of system, user, and assistant messages."
 	| jsonHistory |
 	jsonHistory := OrderedCollection new.
-	messages do: [ :item |
+	history apiMessageList do: [ :item |
 		jsonHistory add: (Dictionary newFrom: 
 			{'role' -> item key.
 			'content' -> item value.})
 	].
-	LastHistory := messages.
+	"LastHistory := history."
 	^ jsonHistory asArray.
 ]
 
@@ -262,16 +240,17 @@ AilienApi >> jsonHistory [
 AilienApi >> loadResponse [
 	"Loads response from AI model API, handling errors and updating conversation history."
 
-	| jsonResponse llmCall |
-	[
-		jsonResponse := ZnClient new
+	| jsonResponse llmCall response|
+	[  jsonResponse := ZnClient new
 			                url: self apiGenerateUrl;
 			                entity: self bodyForEntityWithPrompt.
 		self headers: jsonResponse.
 		llmCall := jsonResponse
 			           post;
 			           contents.
-		self assistant: (self responseOf: llmCall) ]
+		response := self responseOf: llmCall.
+		self assistant: (self responseOf: llmCall). 
+		]
 		on: Error
 		do: [ :ex | self assistant: ex messageText ]
 ]
@@ -292,9 +271,10 @@ AilienApi >> model: anObject [
 
 { #category : 'accessing' }
 AilienApi >> response [
-	"Returns the last assistant response from history or nil if none exists. Preserves chronological order of messages."
-	(messages last key = 'assistant')
-		ifTrue: [ ^ messages last value ]
+	| last |
+	last := history apiMessageList last.
+	(last key = 'assistant')
+		ifTrue: [ ^ last value ]
 		ifFalse: [ ^ nil ]
 ]
 
@@ -303,30 +283,7 @@ AilienApi >> responseOf: llmCall [
 	self subclassResponsibility
 ]
 
-{ #category : 'accessing' }
-AilienApi >> system [
-	"Adds a system message to the conversation history. Must be the first message. Validates input and updates the history with the system's message."
-	messages isEmpty ifTrue: [ ^ nil ].
-	messages first key = 'system'
-		ifTrue: [ ^ messages first value ]
-		ifFalse: [ ^ nil ]
-]
-
-{ #category : 'initialization' }
-AilienApi >> system: aString [
-	"Adds a system message to the conversation history. Must be the first message. Validates input and updates the history with the system's message."
-	messages size = 0 ifFalse: [ self error: 'system call must be first' ].
-	messages add: 'system' -> aString
-]
-
 { #category : 'initialization' }
 AilienApi >> user: aString [
-	"Adds a user prompt to the conversation history, validating input and updating the history with the user's message. Preserves chronological order."
-
-	(messages size = 1 and: [ messages first key = 'system' ])
-		ifTrue: [ messages 
-			at: 1 
-			put: 'user' -> ('[BACKGROUND] ', messages first value , String cr, 
-			'[QUESTION] ' , aString) ]
-		ifFalse: [ messages add: 'user' -> aString ]
+	history user: aString
 ]
