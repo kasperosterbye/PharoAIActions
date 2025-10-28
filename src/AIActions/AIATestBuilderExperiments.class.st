@@ -80,8 +80,8 @@ AIATestBuilderExperiments class >> showTestResults [
 AIATestBuilderExperiments class >> testClass: aClass [
 	"Generate test method 'aClassNameAITest_xy' where x is either 'G'emini or 'M'istral, and y is 1-5"
 	| mistral gemini testResults |
-	mistral := AIAMistralTestBuilder.
-	gemini := AIAGeminiTestBuilder.
+	mistral := AIATest01.
+	gemini := AIATest03.
 	testResultsDictionary := OrderedDictionary new.
 	1 to: 3 do: [ :y | 
 		AIATestBuilder aITestClassPostfix: 'AITest_m', y asString.

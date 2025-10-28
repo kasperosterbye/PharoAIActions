@@ -73,15 +73,6 @@ AilienApiTest >> testModel [
 ]
 
 { #category : 'running' }
-AilienApiTest >> testPrompt [
-	
-	refAilienApi user: 'Banana'.
-	self 
-		assert: refAilienApi history first 
-		equals: 'user' -> 'Banana' 
-]
-
-{ #category : 'running' }
 AilienApiTest >> testSystem [
 	refAilienApi system: 'Joe' .
 	self 

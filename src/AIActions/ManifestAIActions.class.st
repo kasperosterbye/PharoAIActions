@@ -114,7 +114,7 @@ ManifestAIActions class >> ruleMethodSourceContainsLinefeedsRuleV1FalsePositive 
 ManifestAIActions class >> ruleReGuardClauseRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGClassDefinition #(#AIAMistralTestBuilder)) #'2025-07-23T12:54:26.010851+02:00') #(#(#RGPackageDefinition #(#AIActions)) #'2025-08-15T14:28:36.252093+02:00') )
+	^ #(#(#(#RGClassDefinition #(#AIATest01)) #'2025-07-23T12:54:26.010851+02:00') #(#(#RGPackageDefinition #(#AIActions)) #'2025-08-15T14:28:36.252093+02:00') )
 ]
 
 { #category : 'code-critics' }

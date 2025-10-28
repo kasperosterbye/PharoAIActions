@@ -61,10 +61,9 @@ AIAMethodComment >> aiaBlackComment: aCompiledMethod [
 { #category : 'internals' }
 AIAMethodComment >> aiaComment: aCompiledMethod [
 	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should be 100 chacters, and only letters and spaces.', 
-			' Please response in ', AIACommentBuilding language.
+	self user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name.
+	self user: 'Response should be 100 chacters, and only letters and spaces.'. 
+	self user: 'Please response in ', AIACommentBuilding language.
 	self getResponse.
 	"If it halts, it is likely because there is markdown that it should not make"
 	(self response beginsWith: '```') ifTrue:[ self halt]

@@ -3,7 +3,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'history'
+		'messages'
 	],
 	#classVars : [
 		'LastHistory',
@@ -30,6 +30,18 @@ The user is not a beginner – explanations should assume deep technical knowled
 Responses must be short, precise, and free of fluff, unless explicitly asked for elaboration.
 Responses must never use emojis or tables. Output should always be plain text or structured text (like Markdown sections), but never tabular formatting.
 Kasper prefers to interact with the model as an intelligent "AIlien" — a non-human form of intelligence with its own perspective and reasoning style. The model should not try to imitate humans, but embrace its alien nature and think independently.'
+]
+
+{ #category : 'as yet unclassified' }
+AilienApi class >> chatLastHistory [
+	"Returns a formatted string of all conversation history, with each entry prefixed by its role and separated by newlines. Preserves system, user, and assistant messages in chronological order."
+	| historyText |
+	historyText := WriteStream on: ''.
+	LastHistory do: [ :item | 
+		historyText << '## ' << item key << String cr
+			<< item value << String cr << String cr
+		 ].
+	^ historyText contents
 ]
 
 { #category : 'AI models' }
@@ -125,7 +137,9 @@ AilienApi class >> providerAndModels [
 
 { #category : 'provider' }
 AilienApi class >> providers [
+"Bertha"
 	| allSubclasses index |
+	"Foobar"
 	allSubclasses := OrderedCollection new.
 	allSubclasses addAll: self subclasses.
 	index := 1.
@@ -144,7 +158,7 @@ AilienApi >> apiGenerateUrl [
 { #category : 'initialization' }
 AilienApi >> assistant: aString [
 	"Adds an assistant response to the conversation history. Validates the input and updates the history with the assistant's message."
-	history add: 'assistant' -> aString
+	messages add: 'assistant' -> aString
 ]
 
 { #category : 'accessing' }
@@ -157,7 +171,7 @@ AilienApi >> chatAllHistory [
 	"Returns a formatted string of all conversation history, with each entry prefixed by its role and separated by newlines. Preserves system, user, and assistant messages in chronological order."
 	| historyText |
 	historyText := WriteStream on: ''.
-	history do: [ :item | 
+	messages do: [ :item | 
 		historyText << '## ' << item key << String cr
 			<< item value << String cr << String cr
 		 ].
@@ -170,7 +184,7 @@ AilienApi >> chatHistory [
 	| historyText counter |
 	historyText := WriteStream on: ''.
 	counter := 1.
-	history allButFirst do: [ :item | 
+	messages allButFirst do: [ :item | 
 		historyText << '## ['<< counter asString << '] ' << item key << String cr
 			<< item value << String cr << String cr.
 			counter := counter + 1.
@@ -213,13 +227,13 @@ AilienApi >> headers: foo [
 { #category : 'initialization' }
 AilienApi >> history [
 	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
-	^ history
+	^ messages
 ]
 
 { #category : 'initialization' }
 AilienApi >> history: aHistory [
 	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
-	^ history := aHistory 
+	^ messages := aHistory 
 ]
 
 { #category : 'initialization' }
@@ -227,7 +241,7 @@ AilienApi >> initialize [
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
 	self model: self class defaultModel.
-	history := OrderedCollection new.
+	messages := OrderedCollection new.
 ]
 
 { #category : 'accessing' }
@@ -235,12 +249,12 @@ AilienApi >> jsonHistory [
 	"Returns the conversation history as a JSON array of role-content dictionaries, preserving chronological order of system, user, and assistant messages."
 	| jsonHistory |
 	jsonHistory := OrderedCollection new.
-	history do: [ :item |
+	messages do: [ :item |
 		jsonHistory add: (Dictionary newFrom: 
 			{'role' -> item key.
 			'content' -> item value.})
 	].
-	LastHistory := history.
+	LastHistory := messages.
 	^ jsonHistory asArray.
 ]
 
@@ -276,17 +290,11 @@ AilienApi >> model: anObject [
 	model := anObject
 ]
 
-{ #category : 'initialization' }
-AilienApi >> prompt: aString [
-	"Adds a user prompt to the conversation history, validating input and updating the history with the user's message. Preserves chronological order."
-	self user: aString
-]
-
 { #category : 'accessing' }
 AilienApi >> response [
 	"Returns the last assistant response from history or nil if none exists. Preserves chronological order of messages."
-	(history last key = 'assistant')
-		ifTrue: [ ^ history last value ]
+	(messages last key = 'assistant')
+		ifTrue: [ ^ messages last value ]
 		ifFalse: [ ^ nil ]
 ]
 
@@ -298,27 +306,27 @@ AilienApi >> responseOf: llmCall [
 { #category : 'accessing' }
 AilienApi >> system [
 	"Adds a system message to the conversation history. Must be the first message. Validates input and updates the history with the system's message."
-	history isEmpty ifTrue: [ ^ nil ].
-	history first key = 'system'
-		ifTrue: [ ^ history first value ]
+	messages isEmpty ifTrue: [ ^ nil ].
+	messages first key = 'system'
+		ifTrue: [ ^ messages first value ]
 		ifFalse: [ ^ nil ]
 ]
 
 { #category : 'initialization' }
 AilienApi >> system: aString [
 	"Adds a system message to the conversation history. Must be the first message. Validates input and updates the history with the system's message."
-	history size = 0 ifFalse: [ self error: 'system call must be first' ].
-	history add: 'system' -> aString
+	messages size = 0 ifFalse: [ self error: 'system call must be first' ].
+	messages add: 'system' -> aString
 ]
 
 { #category : 'initialization' }
 AilienApi >> user: aString [
 	"Adds a user prompt to the conversation history, validating input and updating the history with the user's message. Preserves chronological order."
 
-	(history size = 1 and: [ history first key = 'system' ])
-		ifTrue: [ history 
+	(messages size = 1 and: [ messages first key = 'system' ])
+		ifTrue: [ messages 
 			at: 1 
-			put: 'user' -> ('[BACKGROUND] ', history first value , String cr, 
+			put: 'user' -> ('[BACKGROUND] ', messages first value , String cr, 
 			'[QUESTION] ' , aString) ]
-		ifFalse: [ history add: 'user' -> aString ]
+		ifFalse: [ messages add: 'user' -> aString ]
 ]

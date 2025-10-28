@@ -14,10 +14,27 @@ AIAClassComment >> aiaComment: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 	self system: (AIASourceCodeBuilder new forClass: aClass).
 	
-	self user: 'This is a Pharo question. ' , 
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
+		'. Use Markdown format in your response, and include a usage example suitable for the Playground. ',
+		'Prefer code that ends with an expression to be inspected using command-I. ',
+		'When givin an example using the definition of a class, use: ', (ShiftClassBuilder comment),
+		'Just response the comment.',
+		'Please write the response in ',
+		AIACommentBuilding language.
+	self getResponse.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> aiaCommentBasic: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
+	self system: (AIASourceCodeBuilder new forClass: aClass).
+	
+	self user: 'This is a Pharo question. Can your give a class comment for ' , 
+		aClass asString, 
 		'. Use Markdown format in your response. ',
-		'The reader is an LLM that will be asked to produce tests for each of its methods. Please make the response all the instructions for writing tests in Pharo for this specific class: ', 
-		aClass asString.
+		'You must only describe facts that are explicitly visible in the provided code. Do not infer purpose, behavior, or meaning from names or patterns. If something is unclear, omit it rather than guessing. The result must read as an objective summary, not an explanation.'.
 	self getResponse.
 	
 ]
@@ -42,14 +59,18 @@ AIAClassComment >> aiaCommentDetailed: aClass [
 	
 	self user: 'This is a Pharo question. Can your give a class comment for ' , 
 		aClass asString, 
-		'. Use Markdown format in your response',
-		' Please a detailed comment with all aspects. Your answer must not contain code, and no description of which class it is for as that is part of the prompt.'.
+		'. Use Markdown format in your response, and include a usage example suitable for the Playground. ',
+		'Prefer code that ends with an expression to be inspected using command-I. ',
+		'When givin an example using the definition of a class, use: ', (ShiftClassBuilder comment),
+		'Just response the comment.',
+		'Please write the response in ',
+		AIACommentBuilding language.
 	self getResponse.
 	
 ]
 
 { #category : 'accessing' }
-AIAClassComment >> aiaCommentExpertError: aClass [
+AIAClassComment >> aiaCommentExpert: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 	self system: (AIASourceCodeBuilder new forClass: aClass).
 	

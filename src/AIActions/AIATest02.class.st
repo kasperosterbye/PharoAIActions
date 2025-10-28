@@ -1,32 +1,5 @@
-"
-# Class: AIAMistralTestBuilder
-
-The `AIAMistralTestBuilder` class is responsible for generating test methods for Pharo methods using the Mistral AI model. It extends the functionality of `AIATestBuilder` by providing specific prompts and context tailored for test generation, ensuring accurate and context-aware test creation.
-
-## Usage Example
-
-```st
-""Create a test builder for a specific method and generate a test""
-| method testBuilder |
-method := Point >> #x.
-testBuilder := AIAMistralTestBuilder new for: method.
-testBuilder generateTest.
-testBuilder testMethod inspect  ""Inspect the generated test method""
-```
-
-## Design Decisions
-
-- **AI Integration**: The builder utilises the Mistral AI model to generate test methods, providing context-specific prompts and system information to ensure accurate test creation.
-- **Test Generation**: The builder follows a structured approach to test generation, including arranging test data, acting on the method under test, and asserting expected outcomes.
-- **Context Awareness**: The builder provides specific context about Pharo methods, including method types (unary, binary, keyword), return values, and data structures, to guide AI in generating appropriate test cases.
-- **Error Handling**: The builder includes mechanisms for handling and repairing failed test generations, ensuring robustness in test creation.
-- **Class Integration**: The builder is designed to work seamlessly with Pharo's class and method structures, providing accurate class and method information to the AI model.
-
-The `AIAMistralTestBuilder` is an essential tool for developers looking to automate test generation in Pharo, ensuring comprehensive test coverage and reducing manual testing efforts.
-
-"
 Class {
-	#name : 'AIAGrokTestBuilder',
+	#name : 'AIATest02',
 	#superclass : 'AIATestBuilder',
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
@@ -34,7 +7,7 @@ Class {
 }
 
 { #category : 'test builder' }
-AIAGrokTestBuilder >> hist1GeneratorMethods [
+AIATest02 >> hist1GeneratorMethods [
 	"The hist1GeneratorMethods method provides context about Pharo method types unary binary and keyword to ensure accurate test generation."
 	chatBuilder user: 'I have heard that Pharo have different types of methods, what are they'.
 	chatBuilder assistant:'
@@ -76,7 +49,7 @@ Notes:
 ]
 
 { #category : 'test builder' }
-AIAGrokTestBuilder >> hist50WhatIsTheBasics [
+AIATest02 >> hist50WhatIsTheBasics [
 	"The hist50WhatIsTheBasics method provides context about method return values in Pharo, explaining the difference between implicit and explicit returns using the caret symbol."
 	chatBuilder user: ('For making a test for method {1} in class {2}, what does {1} return'
 			format: {self sourceMethodStringName . self sourceClassStringName }).
@@ -87,14 +60,14 @@ So for `{1}`, if there is no caret, it returns the `{2}` instance; if there is o
 ]
 
 { #category : 'test builder' }
-AIAGrokTestBuilder >> hist70ReferenceToOrigin [
+AIATest02 >> hist70ReferenceToOrigin [
 	^ self.
 	chatBuilder user: 'A test method often need a reference to the original. How do I find the original class?'.
 	chatBuilder assistant: ('You need to use the local variable of the test class {1}, which in this class is ref{1}. ' format: { self sourceClassStringName})
 ]
 
 { #category : 'test builder' }
-AIAGrokTestBuilder >> hist92WhatIsTheBasics [
+AIATest02 >> hist92WhatIsTheBasics [
 	"The hist92WhatIsTheBasics method provides context about local variable rules in Pharo methods, ensuring proper syntax and declaration."
 	chatBuilder user: 'Are there any rules for local variables in Pharo?'.
 	chatBuilder assistant: 'Yes. In Pharo, all local variables must be declared in a single block at the top of the method using vertical bars, like `| pathDistance |`. 
@@ -102,7 +75,7 @@ Placing the declaration later in the code is a syntax error and will prevent the
 ]
 
 { #category : 'test builder' }
-AIAGrokTestBuilder >> hist94SourceMethodCommentAndCode [
+AIATest02 >> hist94SourceMethodCommentAndCode [
 	
 	chatBuilder user:( 'What should I test in `{1} given its comment and implementation?' format: {self sourceMethodStringName}).
 	chatBuilder assistant: ('You are supposed to write a test method of `{1}`, and take its comment: "{2}" into consideration.'
@@ -110,7 +83,7 @@ AIAGrokTestBuilder >> hist94SourceMethodCommentAndCode [
 ]
 
 { #category : 'instance creation' }
-AIAGrokTestBuilder >> historyBuilder [
+AIATest02 >> historyBuilder [
 
 	self hist92WhatIsTheBasics.
 	self hist1GeneratorMethods.
@@ -121,7 +94,7 @@ AIAGrokTestBuilder >> historyBuilder [
 ]
 
 { #category : 'initialization' }
-AIAGrokTestBuilder >> initialize [ 
+AIATest02 >> initialize [ 
 	super initialize.
 	
 ]

@@ -64,24 +64,6 @@ AIADiscussion class >> histories [
 ]
 
 { #category : 'class initialization' }
-AIADiscussion class >> initialize [ 
-	
-	Histories := OrderedDictionary new.
-	Current := nil.
-]
-
-{ #category : 'as yet unclassified' }
-AIADiscussion class >> inspectionKillroy: aBuilder [
-	<inspectorPresentationOrder: 100 title: 'Killroy'>
-	
-	^ aBuilder newCode
-		addStyle: 'stCode';
-		syntaxHighlight: false;
-		text: 'Was here';
-		yourself
-]
-
-{ #category : 'class initialization' }
 AIADiscussion class >> next [
 
 	Current
@@ -91,6 +73,36 @@ AIADiscussion class >> next [
 		ifNotNil: [
 				Histories add: Current.
 				Current := self new. ]
+]
+
+{ #category : 'writing' }
+AIADiscussion class >> readCurrentTo: fileName [
+	"Serialises the current history to the specified file name."
+	FLMaterializer 
+		materializeFromFileNamed: (FileSystem workingDirectory / fileName) fullName
+]
+
+{ #category : 'writing' }
+AIADiscussion class >> writeCurrentTo: fileName [
+	"Serialises the current history to the specified file name."
+	FLSerializer 
+		serialize: self currentHistory 
+		toFileNamed: (FileSystem workingDirectory / fileName) fullName
+]
+
+{ #category : 'initialization' }
+AIADiscussion >> chatHistory [
+	"Returns formatted conversation history as a string with numbered entries for each message"
+	| historyText counter |
+	historyText := WriteStream on: ''.
+	counter := 1.
+	history do: [ :item | 
+		historyText << '## ['<< counter asString << '] ' << item key << String cr
+			<< item value << String cr << String cr.
+			counter := counter + 1.
+		 ].
+	"There is some comment here"
+	^ historyText contents
 ]
 
 { #category : 'adding' }

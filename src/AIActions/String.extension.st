@@ -56,24 +56,6 @@ String >> l [
 ]
 
 { #category : '*AIActions' }
-String >> old_q1 [
-	| backGround |
-	backGround := '- I am only interested in Pharo (and Smalltalk). No other programming languages has my interest.
-- If you know the answer and you are sure your background is correct, please say: "Awesome, here is the answer to X". 
-- If you have an idea on how to solve it, but it not an example you found in your memoty, but something you deduced, please say: "it is a cool prompt question, but X is not my knowledge", and do not attemept to answer'.
-	^ (AilienApi provider new
-		system:  backGround;
-		user: self; 
-		getResponse; 
-		response) 
-]
-
-{ #category : '*AIActions' }
-String >> pharoMarkdown [ | lines | lines := self lines.
-		
-]
-
-{ #category : '*AIActions' }
 String >> q [
 	^ (AilienApi provider new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
@@ -86,7 +68,7 @@ String >> q [
 { #category : '*AIActions' }
 String >> q0 [
 	^ (AilienApi provider new
-		user: self; 
+		user: self;
 		getResponse; 
 		response) 
 ]

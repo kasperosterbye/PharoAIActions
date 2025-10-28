@@ -1,54 +1,6 @@
-"
-# Class Comment for AIATestBuilder
-
-The `AIATestBuilder` class is responsible for generating automated test methods using AI assistance. It leverages the capabilities of AI models to create comprehensive test cases for existing methods, ensuring code quality and reliability.
-
-## Key Features
-
-- **AI-Powered Test Generation**: Utilises AI to analyse source code and generate appropriate test methods.
-- **Context-Aware Prompts**: Combines system context, method information, and specific prompts to guide AI in creating accurate test cases.
-- **Error Handling and Repair**: Automatically detects and repairs compilation errors in generated test methods.
-- **Test Class Management**: Creates or retrieves test classes, compiles setup code, and handles instance variables.
-- **Retry Mechanism**: Implements a retry mechanism to handle failures during test generation and compilation.
-
-## Usage Example
-
-```smalltalk
-""Example of how to use AIATestBuilder in the Playground""
-| builder testMethod sourceMethod |
-
-""Assume we have a method to test""
-sourceMethod := Object >> #asString.
-
-""Create an instance of AIATestBuilder""
-builder := AIATestBuilder new.
-
-""Generate a test method for the source method""
-testMethod := builder build: sourceMethod.
-
-""Inspect the generated test method""
-testMethod inspect.
-```
-
-## Design Decisions
-
-- **Fluid Syntax**: The class is designed to support a fluid syntax for easy scripting and interactive use.
-- **Separation of Concerns**: The builder separates the concerns of test generation, compilation, and execution.
-- **Error Handling**: Implements robust error handling to manage failures during test generation and compilation.
-- **Retry Mechanism**: Includes a retry mechanism to ensure the generation of valid test methods.
-- **Test Class Management**: Handles the creation and management of test classes, including setup code and instance variables.
-
-## Future Enhancements
-
-- **Improved API Alignment**: Revisit the API to align with class default values and reduce unnecessary conversions.
-- **Enhanced Context Awareness**: Further improve the context-aware prompts to enhance the accuracy of generated test methods.
-- **Integration with CI/CD**: Explore integration with continuous integration and deployment pipelines for automated test generation.
-
-This class is designed to be extended and customised for different AI models and testing frameworks, ensuring flexibility and adaptability to various project requirements.
-"
 Class {
 	#name : 'AIATestBuilder',
-	#superclass : 'AIABuilder',
+	#superclass : 'Object',
 	#instVars : [
 		'chatBuilder',
 		'sourceMethod',
@@ -84,7 +36,7 @@ AIATestBuilder class >> buildAll: aClass [
 ]
 
 { #category : 'builder' }
-AIATestBuilder class >> buildTestClass: sourceClass [
+AIATestBuilder class >> buildTestClass: sourceClass [ 
 	"Creates or retrieves a test class for a given method, compiling setup code and handling instance variables. Returns the test class."
 
     |  superClass newTestClassName shifter instanceVarName |
@@ -169,10 +121,8 @@ AIATestBuilder >> chatHistory [
 	^ chatBuilder chatHistory
 ]
 
-{ #category : 'instance creation' }
+{ #category : 'compiling' }
 AIATestBuilder >> compileAndChechBuildedTestOf: aMethod [
-	"Builds a test method for a given method, retrying up to a specified number of times if compilation or execution fails. Returns the chat history of the AI interaction."
-
 	| testMethodName result |
 	self repairResponseMethod.
 	[
@@ -186,16 +136,14 @@ AIATestBuilder >> compileAndChechBuildedTestOf: aMethod [
 		do: [
 				testMethodName := self fictiveTestMethod.
 				testColor := Color black ].
-
-
 	^ self chatHistory
 ]
 
 { #category : 'instance creation' }
 AIATestBuilder >> fictiveTestMethod [
-	"Creates a placeholder test method when AI test generation fails, preserving the original code as a comment."
+	"Creates a placeholder test method when AI generation fails and compiles it into the test class."
 
-	| header fictiveTest |
+	| header fictiveTest | 
 	header := 'test'
 	          , ((self sourceMethodStringName keywords collect: [ :kw |
 			            (kw copyReplaceAll: ':' with: '') capitalized ])
@@ -240,6 +188,17 @@ AIATestBuilder >> initialize [
 	super initialize.
 	chatBuilder := AilienApi provider new.
 	
+]
+
+{ #category : 'instance creation' }
+AIATestBuilder >> old_systemGenerator [
+	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."
+	chatBuilder system: 
+		'All background code and documentation is written in Markdown.
+		This includes Pharo packages, classes, and methods.', String cr, 
+	(AIASourceCodeBuilder new for: { 
+		sourceMethod methodClass class packageName asString. 
+		sourceMethod methodClass packageName asString , '-Tests' }).
 ]
 
 { #category : 'test builder' }
@@ -333,9 +292,7 @@ AIATestBuilder >> systemGenerator [
 	chatBuilder system: 
 		'All background code and documentation is written in Markdown.
 		This includes Pharo packages, classes, and methods.', String cr, 
-	(AIASourceCodeBuilder new for: { 
-		sourceMethod methodClass class packageName asString. 
-		sourceMethod methodClass packageName asString , '-Tests' }).
+	(AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
 ]
 
 { #category : 'accessing' }
