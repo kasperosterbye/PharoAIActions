@@ -1,92 +1,67 @@
 "
-# AIActions Package Comment
+## Package: AIActions
 
-## Overview
+# Overview
 
-The `AIActions` package provides a comprehensive framework for integrating artificial intelligence capabilities into Pharo Smalltalk applications. It offers a suite of classes and tools designed to facilitate seamless interactions with various AI models, including those from Mistral, Gemini, Claude, and Ollama. The package emphasises modularity, extensibility, and ease of use, enabling developers to build AI-powered features such as automated code commenting, test generation, and conversational interfaces.
+The `AIActions` package is a comprehensive framework designed to facilitate AI-driven development and interaction within the Pharo Smalltalk environment. It provides tools for generating and managing AI-generated comments, tests, and other development artifacts, leveraging various AI models and APIs.
 
-## Key Features
+## Key Components
 
-- **AI API Integration**: Supports multiple AI providers with dedicated API classes (e.g., `MistralApi`, `GeminiApi`, `ClaudeApi`, `OllamaApi`) for handling authentication, request formatting, and response parsing.
-- **Conversation Management**: Includes classes like `AilienApi` and `AIADiscussion` for maintaining structured chat histories and managing multi-turn conversations.
-- **Automated Comment Generation**: Features builders such as `AIAMethodComment`, `AIAClassComment`, and `AIAPackageComment` for generating AI-assisted documentation for methods, classes, and packages.
-- **Test Generation**: Provides `AIATestBuilder` and its subclasses for creating automated unit tests using AI analysis of source code.
-- **Browser Integration**: Offers command classes (e.g., `AIAClyMethodCommentSet`, `AIAClyClassCommentSet`) for integrating AI actions directly into the Pharo system browser.
-- **Source Code Analysis**: Includes `AIASourceCodeBuilder` for extracting and formatting class definitions, methods, and dependencies for AI processing.
-- **Visualisation Tools**: Supports result visualisation with classes like `AIATestResultIllustration` for displaying test outcomes.
-- **Extensibility**: Designed with builder patterns and enhancers to allow customisation and extension for specific AI workflows.
+### AI Comment Builders
+- **AIACommentBuilding**: Base class for generating AI-driven comments
+- **AIAClassComment**: Generates class-level documentation
+- **AIAMethodComment**: Creates method-specific documentation
+- **AIAPackageComment**: Produces package-level documentation
+- **AIASlotComment**: Generates comments for instance variables
 
-## Usage Examples
+### AI Test Generation
+- **AIATestBuilder**: Core framework for AI-generated test creation
+- **AIATestBuilderExperiments**: Specialized test generation for experimental purposes
+- **AIATestResultIllustration**: Visualizes test results
 
-### Basic AI Interaction
-```smalltalk
-""Create and configure a Mistral API instance""
-api := MistralApi new.
-api system: 'You are a helpful assistant'.
-api user: 'Explain polymorphism in object-oriented programming'.
-api getResponse.
-api response.  ""Inspect the AI's response""
-```
+### AI API Integration
+- **AilienApi**: Abstract base class for AI provider integration
+- **MistralApi**: Implementation for Mistral AI models
+- **GeminiApi**: Implementation for Google's Gemini models
+- **ClaudeApi**: Implementation for Anthropic's Claude models
+- **OllamaApi**: Implementation for local Ollama models
+- **OpenAIApi**: Implementation for OpenAI models
 
-### Generating Method Comments
-```smalltalk
-""Generate an AI-assisted comment for a method""
-commenter := AIAMethodComment new.
-commenter aiaComment: (Point >> #x).
-commenter response.  ""View the generated comment""
-```
+### Browser Integration
+- **AIAClyCommentShow**: Displays AI comments in the browser
+- **AIAClyClassCommentShow**: Shows class comments in the browser
+- **AIAClyMethodCommentShow**: Displays method comments in the browser
+- **AIAClyPackageCommentShow**: Presents package comments in the browser
 
-### Automated Test Generation
-```smalltalk
-""Build tests for all methods in a class""
-builder := AIATestBuilder new.
-builder buildAll: Point.  ""Generates tests for Point class methods""
-```
+## Usage Scenarios
 
-### Package Documentation
-```smalltalk
-""Generate a comment for the current package""
-commenter := AIAPackageComment new.
-commenter aiaComment: 'AIActions'.
-commenter response.  ""View the package comment""
-```
+1. **Automated Documentation**:
+   - Generate class, method, and package comments using AI
+   - Maintain consistent documentation style across projects
 
-## Implementation Notes
+2. **Test Generation**:
+   - Create unit tests automatically based on method implementations
+   - Generate test suites for entire packages
 
-- **API Keys**: Requires valid API keys stored in local files (e.g., `mistralcode.txt`, `geminicode.txt`) for authentication with external AI services.
-- **Error Handling**: Implements robust error management with fallback responses and logging for failed API calls.
-- **Threading**: Uses background processes for non-blocking AI interactions, allowing the UI to remain responsive.
-- **Data Formats**: Handles JSON parsing for API responses and supports Markdown formatting for generated content.
-- **Dependencies**: Relies on external libraries like `ZnClient` for HTTP requests and `STONJSON` for JSON processing.
-- **Testing**: Includes comprehensive test suites in the `AIActions-Tests` subpackage to ensure reliability.
+3. **AI Interaction**:
+   - Interact with multiple AI models through a unified interface
+   - Maintain conversation history for context-aware interactions
 
-## Design Principles
+## Design Considerations
 
-The package follows several key design principles:
-- **Modularity**: Each AI provider has its own class, allowing easy addition of new providers.
-- **Fluid Syntax**: Builders support method chaining for intuitive scripting.
-- **Separation of Concerns**: API interactions are separated from UI and processing logic.
-- **Extensibility**: Uses subclassing and composition to enable customisation.
-- **Non-Invasive**: Integrates with Pharo's existing tools without modifying core functionality.
+- **Modular Architecture**: Components are designed to be independent and composable
+- **Extensible**: New AI providers and builders can be added easily
+- **Non-Invasive**: Works alongside existing Pharo development tools
+- **Context-Aware**: Maintains conversation history for coherent interactions
 
-## Future Enhancements
+## Future Directions
 
-Potential areas for expansion include:
-- Support for additional AI providers and models.
-- Enhanced visualisation for conversation histories.
-- Integration with continuous integration pipelines for automated testing.
-- Advanced prompt engineering features.
-- Performance optimisation for large-scale code analysis.
+- Integration with additional AI models and services
+- Enhanced test generation capabilities
+- Improved documentation generation with more sophisticated prompts
+- Better visualization tools for test results and code analysis
 
-## See Also
-
-- `AilienApi`: Base class for AI API interactions.
-- `AIABuilder`: Base class for various AI-powered builders.
-- `AIASourceCodeBuilder`: For code analysis and formatting.
-- `AIATestBuilder`: For automated test generation.
-- `AIACommentPresenter`: For displaying generated comments.
-
-This package represents a powerful toolkit for leveraging AI in Pharo development, promoting productivity and code quality through intelligent automation.
+The `AIActions` package represents a significant advancement in AI-assisted development within Pharo, providing developers with powerful tools to enhance productivity and maintain code quality.
 "
 Class {
 	#name : 'ManifestAIActions',

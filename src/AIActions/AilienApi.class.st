@@ -101,6 +101,48 @@ AilienApi class >> noOfModels [
 	^ self modelNames size
 ]
 
+{ #category : 'backgrounds' }
+AilienApi class >> playground01 [
+	^ 
+'AilienApi providerAndModels.
+AilienApi providers.
+
+AilienApi info. 
+AilienApi provider: OpenAIApi .
+AilienApi provider: GrokApi .
+AilienApi provider: ClaudeApi.
+AilienApi provider: GeminiApi.
+AilienApi provider: MistralApi.
+AilienApi provider: MistralApiWithTools.
+AilienApi provider: OllamaApi.
+
+MistralApi modelNames.
+MistralApi defaultModel: 1.
+
+GrokApi modelNames.
+GrokApi defaultModel: 1.
+
+ClaudeApi modelNames.
+ClaudeApi defaultModel: 1.
+
+GeminiApi modelNames.
+GeminiApi defaultModel: 1.
+
+OpenAIApi modelNames.
+OpenAIApi defaultModel: 2.
+
+OllamaApi modelNames.
+OllamaApi defaultModel: 1.
+
+AIABuilder language: ''British''.
+AIABuilder language: ''Swedis''.
+AIABuilder language: ''Meänkieli''.
+''British''.
+AIABuilder language: ''French''.
+AIABuilder language: ''Chineese''.
+'
+]
+
 { #category : 'provider' }
 AilienApi class >> provider [
 	Provider ifNil: [ self initialize ].
@@ -156,47 +198,9 @@ AilienApi >> apiGenerateUrl [
 	self subclassResponsibility
 ]
 
-{ #category : 'initialization' }
-AilienApi >> assistant: aString [
-	
-	history assistant: aString
-]
-
 { #category : 'accessing' }
 AilienApi >> bodyForEntityWithPrompt [
 	self subclassResponsibility
-]
-
-{ #category : 'initialization' }
-AilienApi >> chatHistory [
-	^ history chatHistory
-]
-
-{ #category : 'ollama models' }
-AilienApi >> getResponse [
-	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
-	self history apiMessageList ifEmpty: [ 
-		self assistant: 'No answer, as I was not asked'.
-		^ self ].
-	
-	[ :job | | aiProcess |
-		aiProcess := [ self loadResponse ] newProcess.
-		aiProcess priority: Processor userBackgroundPriority. 
-		aiProcess resume.
-		SystemProgressMorph uniqueInstance position: 10@20.
-		job interruptBlock: [ 
-			aiProcess terminate.
-			self assistant: 'AI based response Terminated'.
-			^ self
-		].
-		1 to: 600 do: [:each |
-			job
-				progress: ((1/600) * each) ;
-				title: ( AilienApi info, ' working {1} of 60' 
-					format: {(each/10) asFloat printString}).
-				self response ifNil: [100 milliSeconds wait].
-		].
-	] asJob run.
 ]
 
 { #category : 'accessing' }
@@ -212,6 +216,7 @@ AilienApi >> history [
 
 { #category : 'initialization' }
 AilienApi >> history: aHistory [
+	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
 	^ history := aHistory 
 ]
 
@@ -249,7 +254,7 @@ AilienApi >> loadResponse [
 			           post;
 			           contents.
 		response := self responseOf: llmCall.
-		self assistant: (self responseOf: llmCall). 
+		history assistant: (self responseOf: llmCall). 
 		]
 		on: Error
 		do: [ :ex | self assistant: ex messageText ]
@@ -269,8 +274,46 @@ AilienApi >> model: anObject [
 	model := anObject
 ]
 
+{ #category : 'initialization' }
+AilienApi >> old_assistant: aString [
+	
+	history assistant: aString
+]
+
+{ #category : 'initialization' }
+AilienApi >> old_chatHistory [
+	^ history chatHistory
+]
+
+{ #category : 'ollama models' }
+AilienApi >> old_getResponse [
+	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
+	self history apiMessageList ifEmpty: [ 
+		self assistant: 'No answer, as I was not asked'.
+		^ self ].
+	
+	[ :job | | aiProcess |
+		aiProcess := [ self loadResponse ] newProcess.
+		aiProcess priority: Processor userBackgroundPriority. 
+		aiProcess resume.
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job interruptBlock: [ 
+			aiProcess terminate.
+			self assistant: 'AI based response Terminated'.
+			^ self
+		].
+		1 to: 600 do: [:each |
+			job
+				progress: ((1/600) * each) ;
+				title: ( AilienApi info, ' working {1} of 60' 
+					format: {(each/10) asFloat printString}).
+				self response ifNil: [100 milliSeconds wait].
+		].
+	] asJob run.
+]
+
 { #category : 'accessing' }
-AilienApi >> response [
+AilienApi >> old_response [
 	| last |
 	last := history apiMessageList last.
 	(last key = 'assistant')
@@ -278,12 +321,12 @@ AilienApi >> response [
 		ifFalse: [ ^ nil ]
 ]
 
+{ #category : 'initialization' }
+AilienApi >> old_user: aString [
+	history user: aString
+]
+
 { #category : 'accessing' }
 AilienApi >> responseOf: llmCall [
 	self subclassResponsibility
-]
-
-{ #category : 'initialization' }
-AilienApi >> user: aString [
-	history user: aString
 ]

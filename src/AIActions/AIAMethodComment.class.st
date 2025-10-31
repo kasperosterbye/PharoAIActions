@@ -60,13 +60,16 @@ AIAMethodComment >> aiaBlackComment: aCompiledMethod [
 
 { #category : 'internals' }
 AIAMethodComment >> aiaComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name.
-	self user: 'Response should be 100 chacters, and only letters and spaces.'. 
-	self user: 'Please response in ', AIACommentBuilding language.
-	self getResponse.
+	history background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
+	history background: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	history user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name.
+	 
+	history responseType: 'The answer must only be the comment.'.
+	history responseType: 'Please response in ', AIACommentBuilding language.
+	history responseType: 'Response should be max 100 chacters, and not longer, and only letters and spaces, and no `"`'.
+	history getResponse.
 	"If it halts, it is likely because there is markdown that it should not make"
-	(self response beginsWith: '```') ifTrue:[ self halt]
+	(history response beginsWith: '```') ifTrue:[ self error]
 ]
 
 { #category : 'internals' }
@@ -98,6 +101,18 @@ AIAMethodComment >> new_aiaComment: aCompiledMethod [
 	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
 			'. Please a detailed comment with all aspects. Your answer must not contain code, and no description of which method it is for as that is part of the prompt.'.
+	self getResponse.
+	"If it halts, it is likely because there is markdown that it should not make"
+	(self response beginsWith: '```') ifTrue:[ self halt]
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> old_2_aiaComment: aCompiledMethod [
+	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
+	self user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name.
+	self responseType: 'Response should be 100 chacters, and only letters and spaces, and no `"`'. 
+	self responseType: 'The answer must only be the comment.'.
+	self responseType: 'Please response in ', AIACommentBuilding language.
 	self getResponse.
 	"If it halts, it is likely because there is markdown that it should not make"
 	(self response beginsWith: '```') ifTrue:[ self halt]

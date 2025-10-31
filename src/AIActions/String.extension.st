@@ -12,6 +12,7 @@ String >> L [
 
 { #category : '*AIActions' }
 String >> aiaComment [
+	"Provides comments for packages or package prefixes using AIA system."
 	| package |
 	(self beginsWith: '*')
 		ifTrue: [ 
@@ -46,13 +47,22 @@ String >> l [
 ]
 
 { #category : '*AIActions' }
-String >> q [
-	^ (AilienApi provider new
+String >> old_q [
+	^ (AIAHistory new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
 		 Please response in ', AIACommentBuilding language;
 		user: self; 
 		getResponse; 
 		response) 
+]
+
+{ #category : '*AIActions' }
+String >> q [
+	^ AIAHistory new
+		addPreHistory: AIAHistory qHistory;
+		user: self; 
+		getResponse; 
+		response 
 ]
 
 { #category : '*AIActions' }
@@ -84,6 +94,7 @@ String >> q: systemBlock [
 
 { #category : '*AIActions' }
 String >> setAIAComment [
+	"Sets an AI-generated comment for a package or package prefix using the AIA system"
 
 	AIAPackageComment new setComment: self
 ]

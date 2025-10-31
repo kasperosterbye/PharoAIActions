@@ -15,13 +15,18 @@ Class {
 { #category : 'accessing' }
 AIAPackageComment >> aiaComment: aPackageName [
 	"The method aiaComment: generates a package comment for a given package name using AI. It checks if the package is a test package and adjusts the source code accordingly."
+
 	(aPackageName endsWith: '-Tests')
-		ifFalse: [ self system:  (AIASourceCodeBuilder new for: { aPackageName. (aPackageName ,'-Tests') })]
-		ifTrue: [ self system:  (AIASourceCodeBuilder new for: { aPackageName }) ].
-	self user: 'This is a Pharo question. Can your give a package comment for ' , 
-		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
-		AIACommentBuilding language.
-	self getResponse.
+		ifFalse: [
+				self system: (AIASourceCodeBuilder new for: {
+							 aPackageName.
+							 (aPackageName , '-Tests') }) ]
+		ifTrue: [ self system: (AIASourceCodeBuilder new for: { aPackageName }) ].
+	self
+		user: 'This is a Pharo question. Can your give a package comment for ' , aPackageName;
+		user: '. It can be up to 1 page. Please respond in markdown. Please response in ' , 
+			AIACommentBuilding language.
+	self getResponse
 ]
 
 { #category : 'accessing' }
@@ -37,17 +42,6 @@ AIAPackageComment >> aiaCommentMany: aPackageNames [
 	AIACommentBuilding language.
 	self getResponse.
 	^ self
-]
-
-{ #category : 'accessing' }
-AIAPackageComment >> aiaComment_old: aPackageName [
-	"The method sets a package comment using Mistral API."
-	self system:  (AIASourceCodeBuilder new for: { aPackageName }).
-	self user: 'This is a Pharo question. Can your give a package comment for ' , 
-		aPackageName, '. It can be up to 1 page. Please respond in markdown. Please response in ',
-		AIACommentBuilding language.
-	self getResponse.
-	^ self.
 ]
 
 { #category : 'accessing' }

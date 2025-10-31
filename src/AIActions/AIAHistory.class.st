@@ -1,45 +1,120 @@
 "
-## Class: AIAHistory
+# Class Comment for AIAHistory
 
-AIAHistory is a class designed to manage the history and context of interactions with an AI API. It maintains a collection of messages exchanged between the user and the assistant, along with initial and final roles that define the system's behaviour, such as system prompts, backgrounds, and response types. This class facilitates building conversational contexts for AI-driven applications, allowing users to append user messages and retrieve assistant responses.
+`AIAHistory` is a class designed to manage and maintain conversation history between a user and an AI assistant. It provides functionality to store, retrieve, and format messages exchanged in a chat session, while also supporting contextual roles such as system messages and response types.
 
-### Key Features
-- **Messages Management**: Stores an ordered collection of messages, where each message is a key-value pair (e.g., 'user' -> message or 'assistant' -> response).
-- **Role Configuration**: Supports setting initial roles (e.g., system prompts and backgrounds) and final roles (e.g., response types) to customise AI interactions.
-- **API Integration**: Holds a reference to an AI API provider (e.g., AilienApi) for potential future extensions.
-- **Response Retrieval**: Provides methods to access the latest assistant response.
+## Key Features
 
-### Usage Example
-In the Pharo Playground, you can create an instance of AIAHistory, configure roles, add a user message, and inspect the messages collection. Note that this example assumes the class is already defined in the system; it does not install or modify other objects.
+- **Message Management**: Stores and retrieves messages in chronological order, distinguishing between user and assistant messages.
+- **Contextual Roles**: Supports system messages and response type definitions to provide context for AI responses.
+- **API Integration**: Works with an AI API provider (e.g., `AilienApi`) to generate and retrieve responses.
+- **Progress Tracking**: Includes visual progress indicators for long-running AI processes.
+- **Formatted Output**: Generates formatted chat history suitable for display or logging.
 
-```smalltalk
-| history |
-history := AIAHistory new.
-history system: 'You are a helpful assistant.'.
-history background: 'This is a conversation about Pharo programming.'.
-history user: 'What is a class in Pharo?'.
-history messages  ""Inspect this to see the messages collection""
+## Usage Example
+
+```st
+""Create and configure a new AIAHistory instance""
+history := AIAHistory new
+    system: 'You are a helpful assistant.';
+    background: 'The user is learning about AI.';
+    user: 'What is the capital of France?';
+    yourself.
+
+""Get a response from the AI""
+history getResponse.
+
+""Inspect the formatted chat history""
+history chatHistory
 ```
 
-This code initialises an AIAHistory instance, sets up roles, adds a user message, and ends with an expression (`history messages`) that can be inspected using command-I to view the current state of the messages.
+This class is particularly useful for applications requiring persistent conversation management, such as chatbots, virtual assistants, or AI-powered support systems.
 "
 Class {
 	#name : 'AIAHistory',
 	#superclass : 'Object',
 	#instVars : [
 		'api',
+		'preHistories',
 		'messages',
 		'firstRoles',
 		'lastRoles'
+	],
+	#classVars : [
+		'Histories'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
+{ #category : 'as yet unclassified' }
+AIAHistory class >> dDiscussion [
+	<example>
+	| qDiscussion  |
+	qDiscussion := 'qDiscussion'.
+	(Histories includes: qDiscussion) ifFalse: [ 
+		| newDiscussion |
+		newDiscussion := self new.
+		self setHistory: qDiscussion to: newDiscussion. ].
+	^ self historyAt: qDiscussion.
+	 
+]
+
+{ #category : 'initialization' }
+AIAHistory class >> histories [
+	^ Histories
+]
+
+{ #category : 'initialization' }
+AIAHistory class >> historyAt: id [
+	^ Histories at: id ifAbsent: [ self error ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> qHistory [
+	<example>
+	| qHist |
+	qHist := self new.
+	qHist system: 'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.'.
+	qHist responseType: 'Please response in ', AIACommentBuilding language.
+	self setHistory: 'qPrefix' to: qHist.
+	^ qHist 
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> readCurrentTo: fileName [
+	"Serialises the current history to the specified file name."
+	FLMaterializer 
+		materializeFromFileNamed: (FileSystem workingDirectory / fileName) fullName
+]
+
+{ #category : 'initialization' }
+AIAHistory class >> setHistory: idName to: hist [
+	Histories ifNil: [ Histories := Dictionary new ].
+	Histories at: idName put: hist
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> writeCurrentTo [
+	"Serialises the current history to the specified file name."
+	| fileName timePart |
+	timePart := (DateAndTime now asString copyUpTo: $.)copyReplaceAll: ':' with: '_'.
+	
+	FLSerializer 
+		serialize: self currentHistory 
+		toFileNamed: (FileSystem workingDirectory / fileName) fullName
+]
+
+{ #category : 'accessing' }
+AIAHistory >> addPreHistory: pre [
+	"Adds a previous history instance to the collection of pre-histories"
+	preHistories add: pre.
+]
+
 { #category : 'accessing' }
 AIAHistory >> api [
-	"Returns the API provider instance or defaults to the AilienApi provider if the instance is nil"
+	"Returns the API instance, creating a new AilienApi provider if none exists"
 	api ifNil: [ ^ AilienApi provider new ].
 	^ api
 ]
@@ -52,12 +127,15 @@ AIAHistory >> api: anObject [
 
 { #category : 'accessing' }
 AIAHistory >> apiMessageList [
-	"Returns an ordered list of all messages with first and last roles included"
-	| messageList |
+	| assocKey messageList all |
+	assocKey := [ :assoc | '[', assoc key,'] ',  assoc value ].
 	messageList := OrderedCollection new.
-	firstRoles keysAndValuesDo: [ :key :value | messageList add: 'user' -> ('[',key,'] ',  value) ].
-	messages do: [ :m | messageList add: m ].
-	lastRoles  keysAndValuesDo: [ :key :value | messageList add: 'user' -> ('[',key,'] ',  value) ].
+	all := self selfAndPreHistories.
+   all do: [ :hist | hist firstRoles do: [ :assoc | 
+				messageList add: 'user' -> (assocKey value: assoc) ]].
+	all do: [ :hist | hist messages do: [ :m | messageList add: m ]].
+	all do: [ :hist | hist lastRoles do: [ :assoc | 
+				messageList add: 'user' -> (assocKey value: assoc) ]].
 	^ messageList
 ]
 
@@ -68,12 +146,13 @@ AIAHistory >> assistant: aString [
 
 { #category : 'context roles' }
 AIAHistory >> background [
-	^ firstRoles at: 'background'
+	^ (firstRoles select: [ :role |  role key = 'background']) 
+		collect: [ :role | role value ]
 ]
 
 { #category : 'context roles' }
 AIAHistory >> background: string [
-	firstRoles at: 'background' put: string 
+	firstRoles add: 'background' -> string 
 ]
 
 { #category : 'initialization' }
@@ -88,6 +167,11 @@ AIAHistory >> chatHistory [
 			counter := counter + 1.
 		 ].
 	^ historyText contents
+]
+
+{ #category : 'accessing' }
+AIAHistory >> firstRoles [
+	^ firstRoles
 ]
 
 { #category : 'ollama models' }
@@ -120,21 +204,20 @@ AIAHistory >> getResponse [
 AIAHistory >> initialize [
 	super initialize.
 	"api := AilienApi provider".
+	preHistories := OrderedCollection new.
 	messages := OrderedCollection new.
-	firstRoles := OrderedDictionary new.
-	lastRoles := OrderedDictionary new.
+	firstRoles := OrderedCollection new.
+	lastRoles := OrderedCollection new.
+]
+
+{ #category : 'accessing' }
+AIAHistory >> lastRoles [
+	^ lastRoles 
 ]
 
 { #category : 'accessing' }
 AIAHistory >> messages [
 	^ messages 
-]
-
-{ #category : 'ollama models' }
-AIAHistory >> old_getResponse [
-	self api
-		history: self;
-		getResponse.
 ]
 
 { #category : 'accessing' }
@@ -146,22 +229,37 @@ AIAHistory >> response [
 
 { #category : 'context roles' }
 AIAHistory >> responseType [
-	lastRoles at: 'responseType:'
+	^ (lastRoles select: [ :role |  role key = 'responseType']) 
+		collect: [ :role | role value ]
 ]
 
 { #category : 'context roles' }
 AIAHistory >> responseType: string [
-	lastRoles at: 'responseType' put: string 
+	lastRoles add: 'responseType' -> string 
+]
+
+{ #category : 'accessing' }
+AIAHistory >> selfAndPreHistories [
+	| pres |
+	pres := OrderedCollection new.
+	preHistories do: [ :preModel |
+		pres addAll: preModel selfAndPreHistories.
+		 ].
+	pres add: self.
+	^ pres
 ]
 
 { #category : 'context roles' }
 AIAHistory >> system [
-	^ firstRoles at: 'system'
+	^ (firstRoles select: [ :role |  role key = 'system']) 
+		collect: [ :role | role value ]
+	
+
 ]
 
 { #category : 'context roles' }
 AIAHistory >> system: string [
-	firstRoles at: 'system' put: string 
+	firstRoles add: 'system' -> string 
 ]
 
 { #category : 'accessing' }

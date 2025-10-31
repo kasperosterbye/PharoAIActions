@@ -2,7 +2,7 @@ Class {
 	#name : 'AIACommentBuilding',
 	#superclass : 'Object',
 	#instVars : [
-		'aiaApi'
+		'history'
 	],
 	#classVars : [
 		'CommentLanguage',
@@ -71,43 +71,43 @@ AIACommentBuilding class >> language: language [
 AIACommentBuilding >> getResponse [
 	"Method initiates AI process to retrieve response displaying progress and handling interruptions. Uses system progress morph to show progress and allows interruption. Returns response from AI API."
 	
-	aiaApi getResponse
+	history getResponse
 ]
 
 { #category : 'initialization' }
 AIACommentBuilding >> initialize [ 
 	"Initialises the AI comment builder with a new AI API provider, setting up the necessary infrastructure for generating AI-driven comments."
 	super initialize.
-	aiaApi := AilienApi provider new.
+	history :=AIAHistory new.
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> response [
 	"Returns the AI-generated response from the API, formatted as a string. Handles errors and ensures valid output. Uses the configured AI model for processing."
 
-	^ aiaApi response
+	^ history response
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> system [
 
-	^ aiaApi system
+	^ history system
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> system: anObject [
 
-	aiaApi system: anObject
+	history system: anObject
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> user [
 
-	^ aiaApi user
+	^ history user
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding >> user: anObject [
 
-	aiaApi user: anObject
+	history user: anObject
 ]

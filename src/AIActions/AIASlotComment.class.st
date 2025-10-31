@@ -1,3 +1,31 @@
+"
+# AIASlotComment
+
+`AIASlotComment` is a specialized comment builder that generates AI-driven documentation for instance variables in Pharo classes. It utilises an AI model to create concise, type-annotated comments that describe the purpose and expected type of each slot.
+
+## Key Features
+
+- **AI-Powered Generation**: Automatically generates comments using an AI model, ensuring consistency and relevance.
+- **Type Annotations**: Includes the class name of the slot's value in the comment for clarity.
+- **Dictionary Storage**: Maintains a dictionary of comments keyed by class and slot name for quick access.
+- **Fluid Interface**: Provides a clean API for generating and retrieving slot comments.
+
+## Usage Example
+
+```st
+""Generate and inspect AI comments for a class's slots""
+AIASlotComment for: Point.
+AIASlotComment slotCommentFor: #x in: Point
+```
+
+## Design Considerations
+
+- **Non-Invasive**: Does not modify or install classes; focuses solely on comment generation.
+- **Extensible**: Can be extended to support additional comment types or languages.
+- **Integration**: Works seamlessly with existing Pharo class structures.
+
+This builder is particularly useful for maintaining consistent documentation across large codebases, reducing manual effort while ensuring accuracy.
+"
 Class {
 	#name : 'AIASlotComment',
 	#superclass : 'AIACommentBuilding',
