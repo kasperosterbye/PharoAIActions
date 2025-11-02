@@ -9,13 +9,13 @@ Class {
 { #category : 'model system' }
 AIABuilder class >> exampleITU [
 	
-	AIACommentPresenter onText: self itu
+	AIAPresenter onText: self itu
 ]
 
 { #category : 'model system' }
 AIABuilder class >> exampleOttawa [
 	
-	AIACommentPresenter onText: self ottawa
+	AIAPresenter onText: self ottawa
 ]
 
 { #category : 'as yet unclassified' }

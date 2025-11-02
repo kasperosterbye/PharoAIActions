@@ -51,13 +51,13 @@ Class {
 { #category : 'as yet unclassified' }
 AIAHistory class >> dDiscussion [
 	<example>
-	| qDiscussion  |
-	qDiscussion := 'qDiscussion'.
-	(Histories includes: qDiscussion) ifFalse: [ 
+	| dDiscussion  |
+	dDiscussion := 'dDiscussion'.
+	(Histories includesKey: dDiscussion) ifFalse: [ 
 		| newDiscussion |
 		newDiscussion := self new.
-		self setHistory: qDiscussion to: newDiscussion. ].
-	^ self historyAt: qDiscussion.
+		self setHistory: dDiscussion to: newDiscussion. ].
+	^ self historyAt: dDiscussion.
 	 
 ]
 

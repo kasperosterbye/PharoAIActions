@@ -40,7 +40,7 @@ This will open a window titled ""Comment for Sample Comment..."" displaying the 
 The presenter is particularly useful in applications requiring comment management with Markdown support, such as code review tools or documentation systems.
 "
 Class {
-	#name : 'AIACommentPresenter',
+	#name : 'AIAPresenter',
 	#superclass : 'MicrodownPresenter',
 	#instVars : [
 		'commentName'
@@ -54,7 +54,7 @@ Class {
 }
 
 { #category : 'instance creation' }
-AIACommentPresenter class >> onText: aString [
+AIAPresenter class >> onText: aString [
 	commentPresenter ifNotNil: [ commentPresenter delete].
 	commentPresenter := self basicNew.
 	commentPresenter
@@ -66,19 +66,19 @@ AIACommentPresenter class >> onText: aString [
 ]
 
 { #category : 'accessing' }
-AIACommentPresenter >> commentName [
+AIAPresenter >> commentName [
 
 	^ commentName
 ]
 
 { #category : 'accessing' }
-AIACommentPresenter >> commentName: anObject [
+AIAPresenter >> commentName: anObject [
 
 	commentName := anObject
 ]
 
 { #category : 'accessing' }
-AIACommentPresenter >> windowTitle [
+AIAPresenter >> windowTitle [
 
 	^ 'Comment for ', self commentName  
 ]

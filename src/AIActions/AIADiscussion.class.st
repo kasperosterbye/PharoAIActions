@@ -110,7 +110,7 @@ AIADiscussion >> getResponse [
 	"Retrieves the AI's response from the API, updates the history, and presents the response using AIACommentPresenter. Returns the response text."
 	api history: history.
 	api getResponse.
-	AIACommentPresenter onText: api response.
+	AIAPresenter onText: api response.
 	"getResponce adds the response to the history"
 ]
 

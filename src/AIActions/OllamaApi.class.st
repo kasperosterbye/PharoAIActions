@@ -48,6 +48,11 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'as yet unclassified' }
+OllamaApi class >> exampleUllama [
+	"(AIAHistory new api: (OllamaApi newModel: 1)) user: 'What is your name'; getResponse ; response. "
+]
+
 { #category : 'ollama models' }
 OllamaApi class >> modelNames [
 	"returns an array with one item per model."
@@ -69,7 +74,7 @@ OllamaApi class >> newModel: modelNumber [
 	| selectedModel |
 	selectedModel := self modelNames 
 		at: modelNumber 
-		ifAbsent: [ self modelNames at: 5 ]. "Select the first one"
+		ifAbsent: [ self modelNames at: 1 ]. "Select the first one"
 	^ self new model: selectedModel 
 ]
 

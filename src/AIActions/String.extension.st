@@ -30,10 +30,13 @@ String >> aiaComment [
 
 { #category : '*AIActions' }
 String >> d [
-	^ (AIADiscussion current
+	| resp |
+	resp := (AIAHistory dDiscussion 
 		user: self;
-		getResponse; 
-		response) 
+		getResponse;
+		response ).
+	AIAPresenter onText: resp.
+	^ resp.
 ]
 
 { #category : '*AIActions' }
