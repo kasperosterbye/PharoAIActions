@@ -65,13 +65,13 @@ Class {
 	#tag : 'BrowserAIAComments'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyClassCommentSet class >> aiaCommentActivation [
 	<classAnnotation>
 	^ CmdShortcutActivation by: $p meta shift for: ClyFullBrowserClassContext
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyClassCommentSet class >> clyMenuActivation [
 	<classAnnotation>
 	^ CmdContextMenuActivation 
@@ -80,12 +80,14 @@ AIAClyClassCommentSet class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyClassCommentSet >> execute [
+	"Executes the command to set a comment for the associated class"
 	self element browserItem actualObject setAIAComment.
 	
 ]
 
 { #category : 'execution' }
 AIAClyClassCommentSet >> readParametersFromContext: aContext [
+	"Reads parameters from the context and sets the element if a class item is selected"
 	aContext selectedClassItems isEmpty ifTrue: [ ^ self ].
 	self element: aContext selectedClassItems first.
 ]

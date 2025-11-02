@@ -12,13 +12,13 @@ Class {
 	#tag : 'BrowserAIAComments'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'actions' }
 AIAClyPackageCommentShow class >> aiaCommentActivation [
 	<classAnnotation>
 	^ CmdShortcutActivation by: $p meta for: ClyFullBrowserPackageContext
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'actions' }
 AIAClyPackageCommentShow class >> clyMenuActivation [
 	<classAnnotation>
 	^ CmdContextMenuActivation 
@@ -27,12 +27,14 @@ AIAClyPackageCommentShow class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyPackageCommentShow >> execute [
-	AIACommentPresenter onText: (self element browserItem actualObject name asString aiaComment).
+	"Displays the package comment for the selected package in the browser"
+	AIAPresenter onText: (self element browserItem actualObject name asString aiaComment).
 	
 ]
 
 { #category : 'execution' }
 AIAClyPackageCommentShow >> readParametersFromContext: aContext [
+	"Reads parameters from the context and sets the element if a package is selected"
 	aContext selectedPackageItems isEmpty ifTrue: [ ^ self ].
 	self element: aContext selectedPackageItems first.
 ]

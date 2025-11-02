@@ -87,13 +87,13 @@ Class {
 	#tag : 'BrowserAIAComments'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyMethodCommentSet class >> aiaCommentActivation [
 	<classAnnotation>
 	^ CmdShortcutActivation by: $p meta shift for: ClyFullBrowserMethodContext
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyMethodCommentSet class >> clyMenuActivation [
 	<classAnnotation>
 	^ CmdContextMenuActivation 
@@ -102,12 +102,14 @@ AIAClyMethodCommentSet class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyMethodCommentSet >> execute [
+	"Sets the AIA comment for the actual object of the selected method item"
 	self element browserItem actualObject setAIAComment .
 	
 ]
 
 { #category : 'execution' }
 AIAClyMethodCommentSet >> readParametersFromContext: aContext [
+	"Reads parameters from the given context and sets the element to the first selected method item if any"
 	aContext selectedMethodItems isEmpty ifTrue: [ ^ self ].
 	self element: aContext selectedMethodItems first.
 ]

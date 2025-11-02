@@ -14,5 +14,6 @@ Class {
 
 { #category : 'accessing' }
 AIAClyCommentSet >> defaultMenuItemName [
+	"Returns the default menu item name for the AI comment set"
 	^ 'AI set comment'
 ]

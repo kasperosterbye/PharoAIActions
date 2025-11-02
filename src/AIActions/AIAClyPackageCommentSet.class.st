@@ -65,13 +65,13 @@ Class {
 	#tag : 'BrowserAIAComments'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyPackageCommentSet class >> aiaCommentActivation [
 	<classAnnotation>
 	^ CmdShortcutActivation by: $p meta shift for: ClyFullBrowserPackageContext
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyPackageCommentSet class >> clyMenuActivation [
 	<classAnnotation>
 	^ CmdContextMenuActivation 
@@ -80,12 +80,14 @@ AIAClyPackageCommentSet class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyPackageCommentSet >> execute [
+	"Executes the command to set a comment for the selected package in the browser"
 	self element browserItem actualObject name asString setAIAComment.
 	
 ]
 
 { #category : 'execution' }
 AIAClyPackageCommentSet >> readParametersFromContext: aContext [
+	"Reads parameters from the context and sets the element to the first selected package item if available"
 	aContext selectedPackageItems isEmpty ifTrue: [ ^ self ].
 	self element: aContext selectedPackageItems first.
 ]

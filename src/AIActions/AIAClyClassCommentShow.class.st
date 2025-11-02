@@ -12,13 +12,13 @@ Class {
 	#tag : 'BrowserAIAComments'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyClassCommentShow class >> aiaCommentActivation [
 	<classAnnotation>
 	^ CmdShortcutActivation by: $p meta for: ClyFullBrowserClassContext
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'action' }
 AIAClyClassCommentShow class >> clyMenuActivation [
 	<classAnnotation>
 	^ CmdContextMenuActivation 
@@ -27,12 +27,14 @@ AIAClyClassCommentShow class >> clyMenuActivation [
 
 { #category : 'execution' }
 AIAClyClassCommentShow >> execute [
-	AIACommentPresenter onText: self element browserItem actualObject aiaComment.
+	"Displays the AI-generated comment for the selected class in the browser"
+	AIAPresenter onText: self element browserItem actualObject aiaComment.
 	
 ]
 
 { #category : 'execution' }
 AIAClyClassCommentShow >> readParametersFromContext: aContext [
+	"Reads parameters from the context and sets the element if a class is selected"
 	aContext selectedClassItems isEmpty ifTrue: [ ^ self ].
 	self element: aContext selectedClassItems first.
 ]
