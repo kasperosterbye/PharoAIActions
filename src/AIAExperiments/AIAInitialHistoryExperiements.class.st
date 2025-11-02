@@ -132,7 +132,7 @@ AIAInitialHistoryExperiements >> backgroundTest [
 		tables << '| ' << llmAndResult first name << ' | ' << llmAndResult second << ' | ' << String cr
 		 ].
 	markDown << String cr << tables contents << String cr.
-	AIACommentPresenter onText: markDown contents.
+	AIAPresenter onText: markDown contents.
 	^ markDown contents
 ]
 
@@ -270,7 +270,7 @@ AIAInitialHistoryExperiements >> resultsSystemTest [
 	tables1 := self results01.
 	tables2 := self results02.
 	self class conclusionOfSystemTest: markDown.
-	AIACommentPresenter onText: markDown contents.
+	AIAPresenter onText: markDown contents.
 	^ markDown contents
 ]
 
