@@ -13,6 +13,12 @@ AIABuilder class >> exampleITU [
 ]
 
 { #category : 'model system' }
+AIABuilder class >> exampleLund [
+	
+	AIAPresenter onText: self lund
+]
+
+{ #category : 'model system' }
 AIABuilder class >> exampleOttawa [
 	
 	AIAPresenter onText: self ottawa
@@ -59,6 +65,43 @@ AIAMistralTestBuilder allSelectorsBelow: AIABuilder .
 AIATestBuilder name.
 AIATestBuilder class isMeta .
 AIATestBuilder class instVarNames size .'
+]
+
+{ #category : 'as yet unclassified' }
+AIABuilder class >> lund [
+	^ '" ---- APP - API - LLM ---- "
+''What is my name'' q0.
+''My name is Kasper'' q0.
+''What is my name'' q0.
+
+''What is my name'' d.
+''My name is Kasper'' d.
+''What is my name'' d.
+
+AIAHistory dDiscussion .
+
+
+" ---- Are they different ---- "
+
+''Who is the Computer Scientist Lars Bendix. No guessing, if you do not know, just say "I do not know"'' q0.
+
+" ---- Comment generation ---- "
+" See Browswe "
+
+" ---- PlantUML -----"
+pack := ''Can you make a PlantUML sequence diagram for all the classes in the Pharo package for package AIActions. Only include the PlantUML result, no explanation. no fence'' q: [ AIASourceCodeBuilder new for: {''AIActions''}] .
+
+meth := ''Can you make a PlantUML sequence diagram for the method `forClass:` starting in the call in `AIASourceCodeBuilder new forClass: AIASourceCodeBuilder` . Only include the result, no explanation. no fence'' q: [   AIASourceCodeBuilder new forClass: AIASourceCodeBuilder] .
+
+" ---- "
+''I am interested in UML for showing the inner functions of Pharo. Not for how it is used by users. Which are the most important UML types for this'' q.
+
+" ---- Biblatex ----"
+bib1 := ''Please produce a biblatex format for the paper. Please use it references as well as its own format'' q0: [(FileSystem disk root / ''Users'' / ''kasper'' / ''D'' / ''Pharo'' / ''images'' / ''AIActions03'' / ''Papers'' / ''Comment120.txt'' ) readStream contents trimBoth].
+
+bib2 := ''Please produce a biblatex format for the paper with a note from its conclusion or abstract. If possible, just return the biblatex format, and no explanation'' q0: [(FileSystem disk root / ''Users'' / ''kasper'' / ''D'' / ''Pharo'' / ''images'' / ''AIActions03'' / ''Papers'' / ''Comment120.txt'' ) readStream contents trimBoth].
+
+AIABibLaTex biblatex.'
 ]
 
 { #category : 'as yet unclassified' }

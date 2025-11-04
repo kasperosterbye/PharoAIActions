@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIATest01',
 	#superclass : 'AIATestBuilder',
-	#category : 'AIActions-CommentBuilder',
+	#category : 'AIActions-TestBuilder',
 	#package : 'AIActions',
-	#tag : 'CommentBuilder'
+	#tag : 'TestBuilder'
 }
 
 { #category : 'test builder' }

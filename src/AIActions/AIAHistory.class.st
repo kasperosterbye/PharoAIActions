@@ -76,7 +76,13 @@ AIAHistory class >> qHistory [
 	<example>
 	| qHist |
 	qHist := self new.
-	qHist system: 'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.'.
+	qHist system: 'You are a Pharo12 Smalltalk expert. In Pharo12 and later, a typical class is written as: 
+	Object << #AilienApi
+	slots: { #model . #messagesx . #history };
+	sharedVariables: { #LastHistoryx . #Provider };
+	tag: ''AIApi'';
+	package: ''AIActions''.
+	In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.'.
 	qHist responseType: 'Please response in ', AIACommentBuilding language.
 	self setHistory: 'qPrefix' to: qHist.
 	^ qHist 

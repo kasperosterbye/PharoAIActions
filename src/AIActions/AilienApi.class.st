@@ -257,7 +257,7 @@ AilienApi >> loadResponse [
 		history assistant: (self responseOf: llmCall). 
 		]
 		on: Error
-		do: [ :ex | self assistant: ex messageText ]
+		do: [ :ex | history assistant: ex messageText ]
 ]
 
 { #category : 'accessing' }

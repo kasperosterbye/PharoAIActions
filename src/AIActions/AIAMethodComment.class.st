@@ -73,16 +73,6 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 ]
 
 { #category : 'internals' }
-AIAMethodComment >> comment_aiaComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should be 140 chacters, and only letters.', 
-			' Please response in ', AIACommentBuilding language.
-	self getResponse
-]
-
-{ #category : 'internals' }
 AIAMethodComment >> methodSource: compiledMethod addComment: comment [
 	"This method adds a comment to the source code of a compiled method, ensuring proper formatting and escaping of special characters. It handles both quoted and unquoted comments, maintaining the method's structure while integrating the new comment."
 	| sourceLines safeComment |
@@ -93,41 +83,6 @@ AIAMethodComment >> methodSource: compiledMethod addComment: comment [
 		ifFalse: [ sourceLines add: (String tab, '"' , comment, '"' ) afterIndex: 1].
 	^ String cr join: sourceLines 
 	
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> new_aiaComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Please a detailed comment with all aspects. Your answer must not contain code, and no description of which method it is for as that is part of the prompt.'.
-	self getResponse.
-	"If it halts, it is likely because there is markdown that it should not make"
-	(self response beginsWith: '```') ifTrue:[ self halt]
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> old_2_aiaComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name.
-	self responseType: 'Response should be 100 chacters, and only letters and spaces, and no `"`'. 
-	self responseType: 'The answer must only be the comment.'.
-	self responseType: 'Please response in ', AIACommentBuilding language.
-	self getResponse.
-	"If it halts, it is likely because there is markdown that it should not make"
-	(self response beginsWith: '```') ifTrue:[ self halt]
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> old_aiaComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should be 140 chacters, and only letters.', 
-			' Please response in ', AIACommentBuilding language.
-	self getResponse.
-	"If it halts, it is likely because there is markdown that it should not make"
-	(self response beginsWith: '```') ifTrue:[ self halt]
 ]
 
 { #category : 'internals' }
@@ -148,19 +103,4 @@ AIAMethodComment >> setComment: aCompiledMethod [
 	aCompiledMethod methodClass
 		compile: (self methodSource: aCompiledMethod addComment: self response)
 		classified: aCompiledMethod protocol
-]
-
-{ #category : 'internals' }
-AIAMethodComment >> testSupportComment_aiaComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	self user: 'This is a Pharo question. Can your give a method comment for ' , 
-		aCompiledMethod name, 
-			'. Your response should only be letters. 
-			It usage is to understand how to write a test for it.
-			Explain the purpose of the method in terms of user-visible behavior or UI changes, not just internal logic.
-			Include edge cases or assumptions that a test should verify (e.g., what if input is invalid or at a boundary?).
-			If the method mutates state, describe exactly what changes and what should be observable after calling it.
-			', 
-			' Please response in ', AIACommentBuilding language.
-	self getResponse
 ]
