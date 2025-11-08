@@ -1,3 +1,33 @@
+"
+# AIAPlantUML
+
+A utility class for converting PlantUML text to images using the PlantUML command-line tool. This class provides a simple interface to generate UML diagrams from PlantUML code and display them as images in the Pharo environment.
+
+## Usage
+
+The class can be used to convert PlantUML code to images and display them. It supports various UML diagram types through example methods that query an AI model for PlantUML code examples.
+
+### Example in Playground
+
+```st
+""AIAPlantUML exampleClassDiagram""
+```
+
+This will generate a class diagram example by querying an AI model for PlantUML code, convert it to an image, and display it.
+
+## Key Features
+
+- Converts PlantUML text to PNG images using the `plantuml` command-line tool
+- Provides example methods for various UML diagram types
+- Handles both raw PlantUML code and code enclosed in markdown code blocks
+- Displays the resulting image in a new window
+
+## Design Notes
+
+The class is designed to be simple and focused on the conversion task. It doesn't modify or install any classes in the system. The actual conversion is done by calling the external PlantUML tool and reading the resulting PNG file.
+
+For more complex class building needs, consider using the `ShiftClassInstaller` or other class building utilities in the system.
+"
 Class {
 	#name : 'AIAPlantUML',
 	#superclass : 'Object',
@@ -5,6 +35,16 @@ Class {
 	#package : 'AIActions',
 	#tag : 'CommentBuilder'
 }
+
+{ #category : 'examples' }
+AIAPlantUML class >> example1ReadMe [
+	AIAPresenter onText: '# ReadMe
+The examples are done by the selected AI. 
+
+The selection is taken from https://creately.com/blog/diagrams/uml-diagram-types-examples/.
+
+The various examples are highly dependable on the selected AI, some might make something else than intended, others make errors'
+]
 
 { #category : 'examples' }
 AIAPlantUML class >> exampleActivityDiagram [
