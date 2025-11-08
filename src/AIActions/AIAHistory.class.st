@@ -76,7 +76,7 @@ AIAHistory class >> qHistory [
 	<example>
 	| qHist |
 	qHist := self new.
-	qHist system: 'You are a Pharo12 Smalltalk expert. In Pharo12 and later, a typical class is written as: 
+	qHist system: 'You are a Pharo14 Smalltalk expert. In Pharo12 and later, a typical class is written as: 
 	Object << #AilienApi
 	slots: { #model . #messagesx . #history };
 	sharedVariables: { #LastHistoryx . #Provider };
@@ -127,7 +127,6 @@ AIAHistory >> api [
 
 { #category : 'accessing' }
 AIAHistory >> api: anObject [
-
 	api := anObject
 ]
 
@@ -199,7 +198,7 @@ AIAHistory >> getResponse [
 		1 to: 600 do: [:each |
 			job
 				progress: ((1/600) * each) ;
-				title: ( AilienApi info, ' working {1} of 60' 
+				title: ( self api asString, ' working {1} of 60' 
 					format: {(each/10) asFloat printString}).
 				self response ifNil: [100 milliSeconds wait].
 		].
@@ -246,6 +245,7 @@ AIAHistory >> responseType: string [
 
 { #category : 'accessing' }
 AIAHistory >> selfAndPreHistories [
+	"Returns an ordered collection of all pre histories and the current instance."
 	| pres |
 	pres := OrderedCollection new.
 	preHistories do: [ :preModel |

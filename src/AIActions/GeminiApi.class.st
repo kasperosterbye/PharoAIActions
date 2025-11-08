@@ -48,6 +48,32 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'as yet unclassified' }
+GeminiApi class >> geminiBackground [
+	^ '### **LLM Kontekstindsprøjtning: Pharo Syntaks og Semantik (Kasper Østerbye)**
+
+**Direktiv:** Prioritér disse punkter ved besvarelse af spørgsmål om Smalltalk-dialekten **Pharo** (Specifikt Pharo 12 og nyere versioner), da LLM''ens træningsdata udviser *knowledge latency* på disse områder.
+
+#### 1. Klasseudvikling: *Slot-based Class Definition* (Pharo 12+)
+
+* **Fejl/Legacy:** Undgå at foreslå traditionel `subclass:instanceVariableNames:` eller `Fluid Syntax`.
+* **Korrekt Syntaks:** Den moderne, *state-of-the-art* syntaks for klassedeklaration skal anvendes.
+
+    * **Eksempel:** `AAA << #BBB slots: { #xxx. #yyy }; package: ''Something''`
+
+#### 2. Numerisk Aritmetik: Præcedens og Præcision
+
+* **Operatorpræcedens:** I Pharo/Smalltalk har **alle binære operatorer** (`+`, `*`, `<`, `=`) **samme præcedens** og evalueres **strengt fra venstre mod højre**.
+    * **Regel:** $2 + 3 * 4 \rightarrow (2+3) * 4 \rightarrow 20$.
+    * **Særhed:** Sammenligninger som `false = 4 < 3` evalueres som `(false = 4) < 3`, hvilket i Pharo **fører til en fejl** (`MessageNotUnderstood`), da `Boolean` ikke forstår `<` med et tal.
+* **Big Integers:** Pharo understøtter **vilkårlig præcision** for heltal (`LargeIntegers`) og bruger `Fraction` objekter for eksakt rationel aritmetik. LLM''en **skal afvise** at beregne store eksponenter præcist (f.eks. $123^{456}$).
+
+#### 3. Variabel Semantik i Arvehierarkiet
+
+* **Instans-Slots på Metaklassen:** Slots defineret på **Metaklasse-niveau** (`AilienApi class slots: { #modelLLM }`) er **klasse-instansvariabler**. Hver subklasses metaklasse (`GeminiApi class`) får sin **egen separate lagerplads** for det arvede slot. De er ikke *delte*.
+* **Shared Variables (Klassevariabler):** Variabler defineret som `sharedVariables: { #Provider }` på klasse-siden er **delt** af *hele* klassetræet (`AilienApi`, `GeminiApi` og deres respektive metaklasser). Der er **kun ét opbevaringssted** for hele hierarkiet.'
+]
+
 { #category : 'AI models' }
 GeminiApi class >> geminiKey [
 	^ (FileSystem disk workingDirectory / '../../geminicode.txt')
@@ -102,7 +128,7 @@ GeminiApi >> jsonHistory [
 	"Converts the chat history into a JSON-formatted array suitable for the Gemini API, structuring each message with role and text content."
 	| jsonHistory |
 	jsonHistory := OrderedCollection new.
-	messages do: [ :item |
+	history apiMessageList do: [ :item |
 		jsonHistory add: (Dictionary newFrom: 
 			{'role' -> item key.
 			'parts' -> { Dictionary newFrom: {  'text' -> item value} } } )

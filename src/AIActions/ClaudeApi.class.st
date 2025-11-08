@@ -84,7 +84,7 @@ ClaudeApi >> bodyForEntityWithPrompt [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
     | requestDictionary  |
     requestDictionary := Dictionary newFrom: {
-        'model' -> model.
+        'model' -> self model.
         'max_tokens' -> 1024.
         'messages' -> self jsonHistory.
         'temperature' -> 0.0.

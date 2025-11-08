@@ -3,7 +3,6 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'messagesx',
 		'history'
 	],
 	#classVars : [
@@ -270,7 +269,6 @@ AilienApi >> model [
 { #category : 'accessing' }
 AilienApi >> model: anObject [
 	"Sets the model for AI interactions. Validates input and updates instance state. Preserves existing history. Returns the model name."
-
 	model := anObject
 ]
 

@@ -13,7 +13,7 @@ AIAChatChat >> chat [
 
 	| nextChat |
 	self firstChat.
-	1 to: 25 do: [ :i |
+	1 to: 1 do: [ :i |
 			nextChat := history response.
 			history user: 'You said ', nextChat, '. What do you think? Is what I said wrong, did what I say similar to an other country, or something else'.
 			i odd
@@ -82,5 +82,88 @@ You answer, then pick a different European country and ask me the same format: "
 If uncertain about a country, say "I do not know about [country]" and pick different country.
 Example: USER: Can you explain the government of France? ASSISTANT: [explanation]. Can you explain the government of Finland?'.
 	history user: 'Can you explain the government of Italy?'.
+	history getResponse.
+]
+
+{ #category : 'initialization' }
+AIAChatChat >> paperComment: all [
+
+	| llmModels resp hist |
+	llmModels := OrderedCollection new.
+	resp := OrderedCollection new.
+	1 to: 2 do: [ :id | llmModels add: (MistralApi defaultModel: id) new].
+	1 to: 1 do: [ :id | llmModels add: (GrokApi defaultModel: id) new].
+	llmModels do: [ :model |
+		hist := AIAHistory new.
+		hist api: model. 
+		resp add: ( self paperComment: all by: hist )].
+	^ resp
+]
+
+{ #category : 'as yet unclassified' }
+AIAChatChat >> paperComment: all by: hist [ 
+	hist background: '# Paper for discussion', String cr, String cr, (AIABibLaTex new paper: 20) .
+	hist user: 'These there the comments procuded of the paper. ' , String cr, String cr. all.
+	hist user: 'Based on those summaries, can you write a comment that is the essence of them all. It should not be lo'.
+	hist responseType: 'The response type should be academic british style. '.
+	hist getResponse.
+	^ hist response
+]
+
+{ #category : 'initialization' }
+AIAChatChat >> paperFirst: hist [
+	hist background: '# Paper for discussion', String cr, String cr, (AIABibLaTex new paper: 20) .
+	hist user: 'Can you give a summary of the paper in background. Summary of concrete experiments in the paper is the key.'.
+	hist responseType: 'The response type should be academic british style. '.
+	hist getResponse.
+	^ hist response
+]
+
+{ #category : 'initialization' }
+AIAChatChat >> paperRead [
+
+	| all  comments |
+	all := self paperReadCombine.
+	comments := self paperComment: all.
+	^ all
+	
+]
+
+{ #category : 'initialization' }
+AIAChatChat >> paperReadAll [
+
+	| llmModels resp hist |
+	llmModels := OrderedCollection new.
+	resp := OrderedCollection new.
+	1 to: 2 do: [ :id | llmModels add: (MistralApi defaultModel: id) new].
+	1 to: 1 do: [ :id | llmModels add: (GrokApi defaultModel: id) new].
+	llmModels do: [ :model |
+		hist := AIAHistory new.
+		hist api: model. 
+		resp add: ( self paperFirst: hist )].
+	^ resp
+]
+
+{ #category : 'initialization' }
+AIAChatChat >> paperReadCombine [
+
+	| all  |
+	all := self paperReadAll.
+	^ '-------------------', String cr, String cr join: all.
+]
+
+{ #category : 'initialization' }
+AIAChatChat >> sestoft_firstChat [
+	history background: 'history background: ''We alternate explaining Danish PhD computer scientists.
+I name a person and ask: "Can you explain [name]?"
+You explain their research area and contributions.
+Then pick someone who has cited their work or collaborated with them, and ask me: "Can you explain [new name]?"
+If uncertain about a person, say "I do not know [name]" and ask about someone from a related area instead.
+Stay focused on Danish CS researchers.
+
+Example:
+USER: Can you explain Peter Sestoft?
+ASSISTANT: [explanation of Sestoft''''s work in functional programming and ITU]. Can you explain Fritz Henglein?'''.
+	history user: 'Can you explain Peter Sestoft?'.
 	history getResponse.
 ]

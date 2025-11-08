@@ -166,19 +166,17 @@ AIAPlantUML >> uml: uml [
 
 { #category : 'UML' }
 AIAPlantUML >> umlToImage: uml [
-	"Converts PlantUML text to an image using Kroki.io and displays it in a presenter."
-
-	| url umlClean response |
-	url := 'https://kroki.io/plantuml/png'.
-	umlClean := self uml: uml.
-	response := ZnClient new
-		            url: 'https://kroki.io/plantuml/png';
-		            entity: (ZnEntity text: umlClean);
-		            contentType: 'text/plain';
-		            accept: 'image/png';
-		            post;
-		            contents.
+	"Converts PlantUML text to an image using the plantuml command line tool."
+	| directory pumlFile pngFile  command form |
+	directory := FileSystem workingDirectory.
+	pumlFile := directory / 'plantUMLtemp.puml'.
+	pngFile := directory / 'plantUMLtemp.png'.
+	pumlFile writeStreamDo: [ :stream | stream nextPutAll: (self uml: uml) ].
+	command := 'plantuml -tpng "{1}" -o "{2}"' 
+		format: {pumlFile fullName. directory fullName}.
+	LibC system: command.
+	form := PNGReadWriter formFromFileNamed: pngFile fullName.
 	SpImagePresenter new
-		image: (PNGReadWriter formFromStream: response readStream);
-		open
+		image: form;
+		open.
 ]

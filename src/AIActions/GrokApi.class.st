@@ -30,7 +30,7 @@ GrokApi >> bodyForEntityWithPrompt [
     "Creates a JSON request body for Grok API with model, messages, max_tokens, temperature, and no streaming."
     | requestDictionary |
     requestDictionary := Dictionary newFrom: {
-        'model' -> model.
+        'model' -> self model.
         'messages' -> self jsonHistory.
         'max_tokens' -> 1024.
         'temperature' -> 0.0.

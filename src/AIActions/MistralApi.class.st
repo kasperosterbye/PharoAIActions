@@ -76,7 +76,7 @@ MistralApi >> bodyForEntityWithPrompt [
 	"Creates a JSON entity for an API request with a system message and user prompt."
 	| requestDictionary |
 	requestDictionary :=Dictionary newFrom: {
-	    'model' -> 'codestral-latest'.
+	    'model' -> self model.
 	    'messages' -> self jsonHistory .
 		 'temperature' -> 0.0.
 	    'stream' -> false.
