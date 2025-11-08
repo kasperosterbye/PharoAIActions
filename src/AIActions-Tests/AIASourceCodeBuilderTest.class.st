@@ -98,6 +98,17 @@ AIASourceCodeBuilderTest >> testForSuperClassesOf [
 ]
 
 { #category : 'tests' }
+AIASourceCodeBuilderTest >> testForTagIn [
+	"Tests the retrieval of classes within a specific tag in a given package, verifying correct class extraction and content inclusion"
+	| res |
+	builder forTag: 'AIApi' in: 'AIActions'.
+	res := builder response contents.
+	self assert: (res  includesSubstring: '## Class: AilienApi').
+	self assert: (res  includesSubstring: '## Class: AIAHistory').
+	self assert: (res  includesSubstring: '## Class: MistralApiWithTools').
+]
+
+{ #category : 'tests' }
 AIASourceCodeBuilderTest >> testForWildcard [
 	| res |
 	builder forWildcard: '*AIAc'.

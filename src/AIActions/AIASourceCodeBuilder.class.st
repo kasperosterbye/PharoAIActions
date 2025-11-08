@@ -176,6 +176,16 @@ AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 ]
 
 { #category : 'accessing' }
+AIASourceCodeBuilder >> forTag: tagName in: package [
+	
+	| potentialClasses classSet |
+	potentialClasses := (PackageOrganizer default packageNamed: package) classes asArray.
+	classSet := potentialClasses select: [ :aClass | aClass packageTag name asString = tagName ].
+	self forClasses: classSet.
+	^ response contents
+]
+
+{ #category : 'accessing' }
 AIASourceCodeBuilder >> forWildcard: wild [
 	"Generates formatted source code descriptions for packages matching a wildcard pattern, including all classes, methods, and meta-class details, appending to the response stream."
 
