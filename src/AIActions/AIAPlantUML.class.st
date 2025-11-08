@@ -6,7 +6,7 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleActivityDiagram [
 
 	| uml type |
@@ -16,7 +16,7 @@ AIAPlantUML class >> exampleActivityDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleClassDiagram [
 	"Generates a PlantUML class diagram example by querying an AI model."
 
@@ -27,7 +27,7 @@ AIAPlantUML class >> exampleClassDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleCommunicationDiagram [
 	| uml type |
 	type := '**Communication Diagram**'.
@@ -36,7 +36,7 @@ AIAPlantUML class >> exampleCommunicationDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleComponentDiagram [
 
 	| uml type |
@@ -46,7 +46,7 @@ AIAPlantUML class >> exampleComponentDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleCompositeStructureDiagram [
 
 	| uml type |
@@ -56,7 +56,7 @@ AIAPlantUML class >> exampleCompositeStructureDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleDeploymentDiagram [
 
 	| uml type |
@@ -66,7 +66,7 @@ AIAPlantUML class >> exampleDeploymentDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleInteractionOverviewDiagram [
 	| uml type |
 	type := '**Interaction Overview Diagram**'.
@@ -75,7 +75,7 @@ AIAPlantUML class >> exampleInteractionOverviewDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleObjectDiagram [
 
 	| uml type |
@@ -85,7 +85,7 @@ AIAPlantUML class >> exampleObjectDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> examplePackageDiagram [
 
 	| uml type |
@@ -95,7 +95,7 @@ AIAPlantUML class >> examplePackageDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> examplePlantUML [
 
 	| uml |
@@ -104,7 +104,7 @@ AIAPlantUML class >> examplePlantUML [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleProfileDiagram [
 	| uml type |
 	type := '**Profile Diagram**'.
@@ -113,7 +113,7 @@ AIAPlantUML class >> exampleProfileDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleSequenceDiagram [
 
 	| uml type |
@@ -123,7 +123,7 @@ AIAPlantUML class >> exampleSequenceDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleStateMachineDiagram [
 
 	| uml type |
@@ -133,7 +133,7 @@ AIAPlantUML class >> exampleStateMachineDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleTimingDiagram [
 	| uml type |
 	type := '**Timing Diagram**'.
@@ -142,7 +142,7 @@ AIAPlantUML class >> exampleTimingDiagram [
 	AIAPlantUML umlToImage: uml
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'examples' }
 AIAPlantUML class >> exampleUseCaseDiagram [
 
 	| uml type |
