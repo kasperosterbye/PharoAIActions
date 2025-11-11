@@ -186,6 +186,13 @@ AIASourceCodeBuilder >> forTag: tagName in: package [
 ]
 
 { #category : 'accessing' }
+AIASourceCodeBuilder >> forTagsLike: aClass [
+	
+	self forTag: aClass packageTag name in: aClass package name.
+	^ response contents
+]
+
+{ #category : 'accessing' }
 AIASourceCodeBuilder >> forWildcard: wild [
 	"Generates formatted source code descriptions for packages matching a wildcard pattern, including all classes, methods, and meta-class details, appending to the response stream."
 

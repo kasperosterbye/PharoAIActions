@@ -30,6 +30,7 @@ AIABibLaTex class >> biblatex [
 
 { #category : 'as yet unclassified' }
 AIABibLaTex class >> playground [
+	"Provides examples for using the AIABibLaTex class in a playground environment."
 	<example>
 	'''Please produce a biblatex format for the paper with a note from its conclusion or abstract. Only for the paper itself, not for its references. If possible, just return the biblatex format, and no explanation'' q0: [(FileSystem disk root / ''Users'' / ''kasper'' / ''D'' / ''Pharo'' / ''images'' / ''AIActions03'' / ''Papers'' / ''Comment101.txt'' ) readStream contents trimBoth].
 
