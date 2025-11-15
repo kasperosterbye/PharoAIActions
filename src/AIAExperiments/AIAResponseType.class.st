@@ -91,6 +91,52 @@ AIAResponseType >> initialize [
 	RTResults := nil.
 ]
 
+{ #category : 'markdown' }
+AIAResponseType >> markdownExplanation [
+	MarkDown 
+		<< 'Explanation of the data and their structure goes here. As plain text' << String cr << String cr.
+]
+
+{ #category : 'markdown' }
+AIAResponseType >> markdownPromptsAndResponseTypes [
+	MarkDown << '## List of what the prompts and response types are'<< String cr<< String cr.
+]
+
+{ #category : 'markdown' }
+AIAResponseType >> markdownResponse [
+	MarkDown := WriteStream on: ''.
+	MarkDown 
+		<< '# Response type experiments' << String cr << String cr.
+	self 
+		markdownExplanation
+		markdownPromptsAndResponseTypes
+		markdownResponseTypeResults.
+	AIAPresenter onText: MarkDown contents.
+	^ MarkDown contents
+]
+
+{ #category : 'markdown' }
+AIAResponseType >> markdownResponseTypeResults [
+
+	| p r |
+	MarkDown << '## results of it' << String cr << String cr.
+
+	p := [ :index |
+		     self class prompts size <= index
+			     ifTrue: [ self class prompts size ]
+			     ifFalse: [ '' ] ].
+	r := [ :index |
+		     self class responseTypes size <= index
+			     ifTrue: [ self class responseTypes size ]
+			     ifFalse: [ '' ] ].
+	MarkDown << '| prompts | responseTypes |' << String cr.
+	MarkDown << '| ------- | ------------- |' << String cr.
+	1 to: 3 do: [ :line |
+		MarkDown << '| ' << p value: line << ' | ' << r value: line << ' |' << String cr.
+		 ].
+	^ MarkDown contents
+]
+
 { #category : 'RT builder' }
 AIAResponseType >> modelsList [
 
