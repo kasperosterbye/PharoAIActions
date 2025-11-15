@@ -6,7 +6,7 @@ Class {
 		'history'
 	],
 	#classVars : [
-		'LastHistoryx',
+		'LastHistory',
 		'Provider'
 	],
 	#classInstVars : [
@@ -164,6 +164,7 @@ AilienApi class >> provider: aProvider [
 
 { #category : 'provider' }
 AilienApi class >> providerAndModels [
+	"Returns all providers with their available models"
 	| allSubclasses index models|
 	allSubclasses := OrderedCollection new.
 	allSubclasses addAll: self subclasses.
@@ -174,7 +175,7 @@ AilienApi class >> providerAndModels [
 			index := index + 1 ].
 	models := OrderedCollection new.
 	(allSubclasses sort: [ :a :b | a name < b name ]) do: [ :provider | models add: { provider. provider modelNames} ].
-	^ models asArray asString
+	^ models asArray
 ]
 
 { #category : 'provider' }
@@ -242,8 +243,8 @@ AilienApi >> jsonHistory [
 
 { #category : 'accessing' }
 AilienApi >> loadResponse [
-	"Loads response from AI model API, handling errors and updating conversation history."
-
+	"Executes HTTP request to AI provider endpoint and processes response into conversation history with error handling"
+	
 	| jsonResponse llmCall response|
 	[  jsonResponse := ZnClient new
 			                url: self apiGenerateUrl;
@@ -270,58 +271,6 @@ AilienApi >> model [
 AilienApi >> model: anObject [
 	"Sets the model for AI interactions. Validates input and updates instance state. Preserves existing history. Returns the model name."
 	model := anObject
-]
-
-{ #category : 'initialization' }
-AilienApi >> old_assistant: aString [
-	
-	history assistant: aString
-]
-
-{ #category : 'initialization' }
-AilienApi >> old_chatHistory [
-	^ history chatHistory
-]
-
-{ #category : 'ollama models' }
-AilienApi >> old_getResponse [
-	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
-	self history apiMessageList ifEmpty: [ 
-		self assistant: 'No answer, as I was not asked'.
-		^ self ].
-	
-	[ :job | | aiProcess |
-		aiProcess := [ self loadResponse ] newProcess.
-		aiProcess priority: Processor userBackgroundPriority. 
-		aiProcess resume.
-		SystemProgressMorph uniqueInstance position: 10@20.
-		job interruptBlock: [ 
-			aiProcess terminate.
-			self assistant: 'AI based response Terminated'.
-			^ self
-		].
-		1 to: 600 do: [:each |
-			job
-				progress: ((1/600) * each) ;
-				title: ( AilienApi info, ' working {1} of 60' 
-					format: {(each/10) asFloat printString}).
-				self response ifNil: [100 milliSeconds wait].
-		].
-	] asJob run.
-]
-
-{ #category : 'accessing' }
-AilienApi >> old_response [
-	| last |
-	last := history apiMessageList last.
-	(last key = 'assistant')
-		ifTrue: [ ^ last value ]
-		ifFalse: [ ^ nil ]
-]
-
-{ #category : 'initialization' }
-AilienApi >> old_user: aString [
-	history user: aString
 ]
 
 { #category : 'accessing' }

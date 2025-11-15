@@ -1,36 +1,5 @@
 "
-# Class Comment for MistralApi
-
-The `MistralApi` class provides an interface to interact with Mistral's AI models, enabling developers to send prompts, receive responses, and utilise tooling capabilities. It extends the `AilienApi` superclass, inheriting core conversation management functionality while specialising in Mistral-specific implementations.
-
-## Key Features
-
-- **Model Interaction**: Supports multiple Mistral models (e.g., 'codestral-latest', 'mistral-small-latest')
-- **Tool Integration**: Optional tooling capabilities for enhanced functionality
-- **Conversation Management**: Maintains and formats chat history
-- **Error Handling**: Robust error management for API responses
-
-## Usage Example
-
-```smalltalk
-""Create and configure a Mistral API instance""
-mistral := MistralApi new.
-mistral model: 'mistral-small-latest'.  ""Set the model""
-mistral system: 'You are a helpful assistant'.  ""Set system message""
-mistral user: 'Tell me about Pharo'.  ""Add user prompt""
-mistral getResponse.  ""Get AI response""
-mistral response  ""Inspect the response""
-```
-
-## Implementation Notes
-
-- Requires valid API credentials stored in a file
-- Handles both standard and tool-enhanced API requests
-- Maintains conversation history in chronological order
-- Provides formatted output for debugging and display purposes
-
-The class is designed for integration with Pharo's Smalltalk environment, offering a clean interface for AI interactions while handling the complexities of API communication and response processing.
-```
+Data receive timed out.
 "
 Class {
 	#name : 'MistralApi',

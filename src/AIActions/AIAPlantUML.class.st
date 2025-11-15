@@ -92,7 +92,6 @@ AIAPlantUML class >> exampleCompositeStructureDiagram [
 	| uml type |
 	type := '**Composite Structure Diagram**'.
 	uml := ('Can you give an example of a {1} in PlantUML. [RESONSETYPE]Please just return the PlantUML code. No comments' format: { type }) q0.
-
 	AIAPlantUML umlToImage: uml
 ]
 
