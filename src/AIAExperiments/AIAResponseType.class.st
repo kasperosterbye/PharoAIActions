@@ -1,6 +1,10 @@
 Class {
 	#name : 'AIAResponseType',
 	#superclass : 'Object',
+	#instVars : [
+		'responses',
+		'prompt'
+	],
 	#classVars : [
 		'MarkDown',
 		'RTResults'
@@ -8,13 +12,6 @@ Class {
 	#category : 'AIAExperiments',
 	#package : 'AIAExperiments'
 }
-
-{ #category : 'as yet unclassified' }
-AIAResponseType class >> doPrompt: id [
-	| prompt |
-	prompt := self prompts at: id.
-	
-]
 
 { #category : 'as yet unclassified' }
 AIAResponseType class >> prompts [
@@ -51,16 +48,6 @@ AIAResponseType >> buildPromtList [
 ]
 
 { #category : 'RT builder' }
-AIAResponseType >> buildResponsetype [
-	| promptAndResponse |
-	promptAndResponse := self buildPromtList.
-	promptAndResponse do: [ :pr |
-		self modelsList do: [ :llm |
-		
-		 ]]
-]
-
-{ #category : 'RT builder' }
 AIAResponseType >> for: prompt inLLM: llm [ 
 
 	| resp|
@@ -88,7 +75,6 @@ AIAResponseType >> forLLM: llm prompt: prompt resourceType: resourceType [
 { #category : 'initialization' }
 AIAResponseType >> initialize [ 
 	super initialize.
-	RTResults := nil.
 ]
 
 { #category : 'markdown' }
@@ -99,7 +85,17 @@ AIAResponseType >> markdownExplanation [
 
 { #category : 'markdown' }
 AIAResponseType >> markdownPromptsAndResponseTypes [
-	MarkDown << '## List of what the prompts and response types are'<< String cr<< String cr.
+
+	| list |
+	MarkDown << '## Prompts and response types' << String cr << String cr.
+	
+	list := self buildPromtList.
+	MarkDown << '| **Index** | **Prompts & ResponseTypes** |' << String cr.
+	MarkDown << '| ----- | ----------------------- |' << String cr.
+	1 to: list size do: [ :index |
+		MarkDown << '| ' << index asString << ' | ' << (list at: index) << ' |' << String cr
+		 ].
+	^ MarkDown contents
 ]
 
 { #category : 'markdown' }
@@ -108,8 +104,8 @@ AIAResponseType >> markdownResponse [
 	MarkDown 
 		<< '# Response type experiments' << String cr << String cr.
 	self 
-		markdownExplanation
-		markdownPromptsAndResponseTypes
+		markdownExplanation;
+		markdownPromptsAndResponseTypes;
 		markdownResponseTypeResults.
 	AIAPresenter onText: MarkDown contents.
 	^ MarkDown contents
@@ -117,23 +113,22 @@ AIAResponseType >> markdownResponse [
 
 { #category : 'markdown' }
 AIAResponseType >> markdownResponseTypeResults [
-
-	| p r |
-	MarkDown << '## results of it' << String cr << String cr.
-
-	p := [ :index |
-		     self class prompts size <= index
-			     ifTrue: [ self class prompts size ]
-			     ifFalse: [ '' ] ].
-	r := [ :index |
-		     self class responseTypes size <= index
-			     ifTrue: [ self class responseTypes size ]
-			     ifFalse: [ '' ] ].
-	MarkDown << '| prompts | responseTypes |' << String cr.
-	MarkDown << '| ------- | ------------- |' << String cr.
-	1 to: 3 do: [ :line |
-		MarkDown << '| ' << p value: line << ' | ' << r value: line << ' |' << String cr.
+	| list index promtAndLLM shortResp |
+	MarkDown << '## Respons for '<< (self buildPromtList first ) << String cr << String cr.
+	
+	list := self buildPromtList.
+	MarkDown << '| **Index** | **LLM** | **Response (first 50 letters)** |' << String cr.
+	MarkDown << '| --------- | ------- | ------------------------------ |' << String cr.
+	1 to: RTResults size do: [ :prIndex |
+		1 to: (RTResults at: prIndex) value size do: [ :llmResonseIndex |
+			index := prIndex asString.
+			promtAndLLM := ((RTResults at: prIndex) value at: llmResonseIndex) key asString.
+			shortResp := ((RTResults at: prIndex) value at: llmResonseIndex) value asString.
+			shortResp size > 50 ifTrue: [ shortResp := shortResp first: 50 ].
+			MarkDown << '| ' << index << ' | ' << promtAndLLM << ' | ' << shortResp << ' |' << String cr.
+			 ]
 		 ].
+
 	^ MarkDown contents
 ]
 
