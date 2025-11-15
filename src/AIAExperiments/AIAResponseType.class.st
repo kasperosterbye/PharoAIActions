@@ -25,8 +25,8 @@ AIAResponseType class >> prompts [
 AIAResponseType class >> responseTypes [
 	^ { 
 		''.
-		' Do not give a hallucinated answer.'.
-		' No guessing, if you do not know, just say "I do not know"' }
+		' No guessing, if you do not know, just say "I do not know"'.
+		' [RESPONSETYPE] No guessing, if you do not know, just say "I do not know"'  }
 ]
 
 { #category : 'as yet unclassified' }
@@ -114,7 +114,7 @@ AIAResponseType >> markdownResponse [
 { #category : 'markdown' }
 AIAResponseType >> markdownResponseTypeResults [
 	| list index promtAndLLM shortResp |
-	MarkDown << '## Respons for '<< (self buildPromtList first ) << String cr << String cr.
+	MarkDown << '## Summary of Responses' << String cr << String cr.
 	
 	list := self buildPromtList.
 	MarkDown << '| **Index** | **LLM** | **Response (first 50 letters)** |' << String cr.
@@ -128,7 +128,17 @@ AIAResponseType >> markdownResponseTypeResults [
 			MarkDown << '| ' << index << ' | ' << promtAndLLM << ' | ' << shortResp << ' |' << String cr.
 			 ]
 		 ].
-
+	MarkDown << '## Detailed of Responses' << String cr << String cr.
+	1 to: RTResults size do: [ :prIndex |
+		1 to: (RTResults at: prIndex) value size do: [ :llmResonseIndex |
+			index := prIndex asString.
+			promtAndLLM := ((RTResults at: prIndex) value at: llmResonseIndex) key asString.
+			shortResp := ((RTResults at: prIndex) value at: llmResonseIndex) value asString.
+			MarkDown << '#### ' << index << ' ' << promtAndLLM << String cr. 
+			MarkDown << shortResp << String cr.
+			 ]
+		 ].
+	
 	^ MarkDown contents
 ]
 
