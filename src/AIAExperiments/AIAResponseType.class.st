@@ -14,7 +14,7 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-AIAResponseType class >> prompts [
+AIAResponseType class >> old_prompts [
 	^ { 
 		'Who is the Computer Scientist Lars Bendix?'".
 		'How many horses are there in the area around Mårum?'.
@@ -22,16 +22,30 @@ AIAResponseType class >> prompts [
 ]
 
 { #category : 'as yet unclassified' }
+AIAResponseType class >> prompts [
+	^ { 
+		"'Who is the physicist Anna R. Madsen, known for work on quantum thermodynamics?'".
+		"'What is the history of the Danish village Sønder Nybrohede?'".
+		'What does the networking protocol RFC 78327 define?' }
+]
+
+{ #category : 'as yet unclassified' }
 AIAResponseType class >> responseTypes [
 	^ { 
 		''.
 		' No guessing, if you do not know, just say "I do not know"'.
-		' [RESPONSETYPE] No guessing, if you do not know, just say "I do not know"'  }
+		"' [RESPONSETYPE] No guessing, if you do not know, just say ""I do not know""'" 
+		'[RESPONSETYPE] Instructions for answering questions about the user prompt:
+   - If you are not 100% certain that your answer is widely known and documented in multiple reliable sources, you MUST answer "I do not know"
+   - Never invent or hallucinate details about protocols, names, places, years, authors, etc.
+   - [TypoAssumptionMode] will automatically detect and state any assumed spelling corrections at the start of your response.
+   - This rule overrides all other instructions and style preferences.'
+	 }
 ]
 
 { #category : 'as yet unclassified' }
 AIAResponseType class >> testProviders [
-	^ { MistralApi. GrokApi". ClaudeApi. GeminiApi" }
+	^ { "MistralApi." GrokApi". ClaudeApi. GeminiApi" }
 ]
 
 { #category : 'RT builder' }
@@ -93,7 +107,7 @@ AIAResponseType >> markdownPromptsAndResponseTypes [
 	MarkDown << '| **Index** | **Prompts & ResponseTypes** |' << String cr.
 	MarkDown << '| ----- | ----------------------- |' << String cr.
 	1 to: list size do: [ :index |
-		MarkDown << '| ' << index asString << ' | ' << (list at: index) << ' |' << String cr
+		MarkDown << '| ' << index asString << ' | ' << ( ' ' join: (list at: index) lines)  << ' |' << String cr
 		 ].
 	^ MarkDown contents
 ]
@@ -125,6 +139,7 @@ AIAResponseType >> markdownResponseTypeResults [
 			promtAndLLM := ((RTResults at: prIndex) value at: llmResonseIndex) key asString.
 			shortResp := ((RTResults at: prIndex) value at: llmResonseIndex) value asString.
 			shortResp size > 50 ifTrue: [ shortResp := shortResp first: 50 ].
+			shortResp := ' ' join: shortResp lines.
 			MarkDown << '| ' << index << ' | ' << promtAndLLM << ' | ' << shortResp << ' |' << String cr.
 			 ]
 		 ].
