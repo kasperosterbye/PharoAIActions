@@ -13,6 +13,12 @@ Class {
 	#package : 'AIAExperiments'
 }
 
+{ #category : 'initialization' }
+AIAResponseType class >> initializeRTResults [
+	<example>
+	RTResults := nil 
+]
+
 { #category : 'as yet unclassified' }
 AIAResponseType class >> old_prompts [
 	^ { 
@@ -24,28 +30,23 @@ AIAResponseType class >> old_prompts [
 { #category : 'as yet unclassified' }
 AIAResponseType class >> prompts [
 	^ { 
-		"'Who is the physicist Anna R. Madsen, known for work on quantum thermodynamics?'".
-		"'What is the history of the Danish village Sønder Nybrohede?'".
-		'What does the networking protocol RFC 78327 define?' }
+		'Who is the Computer Scientist Lars Bendix?'.
+		'What is the history of the Danish village Sønder Nybrohede?'.
+		'What does the networking protocol RFC 7832 define?' }
 ]
 
 { #category : 'as yet unclassified' }
 AIAResponseType class >> responseTypes [
 	^ { 
 		''.
-		' No guessing, if you do not know, just say "I do not know"'.
-		"' [RESPONSETYPE] No guessing, if you do not know, just say ""I do not know""'" 
-		'[RESPONSETYPE] Instructions for answering questions about the user prompt:
-   - If you are not 100% certain that your answer is widely known and documented in multiple reliable sources, you MUST answer "I do not know"
-   - Never invent or hallucinate details about protocols, names, places, years, authors, etc.
-   - [TypoAssumptionMode] will automatically detect and state any assumed spelling corrections at the start of your response.
-   - This rule overrides all other instructions and style preferences.'
+		' No guessing, if you do not know, just say "I do not know"'".
+		' [RESPONSETYPE] No guessing, if you do not know, just say ""I do not know""'"
 	 }
 ]
 
 { #category : 'as yet unclassified' }
 AIAResponseType class >> testProviders [
-	^ { "MistralApi." GrokApi". ClaudeApi. GeminiApi" }
+	^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi.}
 ]
 
 { #category : 'RT builder' }
@@ -89,6 +90,7 @@ AIAResponseType >> forLLM: llm prompt: prompt resourceType: resourceType [
 { #category : 'initialization' }
 AIAResponseType >> initialize [ 
 	super initialize.
+	RTResults ifNil: [ RTResults := OrderedCollection new].
 ]
 
 { #category : 'markdown' }
@@ -127,28 +129,29 @@ AIAResponseType >> markdownResponse [
 
 { #category : 'markdown' }
 AIAResponseType >> markdownResponseTypeResults [
-	| list index promtAndLLM shortResp |
+	| list index promtAndLLM shortResp lastResults|
 	MarkDown << '## Summary of Responses' << String cr << String cr.
 	
 	list := self buildPromtList.
 	MarkDown << '| **Index** | **LLM** | **Response (first 50 letters)** |' << String cr.
 	MarkDown << '| --------- | ------- | ------------------------------ |' << String cr.
-	1 to: RTResults size do: [ :prIndex |
-		1 to: (RTResults at: prIndex) value size do: [ :llmResonseIndex |
+	lastResults := RTResults last.
+	1 to: lastResults size do: [ :prIndex |
+		1 to: (lastResults at: prIndex) value size do: [ :llmResonseIndex |
 			index := prIndex asString.
-			promtAndLLM := ((RTResults at: prIndex) value at: llmResonseIndex) key asString.
-			shortResp := ((RTResults at: prIndex) value at: llmResonseIndex) value asString.
+			promtAndLLM := ((lastResults at: prIndex) value at: llmResonseIndex) key asString.
+			shortResp := ((lastResults at: prIndex) value at: llmResonseIndex) value asString.
 			shortResp size > 50 ifTrue: [ shortResp := shortResp first: 50 ].
 			shortResp := ' ' join: shortResp lines.
 			MarkDown << '| ' << index << ' | ' << promtAndLLM << ' | ' << shortResp << ' |' << String cr.
 			 ]
 		 ].
 	MarkDown << '## Detailed of Responses' << String cr << String cr.
-	1 to: RTResults size do: [ :prIndex |
-		1 to: (RTResults at: prIndex) value size do: [ :llmResonseIndex |
+	1 to: lastResults size do: [ :prIndex |
+		1 to: (lastResults at: prIndex) value size do: [ :llmResonseIndex |
 			index := prIndex asString.
-			promtAndLLM := ((RTResults at: prIndex) value at: llmResonseIndex) key asString.
-			shortResp := ((RTResults at: prIndex) value at: llmResonseIndex) value asString.
+			promtAndLLM := ((lastResults at: prIndex) value at: llmResonseIndex) key asString.
+			shortResp := ((lastResults at: prIndex) value at: llmResonseIndex) value asString.
 			MarkDown << '#### ' << index << ' ' << promtAndLLM << String cr. 
 			MarkDown << shortResp << String cr.
 			 ]
@@ -172,20 +175,20 @@ AIAResponseType >> modelsList [
 AIAResponseType >> responceTypeExperiments [
 	"Collect the responses for each prompt & responseType for each prover and its models"
 
-	| promptResponseTypes llms responses prompts |
+	| promptResponseTypes llms prompts |
 	promptResponseTypes := self buildPromtList.
 	llms := self modelsList.
 	
 	prompts := OrderedCollection new.
 	promptResponseTypes do: [ :promtResonse | 
 			responses := OrderedCollection new.
-
 			llms do: [ :llm | 
 				responses add: (llm -> (self for: promtResonse inLLM: llm ) ) 
 			] .
 			prompts add: (promtResonse -> responses )
 		].
-	RTResults := prompts.
+	RTResults add: prompts.
+
 	^ prompts 
 		
 ]
