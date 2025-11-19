@@ -11,7 +11,7 @@ OpenAIApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://platform.openai.com/docs/models to see the list"
 	
-	^ #('gpt-4.1'  'gpt-3.5-turbo' 'gpt-4.1-mini' 'gpt-4.1-nano') 
+	^ #('gpt-5.1'  'gpt-5-mini' 'gpt-5-nano' 'gpt-4.1-nano') 
 ]
 
 { #category : 'accessing' }
@@ -34,8 +34,8 @@ OpenAIApi >> bodyForEntityWithPrompt [
     requestDictionary := Dictionary newFrom: {
         'model' -> model.
         'messages' -> self jsonHistory.
-        'max_tokens' -> 1024.
-        'temperature' -> 0.0.
+        'max_completion_tokens' -> 1024."
+        'temperature' -> 0.0."
         'stream' -> false.
     }.
     ^ ZnEntity json: (STONJSON toString: requestDictionary).

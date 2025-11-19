@@ -85,7 +85,7 @@ GeminiApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://ai.google.dev/gemini-api/docs/models to see the list"
 	
-	^ #('gemini-2.0-flash-lite'  'gemini-2.5-pro' 'gemini-1.5-pro' 'gemini-2.5-flash') 
+	^ #('gemini-2.0-flash-lite'  'gemini-2.5-pro' 'gemini-2.5-flash-lite' 'gemini-2.5-flash') 
 ]
 
 { #category : 'accessing' }

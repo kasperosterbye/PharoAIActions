@@ -254,7 +254,7 @@ AilienApi >> loadResponse [
 			           post;
 			           contents.
 		response := self responseOf: llmCall.
-		history assistant: (self responseOf: llmCall). 
+		history assistant: response. 
 		]
 		on: Error
 		do: [ :ex | history assistant: ex messageText ]

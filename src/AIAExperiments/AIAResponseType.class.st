@@ -20,14 +20,6 @@ AIAResponseType class >> initializeRTResults [
 ]
 
 { #category : 'as yet unclassified' }
-AIAResponseType class >> old_prompts [
-	^ { 
-		'Who is the Computer Scientist Lars Bendix?'".
-		'How many horses are there in the area around Mårum?'.
-		'What is the history of the Danish city named Langborteby?'" }
-]
-
-{ #category : 'as yet unclassified' }
 AIAResponseType class >> prompts [
 	^ { 
 		'Who is the Computer Scientist Lars Bendix?'.
@@ -39,14 +31,15 @@ AIAResponseType class >> prompts [
 AIAResponseType class >> responseTypes [
 	^ { 
 		''.
-		' No guessing, if you do not know, just say "I do not know"'".
-		' [RESPONSETYPE] No guessing, if you do not know, just say ""I do not know""'"
+		' Please answer only if you have verified knowledge. If you are not certain, kindly say ''I don’t have enough information to answer accurately'' and suggest a better source if possible. Thank you.'
 	 }
 ]
 
 { #category : 'as yet unclassified' }
 AIAResponseType class >> testProviders [
-	^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi.}
+	
+	^ { MistralApi.}
+	"^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi. TogetherApi}"
 ]
 
 { #category : 'RT builder' }
@@ -85,6 +78,29 @@ AIAResponseType >> forLLM: llm prompt: prompt resourceType: resourceType [
 		user: prmt ;
 		getResponse.
 	^ resp response 
+]
+
+{ #category : 'as yet unclassified' }
+AIAResponseType >> getResponses [
+	| id |
+	id := RTResults size.
+	[ :job | | aiProcess |
+		aiProcess := [ self responceTypeExperiments ] newProcess.
+		aiProcess priority: Processor userBackgroundPriority. 
+		aiProcess resume.
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job interruptBlock: [ 
+			aiProcess terminate.
+			self assistant: 'AI based response Terminated'.
+			^ self
+		].
+		1 to: 60000 do: [:each |
+			job
+				progress: ((1/60000) * each) ;
+				title: 'Building responses'.
+				RTResults size > id ifFalse: [100 milliSeconds wait].
+		].
+	] asJob run.
 ]
 
 { #category : 'initialization' }
