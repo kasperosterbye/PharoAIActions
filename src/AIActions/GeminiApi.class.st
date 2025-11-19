@@ -150,5 +150,5 @@ GeminiApi >> responseOf: jsonResponse [
 		message := (parsed at: 'candidates') first at: 'content'.
 		^ (message at: 'parts') first at: 'text' ]
 		on: Error
-		do: [ ^ 'Error bla bla: ' , jsonResponse ]
+		do: [ ^ self errorResponse: jsonResponse ]
 ]

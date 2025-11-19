@@ -6,6 +6,7 @@ Class {
 		'history'
 	],
 	#classVars : [
+		'ErrorResponse',
 		'LastHistory',
 		'Provider'
 	],
@@ -59,6 +60,11 @@ AilienApi class >> defaultModel: modelNumber [
 	modelLLM := self modelNames 
 		at: modelNumber 
 		ifAbsent: [ modelLLM := self modelNames first ]
+]
+
+{ #category : 'responses' }
+AilienApi class >> errorResponse: aString [
+	ErrorResponse := aString
 ]
 
 { #category : 'accessing' }
@@ -201,6 +207,13 @@ AilienApi >> apiGenerateUrl [
 { #category : 'accessing' }
 AilienApi >> bodyForEntityWithPrompt [
 	self subclassResponsibility
+]
+
+{ #category : 'responses' }
+AilienApi >> errorResponse: jsonResponse [
+	ErrorResponse isNil 
+		ifTrue: [ ^ 'Error bla bla: ' , jsonResponse ]
+		ifFalse: [ ^ ErrorResponse ]
 ]
 
 { #category : 'accessing' }

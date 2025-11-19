@@ -123,5 +123,5 @@ ClaudeApi >> responseOf: jsonResponse [
 	parsed := STONJSON fromString: jsonResponse.
 	[ ^ (parsed at: 'content') first at: 'text'.]
 		on: Error
-		do: [  ^ 'Error bla bla: ', jsonResponse   ]
+		do: [  ^ self errorResponse: jsonResponse  ]
 ]

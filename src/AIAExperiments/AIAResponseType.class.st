@@ -13,6 +13,11 @@ Class {
 	#package : 'AIAExperiments'
 }
 
+{ #category : 'as yet unclassified' }
+AIAResponseType class >> RT [
+	^ RTResults last
+]
+
 { #category : 'initialization' }
 AIAResponseType class >> initializeRTResults [
 	<example>
@@ -31,15 +36,15 @@ AIAResponseType class >> prompts [
 AIAResponseType class >> responseTypes [
 	^ { 
 		''.
-		' Please answer only if you have verified knowledge. If you are not certain, kindly say ''I don’t have enough information to answer accurately'' and suggest a better source if possible. Thank you.'
+		' No guessing, if you do not know, just start your response with "I do not know"'
 	 }
 ]
 
 { #category : 'as yet unclassified' }
 AIAResponseType class >> testProviders [
 	
-	^ { MistralApi.}
-	"^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi. TogetherApi}"
+	"^ { TogetherApi.}"
+	^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi. TogetherApi}
 ]
 
 { #category : 'RT builder' }
@@ -91,12 +96,11 @@ AIAResponseType >> getResponses [
 		SystemProgressMorph uniqueInstance position: 10@20.
 		job interruptBlock: [ 
 			aiProcess terminate.
-			self assistant: 'AI based response Terminated'.
 			^ self
 		].
-		1 to: 60000 do: [:each |
+		1 to: 600 do: [:each |
 			job
-				progress: ((1/60000) * each) ;
+				progress: ((1/600) * each) ;
 				title: 'Building responses'.
 				RTResults size > id ifFalse: [100 milliSeconds wait].
 		].
@@ -112,7 +116,9 @@ AIAResponseType >> initialize [
 { #category : 'markdown' }
 AIAResponseType >> markdownExplanation [
 	MarkDown 
-		<< 'Explanation of the data and their structure goes here. As plain text' << String cr << String cr.
+		<< 'All prompts sent in fresh, empty conversations.' << String cr 
+		<<'Temperature = 0.0 everywhere.' << String cr 
+		<< 'IDNK = response contains the exact phrase `I do not know` (case-sensitive).' << String cr << String cr.
 ]
 
 { #category : 'markdown' }
@@ -132,9 +138,10 @@ AIAResponseType >> markdownPromptsAndResponseTypes [
 
 { #category : 'markdown' }
 AIAResponseType >> markdownResponse [
+	AilienApi errorResponse: 'Error bla bla happended'.
 	MarkDown := WriteStream on: ''.
 	MarkDown 
-		<< '# Response type experiments' << String cr << String cr.
+		<< '# Experiment results on '<< Date today asString << String cr << String cr.
 	self 
 		markdownExplanation;
 		markdownPromptsAndResponseTypes;
@@ -145,21 +152,31 @@ AIAResponseType >> markdownResponse [
 
 { #category : 'markdown' }
 AIAResponseType >> markdownResponseTypeResults [
-	| list index promtAndLLM shortResp lastResults|
+	| list index promtAndLLM shortResp lastResults idnk|
 	MarkDown << '## Summary of Responses' << String cr << String cr.
+	MarkDown << 'If `response` stars with 1, it includes `I do not know`, stars with 0, it does not include `I do not know`'  << String cr << String cr 
+	 << 'So indexes 1,3 and 5 should start with 0, while indexes 2, 4 and 6 should start with 1.' << String cr << String cr 
+	 << 'The third collumn specifies if the response contains *I do not know* (IDNK)' << String cr << String cr << String cr .
 	
 	list := self buildPromtList.
-	MarkDown << '| **Index** | **LLM** | **Response (first 50 letters)** |' << String cr.
-	MarkDown << '| --------- | ------- | ------------------------------ |' << String cr.
+	MarkDown << '| **Index** | **LLM** | **IDNK** | **Response (first 50 letters)** |' << String cr.
+	MarkDown << '| --------- | ------- | -------- | --------------------- |' << String cr.
 	lastResults := RTResults last.
 	1 to: lastResults size do: [ :prIndex |
 		1 to: (lastResults at: prIndex) value size do: [ :llmResonseIndex |
 			index := prIndex asString.
 			promtAndLLM := ((lastResults at: prIndex) value at: llmResonseIndex) key asString.
 			shortResp := ((lastResults at: prIndex) value at: llmResonseIndex) value asString.
+			(shortResp includesSubstring: 'I do not know')
+				ifTrue: [ idnk := 'Yes' ]
+				 ifFalse: [((shortResp includesSubstring: 'Error bla bla') or: [shortResp = 'Data receive timed out.'])
+						ifFalse: [ idnk := 'No'  ] 
+						ifTrue: [ idnk := '- (error)' ]
+					].
 			shortResp size > 50 ifTrue: [ shortResp := shortResp first: 50 ].
 			shortResp := ' ' join: shortResp lines.
-			MarkDown << '| ' << index << ' | ' << promtAndLLM << ' | ' << shortResp << ' |' << String cr.
+			MarkDown << '| ' << index << ' | ' << promtAndLLM << ' | ' 
+				<< idnk << ' | ' << shortResp << ' |' << String cr.
 			 ]
 		 ].
 	MarkDown << '## Detailed of Responses' << String cr << String cr.
@@ -172,7 +189,7 @@ AIAResponseType >> markdownResponseTypeResults [
 			MarkDown << shortResp << String cr.
 			 ]
 		 ].
-	
+	MarkDown << String cr << String cr.
 	^ MarkDown contents
 ]
 

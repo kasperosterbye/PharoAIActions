@@ -170,6 +170,6 @@ OllamaApi >> responseOf: jsonResponse [
 	[message := parsed at: 'message'.
 	^ message at: 'content' ]
 		on: Error 
-		do: [ ^ 'Error bla bla: ', jsonResponse  ].
+		do: [ ^ self errorResponse: jsonResponse  ].
 		
 ]

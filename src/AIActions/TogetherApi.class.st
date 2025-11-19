@@ -92,5 +92,5 @@ TogetherApi >> responseOf: jsonResponse [
     parsed := STONJSON fromString: jsonResponse.
     [ ^ ((parsed at: 'choices') first at: 'message') at: 'content' ]
         on: Error
-        do: [ ^ 'Error bla bla: ', jsonResponse ].
+        do: [ ^ self errorResponse: jsonResponse ].
 ]
