@@ -111,7 +111,7 @@ AilienApi class >> noOfModels [
 AilienApi class >> playground01 [
 	^ 
 'AilienApi providerAndModels.
-AilienApi providers.
+AilienApi provider.
 
 AilienApi info. 
 AilienApi provider: OpenAIApi .
@@ -121,32 +121,31 @@ AilienApi provider: GeminiApi.
 AilienApi provider: MistralApi.
 AilienApi provider: MistralApiWithTools.
 AilienApi provider: OllamaApi.
+AilienApi provider: TogetherApi .
+
 
 MistralApi modelNames.
 MistralApi defaultModel: 1.
 
 GrokApi modelNames.
-GrokApi defaultModel: 1.
+GrokApi defaultModel: 3.
 
 ClaudeApi modelNames.
 ClaudeApi defaultModel: 1.
 
 GeminiApi modelNames.
-GeminiApi defaultModel: 1.
+GeminiApi defaultModel: 3.
 
 OpenAIApi modelNames.
-OpenAIApi defaultModel: 2.
+OpenAIApi defaultModel: 1.
+
+TogetherApi modelNames.
+TogetherApi defaultModel: 2.
 
 OllamaApi modelNames.
-OllamaApi defaultModel: 1.
+OllamaApi defaultModel: 4.
 
-AIABuilder language: ''British''.
-AIABuilder language: ''Swedis''.
-AIABuilder language: ''Meänkieli''.
-''British''.
-AIABuilder language: ''French''.
-AIABuilder language: ''Chineese''.
-'
+AIACommentBuilding language: ''British''.'
 ]
 
 { #category : 'provider' }
