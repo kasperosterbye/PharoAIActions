@@ -164,12 +164,19 @@ OllamaApi >> printOn: string [
 
 { #category : 'mistral models' }
 OllamaApi >> responseOf: jsonResponse [
-	"Returns the content of the message from parsed JSON response extracting the actual response text from Ollama API nested structure"
-	| parsed message  |
+	"Extracts response content from JSON API responses, handling errors and cleaning up thought process tags"
+
+	| parsed response a b endIndex |
 	parsed := STONJSON fromString: jsonResponse.
-	[message := parsed at: 'message'.
-	^ message at: 'content' ]
-		on: Error 
-		do: [ ^ self errorResponse: jsonResponse  ].
-		
+	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
+		on: Error
+		do: [ ^ self errorResponse: jsonResponse ].
+
+	a := response indexOfSubCollection: '</think>' startingAt: 1 ifAbsent: [ ^ response ].
+
+	b := response indexOfSubCollection: '<think>' startingAt: 1 ifAbsent: [ nil ].
+
+	(b isNil or: [ a < b ]) ifFalse: [ ^ response ].
+	endIndex := a + '</think>' size + 1.
+	^ response allButFirst: endIndex
 ]

@@ -34,8 +34,6 @@ OpenAIApi >> bodyForEntityWithPrompt [
     requestDictionary := Dictionary newFrom: {
         'model' -> model.
         'messages' -> self jsonHistory.
-        'max_completion_tokens' -> 1024."
-        'temperature' -> 0.0."
         'stream' -> false.
     }.
     ^ ZnEntity json: (STONJSON toString: requestDictionary).

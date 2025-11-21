@@ -185,21 +185,22 @@ AIAHistory >> getResponse [
 	self apiMessageList ifEmpty: [ 
 		self assistant: 'No answer, as I was not asked'.
 		^ self ].
-	[ :job | | aiProcess |
+	[ :job | | aiProcess secs |
 		aiProcess := [ self api history: self; loadResponse ] newProcess.
 		aiProcess priority: Processor userBackgroundPriority. 
 		aiProcess resume.
 		SystemProgressMorph uniqueInstance position: 10@20.
-		job interruptBlock: [ 
+		job interruptBlock: [
 			aiProcess terminate.
 			self assistant: 'AI based response Terminated'.
 			^ self
 		].
-		1 to: 600 do: [:each |
+		secs := self api responseWaitingInSecs.
+		1 to: secs * 10 do: [:each |
 			job
-				progress: ((1/600) * each) ;
-				title: ( self api asString, ' working {1} of 60' 
-					format: {(each/10) asFloat printString}).
+				progress: ((1/(secs * 10)) * each) ;
+				title: ( self api asString, ' working {1} of {2}' 
+					format: {(each/10) asFloat printString. secs}).
 				self response ifNil: [100 milliSeconds wait].
 		].
 	] asJob run.

@@ -55,7 +55,6 @@ TogetherApi >> bodyForEntityWithPrompt [
     requestDictionary := Dictionary newFrom: {
         'model' -> self model.
         'messages' -> self jsonHistory.
-        'max_tokens' -> 1024.
         'temperature' -> 0.0.
         'stream' -> false.
     }.
@@ -80,6 +79,23 @@ TogetherApi >> initialize [
 ]
 
 { #category : 'ollama models' }
+TogetherApi >> old_responseOf: jsonResponse [
+	"Parses JSON response from Together API extracting assistant content handling think tags and errors"
+
+	| parsed response a b |
+	parsed := STONJSON fromString: jsonResponse.
+	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
+		on: Error
+		do: [ ^ self errorResponse: jsonResponse ].
+	a := response indexOfSubCollection: '</think>' startingAt: 1 ifAbsent: [ ^ response ].
+	b := response indexOfSubCollection: '<think>' startingAt: 1 ifAbsent: [ 
+		^ response allButFirst: a + '</think>' size + 1 ].
+	b < a
+		ifTrue: [ ^ response ]
+		ifFalse: [ ^ response allButFirst: a + '</think>' size + 1 ]
+]
+
+{ #category : 'ollama models' }
 TogetherApi >> printOn: aStream [
 	"Prints a representation of the Together API instance showing its model."
     aStream << 'TogetherApi: ' << self model.
@@ -87,10 +103,19 @@ TogetherApi >> printOn: aStream [
 
 { #category : 'ollama models' }
 TogetherApi >> responseOf: jsonResponse [
-	"Processes JSON response from Together API and extracts content from first choice message handling potential errors during parsing."
-    | parsed |
-    parsed := STONJSON fromString: jsonResponse.
-    [ ^ ((parsed at: 'choices') first at: 'message') at: 'content' ]
-        on: Error
-        do: [ ^ self errorResponse: jsonResponse ].
+	"Parses JSON response from Together API extracting assistant content handling think tags and errors"
+
+	| parsed response a b endIndex |
+	parsed := STONJSON fromString: jsonResponse.
+	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
+		on: Error
+		do: [ ^ self errorResponse: jsonResponse ].
+
+	a := response indexOfSubCollection: '</think>' startingAt: 1 ifAbsent: [ ^ response ].
+
+	b := response indexOfSubCollection: '<think>' startingAt: 1 ifAbsent: [ nil ].
+
+	(b isNil or: [ a < b ]) ifFalse: [ ^ response ].
+	endIndex := a + '</think>' size + 1.
+	^ response allButFirst: endIndex
 ]

@@ -3,7 +3,8 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'history'
+		'history',
+		'responseWaitingInSecs'
 	],
 	#classVars : [
 		'ErrorResponse',
@@ -238,6 +239,7 @@ AilienApi >> initialize [
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
 	self model: self class defaultModel.
+	self responseWaitingInSecs: 60.
 ]
 
 { #category : 'accessing' }
@@ -260,6 +262,7 @@ AilienApi >> loadResponse [
 	
 	| jsonResponse llmCall response|
 	[  jsonResponse := ZnClient new
+								timeout: self responseWaitingInSecs ;
 			                url: self apiGenerateUrl;
 			                entity: self bodyForEntityWithPrompt.
 		self headers: jsonResponse.
@@ -289,4 +292,16 @@ AilienApi >> model: anObject [
 { #category : 'accessing' }
 AilienApi >> responseOf: llmCall [
 	self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+AilienApi >> responseWaitingInSecs [
+
+	^ responseWaitingInSecs
+]
+
+{ #category : 'accessing' }
+AilienApi >> responseWaitingInSecs: anObject [
+
+	responseWaitingInSecs := anObject
 ]

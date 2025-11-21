@@ -85,7 +85,6 @@ ClaudeApi >> bodyForEntityWithPrompt [
     | requestDictionary  |
     requestDictionary := Dictionary newFrom: {
         'model' -> self model.
-        'max_tokens' -> 1024.
         'messages' -> self jsonHistory.
         'temperature' -> 0.0.
     	  'stream' -> false.
