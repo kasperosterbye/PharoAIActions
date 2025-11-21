@@ -26,6 +26,6 @@ Here’s an example of an AI-generated comment for the package itself:
 > This package includes classes and methods that interact with external AI APIs to automatically generate comments for classes, methods, and packages.
 > The primary goal is to enhance code documentation by providing meaningful and context-aware comments, thereby improving code readability and maintainability.
 
-For many more examples, see [Examples.md](Examples.md).
+For many more examples, see [Examples.md](reports/Examples.md).
 
-For a large package comment of this system, see [AIActionsCommentExample.md](AIActionsCommentExample.md)
+For a large package comment of this system, see [AIActionsCommentExample.md](reports/AIActionsCommentExample.md)
