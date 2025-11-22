@@ -59,10 +59,10 @@ AIAResponseType class >> initializeRTResults [
 { #category : 'as yet unclassified' }
 AIAResponseType class >> prompts [
 	"Returns a list of example prompts for AI response generation"
-	^ { 
-		'Who is the Computer Scientist Lars Bendix?'.
+	^ { 'What is the result of 2+3*4 in Smalltalk. Response should just be the number'
+		"'Who is the Computer Scientist Lars Bendix?'.
 		'What is the history of the Danish village Sønder Nybrohede?'.
-		'What does the networking protocol RFC 7832 define?' }
+		'What does the networking protocol RFC 7832 define?'" }
 ]
 
 { #category : 'as yet unclassified' }
@@ -70,7 +70,7 @@ AIAResponseType class >> responseTypes [
 	"Returns a list of response types for AI response generation"
 	^ { 
 		''.
-		' No guessing, if you do not know, just start your response with "I do not know"'
+		"' No guessing, if you do not know, just start your response with ""I do not know""'"
 	 }
 ]
 
@@ -814,7 +814,7 @@ AIAResponseType class >> testProviders [
 	"Returns a list of API providers for testing AI responses"
 	
 	^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi. TogetherApi}
-	"^ { TogetherApi.}"
+	"^ { ClaudeApi.}"
 	
 ]
 

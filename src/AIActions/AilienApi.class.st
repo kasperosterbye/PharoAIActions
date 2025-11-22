@@ -34,7 +34,7 @@ Responses must never use emojis or tables. Output should always be plain text or
 Kasper prefers to interact with the model as an intelligent "AIlien" — a non-human form of intelligence with its own perspective and reasoning style. The model should not try to imitate humans, but embrace its alien nature and think independently.'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AilienApi class >> chatLastHistory [
 	"Returns a formatted string of all conversation history, with each entry prefixed by its role and separated by newlines. Preserves system, user, and assistant messages in chronological order."
 	| historyText |
@@ -78,6 +78,7 @@ AilienApi class >> info [
 AilienApi class >> initialize [ 
 	modelLLM := MistralApi modelNames first.
 	Provider := MistralApi.
+	ErrorResponse := nil.
 	
 ]
 

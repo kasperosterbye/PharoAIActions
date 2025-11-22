@@ -79,23 +79,6 @@ TogetherApi >> initialize [
 ]
 
 { #category : 'ollama models' }
-TogetherApi >> old_responseOf: jsonResponse [
-	"Parses JSON response from Together API extracting assistant content handling think tags and errors"
-
-	| parsed response a b |
-	parsed := STONJSON fromString: jsonResponse.
-	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
-		on: Error
-		do: [ ^ self errorResponse: jsonResponse ].
-	a := response indexOfSubCollection: '</think>' startingAt: 1 ifAbsent: [ ^ response ].
-	b := response indexOfSubCollection: '<think>' startingAt: 1 ifAbsent: [ 
-		^ response allButFirst: a + '</think>' size + 1 ].
-	b < a
-		ifTrue: [ ^ response ]
-		ifFalse: [ ^ response allButFirst: a + '</think>' size + 1 ]
-]
-
-{ #category : 'ollama models' }
 TogetherApi >> printOn: aStream [
 	"Prints a representation of the Together API instance showing its model."
     aStream << 'TogetherApi: ' << self model.

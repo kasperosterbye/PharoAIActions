@@ -179,7 +179,7 @@ AIAHistory >> firstRoles [
 	^ firstRoles
 ]
 
-{ #category : 'ollama models' }
+{ #category : 'llm call' }
 AIAHistory >> getResponse [
 	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
 	self apiMessageList ifEmpty: [ 

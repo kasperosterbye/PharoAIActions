@@ -168,7 +168,7 @@ OllamaApi >> responseOf: jsonResponse [
 
 	| parsed response a b endIndex |
 	parsed := STONJSON fromString: jsonResponse.
-	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
+	[ response := (parsed at: 'message') at: 'content' ]
 		on: Error
 		do: [ ^ self errorResponse: jsonResponse ].
 

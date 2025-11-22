@@ -11,7 +11,7 @@ OpenAIApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://platform.openai.com/docs/models to see the list"
 	
-	^ #('gpt-5.1'  'gpt-5-mini' 'gpt-5-nano' 'gpt-4.1-nano') 
+	^ #('gpt-5.1'  'gpt-5-mini' 'o4-mini-deep-research-2025-06-26' 'gpt-4.1-nano') 
 ]
 
 { #category : 'accessing' }
