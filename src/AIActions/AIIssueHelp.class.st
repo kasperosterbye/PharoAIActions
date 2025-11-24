@@ -5,8 +5,9 @@ Class {
 		'issueNumber',
 		'issueDiscussion'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIActions-Experiments',
+	#package : 'AIActions',
+	#tag : 'Experiments'
 }
 
 { #category : 'as yet unclassified' }

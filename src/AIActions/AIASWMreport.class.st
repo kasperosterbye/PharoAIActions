@@ -12,8 +12,9 @@ Class {
 		'MarkDown',
 		'ResponseList'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIActions-Experiments',
+	#package : 'AIActions',
+	#tag : 'Experiments'
 }
 
 { #category : 'initialization' }

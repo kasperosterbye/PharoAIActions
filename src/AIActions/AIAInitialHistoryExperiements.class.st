@@ -49,9 +49,9 @@ Class {
 		'llmResults',
 		'markDown'
 	],
-	#category : 'AIAExperiments-HistoryExperiements',
-	#package : 'AIAExperiments',
-	#tag : 'HistoryExperiements'
+	#category : 'AIActions-Experiments',
+	#package : 'AIActions',
+	#tag : 'Experiments'
 }
 
 { #category : 'as yet unclassified' }

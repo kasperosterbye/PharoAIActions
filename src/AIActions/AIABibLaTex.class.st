@@ -18,8 +18,9 @@ Class {
 	#classVars : [
 		'Papers'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIActions-Experiments',
+	#package : 'AIActions',
+	#tag : 'Experiments'
 }
 
 { #category : 'examples' }

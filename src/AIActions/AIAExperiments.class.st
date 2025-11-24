@@ -1,8 +1,9 @@
 Class {
 	#name : 'AIAExperiments',
 	#superclass : 'Object',
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIActions-Experiments',
+	#package : 'AIActions',
+	#tag : 'Experiments'
 }
 
 { #category : 'sorting' }
