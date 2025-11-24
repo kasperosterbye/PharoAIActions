@@ -11,6 +11,51 @@ String >> L [
 ]
 
 { #category : '*AIActions' }
+String >> Q [
+
+	| models responces |
+	models := {
+		          (MistralApi newOnModel: 1).
+		          (GrokApi newOnModel: 1).
+		          (GrokApi newOnModel: 3).
+		          (OpenAIApi newOnModel: 1) }.
+	responces := WriteStream on: ''.
+	models do: [ :model |
+			responces << 'Model: ' << model printString << String cr.
+			responces << (AIAHistory new
+				api: model;
+				user: self;
+				responseType: 'Make as short an answer as possible';
+				getResponse;
+				response).
+			responces << String cr ].
+	^ responces contents
+]
+
+{ #category : '*AIActions' }
+String >> Q: systemBlock [
+
+	| models responses |
+	models := {
+		          (MistralApi newOnModel: 1).
+		          (GrokApi newOnModel: 1).
+		          (GrokApi newOnModel: 3).
+		          (OpenAIApi newOnModel: 1) }.
+	responses := WriteStream on: ''.
+	models do: [ :model |
+			responses << 'Model: ' << model printString << String cr.
+			responses << (AIAHistory new
+				api: model;
+		system:  systemBlock value;
+				user: self;
+				responseType: 'Make as short an answer as possible';
+				getResponse;
+				response).
+			responses << String cr << String cr ].
+	responses contents
+]
+
+{ #category : '*AIActions' }
 String >> aiaComment [
 	"Provides comments for packages or package prefixes using AIA system."
 	| package |

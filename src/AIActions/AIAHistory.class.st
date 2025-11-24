@@ -248,7 +248,7 @@ AIAHistory >> responseType: string [
 AIAHistory >> selfAndPreHistories [
 	"Returns an ordered collection of all pre histories and the current instance."
 	| pres |
-	pres := OrderedCollection new.
+	pres := Set new.
 	preHistories do: [ :preModel |
 		pres addAll: preModel selfAndPreHistories.
 		 ].

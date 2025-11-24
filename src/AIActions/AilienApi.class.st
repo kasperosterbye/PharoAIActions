@@ -212,6 +212,7 @@ AilienApi >> bodyForEntityWithPrompt [
 
 { #category : 'responses' }
 AilienApi >> errorResponse: jsonResponse [
+	"ErrorResponse := nil"
 	ErrorResponse isNil 
 		ifTrue: [ ^ 'Error bla bla: ' , jsonResponse ]
 		ifFalse: [ ^ ErrorResponse ]
@@ -270,6 +271,8 @@ AilienApi >> loadResponse [
 			           post;
 			           contents.
 		response := self responseOf: llmCall.
+		(response beginsWith: '```') 
+			ifTrue:[ response := String cr join: response lines allButFirst allButLast].
 		history assistant: response. 
 		]
 		on: Error
