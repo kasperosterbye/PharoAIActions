@@ -64,6 +64,16 @@ AIASWMreport class >> testModels [
 		  "GeminiApi newOnModel: 2 ""gemini-2.5-pro"" "}
 ]
 
+{ #category : 'markdown' }
+AIASWMreport >> forPaper: paper [
+	self 
+		getPaperHistory: paper;
+		getEvaluations;
+		getRefinedResponses;
+		getFinalResponses.
+	^ self markdownReport 
+]
+
 { #category : 'as yet unclassified' }
 AIASWMreport >> getBiblatex [
 	| bib |
@@ -78,33 +88,41 @@ AIASWMreport >> getBiblatex [
 
 { #category : 'as yet unclassified' }
 AIASWMreport >> getEvaluations [
+
 	resposeHistories := OrderedCollection new.
-	models do: [ :model | |hist|
-		hist := AIAHistory new.
-		hist
-			api: model;
-			addPreHistory: originalPaperHistory;
-			user: '[PROMTED] ',(model printString);
-			user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
-			responseType: 'Your response should be written in Markdown.';
-			getResponse.
-		resposeHistories add: hist.
-		 ]
+	[ :level | level interruptBlock: [ ^ self ].
+		models do: [ :model | | hist |
+				level title: 'Doing level 1 - Finished ', resposeHistories size asString, ' of ', models size asString , ' models'.
+				level progress: (resposeHistories size / models size ).
+					hist := AIAHistory new.
+					hist
+						api: model;
+						addPreHistory: originalPaperHistory;
+						user: '[PROMTED] ' , model printString;
+						user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
+						responseType: 'Your response should be written in Markdown.';
+						getResponse .
+				resposeHistories add: hist 
+				]
+	] asJob run
 ]
 
 { #category : 'as yet unclassified' }
 AIASWMreport >> getFinalResponses [
+
 	finalResponse := AIAHistory new.
 	finalResponse api: (ClaudeApi newOnModel: 1).
-	refinedResponses do: [ :model | 
-		finalResponse
-			user: model messages first value, ' was asked, and gave this response';
-			user: model messages third value.
-		].
-	finalResponse
-		user: 'The previous responses were from several AI systems. Based on their answers, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.'.
-	finalResponse getResponse.
-	finalResponse 
+	[ :job |
+		job interruptBlock: [ ^ self ].
+		job title: 'Doing level 3 - Finalizing '.
+		refinedResponses do: [ :model |
+				finalResponse
+					user: model messages first value , ' was asked, and gave this response';
+					user: model messages third value ].
+		finalResponse user:
+			'The previous responses were from several AI systems. Based on their answers, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.'.
+		finalResponse getResponse ] asJob run.
+	^ finalResponse
 ]
 
 { #category : 'as yet unclassified' }
@@ -121,14 +139,16 @@ AIASWMreport >> getModels [
 ]
 
 { #category : 'RT builder' }
-AIASWMreport >> getPaperHistory: id [
+AIASWMreport >> getPaperHistory: paper [
+	| paperBackground |
+	paperBackground := (FileSystem disk root / 'Users' / 'kasper' 
+		/ 'D' / 'AIExperiments' / 'SWM' / paper) readStream contents trimBoth.
 	originalPaperHistory := AIAHistory new.
 	originalPaperHistory 
 		api: (MistralApi newOnModel: 1);
-		background: (self class papers at: id);
-		"user: 'Please give a biblatex entry for the background paper. Respond only the biblatex in Markdown ```biblates, nothing else';"
+		background: paperBackground ;
 		user: 'What is the title of the paper, and who wrote it';
-		responseType: 'Your response should be written in Markdown. Your response should be smaller than header `###`';
+		responseType: 'Your response should be written in Markdown. Your response should be smaller than header three `###`';
 		getResponse.
 	^ originalPaperHistory 
 		
@@ -150,27 +170,34 @@ AIASWMreport >> getPaperSummary [
 
 { #category : 'as yet unclassified' }
 AIASWMreport >> getRefinedResponses [
+
 	| allResponses |
 	allResponses := AIAHistory new.
-	resposeHistories do: [ :hist| allResponses addPreHistory: hist ].
+	resposeHistories do: [ :hist | allResponses addPreHistory: hist ].
 	refinedResponses := OrderedCollection new.
-	resposeHistories do: [ :model | |refined|
-		refined := AIAHistory new.
-		refined
-			api: model api;
-			addPreHistory: allResponses;
-			user: '[PROMTED] ',(model api printString);
-			user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas? Please combine your answers from the responces given sofar';
-			responseType: 'Your response should be written in Markdown. Your response should be smaller than header `###`';
-			getResponse.
-		refinedResponses add: refined.
-		]
+	[ :level | level interruptBlock: [ ^ self ].
+		resposeHistories do: [ :model |
+				| refined |
+				level title: 'Doing level 2 - Finished ' , refinedResponses size asString 
+						, ' of ' , resposeHistories size asString , ' models'.
+				level progress: refinedResponses size / resposeHistories size.
+				refined := AIAHistory new.
+				refined
+					api: model api;
+					addPreHistory: allResponses;
+					user: '[PROMTED] ' , model api printString;
+					user:
+						'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas? Please combine your answers from the responces given sofar';
+					responseType: 'Your response should be written in Markdown. Your response should be smaller than header `###`';
+					getResponse.
+				refinedResponses add: refined ] ] asJob run
 ]
 
 { #category : 'initialization' }
 AIASWMreport >> initialize [ 
 	"Initializes the AIAResponseType instance and ensures RTResults is nil"
 	super initialize.
+	models := self class testModels
 ]
 
 { #category : 'markdown' }
@@ -198,21 +225,25 @@ to perform meta-analysis across different viewpoints.' << String cr << String cr
 
 { #category : 'markdown' }
 AIASWMreport >> markdownReport [
-	|  title bib overview|
-	title := originalPaperHistory messages second value.
-	bib := self getBiblatex.
-	overview := self getPaperSummary.
-	
-	MarkDown := WriteStream on: ''.
-	MarkDown 
-		<< '# Paper judgement '<< Date today asString << String cr << String cr 
-		<< title << String cr << String cr
-		<< overview << String cr << String cr
-		<< '```' << String cr << bib << String cr << '```' << String cr << String cr
-		<< '### Best, weak, and missing summary' << String cr << String cr 
-		<< finalResponse messages last value << String cr << String cr 
-		<< self markdownResposeHistories
-		<< self markdownRefinedResponses.
+
+	| title bib overview |
+	[ :markdownJob |
+		markdownJob interruptBlock: [ ^ self ].
+		title := originalPaperHistory messages second value.
+		markdownJob title: 'Building overview'.
+		overview := self getPaperSummary.
+		markdownJob title: 'Building Biblatex'.
+		bib := self getBiblatex.
+
+		MarkDown := WriteStream on: ''.
+		MarkDown << '# Paper judgement ' << Date today asString << String cr << String cr << title << String cr << String cr << overview
+		<< String cr << String cr << '```' << String cr << bib << String cr << '```' << String cr << String cr
+		<< '### Best, weak, and missing summary' << String cr << String cr << finalResponse messages last value << String cr
+		<< String cr.
+		markdownJob title: 'Building Level 1'.
+		MarkDown << self markdownResposeHistories.
+		markdownJob title: 'Building Level 2'.
+		MarkDown << self markdownRefinedResponses ] asJob run.
 	AIAPresenter onText: MarkDown contents.
 	^ MarkDown contents
 ]
@@ -238,17 +269,6 @@ single-perspective analyses.' << String cr << String cr.
 
 { #category : 'markdown' }
 AIASWMreport >> modelsList [
+self halt. "DELETE ME if not used..."
 	^ self class testModels
-]
-
-{ #category : 'accessing' }
-AIASWMreport >> origunalPaperHistory [
-
-	^ originalPaperHistory
-]
-
-{ #category : 'accessing' }
-AIASWMreport >> origunalPaperHistory: anObject [
-
-	originalPaperHistory := anObject
 ]
