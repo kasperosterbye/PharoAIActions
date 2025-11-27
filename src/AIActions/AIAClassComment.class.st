@@ -27,14 +27,12 @@ AIAClassComment >> aiaComment: aClass [
 
 { #category : 'accessing' }
 AIAClassComment >> setComment: aClass [
-	"Sets the class comment using AI-generated content, cleaning the response to remove markdown formatting and setting it as the class comment."
 	| cleaned response first last|
 	self aiaComment: aClass.
-	"remove upto and included ```. Remove nothing if not found"
 	response := self response.
-	first := (response lines findFirst: [:each | each beginsWith: '```']) + 1.
-	last := (response lines findLast: [:each | each beginsWith: '```']) - 1.
-	last = -1 ifTrue: [ last := response lines size ].
+	first := 1. last := response lines size.
+	(response lines first includesSubstring: '```markdown') 
+		ifTrue: [first := 2. last := last - 1].
 	cleaned := (response lines
 		copyFrom: first to: last)
 		asStringWithCr.
