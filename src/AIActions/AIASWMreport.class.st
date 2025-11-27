@@ -1,3 +1,43 @@
+"
+# Class Comment for AIASWMreport
+
+The `AIASWMreport` class is designed to facilitate automated analysis of scientific papers using multiple AI models. It implements a multi-stage evaluation process that:
+
+1. Extracts and processes paper content
+2. Generates independent evaluations from multiple AI models
+3. Synthesizes these evaluations into a cohesive report
+4. Produces a comprehensive Markdown report combining all findings
+
+## Key Features
+
+- **Multi-model evaluation**: Uses different AI providers (Grok, Mistral, Together, etc.) to generate diverse perspectives
+- **Three-tiered analysis**:
+  - Level 1: Independent evaluations of each model
+  - Level 2: Synthesized evaluations combining all Level 1 responses
+  - Final: Consolidated assessment from a high-level model
+- **Comprehensive reporting**: Generates detailed Markdown reports including:
+  - Paper metadata (title, authors, BibTeX)
+  - Summary of findings
+  - Strengths, weaknesses, and missing areas
+  - Individual model evaluations
+
+## Usage Example
+
+```st
+""Create and execute a report for a specific paper""
+report := AIASWMreport new.
+report forPaper: 'Paper1.txt'.
+
+""Inspect the generated Markdown report""
+report markdownReport inspect.
+```
+
+This class is particularly useful for:
+- Automated literature reviews
+- Comparative analysis of AI model evaluations
+- Systematic assessment of scientific papers
+- Generating reproducible evaluation reports
+"
 Class {
 	#name : 'AIASWMreport',
 	#superclass : 'Object',
@@ -66,6 +106,7 @@ AIASWMreport class >> testModels [
 
 { #category : 'markdown' }
 AIASWMreport >> forPaper: paper [
+	"This method generates a comprehensive AI-based report for a given paper by orchestrating a multi-stage evaluation process."
 	self 
 		getPaperHistory: paper;
 		getEvaluations;
@@ -74,8 +115,9 @@ AIASWMreport >> forPaper: paper [
 	^ self markdownReport 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getBiblatex [
+	"This method generates BibTeX citation information for the analyzed paper by prompting an AI model with the paper's content. It creates a new AIAHistory instance, configures it with the Mistral API, adds the paper's background information, and requests a complete BibTeX entry. The method returns the BibTeX string from the AI's response."
 	| bib |
 	bib := AIAHistory new.
 	bib 
@@ -86,8 +128,9 @@ AIASWMreport >> getBiblatex [
 	^ bib messages second value
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getEvaluations [
+	"This method generates independent evaluations of a paper using multiple AI models, creating a collection of responses that form the first level of analysis."
 
 	resposeHistories := OrderedCollection new.
 	[ :level | level interruptBlock: [ ^ self ].
@@ -107,8 +150,9 @@ AIASWMreport >> getEvaluations [
 	] asJob run
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getFinalResponses [
+	"The method generates a consolidated evaluation of a paper by synthesizing responses from multiple AI models. It uses a high-level model (Claude) to combine and refine all previous evaluations into a final comprehensive assessment."
 
 	finalResponse := AIAHistory new.
 	finalResponse api: (ClaudeApi newOnModel: 1).
@@ -125,8 +169,9 @@ AIASWMreport >> getFinalResponses [
 	^ finalResponse
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getModels [
+	"This method initializes and returns a collection of AI models configured for testing purposes. It creates instances of different AI providers with specific model versions, ensuring a diverse set of models for evaluation."
 	| aiModels aiModel|
 	aiModels := OrderedCollection new.
 	self class testModels do: [ :providerInfo | 
@@ -138,8 +183,9 @@ AIASWMreport >> getModels [
 	^ aiModels 
 ]
 
-{ #category : 'RT builder' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getPaperHistory: paper [
+	"Method reads paper content, creates history object with Mistral API, and extracts title and authors in Markdown format"
 	| paperBackground |
 	paperBackground := (FileSystem disk root / 'Users' / 'kasper' 
 		/ 'D' / 'AIExperiments' / 'SWM' / paper) readStream contents trimBoth.
@@ -155,8 +201,9 @@ AIASWMreport >> getPaperHistory: paper [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getPaperSummary [
+	"Generates a concise 20-line Markdown summary of the paper including title and authors"
 	| summary |
 	summary := AIAHistory new.
 	summary 
@@ -168,8 +215,9 @@ AIASWMreport >> getPaperSummary [
 	^ summary messages third value
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'SWM builder' }
 AIASWMreport >> getRefinedResponses [
+	"The method synthesizes multiple AI evaluations into refined responses by combining all initial assessments and prompting each model to integrate them into a cohesive analysis."
 
 	| allResponses |
 	allResponses := AIAHistory new.
@@ -195,13 +243,14 @@ AIASWMreport >> getRefinedResponses [
 
 { #category : 'initialization' }
 AIASWMreport >> initialize [ 
-	"Initializes the AIAResponseType instance and ensures RTResults is nil"
+	"Initializes the AIASWMreport instance by setting up the models collection."
 	super initialize.
 	models := self class testModels
 ]
 
 { #category : 'markdown' }
 AIASWMreport >> markdownRefinedResponses [
+	"The method generates a Markdown-formatted summary of refined AI evaluations, combining multiple perspectives into a cohesive analysis."
 	
 	MarkDown ifNil: [   MarkDown := WriteStream on: ''].
 	MarkDown 
@@ -225,6 +274,7 @@ to perform meta-analysis across different viewpoints.' << String cr << String cr
 
 { #category : 'markdown' }
 AIASWMreport >> markdownReport [
+	"The method generates a comprehensive Markdown report combining all AI evaluations of a scientific paper."
 
 	| title bib overview |
 	[ :markdownJob |
@@ -250,6 +300,7 @@ AIASWMreport >> markdownReport [
 
 { #category : 'markdown' }
 AIASWMreport >> markdownResposeHistories [ 
+	"The method generates a Markdown-formatted summary of initial AI evaluations, showing individual model perspectives on paper strengths, weaknesses, and missing areas."
 	MarkDown ifNil: [   MarkDown := WriteStream on: ''].
 	MarkDown 
 		<< '## Level 1 AI based readings of the paper' << String cr << String cr
@@ -269,6 +320,7 @@ single-perspective analyses.' << String cr << String cr.
 
 { #category : 'markdown' }
 AIASWMreport >> modelsList [
+	"The method retrieves the list of AI models configured for testing in the AIASWMreport class."
 self halt. "DELETE ME if not used..."
 	^ self class testModels
 ]
