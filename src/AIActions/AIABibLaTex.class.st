@@ -65,7 +65,7 @@ AIABibLaTex >> bibFor: id [
 AIABibLaTex >> paper: id [
 	"Returns the content of the paper file for a given ID, trimmed of leading and trailing whitespace."
 	| paper |
-	paper := 'Comment{1}.txt' format: { 100 + id }.
+	paper := 'LarsBendix.txt' "format: { 100 + id }".
 	^ (FileSystem disk root / 'Users' / 'kasper' / 'D' / 'Pharo' / 'images' / 'AIActions03' / 'Papers' / paper ) readStream contents trimBoth
 ]
 

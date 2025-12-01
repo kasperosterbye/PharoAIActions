@@ -80,7 +80,7 @@ String >> d [
 		user: self;
 		getResponse;
 		response ).
-	AIAPresenter onText: resp.
+	"AIAPresenter onText: resp."
 	^ resp.
 ]
 
