@@ -226,6 +226,11 @@ AilienApi class >> defaultModel: modelNumber [
 ]
 
 { #category : 'responses' }
+AilienApi class >> errorResponse [
+	^ ErrorResponse
+]
+
+{ #category : 'responses' }
 AilienApi class >> errorResponse: aString [
 	ErrorResponse := aString
 ]

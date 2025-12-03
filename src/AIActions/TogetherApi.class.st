@@ -27,10 +27,11 @@ Class {
 
 { #category : 'AI models' }
 TogetherApi class >> modelNames [
-   "Returns an array of available Together models. Check https://api.together.ai/models for updates."
+   "Returns an array of available Together models. "
+	"Check https://api.together.ai/models (use GitHub at login) for updates."
 	"Account area: https://api.together.ai/settings/api-keys"
-    ^ #( 	'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'
-			'nvidia/NVIDIA-Nemotron-Nano-9B-v2'
+    ^ #( 	'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo'
+			'arcee-ai/virtuoso-large'
 			'Qwen/Qwen3-235B-A22B-Thinking-2507'
 			'deepseek-ai/DeepSeek-V3.1').
 ]
