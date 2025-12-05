@@ -123,6 +123,7 @@ AIADiscussion >> history [
 { #category : 'initialization' }
 AIADiscussion >> initialize [ 
 	"Initialises a new AI discussion with empty history and API connection"
+	self error: 'This class shoul not be used'.
 	super initialize.
 	history := OrderedCollection new.
 	api := AilienApi provider new. 
