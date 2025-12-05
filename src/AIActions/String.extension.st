@@ -95,6 +95,13 @@ String >> l [
 ]
 
 { #category : '*AIActions' }
+String >> maxFirst: index [
+	self size <= index 
+		ifTrue: [ ^ self ]
+		ifFalse: [ ^ self first: index ]
+]
+
+{ #category : '*AIActions' }
 String >> old_q [
 	^ (AIAHistory new
 		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
@@ -107,7 +114,7 @@ String >> old_q [
 { #category : '*AIActions' }
 String >> q [
 	^ AIAHistory new
-		addPreHistory: AIAHistory qHistory;
+		addPreHistory: AIAHistory qPrefix ;
 		user: self; 
 		getResponse; 
 		response 
@@ -132,12 +139,12 @@ String >> q0: systemBlock [
 
 { #category : '*AIActions' }
 String >> q: systemBlock [
-	^ (AIAHistory new
-		system:  'You are a Pharo Smalltalk expert. In Pharo, operations are evaluated left to right without operator precedence.
-		 Please response in ', AIACommentBuilding language, String cr, String cr, systemBlock value,'';
+	^ AIAHistory new
+		addPreHistory: AIAHistory qPrefix ;
+		background: systemBlock value;
 		user: self; 
 		getResponse; 
-		response) 
+		response
 ]
 
 { #category : '*AIActions' }

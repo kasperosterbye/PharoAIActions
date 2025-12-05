@@ -34,6 +34,7 @@ Class {
 	#name : 'AIAHistory',
 	#superclass : 'Object',
 	#instVars : [
+		'title',
 		'api',
 		'preHistories',
 		'messages',
@@ -56,7 +57,7 @@ AIAHistory class >> dDiscussion [
 	(Histories includesKey: dDiscussion) ifFalse: [ 
 		| newDiscussion |
 		newDiscussion := self new.
-		self setHistory: dDiscussion to: newDiscussion. ].
+		newDiscussion title: dDiscussion.].
 	^ self historyAt: dDiscussion.
 	 
 ]
@@ -68,11 +69,22 @@ AIAHistory class >> histories [
 
 { #category : 'initialization' }
 AIAHistory class >> historyAt: id [
+	^ Histories detect: [ :hist | hist title = id ]
+]
+
+{ #category : 'initialization' }
+AIAHistory class >> old_historyAt: id [
 	^ Histories at: id ifAbsent: [ self error ]
 ]
 
+{ #category : 'initialization' }
+AIAHistory class >> old_setHistory: idName to: hist [
+	Histories ifNil: [ Histories := Dictionary new ].
+	Histories at: idName put: hist
+]
+
 { #category : 'as yet unclassified' }
-AIAHistory class >> qHistory [
+AIAHistory class >> qPrefix [
 	<example>
 	| qHist |
 	qHist := self new.
@@ -84,7 +96,7 @@ AIAHistory class >> qHistory [
 	package: ''AIActions''.
 	In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.'.
 	qHist responseType: 'Please response in ', AIACommentBuilding language.
-	self setHistory: 'qPrefix' to: qHist.
+	qHist title: 'qPrefix'.
 	^ qHist 
 ]
 
@@ -93,12 +105,6 @@ AIAHistory class >> readCurrentTo: fileName [
 	"Serialises the current history to the specified file name."
 	FLMaterializer 
 		materializeFromFileNamed: (FileSystem workingDirectory / fileName) fullName
-]
-
-{ #category : 'initialization' }
-AIAHistory class >> setHistory: idName to: hist [
-	Histories ifNil: [ Histories := Dictionary new ].
-	Histories at: idName put: hist
 ]
 
 { #category : 'as yet unclassified' }
@@ -142,6 +148,19 @@ AIAHistory >> apiMessageList [
 	all do: [ :hist | hist lastRoles do: [ :assoc | 
 				messageList add: 'user' -> (assocKey value: assoc) ]].
 	^ messageList
+]
+
+{ #category : 'accessing' }
+AIAHistory >> askOllamaToCreateTitle [
+
+	| two prompt short |
+	two := 'Please reduce the following text to a two key words: '.
+	prompt := messages first value asString.
+	short := (OllamaApi newOnModel: 3)
+		         user: two , '"' , prompt , '"';
+		         getResult;
+		         response.
+	title := '> ' , short
 ]
 
 { #category : 'initialization' }
@@ -206,14 +225,34 @@ AIAHistory >> getResponse [
 	] asJob run.
 ]
 
+{ #category : 'adding' }
+AIAHistory >> includeInHistories [
+	| firstNoTitle noOfNoTitle maxNoTitles |
+	Histories add: self.
+	firstNoTitle := 0.
+	noOfNoTitle := 0.
+	maxNoTitles := 2.
+	1 to: Histories size do: [ :index |
+		(Histories at: index) title ifNil: [ 
+			firstNoTitle > 0 ifFalse: [ firstNoTitle := index ].
+			noOfNoTitle := noOfNoTitle + 1.
+			 ]
+		 ].
+	noOfNoTitle > maxNoTitles ifTrue: [ 
+		Histories removeAt: firstNoTitle.
+		 ]
+	
+]
+
 { #category : 'initialization' }
 AIAHistory >> initialize [
 	super initialize.
-	"api := AilienApi provider".
 	preHistories := OrderedCollection new.
 	messages := OrderedCollection new.
 	firstRoles := OrderedCollection new.
 	lastRoles := OrderedCollection new.
+	title := nil.
+	self includeInHistories 
 ]
 
 { #category : 'accessing' }
@@ -224,6 +263,29 @@ AIAHistory >> lastRoles [
 { #category : 'accessing' }
 AIAHistory >> messages [
 	^ messages 
+]
+
+{ #category : 'accessing' }
+AIAHistory >> old_title [
+
+	title
+		ifNil: [
+				messages size > 0
+					ifFalse: [ title := '> undefined' ]
+					ifTrue: [ self askOllamaToCreateTitle ] ]
+		ifNotNil: [ title = '> undefined' ifTrue: [ self askOllamaToCreateTitle ] ].
+
+	^ title
+]
+
+{ #category : 'Protocol (printing) - 1 selector(s)' }
+AIAHistory >> printOn: stream [
+	title ifNil: [ stream << self printPrompt ] ifNotNil: [ stream << title ] 
+]
+
+{ #category : 'printing' }
+AIAHistory >> printPrompt [
+	messages size > 1 ifTrue: [ ^ messages first value maxFirst: 20  ] ifFalse: [ '> No prompt' ]
 ]
 
 { #category : 'accessing' }
@@ -267,6 +329,18 @@ AIAHistory >> system [
 { #category : 'context roles' }
 AIAHistory >> system: string [
 	firstRoles add: 'system' -> string 
+]
+
+{ #category : 'accessing' }
+AIAHistory >> title [
+
+	^ title
+]
+
+{ #category : 'accessing' }
+AIAHistory >> title: anObject [
+
+	title := anObject
 ]
 
 { #category : 'accessing' }
