@@ -39,7 +39,8 @@ Class {
 		'preHistories',
 		'messages',
 		'firstRoles',
-		'lastRoles'
+		'lastRoles',
+		'responseHearderLevel'
 	],
 	#classVars : [
 		'Histories'
@@ -170,7 +171,9 @@ AIAHistory >> apiMessageList [
 
 { #category : 'initialization' }
 AIAHistory >> assistant: aString [
-	messages add: 'assistant' -> aString
+	"Adds an assistant message to the messages collection after sanitising the input string."
+	
+	messages add: 'assistant' -> (self sanitizedResonse: aString)
 ]
 
 { #category : 'context roles' }
@@ -236,7 +239,7 @@ AIAHistory >> includeInHistories [
 	Histories add: self.
 	firstNoTitle := 0.
 	noOfNoTitle := 0.
-	maxNoTitles := 2.
+	maxNoTitles := 10.
 	1 to: Histories size do: [ :index |
 		(Histories at: index) title ifNil: [ 
 			firstNoTitle > 0 ifFalse: [ firstNoTitle := index ].
@@ -272,12 +275,17 @@ AIAHistory >> messages [
 
 { #category : 'Protocol (printing) - 1 selector(s)' }
 AIAHistory >> printOn: stream [
-	title ifNil: [ stream << self printPrompt ] ifNotNil: [ stream << title ] 
+	"Prints the title on the stream if available, otherwise prints the prompt."
+	title  
+		ifNotNil: [ stream << title ]
+		ifNil: [ stream << self printPrompt ] 
 ]
 
 { #category : 'printing' }
 AIAHistory >> printPrompt [
-	messages size > 1 ifTrue: [ ^ messages first value maxFirst: 20  ] ifFalse: [ '> No prompt' ]
+	messages size > 1 
+		ifTrue: [ ^ messages first value maxFirst: 20  ] 
+		ifFalse: [ '> No prompt' ]
 ]
 
 { #category : 'accessing' }
@@ -285,6 +293,11 @@ AIAHistory >> response [
 	(messages last key = 'assistant')
 		ifTrue: [ ^ messages last value ]
 		ifFalse: [ ^ nil ]
+]
+
+{ #category : 'accessing' }
+AIAHistory >> responseHearderLevel: level [
+	responseHearderLevel := level
 ]
 
 { #category : 'context roles' }
@@ -296,6 +309,41 @@ AIAHistory >> responseType [
 { #category : 'context roles' }
 AIAHistory >> responseType: string [
 	lastRoles add: 'responseType' -> string 
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory >> sanitizedResonse: response [
+	^ self sanitizedResonse: response forHeaderLevel: responseHearderLevel 
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory >> sanitizedResonse: response forHeaderLevel: level [
+	"Sanitises response by stripping code blocks and promoting Markdown headers to match given level"
+
+	| sani lines headerLines minHeaderLevel headingLevel diff headers |
+	sani := response.
+	(response beginsWith: '```') ifTrue: [ sani := String cr join: response lines allButFirst allButLast ].
+	level ifNotNil: [
+			headers := { '# '. '## '. '### '. '#### '. '##### '. '###### ' }.
+			lines := sani lines.
+			headerLines := OrderedCollection new.
+			minHeaderLevel := 10.
+			1 to: lines size do: [ :idx |
+					((lines at: idx) size > 0 and: [ (lines at: idx) first = $# ]) ifTrue: [
+							headerLines add: idx.
+							headingLevel := (lines at: idx) findString: ' '.
+							minHeaderLevel := minHeaderLevel min: headingLevel - 1 ] ].
+			diff := level - minHeaderLevel.
+			diff > 0 ifTrue: [
+					headerLines do: [ :lineNo |
+							| l h1 h2 res|
+							l :=  ((lines at: (headerLines at: lineNo)) findString: ' ') - 1.
+							h1 := headers at: l.
+							h2 := headers at: (l + diff min: 6).
+							res := (lines at: lineNo) copyReplaceAll: h1 with: h2.
+							lines at: lineNo put: res ] ].
+			sani := String cr join: lines ].
+	^ sani
 ]
 
 { #category : 'accessing' }

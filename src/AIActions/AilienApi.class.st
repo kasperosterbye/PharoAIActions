@@ -1,3 +1,36 @@
+"
+# AilienApi
+
+`AilienApi` serves as the abstract base class for integrating various large language model (LLM) providers in Pharo, enabling seamless interaction with AI services such as OpenAI, Grok, Claude, and others. It abstracts the complexities of API calls, conversation history management, and response handling, allowing developers to switch providers at runtime and experiment with multi-model workflows. Subclasses implement provider-specific details like endpoints, authentication, and model lists.
+
+## Key Features
+- **Provider Abstraction**: Supports runtime switching between LLM providers via class-side methods like `provider:` and `newOnModel:`.
+- **Conversation History**: Maintains ordered role-content pairs (system, user, assistant) via `AIAHistory`, with JSON serialisation for API requests.
+- **Model Management**: Access and set models dynamically; defaults to the first available model per provider.
+- **Error Handling**: Captures API errors in history and provides fallback responses.
+- **Timeout Control**: Configurable response waiting time (default: 60 seconds) for HTTP requests.
+- **Shared State**: Class-side variables track the current provider (`Provider`), last history (`LastHistory`), and errors (`ErrorResponse`).
+
+Instance variables include `#model` (current LLM model), `#history` (conversation state), and `#responseWaitingInSecs` (request timeout). Subclasses must implement `apiGenerateUrl`, `bodyForEntityWithPrompt`, `headers:`, and `responseOf:`.
+
+This class facilitates empirical AI research, such as multi-provider comparisons and prompt engineering experiments, by providing a unified interface for generating responses and chaining conversations.
+
+## Usage Example
+The following Playground snippet initialises an API instance with Mistral, adds a system prompt and user query, fetches a response, and inspects the updated history:
+
+```smalltalk
+| api history response |
+api := MistralApi new.
+api model: (MistralApi modelNames at: 1).  ""e.g., 'mistral-large-latest'""
+api responseWaitingInSecs: 30.
+history := AIAHistory new api: api;
+    system: 'You are a helpful assistant.';
+    yourself.
+history user: 'Explain Pharo briefly.'.
+response := history getResponse.  ""Triggers API call""
+history inspect.  ""Inspect full conversation history""
+```
+"
 Class {
 	#name : 'AilienApi',
 	#superclass : 'Object',
@@ -438,8 +471,6 @@ AilienApi >> loadResponse [
 			           post;
 			           contents.
 		response := self responseOf: llmCall.
-		(response beginsWith: '```') 
-			ifTrue:[ response := String cr join: response lines allButFirst allButLast].
 		history assistant: response. 
 		]
 		on: Error
@@ -474,4 +505,8 @@ AilienApi >> responseWaitingInSecs [
 AilienApi >> responseWaitingInSecs: anObject [
 
 	responseWaitingInSecs := anObject
+]
+
+{ #category : 'as yet unclassified' }
+AilienApi >> sanitizedResonse: response [
 ]
