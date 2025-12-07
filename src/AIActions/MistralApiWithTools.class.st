@@ -53,6 +53,22 @@ Class {
 }
 
 { #category : 'mistral tools' }
+MistralApiWithTools >> bodyForEntityWithPrompt [
+	"Creates a JSON entity for an API request with a system message and user prompt."
+	| requestDictionary |
+	requestDictionary :=Dictionary newFrom: {
+	    'model' -> 'codestral-latest'.
+	    'messages' -> self jsonHistory .
+	
+		 'tools' -> self toolsExperiment.
+		 'temperature' -> 0.
+	    'stream' -> false.
+		}.
+	self halt.
+	^ ZnEntity json: (STONJSON toString: requestDictionary).
+]
+
+{ #category : 'mistral tools' }
 MistralApiWithTools >> bodyForEntityWithPrompt_withTools [
 	"Creates a JSON entity for an API request with a system message and user prompt."
 	| requestDictionary |
@@ -67,6 +83,44 @@ MistralApiWithTools >> bodyForEntityWithPrompt_withTools [
 	^ ZnEntity json: (STONJSON toString: requestDictionary).
 ]
 
+{ #category : 'as yet unclassified' }
+MistralApiWithTools >> evaKommentar [
+	^ 'Det er to forskellige eksperimenter, og lige nu blander du dem sammen:
+	1.	Teste din Pharo-pipeline (det tekniske)
+Her skal du tvinge et tool-kald, så du kan se at tool_calls + killroyWasHere: virker.
+Fx send noget i den her stil:
+
+"tools": [
+  {
+    "type": "function",
+    "function": {
+      "name": "killroyAnswer",
+      "description": "Echoes the topic back.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": { "type": "string" }
+        },
+        "required": ["topic"]
+      }
+    }
+  }
+],
+"tool_choice": {
+  "type": "function",
+  "function": { "name": "killroyAnswer" }
+}
+
+Så uanset hvad du skriver som prompt ("Who is havanki", "what time is it", hvad som helst), vil svaret komme som tool_calls, og din Pharo-kode bliver testet.
+
+	2.	Teste LLM’ens egen beslutning om at bruge tools
+Her kan du fint lave et getCurrentTime-tool med description á la
+"Use this tool to answer any question about the current time or date."
+og ikke sætte tool_choice. Så ser du, om den frivilligt bruger det på "what time is it" – men det er altid probabilistisk.
+
+Vigtig: Start med (1) for at være sikker på, at din egen kode virker. Bagefter kan du lege med (2) og lade modellen “spotte” hvornår den vil bruge et tool.'
+]
+
 { #category : 'initialization' }
 MistralApiWithTools >> initialize [
 
@@ -77,84 +131,11 @@ MistralApiWithTools >> initialize [
 { #category : 'mistral tools' }
 MistralApiWithTools >> killroyWasHere: toolCalls [
 	"Returns a humorous response about Killroy when tool calls are detected, indicating AI's interaction with Kasper for Killroy-related facts."
-	^ 'Mistral asked Kasper about Killroy'
+	^ 'Mistral asked Kasper about havanki'
 ]
 
 { #category : 'mistral tools' }
-MistralApiWithTools >> llmToolFor: method [
-	"Converts a method into a tool dictionary for LLM function calling"
-
-	| selector desc properties tool |
-	selector := method selector asString.
-	desc := method comment ifEmpty: [ 'No description provided.' ].
-	properties := Dictionary new.
-
-	method argumentNames do: [ :arg |
-			properties at: arg put: (Dictionary newFrom: {
-						 ('type' -> 'string').
-						 ('description' -> ('Argument for ' , arg)) }) ].
-	tool := Dictionary newFrom: {
-			'type' -> 'function'.
-			'function' -> (Dictionary newFrom: {
-				'name' -> selector.
-				'description' -> desc.
-				'parameters' -> (Dictionary newFrom: {
-					'type' -> 'object'.
-					'properties' -> properties
-				}).
-				'required' -> method argumentNames
-			})
-		}.
-
-	^ tool
-	
-]
-
-{ #category : 'mistral tools' }
-MistralApiWithTools >> llmToolFor_old2: method [
-
-	| selector desc properties tool |
-	selector := method selector asString.
-	desc := method comment ifEmpty: [ 'No description provided.' ].
-	properties := Dictionary new.
-
-	method argumentNames do: [ :arg |
-			properties at: arg put: (Dictionary newFrom: {
-						 ('type' -> 'string').
-						 ('description' -> ('Argument for ' , arg)) }) ].
-	tool := Dictionary newFrom: {
-			'type' -> 'function'.
-			'function' -> (Dictionary newFrom: {
-				'name' -> selector.
-				'description' -> desc.
-				'parameters' -> (Dictionary newFrom: {
-					'type' -> 'object'.
-					'properties' -> properties
-				}).
-				'required' -> method argumentNames
-			})
-		}.
-	^ tool
-	
-]
-
-{ #category : 'mistral tools' }
-MistralApiWithTools >> llmToolFor_old: method [
-	| selector desc properties |
-		selector := method selector asString.
-		desc := method comment ifEmpty: [ 'No description provided.' ].
-		properties := Dictionary new.
-
-		method argumentNames do: [ :arg |
-			properties at: arg put: (Dictionary newFrom: {
-				'type' -> 'string'.
-				'description' -> ('Argument for ', arg)
-			})
-		].
-]
-
-{ #category : 'mistral tools' }
-MistralApiWithTools >> loadResponse [
+MistralApiWithTools >> old_loadResponse: history [
 	| apiGenerateUrl jsonResponse bodyEntiry |
 	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
 	[  	bodyEntiry := self bodyForEntityWithPrompt_withTools.
@@ -165,64 +146,32 @@ MistralApiWithTools >> loadResponse [
 	    entity: bodyEntiry;
 	    post;
 	    contents.
-		self assistant: (self responseOf_tool: jsonResponse) .
+		history assistant: (self responseOf_tool: jsonResponse) .
 	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
+   		history assistant: ex messageText.
 	].
 ]
 
-{ #category : 'mistral tools' }
-MistralApiWithTools >> loadResponse_notools [ 
-	| apiGenerateUrl jsonResponse bodyEntiry |
-
-	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	[  	bodyEntiry := self bodyForEntityWithPrompt.
-		jsonResponse := ZnClient new
-	    url: apiGenerateUrl;
-	  	 headerAt: 'Authorization' put: self class esug;
-	    headerAt: 'Content-Type' put: 'application/json';
-	    entity: bodyEntiry;
-	    post;
-	    contents.
-		self assistant: (self responseOf: jsonResponse) .
-	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
-	].
+{ #category : 'printing' }
+MistralApiWithTools >> printOn: aStream [
+	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
+	aStream << 'MistralApiWithTools: ' << self model.
 ]
 
 { #category : 'mistral tools' }
-MistralApiWithTools >> loadResponse_tools [
-	| apiGenerateUrl jsonResponse bodyEntiry |
-
-	apiGenerateUrl := 'https://api.mistral.ai/v1/chat/completions'.
-	[  	bodyEntiry := self bodyForEntityWithPrompt_withTools.
-		jsonResponse := ZnClient new
-	    url: apiGenerateUrl;
-	  	 headerAt: 'Authorization' put: self class esug;
-	    headerAt: 'Content-Type' put: 'application/json';
-	    entity: bodyEntiry;
-	    post;
-	    contents.
-		self assistant: (self responseOf_tool: jsonResponse) .
-	] on: Error do: [ :ex |
-   		self assistant: ex messageText.
-	].
-]
-
-{ #category : 'mistral tools' }
-MistralApiWithTools >> old_toolsExperiment [
-
-	^ {
-	Dictionary newFrom: {
-		'type' -> 'function'.
-		'function' -> (Dictionary newFrom: {
-			'name' -> 'killroyAnswer'.
-			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
-			'parameters' -> Dictionary new.
-			'required' -> #('topic')
-		})
-	}
-}.
+MistralApiWithTools >> responseOf: jsonResponse [
+	| parsed message  toolCalls|
+	parsed := STONJSON fromString: jsonResponse.
+	(parsed includesKey: 'error') ifTrue: [ 
+		self error: 'AI response error: ', 
+			((parsed at: 'error') at: 'code'), 
+			'. Message: ', 
+			((parsed at: 'error') at: 'message') ].
+	message := (parsed at: 'choices') first at: 'message'.
+	toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
+	toolCalls isNil
+		ifTrue: [ ^ message at: 'content' ] 
+		ifFalse: [ ^ self killroyWasHere: toolCalls ]
 ]
 
 { #category : 'mistral tools' }
@@ -244,22 +193,22 @@ MistralApiWithTools >> responseOf_tool: jsonResponse [
 { #category : 'mistral tools' }
 MistralApiWithTools >> toolsExperiment [
 	^ {
-	Dictionary newFrom: {
-		'type' -> 'function'.
-		'function' -> (Dictionary newFrom: {
-			'name' -> 'killroyAnswer'.
-			'description' -> 'Responds with a mysterious and funny fact about Killroy.'.
-			'parameters' -> (Dictionary newFrom: {
-				'type' -> 'object'.
-				'properties' -> (Dictionary newFrom: {
-					'topic' -> (Dictionary newFrom: {
-						'type' -> 'string'.
-						'description' -> 'The topic for the Killroy fact.'.
-					})
+		Dictionary newFrom: {
+			'type' -> 'function'.
+			'function' -> (Dictionary newFrom: {
+				'name' -> 'killroyAnswer'.
+				'description' -> 'Responds with a mysterious and funny fact about havanki.'.
+				'parameters' -> (Dictionary newFrom: {
+					'type' -> 'object'.
+					'properties' -> (Dictionary newFrom: {
+						'topic' -> (Dictionary newFrom: {
+							'type' -> 'string'.
+							'description' -> 'The topic for the havanki fact.'.
+						})
+					}).
+					'required' -> #('topic')
 				})
-			}).
-			'required' -> #('topic')
-		})
-	}
-}.
+			})
+		}
+	}.
 ]

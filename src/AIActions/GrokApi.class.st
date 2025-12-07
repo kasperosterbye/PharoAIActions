@@ -39,12 +39,6 @@ GrokApi >> bodyForEntityWithPrompt [
 
 ]
 
-{ #category : 'as yet unclassified' }
-GrokApi >> computePower: base exponent: exp [
-    "Compute base^exp using Pharo's big integer arithmetic."
-    ^ base raisedTo: exp
-]
-
 { #category : 'accessing' }
 GrokApi >> headers: jsonResponse [
 

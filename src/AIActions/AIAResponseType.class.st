@@ -30,14 +30,10 @@ The experiments are designed to test whether models correctly handle ""I do not 
 "
 Class {
 	#name : 'AIAResponseType',
-	#superclass : 'Object',
+	#superclass : 'AIAMultiLLMResponseBase',
 	#instVars : [
 		'responses',
 		'prompt'
-	],
-	#classVars : [
-		'MarkDown',
-		'RTResults'
 	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
@@ -47,14 +43,7 @@ Class {
 { #category : 'as yet unclassified' }
 AIAResponseType class >> RT [
 	"Returns the last result from the RTResults collection"
-	^ RTResults last
-]
-
-{ #category : 'initialization' }
-AIAResponseType class >> initializeRTResults [
-	"Initializes the RTResults collection for storing response data"
-	<example>
-	RTResults := nil 
+	^ Results last
 ]
 
 { #category : 'as yet unclassified' }
@@ -864,7 +853,7 @@ AIAResponseType >> forLLM: llm prompt: prompt resourceType: resourceType [
 AIAResponseType >> getResponses [
 	"This method runs experiments to collect responses from different LLM providers for various prompts and response types. It manages the process asynchronously and provides progress updates."
 	| id |
-	id := RTResults size.
+	id := Results size.
 	[ :job | | aiProcess |
 		aiProcess := [ self responceTypeExperiments ] newProcess.
 		aiProcess priority: Processor userBackgroundPriority. 
@@ -878,7 +867,7 @@ AIAResponseType >> getResponses [
 			job
 				progress: ((1/600) * each) ;
 				title: 'Building responses'.
-				RTResults size > id ifFalse: [100 milliSeconds wait].
+				Results size > id ifFalse: [100 milliSeconds wait].
 		].
 	] asJob run.
 ]
@@ -887,7 +876,6 @@ AIAResponseType >> getResponses [
 AIAResponseType >> initialize [ 
 	"Initializes the AIAResponseType instance and ensures RTResults is nil"
 	super initialize.
-	RTResults ifNil: [ RTResults := OrderedCollection new].
 ]
 
 { #category : 'markdown' }
@@ -923,7 +911,7 @@ AIAResponseType >> markdownResponse [
 	MarkDown 
 		<< '# Experiment results on '<< Date today asString << String cr << String cr.
 	self 
-		markdownExplanation;
+		markdown1Explanation;
 		markdownPromptsAndResponseTypes;
 		markdownResponseTypeResults.
 	AIAPresenter onText: MarkDown contents.
@@ -942,7 +930,7 @@ AIAResponseType >> markdownResponseTypeResults [
 	list := self buildPromtList.
 	MarkDown << '| **Index** | **LLM** | **IDNK** | **Response (first 50 letters)** |' << String cr.
 	MarkDown << '| --------- | ------- | -------- | --------------------- |' << String cr.
-	lastResults := RTResults last.
+	lastResults := Results last.
 	1 to: lastResults size do: [ :prIndex |
 		1 to: (lastResults at: prIndex) value size do: [ :llmResonseIndex |
 			index := prIndex asString.
@@ -990,7 +978,7 @@ AIAResponseType >> markdownSpecials [
 	list := self buildPromtList.
 	unusualOnes << '| **id** | **Index** | **LLM** | **IDNK** | **Response (first 50 letters)** |' << String cr.
 	unusualOnes << '| ------ | --------- | ------- | -------- | --------------------- |' << String cr.
-	lastResults := RTResults last.
+	lastResults := Results last.
 	itemNr := 1.
 	1 to: lastResults size do: [ :prIndex |
 			1 to: (lastResults at: prIndex) value size do: [ :llmResonseIndex |
@@ -1044,7 +1032,7 @@ AIAResponseType >> responceTypeExperiments [
 			] .
 			prompts add: (promtResonse -> responses )
 		].
-	RTResults add: prompts.
+	Results add: prompts.
 
 	^ prompts 
 		

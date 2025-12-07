@@ -36,7 +36,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'model',
-		'history',
+		'messageList',
 		'responseWaitingInSecs'
 	],
 	#classVars : [
@@ -407,6 +407,7 @@ AilienApi >> apiGenerateUrl [
 
 { #category : 'accessing' }
 AilienApi >> bodyForEntityWithPrompt [
+	"Returns the HTTP request body for AI API calls, typically containing the conversation history in JSON format. Subclasses must implement this method to provide provider-specific request formatting."
 	self subclassResponsibility
 ]
 
@@ -424,18 +425,6 @@ AilienApi >> headers: foo [
 ]
 
 { #category : 'initialization' }
-AilienApi >> history [
-	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
-	^ history
-]
-
-{ #category : 'initialization' }
-AilienApi >> history: aHistory [
-	"Returns the conversation history as an ordered collection of role-content pairs, preserving chronological order of system, user, and assistant messages."
-	^ history := aHistory 
-]
-
-{ #category : 'initialization' }
 AilienApi >> initialize [ 
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
@@ -448,7 +437,7 @@ AilienApi >> jsonHistory [
 	"Returns the conversation history as a JSON array of role-content dictionaries, preserving chronological order of system, user, and assistant messages."
 	| jsonHistory |
 	jsonHistory := OrderedCollection new.
-	history apiMessageList do: [ :item |
+	messageList do: [ :item |
 		jsonHistory add: (Dictionary newFrom: 
 			{'role' -> item key.
 			'content' -> item value.})
@@ -457,13 +446,14 @@ AilienApi >> jsonHistory [
 	^ jsonHistory asArray.
 ]
 
-{ #category : 'accessing' }
-AilienApi >> loadResponse [
+{ #category : 'responses' }
+AilienApi >> loadResponse: history [
 	"Executes HTTP request to AI provider endpoint and processes response into conversation history with error handling"
-	
-	| jsonResponse llmCall response|
-	[  jsonResponse := ZnClient new
-								timeout: self responseWaitingInSecs ;
+
+	| jsonResponse llmCall response |
+	[
+		jsonResponse := ZnClient new
+			                timeout: self responseWaitingInSecs;
 			                url: self apiGenerateUrl;
 			                entity: self bodyForEntityWithPrompt.
 		self headers: jsonResponse.
@@ -471,10 +461,15 @@ AilienApi >> loadResponse [
 			           post;
 			           contents.
 		response := self responseOf: llmCall.
-		history assistant: response. 
-		]
+		history assistant: response ]
 		on: Error
 		do: [ :ex | history assistant: ex messageText ]
+]
+
+{ #category : 'accessing' }
+AilienApi >> messageList: anObject [
+
+	messageList := anObject
 ]
 
 { #category : 'accessing' }
@@ -488,6 +483,26 @@ AilienApi >> model [
 AilienApi >> model: anObject [
 	"Sets the model for AI interactions. Validates input and updates instance state. Preserves existing history. Returns the model name."
 	model := anObject
+]
+
+{ #category : 'accessing' }
+AilienApi >> old_loadResponse [
+	"Executes HTTP request to AI provider endpoint and processes response into conversation history with error handling"
+	
+	| jsonResponse llmCall |
+	[  jsonResponse := ZnClient new
+								timeout: self responseWaitingInSecs ;
+			                url: self apiGenerateUrl;
+			                entity: self bodyForEntityWithPrompt.
+		self headers: jsonResponse.
+		llmCall := jsonResponse
+			           post;
+			           contents.
+		self response: (self responseOf: llmCall).
+		"history assistant: response. "
+		]
+		on: Error
+		do: [ :ex | self response:  ex messageText ]
 ]
 
 { #category : 'accessing' }
@@ -507,6 +522,6 @@ AilienApi >> responseWaitingInSecs: anObject [
 	responseWaitingInSecs := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AilienApi >> sanitizedResonse: response [
 ]
