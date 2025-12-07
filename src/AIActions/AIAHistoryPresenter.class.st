@@ -33,7 +33,7 @@ AIAHistoryPresenter >> defaultLayout [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> getHistoryList [
-	^ AIAHistory histories keys
+	^ AIAHistory histories 
 ]
 
 { #category : 'as yet unclassified' }

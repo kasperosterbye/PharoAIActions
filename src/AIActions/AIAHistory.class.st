@@ -75,6 +75,7 @@ AIAHistory class >> dDiscussion [
 		newDiscussion := self new.
 		newDiscussion 
 			title: dDiscussion;
+			addPreHistory: self qPrefix; 
 			background: self background01.
 		index := Histories size].
 	^ Histories at: index.
@@ -113,7 +114,7 @@ AIAHistory class >> qPrefix [
 	sharedVariables: { #LastHistoryx . #Provider };
 	tag: ''AIApi'';
 	package: ''AIActions''.
-	In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.'.
+	In Pharo and Smalltalk, the expression `2 + 3 * 4` is evaluated from left to right due to the uniform precedence of all binary messages. This means the addition is performed first, followed by the multiplication. Therefore, the expression is evaluated as `(2 + 3) * 4`, resulting in `20`.'.
 	qHist responseType: 'Please response in ', AIACommentBuilding language.
 	qHist title: 'qPrefix'.
 	^ qHist 
@@ -169,7 +170,7 @@ AIAHistory >> apiMessageList [
 	^ messageList
 ]
 
-{ #category : 'initialization' }
+{ #category : 'accessing' }
 AIAHistory >> assistant: aString [
 	"Adds an assistant message to the messages collection after sanitising the input string."
 	
@@ -187,7 +188,7 @@ AIAHistory >> background: string [
 	firstRoles add: 'background' -> string 
 ]
 
-{ #category : 'initialization' }
+{ #category : 'accessing' }
 AIAHistory >> chatHistory [
 	"Returns formatted chat history excluding system message, with numbered entries for user and assistant messages. Preserves chronological order."
 	| historyText counter |
@@ -213,7 +214,9 @@ AIAHistory >> getResponse [
 		self assistant: 'No answer, as I was not asked'.
 		^ self ].
 	[ :job | | aiProcess secs |
-		aiProcess := [ self api history: self; loadResponse ] newProcess.
+		aiProcess := [ 
+				self api messageList: self apiMessageList; loadResponse: self. 
+			] newProcess.
 		aiProcess priority: Processor userBackgroundPriority. 
 		aiProcess resume.
 		SystemProgressMorph uniqueInstance position: 10@20.
@@ -273,7 +276,7 @@ AIAHistory >> messages [
 	^ messages 
 ]
 
-{ #category : 'Protocol (printing) - 1 selector(s)' }
+{ #category : 'printing' }
 AIAHistory >> printOn: stream [
 	"Prints the title on the stream if available, otherwise prints the prompt."
 	title  
@@ -283,7 +286,7 @@ AIAHistory >> printOn: stream [
 
 { #category : 'printing' }
 AIAHistory >> printPrompt [
-	messages size > 1 
+	(messages isNotNil and: [ messages size > 1 ])
 		ifTrue: [ ^ messages first value maxFirst: 20  ] 
 		ifFalse: [ '> No prompt' ]
 ]
@@ -311,12 +314,12 @@ AIAHistory >> responseType: string [
 	lastRoles add: 'responseType' -> string 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'context roles' }
 AIAHistory >> sanitizedResonse: response [
 	^ self sanitizedResonse: response forHeaderLevel: responseHearderLevel 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'context roles' }
 AIAHistory >> sanitizedResonse: response forHeaderLevel: level [
 	"Sanitises response by stripping code blocks and promoting Markdown headers to match given level"
 
