@@ -86,6 +86,13 @@ ManifestAIActions class >> ruleMethodSourceContainsLinefeedsRuleV1FalsePositive 
 ]
 
 { #category : 'code-critics' }
+ManifestAIActions class >> ruleModifiesCollectionRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2025-12-08T09:44:16.373482+01:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIActions class >> ruleReGuardClauseRuleV1FalsePositive [
 
 	<ignoreForCoverage>
@@ -104,6 +111,13 @@ ManifestAIActions class >> ruleSelfSentNotImplementedRuleV1FalsePositive [
 
 	<ignoreForCoverage>
 	^ #(#(#(#RGMethodDefinition #(#String #c #false)) #'2025-07-23T09:27:53.369678+02:00') )
+]
+
+{ #category : 'code-critics' }
+ManifestAIActions class >> ruleStringConcatenationRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2025-12-08T09:44:27.589623+01:00') )
 ]
 
 { #category : 'code-critics' }

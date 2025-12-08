@@ -14,10 +14,15 @@ Class {
 }
 
 { #category : 'examples' }
-AIAMultiLLMResponseBase class >> initializeRTResults [
+AIAMultiLLMResponseBase class >> initializeResults [
 	"Initializes the RTResults collection for storing response data"
 	<example>
 	Results := nil 
+]
+
+{ #category : 'accessing' }
+AIAMultiLLMResponseBase class >> results [
+	^ Results 
 ]
 
 { #category : 'markdown' }
@@ -29,10 +34,12 @@ AIAMultiLLMResponseBase >> excludeProviders [
 AIAMultiLLMResponseBase >> initialize [ 
 	"Initializes the AIAResponseType instance and ensures RTResults is nil"
 	super initialize.
+	results := OrderedCollection new.
+	
 	Results ifNil: [ Results := OrderedCollection new].
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'markdown' }
 AIAMultiLLMResponseBase >> markdown0Title [
 	MarkDown 
 		<< '# Experiment results on '<< Date today asString << String cr << String cr.
@@ -98,16 +105,32 @@ AIAMultiLLMResponseBase >> responseOf: aiLLM [
 
 { #category : 'markdown' }
 AIAMultiLLMResponseBase >> responses [
-	|   |
-	results := OrderedCollection new.
-	self modelsList do: [ :promtResonse |
-			| llmResonses |
-			llmResonses := (promtResonse at: 2) collect: [ :llm |
-				 self responseOf: (promtResonse first new model: llm)
-			] .
-			results add: (promtResonse first -> llmResonses )
-		].
-	Results add: results.
-	^ results 
-		
+
+	[ :job |
+		job interruptBlock: [ ^ self ].
+		1 to: self modelsList size do: [ :counter |
+				| llmResonses promtResonse |
+				promtResonse := self modelsList at: counter.
+				job
+					title: 'Working on: ', promtResonse first asString, 
+					' ', counter asString , ' of ', self modelsList size asString;
+					progress: (counter / self modelsList size).
+					
+				llmResonses := (promtResonse at: 2) collect: [ :llm | 
+						self responseOf: (promtResonse first new model: llm) ].
+				self results add: promtResonse first -> llmResonses ] 
+	] asJob run.
+	Results add: self results.
+	^ self results
+]
+
+{ #category : 'accessing' }
+AIAMultiLLMResponseBase >> results [
+	^ results
+]
+
+{ #category : 'accessing' }
+AIAMultiLLMResponseBase >> results: anObject [
+
+	results := anObject
 ]

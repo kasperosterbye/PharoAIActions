@@ -1,5 +1,5 @@
 Class {
-	#name : 'AIAUUUTurns',
+	#name : 'AIAAAATurns',
 	#superclass : 'AIAMultiLLMResponseBase',
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
@@ -7,21 +7,21 @@ Class {
 }
 
 { #category : 'markdown' }
-AIAUUUTurns >> excludeProviders [
+AIAAAATurns >> excludeProviders [
 	"This method excludes specific providers from the list of available models."
 	^ { MistralApiWithTools. OllamaApi. GeminiApi }
 ]
 
 { #category : 'as yet unclassified' }
-AIAUUUTurns >> markdown0Title [
+AIAAAATurns >> markdown0Title [
 	MarkDown 
-		<< '# Experiment unbalanced turns - multiple assistant prompts. On '<< Date today asString << String cr << String cr.
+		<< '# Experiment unbalanced turns - multiple user: prompts. On '<< Date today asString << String cr << String cr.
 	
 ]
 
 { #category : 'markdown' }
-AIAUUUTurns >> markdown2LLMResponses [
-	MarkDown << '### Responses of `assistant: assistant: assistant:` ' << String cr << String cr.
+AIAAAATurns >> markdown2LLMResponses [
+	MarkDown << '### Responses of `user: user: user:` ' << String cr << String cr.
 	
 	MarkDown << '| **provider** | **Model 1** | **Model 2** | **Model 3** | **Model 4** |' << String cr.
 	MarkDown << '| ------------ | ----------- | ----------- | ----------- | ----------- |' << String cr.
@@ -33,14 +33,14 @@ AIAUUUTurns >> markdown2LLMResponses [
 ]
 
 { #category : 'markdown' }
-AIAUUUTurns >> responseOf: aiLLM [
+AIAAAATurns >> responseOf: aiLLM [
 	| hist |
 	hist := AIAHistory new.
 	hist 
 		api: aiLLM;
-		assistant: 'aaa is 2';
-		assistant: 'bbb is 3';
-		assistant: 'so aaa + bbb is 5';
+		user: 'aaa is 2';
+		user: 'bbb is 3';
+		user: 'what is the sum of aaa and bbb';
 		getResponse.
 	^ hist response maxFirst: 15
 ]
