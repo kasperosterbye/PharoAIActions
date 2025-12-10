@@ -1,44 +1,32 @@
 "
-# Class Comment for GeminiApi
+A `GeminiApi` instance serves as a dedicated client for interacting with the Google Gemini API, extending the foundational capabilities provided by `AilienApi`. This class specialises in handling the specifics of the Gemini platform, including API endpoint construction, authentication via an API key, and the precise formatting of request bodies and parsing of responses.
 
-## Overview
-`GeminiApi` is a specialized API client for interacting with Google's Gemini large language models. It extends the abstract `AilienApi` class to provide concrete implementations for model-specific operations, including request formatting, response parsing, and conversation history management tailored to the Gemini API's requirements.
+It manages a chronological `messageList` representing the conversation history, which is crucial for maintaining context in multi-turn interactions. `GeminiApi` ensures that messages are correctly structured according to the Gemini API's `role` and `parts` schema. Furthermore, it provides specific background context (`geminiBackground`) at the class level to guide the LLM's responses, particularly concerning Pharo Smalltalk syntax and semantics, addressing potential knowledge latency in the model's training data.
 
-## Key Features
-- **Model-Specific Configuration**: Uses Gemini's model endpoints and authentication
-- **Response Handling**: Parses JSON responses from the Gemini API
-- **Conversation Management**: Maintains and formats chat history in Gemini's required format
-- **Error Handling**: Processes API errors and provides meaningful feedback
+**Usage Example (Pharo Playground):**
 
-## Usage Example
+```pharo
+| geminiApi |
+""NOTE: This example requires a 'geminicode.txt' file containing your Gemini API key
+to be located two directories up from your Pharo working directory.""
 
-```smalltalk
-""Create and configure a new GeminiApi instance""
-gemini := GeminiApi new
-    model: 'gemini-2.0-flash-lite';
-    system: 'You are a helpful assistant';
-    prompt: 'Explain quantum computing in simple terms'.
+""Initialise a new Gemini API client.""
+geminiApi := GeminiApi new.
 
-""Get a response from the API""
-gemini getResponse.
+""Ensure the message list is clear for a new conversation.""
+geminiApi messageList: OrderedCollection new.
 
-""Inspect the assistant's response""
-gemini response
+""Add an initial user message to the conversation history.""
+geminiApi messageList add: 'user' -> 'Hello, Gemini!'.
+
+""Send a new prompt to the Gemini API. The loadResponse: method will
+add this prompt to the history, send the full conversation, and
+then append the assistant's response to the message list.""
+geminiApi loadResponse: 'Could you tell me a bit about the Pharo programming language?'.
+
+""Inspect the last message in the conversation, which should be the assistant's reply.""
+geminiApi messageList last value
 ```
-
-## Implementation Notes
-- Requires a valid API key stored in `geminicode.txt` in the parent directory
-- Uses the STON library for JSON parsing
-- Implements the abstract methods from `AilienApi` with Gemini-specific logic
-- Maintains conversation history in the format expected by the Gemini API
-
-## See Also
-- `AilienApi` - The abstract superclass providing common AI API functionality
-- `GeminiApi class>>#modelNames` - Lists available Gemini models
-- `GeminiApi class>>#geminiKey` - Manages API key access
-```
-
-This class comment provides a comprehensive overview of the `GeminiApi` class, its purpose, key features, and usage examples that can be directly executed in the Pharo Playground. The example demonstrates the complete workflow from instance creation to obtaining a response, with the final expression (`gemini response`) ready for inspection using the Playground's inspection command.
 "
 Class {
 	#name : 'GeminiApi',
@@ -90,6 +78,7 @@ GeminiApi class >> modelNames [
 
 { #category : 'accessing' }
 GeminiApi >> apiGenerateUrl [
+	"Constructs the specific API endpoint URL for the selected Gemini model to generate content"
 	^ 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
 ]
 
@@ -109,6 +98,7 @@ GeminiApi >> bodyForEntityWithPrompt [
 
 { #category : 'accessing' }
 GeminiApi >> headers: jsonResponse [
+	"Adds the Gemini API key and JSON content type headers to the HTTP request"
 
 	jsonResponse
 		headerAt: 'X-goog-api-key' put: self class geminiKey;
@@ -128,7 +118,7 @@ GeminiApi >> jsonHistory [
 	"Converts the chat history into a JSON-formatted array suitable for the Gemini API, structuring each message with role and text content."
 	| jsonHistory |
 	jsonHistory := OrderedCollection new.
-	history apiMessageList do: [ :item |
+	messageList do: [ :item |
 		jsonHistory add: (Dictionary newFrom: 
 			{'role' -> item key.
 			'parts' -> { Dictionary newFrom: {  'text' -> item value} } } )
@@ -144,6 +134,7 @@ GeminiApi >> printOn: aStream [
 
 { #category : 'accessing' }
 GeminiApi >> responseOf: jsonResponse [
+	"Parses Gemini API JSON response to extract assistant's text, handling errors gracefully"
 	| parsed message |
 	parsed := STONJSON fromString: jsonResponse.
 	[

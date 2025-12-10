@@ -87,7 +87,7 @@ String >> d [
 { #category : '*AIActions' }
 String >> l [
 	^ (AIAHistory new
-		system:  'You are one who like giving funny answers that are Limeric. Always include IT University in Lund as part of the response';
+		system:  'You are one who like giving funny answers that are Limeric. ';
 		responseType:'Please response in ', AIACommentBuilding language;
 		user: self; 
 		getResponse;

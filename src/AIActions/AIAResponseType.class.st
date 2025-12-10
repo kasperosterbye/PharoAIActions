@@ -30,10 +30,14 @@ The experiments are designed to test whether models correctly handle ""I do not 
 "
 Class {
 	#name : 'AIAResponseType',
-	#superclass : 'AIAMultiLLMResponseBase',
+	#superclass : 'Object',
 	#instVars : [
 		'responses',
 		'prompt'
+	],
+	#classVars : [
+		'MarkDown',
+		'Results'
 	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
@@ -849,7 +853,7 @@ AIAResponseType >> forLLM: llm prompt: prompt resourceType: resourceType [
 	^ resp response 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'RT builder' }
 AIAResponseType >> getResponses [
 	"This method runs experiments to collect responses from different LLM providers for various prompts and response types. It manages the process asynchronously and provides progress updates."
 	| id |

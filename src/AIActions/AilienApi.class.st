@@ -432,7 +432,7 @@ AilienApi >> initialize [
 	self responseWaitingInSecs: 60.
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Protocol (accessing) - 11 selector(s)' }
 AilienApi >> jsonHistory [
 	"Returns the conversation history as a JSON array of role-content dictionaries, preserving chronological order of system, user, and assistant messages."
 	| jsonHistory |
