@@ -521,7 +521,3 @@ AilienApi >> responseWaitingInSecs: anObject [
 
 	responseWaitingInSecs := anObject
 ]
-
-{ #category : 'accessing' }
-AilienApi >> sanitizedResonse: response [
-]

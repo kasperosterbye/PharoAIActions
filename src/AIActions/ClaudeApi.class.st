@@ -71,7 +71,8 @@ ClaudeApi class >> modelNames [
 	'claude-sonnet-4-20250514' 
 	'claude-3-haiku-20240307'
 	'claude-3-5-haiku-20241022' 
-	'claude-3-7-sonnet-20250219') 
+	'claude-3-7-sonnet-20250219'
+	'claude-opus-4-5-20251101') 
 ]
 
 { #category : 'accessing' }
