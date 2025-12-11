@@ -1,5 +1,5 @@
 Class {
-	#name : 'AIAAAATurns',
+	#name : 'AIA3AAAUTurns',
 	#superclass : 'AIAMultiLLMResponseBase',
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
@@ -7,7 +7,7 @@ Class {
 }
 
 { #category : 'markdown' }
-AIAAAATurns >> responseOf: aiLLM [
+AIA3AAAUTurns >> responseOf: aiLLM [
 	"Returns the response from an AI LLM model for a specific history scenario"
 	| hist |
 	hist := AIAHistory new.
@@ -22,12 +22,12 @@ AIAAAATurns >> responseOf: aiLLM [
 ]
 
 { #category : 'matching' }
-AIAAAATurns >> words [
+AIA3AAAUTurns >> words [
 	| dict |
 	dict := Dictionary new.
 	dict 
-		at: '00' put: 'assistant:';
-		at: '30' put: 'assistant: assistant: assistant:';
-		at: '40' put: 'assistant: assistant: assistant:'.
+		at: '00' put: 'assistant: with user:';
+		at: '30' put: 'assistant: a: a: user:';
+		at: '40' put: 'assistant: a: a: user:'.
 	^ dict
 ]
