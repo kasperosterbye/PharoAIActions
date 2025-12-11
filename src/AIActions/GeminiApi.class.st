@@ -116,13 +116,15 @@ GeminiApi >> initialize [
 { #category : 'accessing' }
 GeminiApi >> jsonHistory [
 	"Converts the chat history into a JSON-formatted array suitable for the Gemini API, structuring each message with role and text content."
-	| jsonHistory |
+	| jsonHistory correctedRole|	
+	correctedRole := { 'user'->'user'. 'assistant'->'model' } asDictionary.
 	jsonHistory := OrderedCollection new.
 	messageList do: [ :item |
-		jsonHistory add: (Dictionary newFrom: 
-			{'role' -> item key.
-			'parts' -> { Dictionary newFrom: {  'text' -> item value} } } )
+		jsonHistory add: (Dictionary newFrom:
+            {'role' -> (correctedRole at: item key).
+            'parts' -> { Dictionary newFrom: { 'text' -> item value} } } )
 	].
+	LastHistory := STONJSON toString: jsonHistory asArray .
 	^ jsonHistory asArray.
 ]
 
