@@ -8,7 +8,6 @@ Class {
 
 { #category : 'markdown' }
 AIA2UUUTurns >> responseOf: aiLLM [
-	"Returns the response from the specified AI LLM model for a predefined set of user prompts"
 	| hist |
 	hist := AIAHistory new.
 	hist 
@@ -22,11 +21,5 @@ AIA2UUUTurns >> responseOf: aiLLM [
 
 { #category : 'matching' }
 AIA2UUUTurns >> words [
-	| dict |
-	dict := Dictionary new.
-	dict 
-		at: '00' put: 'user:';
-		at: '30' put: 'user: user: user:';
-		at: '40' put: 'user: user: user:'.
-	^ dict
+	^ 'user: user: user:'.
 ]

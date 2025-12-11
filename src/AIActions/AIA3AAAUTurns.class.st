@@ -8,7 +8,6 @@ Class {
 
 { #category : 'markdown' }
 AIA3AAAUTurns >> responseOf: aiLLM [
-	"Returns the response from an AI LLM model for a specific history scenario"
 	| hist |
 	hist := AIAHistory new.
 	hist 
@@ -23,11 +22,5 @@ AIA3AAAUTurns >> responseOf: aiLLM [
 
 { #category : 'matching' }
 AIA3AAAUTurns >> words [
-	| dict |
-	dict := Dictionary new.
-	dict 
-		at: '00' put: 'assistant: with user:';
-		at: '30' put: 'assistant: a: a: user:';
-		at: '40' put: 'assistant: a: a: user:'.
-	^ dict
+	^ 'assistant: assistant: assistant: user:'
 ]

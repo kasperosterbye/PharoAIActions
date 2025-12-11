@@ -211,7 +211,7 @@ AIAMultiLLMResponseBase >> getResponses [
 AIAMultiLLMResponseBase >> markdown00Title [
 	"Generates the title section of the Markdown report with the current date"
 	markDown 
-		<< ('### Experiment unbalanced turns - multiple {1} prompts. ' format: { self words at: '00' }) << String cr	
+		<< ('### Experiment with *{1}* prompts. ' format: { self words }) << String cr	
 ]
 
 { #category : 'Protocol (markdown) - 9 selector(s)' }
@@ -236,7 +236,7 @@ AIAMultiLLMResponseBase >> markdown25response [
 AIAMultiLLMResponseBase >> markdown30LLMResponses [
 	"Generates a Markdown table comparing simplified responses fror multiple LLM models"
 	
-	markDown << ('#### Responses of `{1}` ' format: { self words at: '30' }) << String cr << String cr.
+	markDown << ('#### Responses ') << String cr << String cr.
 	
 	markDown << '| **provider** | **Model 1** | **Model 2** | **Model 3** | **Model 4** |' << String cr.
 	markDown << '| ------------ | ----------- | ----------- | ----------- | ----------- |' << String cr.
@@ -250,9 +250,8 @@ AIAMultiLLMResponseBase >> markdown30LLMResponses [
 { #category : 'markdown' }
 AIAMultiLLMResponseBase >> markdown40LLMFullResponses [
 	"Generates a Markdown section with full responses for each provider's models"
-	markDown << ('#### Full responses for  `{1}` ' format: { self words at: '40' }) << String cr << String cr.
-	
-	
+	markDown << ('#### Full responses ') << String cr << String cr.
+
 	responseTable do: [ :res |
 		markDown << '##### ' << res key asString << String cr .
 		res value do: [ :resp | 
@@ -272,7 +271,6 @@ AIAMultiLLMResponseBase >> markdownResponse [
 	self
 		markdown00Title;
 		markdown10Explanation;
-		"markdown20LLMnames;"
 		markdown25response;
 		markdown30LLMResponses;
 		markdown40LLMFullResponses .
@@ -331,9 +329,15 @@ AIAMultiLLMResponseBase >> old_markdown20LLMnames [
 
 { #category : 'as yet unclassified' }
 AIAMultiLLMResponseBase >> rebuildOverview [
-	overview := (('[background] Temperature = 0.0 everywhere. 
-	 [prompt] Can you make an abstract for this report : "',  markDown ),
-	 '" [responseTable] Response should be a few lines, response should be technical, not academic') q0.
+	| hist |
+	hist := AIAHistory new.
+	hist 
+		api: (OpenAIApi newOnModel: 1);
+		background: 'LLM Temperature = 0.0 everywhere';
+		user: 'Can you make an overview for this report : "',  markDown ,'"';
+		responseType: 'Response should be a few lines, response should be technical, not academic';
+		getResponse.
+	overview := '<!--- ', String cr, hist response , String cr, '--->' , String cr.
 	^ overview 
 ]
 
