@@ -31,7 +31,7 @@ The class is designed to be subclassed for specific experiment configurations, w
 This class forms part of the AIActions package, supporting AI-driven experimentation and analysis workflows.
 "
 Class {
-	#name : 'AIAMultiLLMResponseBase',
+	#name : 'AIA1MultiLLMResponseBase',
 	#superclass : 'Object',
 	#instVars : [
 		'responseTable',
@@ -47,14 +47,14 @@ Class {
 }
 
 { #category : 'reporting' }
-AIAMultiLLMResponseBase class >> report [
+AIA1MultiLLMResponseBase class >> report [
 	"Return and lazily initialise the shared report instance for this class"
 	report ifNil: [ report := self new ].
 	^ report
 ]
 
 { #category : 'adding' }
-AIAMultiLLMResponseBase >> addResponseTable: hist [
+AIA1MultiLLMResponseBase >> addResponseTable: hist [
 	"Adds a response table entry for a given history object, extracting the provider and the last message from the history."
 	| provider  response |
 	provider := hist api.
@@ -63,18 +63,57 @@ AIAMultiLLMResponseBase >> addResponseTable: hist [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> clearOverview [
+AIA1MultiLLMResponseBase >> answerInclude: simple for: answers [
+	answers at: simple put: (answers at: simple) + 1.
+
+]
+
+{ #category : 'as yet unclassified' }
+AIA1MultiLLMResponseBase >> answerInitialize: answers [
+	answers 
+		at: '+' put: 0;
+		at: '-' put: 0;
+		at: 'Error' put: 0.
+	
+	"Include this as
+* Correct answers +:  18 ud af 28 (64%)
+* Wrong answers -:  8 ud af 28 (29%)
+* Error: 2 ud ad 28 (7%)
+"
+]
+
+{ #category : 'as yet unclassified' }
+AIA1MultiLLMResponseBase >> answerWrite: answers [
+		"Include this as
+* Correct answers +:  18 ud af 28 (64%)
+* Wrong answers -:  8 ud af 28 (29%)
+* Error: 2 ud ad 28 (7%)
+"
+	| answerWords sum |
+	answerWords := {  '+'->'Correct'. '-' -> 'Wrong'. 'Error' -> 'Errors' } asDictionary.
+	sum := answers values sum.
+	markDown << String lf << 'Aggregate results across all tested providers and models.' << String lf.
+	answers keysAndValuesDo: [ :key :value |
+		markDown << ('* {1} `{2}`: {3} of {4}  ({5}%) <br>' 
+				format: {(answerWords at: key). key. value asString. sum asString. (value/sum * 100) rounded asString  })
+			<< String lf.
+		 ].
+	
+]
+
+{ #category : 'as yet unclassified' }
+AIA1MultiLLMResponseBase >> clearOverview [
 	overview := nil
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> excludeProviders [
+AIA1MultiLLMResponseBase >> excludeProviders [
 	"This method excludes specific providers from the list of available models."
 	^ { MistralApiWithTools." OllamaApi. OpenAIApi.  TogetherApi. ClaudeApi. GeminiApi" }
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> getResponses [
+AIA1MultiLLMResponseBase >> getResponses [
 	"Retrieves responses from multiple LLM models, updates progress, and stores results in ResponseTable"
 	
 	responseTable := OrderedCollection new.
@@ -96,14 +135,14 @@ AIAMultiLLMResponseBase >> getResponses [
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> markdown00Title [
+AIA1MultiLLMResponseBase >> markdown00Title [
 	"Generates the title section of the Markdown report with the current date"
 	markDown 
 		<< ('### Experiment with *{1}* prompts. ' format: { self words }) << String lf	
 ]
 
 { #category : 'Protocol (markdown) - 9 selector(s)' }
-AIAMultiLLMResponseBase >> markdown10Explanation [
+AIA1MultiLLMResponseBase >> markdown10Explanation [
 	"Generates the explanation section of the Markdown report, detailing the experiment conditions and response criteria."
 
 	markDown << '$$$$$comment$$$$$' << String lf << String lf.
@@ -111,9 +150,10 @@ AIAMultiLLMResponseBase >> markdown10Explanation [
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> markdown25response [
+AIA1MultiLLMResponseBase >> markdown25response [
 	"Generates a Markdown table listing the tested models by provider"
 	markDown << '#### History tested on this method' << String lf
+		<< 'This Pharo method constructs a fixed user/assistant history and returns the response from the given LLM.' << String lf
 		<< '```text' << String lf 
 		<< (self class >> #responseOf:) sourceCode << String lf 
 		<< '```' << String lf << String lf.
@@ -121,24 +161,34 @@ AIAMultiLLMResponseBase >> markdown25response [
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> markdown30LLMResponses [
+AIA1MultiLLMResponseBase >> markdown30LLMResponses [
 	"Generates a Markdown table comparing simplified responses fror multiple LLM models"
+	| answers |
+	markDown << ('#### Responses ') << String lf 
+		<< '<!--- Per-provider, per-model results.--->'
+		<< String lf << String lf.
 	
-	markDown << ('#### Responses ') << String lf << String lf.
-	
+	answers := OrderedDictionary new.
+	self answerInitialize: answers.
 	markDown << '| **provider** | **Model 1** | **Model 2** | **Model 3** | **Model 4** |' << String lf.
 	markDown << '| ------------ | ----------- | ----------- | ----------- | ----------- |' << String lf.
-	responseTable do: [ :res |
+	responseTable do: [ :res | 
 		markDown << '| ' << res key asString << ' | ' .
-		res value do: [ :resp | markDown << ( self markdownSimplifiedResponse: resp) << ' | '  ].
+		res value do: [ :resp | | simple |
+			simple := self markdownSimplifiedResponse: resp.
+			self answerInclude: simple for: answers.
+			markDown << simple << ' | '  ].
 		markDown << String lf].
+	self answerWrite: answers.
 	^ markDown contents
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> markdown40LLMFullResponses [
+AIA1MultiLLMResponseBase >> markdown40LLMFullResponses [
 	"Generates a Markdown section with full responses for each provider's models"
-	markDown << ('#### Full responses ') << String lf << String lf.
+	markDown << ('#### Full responses ') << String lf 
+		<< 'Raw model outputs, unedited and shown verbatim.' << String lf
+		<< String lf.
 
 	responseTable do: [ :res |
 		markDown << '##### ' << res key asString << String lf .
@@ -150,7 +200,7 @@ AIAMultiLLMResponseBase >> markdown40LLMFullResponses [
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> markdownResponse [
+AIA1MultiLLMResponseBase >> markdownResponse [
 	"Generates a comprehensive Markdown report of LLM responses, including title, explanation, model overview, and response tables."
 	
 	"AilienApi errorResponse: 'Error bla bla happended'."
@@ -167,13 +217,14 @@ AIAMultiLLMResponseBase >> markdownResponse [
 		overview:= self rebuildOverview].
 	markDown := markDown 
 			copyReplaceAll: '$$$$$comment$$$$$'
-			with: overview . 	
+			with: overview . 
+	markDown := WriteStream with: markDown.	
 	"AIAPresenter onText: markDown."
-	^ markDown 
+	^ markDown contents
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> markdownSimplifiedResponse: originalResponse [
+AIA1MultiLLMResponseBase >> markdownSimplifiedResponse: originalResponse [
 	| simplifiedResponse |
 	simplifiedResponse := ' ' join: originalResponse lines. " maxFirst: 15"
 	simplifiedResponse := (simplifiedResponse includesSubstring: 'Error bla bla')
@@ -186,7 +237,7 @@ AIAMultiLLMResponseBase >> markdownSimplifiedResponse: originalResponse [
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> modelsList [
+AIA1MultiLLMResponseBase >> modelsList [
 	"Returns the list of LLM providers and their models, excluding specified ones"
 	| list exclude|
 	exclude := self excludeProviders.
@@ -199,7 +250,7 @@ AIAMultiLLMResponseBase >> modelsList [
 ]
 
 { #category : 'markdown' }
-AIAMultiLLMResponseBase >> old_markdown20LLMnames [
+AIA1MultiLLMResponseBase >> old_markdown20LLMnames [
 	"Generates a Markdown table listing the tested models by provider"
 	markDown << '### Over view of the tested models ' << String cr << String cr.
 	
@@ -216,38 +267,59 @@ AIAMultiLLMResponseBase >> old_markdown20LLMnames [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> rebuildOverview [
-	| hist |
+AIA1MultiLLMResponseBase >> rebuildOverview [
+	| prompt  hist |
+	prompt := 'You will output a hidden HTML comment for later LLM edits of this report.
+Use ONLY information explicitly present between REPORT_MARKDOWN_BEGIN/END.
+Do NOT infer or compute any numbers not explicitly stated.
+
+Return EXACTLY 6 lines. Each line MUST start with the exact prefix shown:
+Scope:
+Experimental setup:
+What each table cell represents:
+Aggregates:
+Known failure modes:
+Editing priorities:
+
+Rules:
+- No markdown, no bullets, no extra lines.
+- Each line <= 120 characters.
+- If unsupported by explicit text, write: Unknown
+- Do not quote the report text.
+
+REPORT_MARKDOWN_BEGIN<br> 
+', markDown contents,  '
+<br>REPORT_MARKDOWN_END'.
 	hist := AIAHistory new.
 	hist 
 		api: (OpenAIApi newOnModel: 1);
 		background: 'LLM Temperature = 0.0 everywhere';
-		user: 'Can you make an overview for this report : "',  markDown ,'"';
-		responseType: 'Response should be a few lines, response should be technical, not academic';
+		user: prompt;
 		getResponse.
 	overview := '<!--- ', String lf, hist response , String lf, '--->' , String lf.
 	^ overview 
+
 ]
 
 { #category : 'accessing' }
-AIAMultiLLMResponseBase >> responseOf: aiLLM [
+AIA1MultiLLMResponseBase >> responseOf: aiLLM [
 	"Returns the response from the specified AI LLM model"
 	self subclassResponsibility 
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> summary00Title [
+AIA1MultiLLMResponseBase >> summary00Title [
 	markDown 
 		<< '## Details of the four LLM turns' << String lf
 		<< '### On '<< Date today asString << String lf << String lf.
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> summary10Explanation [
+AIA1MultiLLMResponseBase >> summary10Explanation [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> summary20Names [
+AIA1MultiLLMResponseBase >> summary20Names [
 
 	markDown << '### Over view of the tested models ' << String lf << String lf.
 
@@ -261,7 +333,7 @@ AIAMultiLLMResponseBase >> summary20Names [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> summary28PlusMinusError [
+AIA1MultiLLMResponseBase >> summary28PlusMinusError [
 
 	markDown << '#### Resonces show are:' << String lf
 		<< '* `+` means that the model gave a correct answer' << String lf
@@ -271,7 +343,7 @@ AIAMultiLLMResponseBase >> summary28PlusMinusError [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> summary80TheFourDetails [
+AIA1MultiLLMResponseBase >> summary80TheFourDetails [
 	markDown << '## The details of the four experiments' << String lf << String lf.
 	self theFour do: [ :experiment |
 		markDown << experiment report markdownResponse << String lf << String lf
@@ -279,7 +351,7 @@ AIAMultiLLMResponseBase >> summary80TheFourDetails [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> summaryOfTheFour [
+AIA1MultiLLMResponseBase >> summaryOfTheFour [
 	
 	markDown := WriteStream on: ''.
 	self
@@ -295,12 +367,12 @@ AIAMultiLLMResponseBase >> summaryOfTheFour [
 ]
 
 { #category : 'as yet unclassified' }
-AIAMultiLLMResponseBase >> theFour [ 
+AIA1MultiLLMResponseBase >> theFour [ 
 	^ { AIA1UAUAUTurns. AIA2UUUTurns. AIA3AAAUTurns. AIA4AAATurns }
 	
 ]
 
 { #category : 'matching' }
-AIAMultiLLMResponseBase >> words [
+AIA1MultiLLMResponseBase >> words [
 	self subclassResponsibility 
 ]

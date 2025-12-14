@@ -1,6 +1,6 @@
 Class {
 	#name : 'AIA2UUUTurns',
-	#superclass : 'AIAMultiLLMResponseBase',
+	#superclass : 'AIA1MultiLLMResponseBase',
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
 	#tag : 'Experiments'
