@@ -54,6 +54,27 @@ AIA2MultiLLMWriter >> markdown20LLMNames|  llms [ prompts  |
 	^ markDown contents 
 ]
 
+{ #category : 'Protocol (markdown) - 4 selector(s)' }
+AIA2MultiLLMWriter >> markdown20LLMNames|  llms [ prompts  |
+	markDown << '#### List of Providers llm models' << String lf << String lf << String lf.
+	llms := (writeStorage collect: [ :elem | elem at: #llmNo ] as: Set) asArray sorted.
+	markDown << '| **provider** |'.
+	llms do: [ :modelId | markDown << ' **Model ' << modelId asString << '** |' ].
+	markDown << String lf.
+	markDown << '| ------------ | '.
+	llms do: [ :modelId | markDown << '----------- | ' ].
+	markDown << String lf.
+	prompts := writeStorage collect: [ :elem | elem at: #provider ] as: Set.
+	prompts do: [ :prompt |
+			| collumnsAt |
+			markDown << '| ' << prompt name asSymbol << ' | '.
+			collumnsAt := writeStorage select: [ :elem | (elem at: #provider) = prompt ].
+			llms do: [ :modelId | markDown << (prompt modelNames at: modelId) << ' | ' ].
+			markDown << String lf ].
+	markDown << String lf << String lf.
+	^ markDown contents 
+]
+
 { #category : 'Protocol (Protocol (markdown) - 4 selector(s)) - 2 selector(s)' }
 AIA2MultiLLMWriter >> markdown25PlusMinusError [
 
