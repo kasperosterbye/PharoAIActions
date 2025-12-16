@@ -51,7 +51,7 @@ AIA2MultiLLMWriter >> markdown20LLMNames|  llms [ prompts  |
 			llms do: [ :modelId | markDown << (prompt modelNames at: modelId) << ' | ' ].
 			markDown << String lf ].
 	markDown << String lf << String lf.
-	^ markDown contents
+	^ markDown contents 
 ]
 
 { #category : 'Protocol (Protocol (markdown) - 4 selector(s)) - 2 selector(s)' }
