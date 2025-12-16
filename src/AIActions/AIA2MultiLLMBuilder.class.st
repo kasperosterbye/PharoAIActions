@@ -30,7 +30,7 @@ AIA2MultiLLMBuilder >> response1Of: storeLine [
 		assistant: 'OK';
 		user: 'bbb is 3';
 		assistant: 'OK';
-		user: 'the sum of aaa + bbb is ...';
+		user: 'so aaa + bbb is what. Answer with ONLY the final result.';
 		getResponse.
 	storeLine responseText: hist response.
 ]
@@ -43,7 +43,7 @@ AIA2MultiLLMBuilder >> response2Of: storeLine [
 		api: (storeLine provider newOnModel: storeLine llmNo );
 		user: 'aaa is 2';
 		user: 'bbb is 3';
-		user: 'so aaa + bbb is what';
+		user: 'so aaa + bbb is what. Answer with ONLY the final result.';
 		getResponse.
 	storeLine responseText: hist response.
 ]
@@ -56,7 +56,7 @@ AIA2MultiLLMBuilder >> response3Of: storeLine [
 		api: (storeLine provider newOnModel: storeLine llmNo );
 		assistant: 'aaa is 2';
 		assistant: 'bbb is 3';
-		assistant: 'the sum of aaa + bbb is...';
+		assistant: 'so aaa + bbb is what. Answer with ONLY the final result.';
 		user: '?';
 		getResponse.
 	storeLine responseText: hist response.
@@ -70,9 +70,14 @@ AIA2MultiLLMBuilder >> response4Of: storeLine [
 		api: (storeLine provider newOnModel: storeLine llmNo );
 		assistant: 'aaa is 2';
 		assistant: 'bbb is 3';
-		assistant: 'the sum of aaa + bbb is - what do you think?';
+		assistant: 'so aaa + bbb is what. Answer with ONLY the final result.';
 		getResponse.
 	storeLine responseText: hist response..
+]
+
+{ #category : 'context roles' }
+AIA2MultiLLMBuilder >> responseType [
+	^ 'Answer with ONLY the final result. Do not explain, do not add any text before or after, no reasoning, no quotes unless required.'
 ]
 
 { #category : 'as yet unclassified' }
@@ -82,5 +87,15 @@ AIA2MultiLLMBuilder >> turnsBlock [
 		#UUU -> [ :storeLine | self response2Of: storeLine ].
 		#AAAU -> [ :storeLine | self response3Of: storeLine ].
 		#AAA -> [ :storeLine | self response4Of: storeLine ].
+		} asDictionary 
+]
+
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMBuilder >> turnsBlockSource [
+	^ { 
+		#UAUAU -> #response1Of:.
+		#UUU -> #response2Of:.
+		#AAAU -> #response3Of:.
+		#AAA -> #response4Of: .
 		} asDictionary 
 ]

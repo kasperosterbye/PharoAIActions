@@ -30,8 +30,8 @@ AIA2MultiLLMStorage class >> full_linesToBuild [
 { #category : 'as yet unclassified' }
 AIA2MultiLLMStorage class >> linesToBuild [
 	^ { #providers -> {OllamaApi. TogetherApi}.
-		#llmNos -> {3. 4 }.
-		#turnPatterns -> { #AAAU }.
+		#llmNos -> {1. 3 }.
+		#turnPatterns -> { #UUU. .#AAA. #AAAU }.
 		#responseIds -> (1 to: 2) asArray 
 	} asDictionary
 ]
