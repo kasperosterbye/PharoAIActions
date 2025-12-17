@@ -46,12 +46,68 @@ Class {
 		'title',
 		'writeStorage',
 		'markDown',
-		'overview'
+		'overview',
+		'appendix'
+	],
+	#classInstVars : [
+		'writer'
 	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
 	#tag : 'Experiments'
 }
+
+{ #category : 'accessing' }
+AIA2MultiLLMWriter class >> clearReport [
+	<example>
+    writer := nil
+]
+
+{ #category : 'accessing' }
+AIA2MultiLLMWriter class >> writer [
+	writer ifNil: [ writer := self new ].
+	^ writer
+]
+
+{ #category : 'accessing' }
+AIA2MultiLLMWriter class >> writer: anObject [
+
+	writer := anObject
+]
+
+{ #category : 'accessing' }
+AIA2MultiLLMWriter >> appendix [
+	appendix ifNil: [ self markdownResponse ].
+	^ appendix
+]
+
+{ #category : 'initialization' }
+AIA2MultiLLMWriter >> buildWriteStorages [
+	"Builds the write storage by organising LLM responses by turn pattern, provider, and model number, creating simplified summaries for each combination"
+	| storage turnPatternType providerTypes llmNoTypes responseList responseListCombined|
+	self writeStorage ifNotNil: [ ^ self ].
+	storage := AIA2MultiLLMStorage storage storeRows.
+	self writeStorage: OrderedCollection new.
+	turnPatternType := storage collect: [ :elem | elem turnPattern ] as: Set.
+	providerTypes := storage collect: [ :elem | elem provider ] as: Set.
+	llmNoTypes := storage collect: [ :elem | elem llmNo ] as: Set.
+	
+	turnPatternType do: [ :turn |
+		providerTypes do: [ :prov |
+			llmNoTypes do: [ :llm |
+				responseList := storage select: [ :line |
+					(line turnPattern = turn) & (line provider = prov) & (line llmNo = llm)  ].
+				responseListCombined := WriteStream on: ''.
+				responseList do: [ :line | 
+					responseListCombined << (self markdownSimplifiedResponse: line responseText)].
+				self writeStorage add: { #turnPattern -> turn. 
+					#provider ->prov. #llmNo -> llm. #summary ->responseListCombined contents } asDictionary
+			]
+		]
+	].
+	^ self writeStorage 
+	
+]
 
 { #category : 'initialization' }
 AIA2MultiLLMWriter >> initialize [ 
@@ -74,6 +130,27 @@ AIA2MultiLLMWriter >> markdown10Explanation [
 
 	markDown << '$$$$$comment$$$$$' << String lf << String lf.
 	
+]
+
+{ #category : 'markdown' }
+AIA2MultiLLMWriter >> markdown20LLMNames|  llms [ prompts  |
+	markDown << '#### List of Providers llm models' << String lf << String lf << String lf.
+	llms := (writeStorage collect: [ :elem | elem at: #llmNo ] as: Set) asArray sorted.
+	markDown << '| **provider** |'.
+	llms do: [ :modelId | markDown << ' **Model ' << modelId asString << '** |' ].
+	markDown << String lf.
+	markDown << '| ------------ | '.
+	llms do: [ :modelId | markDown << '----------- | ' ].
+	markDown << String lf.
+	prompts := writeStorage collect: [ :elem | elem at: #provider ] as: Set.
+	prompts do: [ :prompt |
+			| collumnsAt |
+			markDown << '| ' << prompt name asSymbol << ' | '.
+			collumnsAt := writeStorage select: [ :elem | (elem at: #provider) = prompt ].
+			llms do: [ :modelId | markDown << (prompt modelNames at: modelId) << ' | ' ].
+			markDown << String lf ].
+	markDown << String lf << String lf.
+	^ markDown contents 
 ]
 
 { #category : 'markdown' }
@@ -260,9 +337,9 @@ REPORT_MARKDOWN_END'.
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> markdownResponse [
 	"Generates a comprehensive Markdown report of LLM responses, including title, explanation, model overview, and response tables."
-	
 	"AilienApi errorResponse: 'Error bla bla happended'."
 	AilienApi errorResponse: nil.
+	self buildWriteStorages.
 	markDown := WriteStream on: ''.
 	self
 		markdown00Title; 
@@ -272,8 +349,8 @@ AIA2MultiLLMWriter >> markdownResponse [
 		markdown30LLMResponses;
 		markdown40LLMFullResponses ;
 		markdown50CommentOverview.
-	
-	^ markDown contents copyReplaceAll: String cr with: String lf
+	appendix := markDown contents copyReplaceAll: String cr with: String lf.
+	^ appendix 
 ]
 
 { #category : 'markdown' }

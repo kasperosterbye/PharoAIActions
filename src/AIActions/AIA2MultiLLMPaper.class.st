@@ -5,6 +5,9 @@ Class {
 		'paperText',
 		'writeResponses'
 	],
+	#classInstVars : [
+		'paper'
+	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
 	#tag : 'Experiments'
@@ -16,7 +19,7 @@ AIA2MultiLLMPaper class >> paper [
 	^ paper
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> apiFourLevels [
 	^ { GeminiApi newOnModel: 2.
 		TogetherApi newOnModel: 3.
@@ -25,12 +28,12 @@ AIA2MultiLLMPaper >> apiFourLevels [
 	 }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> getAppendix [
-	^ AIA1MultiLLMResponseBase report summaryOfTheFour
+	^ AIA2MultiLLMWriter new markdownResponse
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> getKentBeck [
 	^ 'Kent Beck says:
 I will not talk about a topic area, like my distinguished fellow panelists. I will present the process I use as I am writing my papers. You can adapt it for your writing process, or you can use it as a check list for evaluating finished papers (if this is starting to sound like patterns, well, fancy that). Much of what I will say is "common sense," found in any book about writing. Having looked at hundreds of submissions, though, I can state with certainty that most of the authors don''t follow this advice.
@@ -46,13 +49,13 @@ AIA2MultiLLMPaper >> initialize [
 	writeResponses := OrderedDictionary new.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper00Title [
 	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
 		<< String lf << String lf
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper10Author [
 	|superNumbers modelName|
 	superNumbers := '¹²³⁴⁵'.
@@ -67,7 +70,7 @@ AIA2MultiLLMPaper >> paper10Author [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper20Abstract [ 
 	| text name|
 	name :=  'Abstract'.
@@ -76,7 +79,7 @@ AIA2MultiLLMPaper >> paper20Abstract [
 	paperText << text << String lf << String lf.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper30Problem [
 	| text name|
 	name :=  'Problem'.
@@ -85,7 +88,7 @@ AIA2MultiLLMPaper >> paper30Problem [
 	paperText << text << String lf << String lf.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper40Solution [
 	| text name|
 		name :=  'Solution'.
@@ -94,7 +97,7 @@ AIA2MultiLLMPaper >> paper40Solution [
 	paperText << text << String lf << String lf.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper50Defence [
 	| name text |
 	name :=  'Defence'.
@@ -103,7 +106,7 @@ AIA2MultiLLMPaper >> paper50Defence [
 	paperText << text << String lf << String lf.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paperBuild [
 	paperText := WriteStream on: ''.
 	
