@@ -23,14 +23,14 @@ AIA2MultiLLMPaper class >> paper [
 AIA2MultiLLMPaper >> apiFourLevels [
 	^ { GeminiApi newOnModel: 2.
 		TogetherApi newOnModel: 3.
+		ClaudeApi newOnModel: 5.
 		OpenAIApi newOnModel: 1.
-		ClaudeApi newOnModel: 5
 	 }
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> getAppendix [
-	^ AIA2MultiLLMWriter new markdownResponse
+	^ AIA2MultiLLMWriter writer appendix
 ]
 
 { #category : 'paper build' }
@@ -44,9 +44,64 @@ I will not talk about a topic area, like my distinguished fellow panelists. I wi
 '
 ]
 
+{ #category : 'paper build' }
+AIA2MultiLLMPaper >> getKentBeckLLM [
+	^ '[KEN BECK WRITING CONTRACT — LLM VERSION]
+
+You are writing one section of a research paper for expert reviewers.
+
+General rules:
+- Be precise, technical, and non-fluffy.
+- Make claims that can be checked against the provided Appendix.
+- Do not invent results, numbers, methods, or citations.
+- Prefer concrete statements over meta-talk ("this paper will…").
+
+Section structure (the paper is an argument):
+- Problem: define the problem and why it matters.
+- Solution: describe the method and why it can solve the problem.
+- Defence: present evidence/results and address counter-arguments.
+- Related work is optional unless explicitly requested.
+
+Abstract rule (strict):
+- Write exactly 4 sentences:
+  1) State the problem.
+  2) State why it is a problem.
+  3) State the main finding as one startling sentence.
+  4) State the implication of that finding.
+- No bullets, no extra sentences, no preface.
+
+Output discipline:
+- Start with the required section heading (provided separately).
+- Output only the section text; no commentary about the process.'
+]
+
+{ #category : 'paper build' }
+AIA2MultiLLMPaper >> getPaperStyle: style [
+	{ #technical -> ''.
+	#academic -> ''.
+	#practitioner -> ''.
+	#expertReviewer -> 'Write in a concise, technical conference-paper style for expert reviewers.
+Avoid rhetorical, journalistic, or pedagogical language.
+Keep meta-talk minimal (avoid "In this section..." and similar filler).
+Prefer concrete observations, mechanisms, and implications over motivation or storytelling.
+Assume the reader is technically competent and impatient.' 
+	} asDictionary at: style 
+]
+
 { #category : 'initialization' }
 AIA2MultiLLMPaper >> initialize [ 
 	writeResponses := OrderedDictionary new.
+]
+
+{ #category : 'writing' }
+AIA2MultiLLMPaper >> old_write20Abstract [
+	^ self 
+		writeSection: 'Abstract' 
+		withPrompt: 'write a 4-sentence Abstract following Kent Beck''s structure:
+1. Problem statement
+2. Why it''s a problem
+3. Startling sentence (main finding)
+4. Implication'.
 ]
 
 { #category : 'paper build' }
@@ -113,10 +168,10 @@ AIA2MultiLLMPaper >> paperBuild [
 	self
 		paper00Title;
 		paper10Author;
-		paper20Abstract;
+		paper20Abstract";
 		paper30Problem;
 		paper40Solution;
-		paper50Defence .
+		paper50Defence ".
 	
 	paperText << self getAppendix .
 	
@@ -136,7 +191,10 @@ AIA2MultiLLMPaper >> write20Abstract [
 1. Problem statement
 2. Why it''s a problem
 3. Startling sentence (main finding)
-4. Implication'.
+4. Implication
+Each sentence must be a single paragraph line (no blank lines).
+Do not include citations, references, or URLs unless explicitly present in the Appendix.
+Include at least one quantitative or directly observable result from the Appendix.'.
 ]
 
 { #category : 'writing' }
@@ -203,7 +261,8 @@ AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
 	level1 
 		api: (self apiFourLevels first);
 		background: self getAppendix;
-		background: self getKentBeck;
+		background: self getKentBeckLLM;
+		background: (self getPaperStyle: #expertReviewer);
 		user: prompt;
 		responseType: ('Start your response with "## {1}"' format: {section});
 		getResponse.
@@ -211,21 +270,20 @@ AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
 	level2 
 		api: (self apiFourLevels second);
 		addPreHistory: level1;
-		user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
+		user: 'Evaluate only the generated section text. What do you see as its strengths, what do you see as its weaknesses, and what do you see as its missing areas?. Do not evaluate the Appendix or any background instructions.';
 		getResponse.
 	level3 := AIAHistory new.
 	level3
 		api: (self apiFourLevels third );
 		addPreHistory: level2;
-		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
+		user: 'Evaluate only the generated section text. Based on the previous answer, what do you see as its strengths, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important. Do not evaluate the Appendix or any background instructions.';
 		getResponse.
 	level4 := AIAHistory new.
 	level4
 		api: (self apiFourLevels fourth );
 		addPreHistory: level3;
-		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
-		user: 'Based on the discussion, Re', prompt ;
-		responseType: 'Only include the ',section, ' text in your response';
+		user: 'Based on the discussion, rewrite the previous ' , section,  ' to satisfy all constraints below. Keep the same meaning; improve only structure, precision, and compliance.' ;
+		responseType: 'Only include the ',section, ' text in your response. No heading, no preface, no bullets unless required by the section.';
 		getResponse.
 	writeResponses at: section put: { level1 response. level2 response. level3 response. level4 response }.
 	^ level4 response 
