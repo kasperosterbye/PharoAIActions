@@ -1,3 +1,44 @@
+"
+# Class Comment for AIA2MultiLLMWriter
+
+The `AIA2MultiLLMWriter` class is responsible for generating comprehensive Markdown reports from multiple Large Language Model (LLM) responses. It organises and formats experimental results, including:
+
+- **Title and metadata** (date, experiment context)
+- **Response summaries** (simplified as `+`, `-`, or `E` for correct, incorrect, or error responses)
+- **Detailed response tables** (comparing model outputs across providers)
+- **Statistical aggregates** (percentages of correct/wrong/error responses)
+- **Raw response sections** (full model outputs for reference)
+
+The writer processes responses stored in `writeStorage`, which contains structured data from LLM experiments. It generates both simplified and detailed reports, with special handling for error cases.
+
+## Usage Example
+
+```st
+""Example usage in Playground""
+| writer storage |
+storage := OrderedCollection new.
+storage add: (Dictionary new
+    at: #turnPattern put: #pattern1;
+    at: #provider put: (OpenAIApi newOnModel: 1);
+    at: #llmNo put: 1;
+    at: #responseText put: 'The answer is 5';
+    at: #summary put: '+';
+    yourself).
+storage add: (Dictionary new
+    at: #turnPattern put: #pattern1;
+    at: #provider put: (OpenAIApi newOnModel: 2);
+    at: #llmNo put: 2;
+    at: #responseText put: 'Error bla bla happened';
+    at: #summary put: 'E';
+    yourself).
+
+writer := AIA2MultiLLMWriter new.
+writer writeStorage: storage.
+writer markdownResponse inspect  ""View the generated Markdown""
+```
+
+The example demonstrates creating a writer, populating it with sample responses, and generating a Markdown report. The `inspect` command displays the formatted output in the Playground.
+"
 Class {
 	#name : 'AIA2MultiLLMWriter',
 	#superclass : 'Object',
@@ -14,12 +55,14 @@ Class {
 
 { #category : 'initialization' }
 AIA2MultiLLMWriter >> initialize [ 
+	"Initialises the writer with an empty storage collection for LLM responses"
 	super initialize.
 	writeStorage := OrderedCollection new.
 ]
 
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown00Title [
+	"Generates the title section of the Markdown report with the current date"
 	markDown 
 		<< '## Appendix - Details of the four LLM turns' << String lf
 		<< '### On '<< Date today asString << String lf << String lf.
@@ -33,50 +76,9 @@ AIA2MultiLLMWriter >> markdown10Explanation [
 	
 ]
 
-{ #category : 'Protocol (markdown) - 4 selector(s)' }
-AIA2MultiLLMWriter >> markdown20LLMNames|  llms [ prompts  |
-	markDown << '#### List of Providers llm models' << String lf << String lf << String lf.
-	llms := (writeStorage collect: [ :elem | elem at: #llmNo ] as: Set) asArray sorted.
-	markDown << '| **provider** |'.
-	llms do: [ :modelId | markDown << ' **Model ' << modelId asString << '** |' ].
-	markDown << String lf.
-	markDown << '| ------------ | '.
-	llms do: [ :modelId | markDown << '----------- | ' ].
-	markDown << String lf.
-	prompts := writeStorage collect: [ :elem | elem at: #provider ] as: Set.
-	prompts do: [ :prompt |
-			| collumnsAt |
-			markDown << '| ' << prompt name asSymbol << ' | '.
-			collumnsAt := writeStorage select: [ :elem | (elem at: #provider) = prompt ].
-			llms do: [ :modelId | markDown << (prompt modelNames at: modelId) << ' | ' ].
-			markDown << String lf ].
-	markDown << String lf << String lf.
-	^ markDown contents 
-]
-
-{ #category : 'Protocol (markdown) - 4 selector(s)' }
-AIA2MultiLLMWriter >> markdown20LLMNames|  llms [ prompts  |
-	markDown << '#### List of Providers llm models' << String lf << String lf << String lf.
-	llms := (writeStorage collect: [ :elem | elem at: #llmNo ] as: Set) asArray sorted.
-	markDown << '| **provider** |'.
-	llms do: [ :modelId | markDown << ' **Model ' << modelId asString << '** |' ].
-	markDown << String lf.
-	markDown << '| ------------ | '.
-	llms do: [ :modelId | markDown << '----------- | ' ].
-	markDown << String lf.
-	prompts := writeStorage collect: [ :elem | elem at: #provider ] as: Set.
-	prompts do: [ :prompt |
-			| collumnsAt |
-			markDown << '| ' << prompt name asSymbol << ' | '.
-			collumnsAt := writeStorage select: [ :elem | (elem at: #provider) = prompt ].
-			llms do: [ :modelId | markDown << (prompt modelNames at: modelId) << ' | ' ].
-			markDown << String lf ].
-	markDown << String lf << String lf.
-	^ markDown contents 
-]
-
-{ #category : 'Protocol (Protocol (markdown) - 4 selector(s)) - 2 selector(s)' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown25PlusMinusError [
+	"Adds a legend explaining the symbols used in the response tables"
 
 	markDown << '#### Resonces show are:' << String lf
 		<< '* `+` means that the model gave a correct answer' << String lf
@@ -85,8 +87,9 @@ AIA2MultiLLMWriter >> markdown25PlusMinusError [
 		<< String lf << String lf.
 ]
 
-{ #category : 'Protocol (Protocol (markdown) - 4 selector(s)) - 2 selector(s)' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown30LLMResponses [
+	"This method generates a detailed Markdown section for LLM responses, including turn patterns, provider names, and model results. It organizes responses by turn pattern and creates a comprehensive table format for easy comparison."
 	| turnPatterns |
 	
 	turnPatterns := (writeStorage collect: [ :elem | elem at: #turnPattern ] as: Set) asArray sorted.
@@ -102,6 +105,7 @@ AIA2MultiLLMWriter >> markdown30LLMResponses [
 
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown35Response: turnPattern [
+	"Generates detailed Markdown section for LLM responses, including turn patterns, provider names, and model results"
 	| source |
 	source := AIA2MultiLLMBuilder new turnsBlockSource at: turnPattern.
 	markDown << '#### History tested on this method' << String lf
@@ -112,7 +116,7 @@ AIA2MultiLLMWriter >> markdown35Response: turnPattern [
 	
 ]
 
-{ #category : 'Protocol (markdown) - 4 selector(s)' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown37LLMResponses: turnPattern [
 	"Generates a Markdown table comparing simplified responses fror multiple LLM models"
 
@@ -136,8 +140,9 @@ AIA2MultiLLMWriter >> markdown37LLMResponses: turnPattern [
 	^ markDown contents
 ]
 
-{ #category : 'Protocol (markdown) - 4 selector(s)' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown38LLMResponsesSummary: turnPattern [
+	"Generates a summary of LLM responses for a given turn pattern, showing counts and percentages of correct, wrong, and error responses"
 
 
 	| elements correct wrong error answerWords sum|
@@ -169,6 +174,7 @@ AIA2MultiLLMWriter >> markdown38LLMResponsesSummary: turnPattern [
 
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown40LLMFullResponses [
+	"This method generates a detailed Markdown report of raw LLM responses, organised by turn pattern and provider, including model-specific results."
     | sortedPatterns sortedProviders |
     markDown 
         << '## Raw LLM Responses' << String lf
@@ -202,8 +208,9 @@ AIA2MultiLLMWriter >> markdown40LLMFullResponses [
     ^ markDown contents
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown50CommentOverview [
+	"Generates HTML comment overview for LLM report editing, using explicit report content only"
 
 	markDown := markDown contents.
 	overview ifNil: [ overview := self rebuildOverview ].
@@ -211,8 +218,9 @@ AIA2MultiLLMWriter >> markdown50CommentOverview [
 	markDown := WriteStream with: markDown
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown51EnsureComment [
+	"Ensures the report includes a hidden HTML comment for later LLM edits, using explicit report content only"
 | prompt  hist |
 	prompt := 'You will output a hidden HTML comment for later LLM edits of this report.
 Use ONLY information explicitly present between REPORT_MARKDOWN_BEGIN/END.
@@ -268,8 +276,9 @@ AIA2MultiLLMWriter >> markdownResponse [
 	^ markDown contents copyReplaceAll: String cr with: String lf
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdownSimplifiedResponse: originalResponse [
+	"Simplifies LLM response text by joining lines and categorising as 'E' for errors, '+' for correct answers, or '-' for incorrect answers"
 	| simplifiedResponse |
 	simplifiedResponse := ' ' join: originalResponse lines. " maxFirst: 15"
 	simplifiedResponse := (simplifiedResponse includesSubstring: 'Error bla bla')
@@ -281,8 +290,9 @@ AIA2MultiLLMWriter >> markdownSimplifiedResponse: originalResponse [
 	^ simplifiedResponse
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'markdown' }
 AIA2MultiLLMWriter >> rebuildOverview [
+	"Rebuilds the HTML comment overview for the LLM report using explicit report content only"
 	| prompt  hist |
 	prompt := 'You will output a hidden HTML comment for later LLM edits of this report.
 Use ONLY information explicitly present between REPORT_MARKDOWN_BEGIN/END.
@@ -313,17 +323,18 @@ REPORT_MARKDOWN_BEGIN<br>
 		getResponse.
 	overview := '<!--- ', String lf, hist response , String lf, '--->' , String lf.
 	^ overview 
-
 ]
 
 { #category : 'accessing' }
 AIA2MultiLLMWriter >> writeStorage [
+	"Returns the writeStorage collection containing LLM responses for the writer"
 
 	^ writeStorage
 ]
 
 { #category : 'accessing' }
 AIA2MultiLLMWriter >> writeStorage: anObject [
+	"Sets the writeStorage collection containing LLM responses for the writer"
 
 	writeStorage := anObject
 ]
