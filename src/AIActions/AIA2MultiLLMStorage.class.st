@@ -79,10 +79,10 @@ AIA2MultiLLMStorage class >> full_linesToBuild [
 
 { #category : 'as yet unclassified' }
 AIA2MultiLLMStorage class >> linesToBuild [
-	"Returns a dictionary of configuration parameters for building LLM storage"
-	^ { #providers -> {OllamaApi. TogetherApi}.
-		#llmNos -> {1. 3 }.
-		#turnPatterns -> { #UUU. .#AAA. #AAAU }.
+	"Returns a dictionary of full configuration parameters for building LLM storage"
+	^ { #providers -> {ClaudeApi. GeminiApi. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
+		#llmNos -> { 1. 3.}.
+		#turnPatterns -> { #UAUAU. #UUU. #AAAU. #AAA }.
 		#responseIds -> (1 to: 2) asArray 
 	} asDictionary
 ]

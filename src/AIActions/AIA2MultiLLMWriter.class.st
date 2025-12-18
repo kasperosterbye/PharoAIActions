@@ -85,9 +85,9 @@ AIA2MultiLLMWriter >> appendix [
 AIA2MultiLLMWriter >> buildWriteStorages [
 	"Builds the write storage by organising LLM responses by turn pattern, provider, and model number, creating simplified summaries for each combination"
 	| storage turnPatternType providerTypes llmNoTypes responseList responseListCombined|
-	self writeStorage ifNotNil: [ ^ self ].
+	writeStorage ifNotNil: [ ^ self ].
 	storage := AIA2MultiLLMStorage storage storeRows.
-	self writeStorage: OrderedCollection new.
+	writeStorage := OrderedCollection new.
 	turnPatternType := storage collect: [ :elem | elem turnPattern ] as: Set.
 	providerTypes := storage collect: [ :elem | elem provider ] as: Set.
 	llmNoTypes := storage collect: [ :elem | elem llmNo ] as: Set.
@@ -100,12 +100,12 @@ AIA2MultiLLMWriter >> buildWriteStorages [
 				responseListCombined := WriteStream on: ''.
 				responseList do: [ :line | 
 					responseListCombined << (self markdownSimplifiedResponse: line responseText)].
-				self writeStorage add: { #turnPattern -> turn. 
+				writeStorage add: { #turnPattern -> turn. 
 					#provider ->prov. #llmNo -> llm. #summary ->responseListCombined contents } asDictionary
 			]
 		]
 	].
-	^ self writeStorage 
+	^ writeStorage 
 	
 ]
 
@@ -113,7 +113,10 @@ AIA2MultiLLMWriter >> buildWriteStorages [
 AIA2MultiLLMWriter >> initialize [ 
 	"Initialises the writer with an empty storage collection for LLM responses"
 	super initialize.
-	writeStorage := OrderedCollection new.
+	writeStorage := nil.
+	markDown := nil. 
+	overview := nil.
+	appendix := nil
 ]
 
 { #category : 'markdown' }
@@ -156,7 +159,6 @@ AIA2MultiLLMWriter >> markdown20LLMNames [ |  llms  prompts  |
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown25PlusMinusError [
 	"Adds a legend explaining the symbols used in the response tables"
-
 	markDown << '#### Resonces show are:' << String lf
 		<< '* `+` means that the model gave a correct answer' << String lf
 		<< '* `-` means that the model gave a wrong answer' << String lf
@@ -258,7 +260,6 @@ AIA2MultiLLMWriter >> markdown40LLMFullResponses [
         << '### Date: ' << Date today asString << String lf << String lf.
 
     sortedPatterns := AIA2MultiLLMStorage linesToBuild at: #turnPatterns.
-
     sortedPatterns do: [ :pattern |
         markDown << '#### Turn Pattern: ' << pattern << String lf << String lf.
         sortedProviders := (writeStorage collect: [:e | e at: #provider]) asSet asArray sorted: [:a :b | a name <= b name].
@@ -400,18 +401,4 @@ REPORT_MARKDOWN_BEGIN<br>
 		getResponse.
 	overview := '<!--- ', String lf, hist response , String lf, '--->' , String lf.
 	^ overview 
-]
-
-{ #category : 'accessing' }
-AIA2MultiLLMWriter >> writeStorage [
-	"Returns the writeStorage collection containing LLM responses for the writer"
-
-	^ writeStorage
-]
-
-{ #category : 'accessing' }
-AIA2MultiLLMWriter >> writeStorage: anObject [
-	"Sets the writeStorage collection containing LLM responses for the writer"
-
-	writeStorage := anObject
 ]

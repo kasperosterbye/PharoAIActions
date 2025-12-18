@@ -101,6 +101,41 @@ AIA2MultiLLMPaper >> initialize [
 	writeResponses := OrderedDictionary new.
 ]
 
+{ #category : 'Protocol (writing) - 6 selector(s)' }
+AIA2MultiLLMPaper >> old_writeSection: section withPrompt: prompt [
+	| level1 level2 level3 level4 |
+	level1 := AIAHistory new.
+	level1 
+		api: (self apiFourLevels first);
+		background: self getAppendix;
+		background: self getKentBeckLLM;
+		user: prompt;
+		responseType: ('Start your response with "## {1}"' format: {section});
+		getResponse.
+	level2 := AIAHistory new.
+	level2 
+		api: (self apiFourLevels second);
+		addPreHistory: level1;
+		user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
+		getResponse.
+	level3 := AIAHistory new.
+	level3
+		api: (self apiFourLevels third );
+		addPreHistory: level2;
+		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
+		getResponse.
+	level4 := AIAHistory new.
+	level4
+		api: (self apiFourLevels fourth );
+		addPreHistory: level3;
+		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
+		user: 'Based on the discussion, Re', prompt ;
+		responseType: 'Only include the ',section, ' text in your response';
+		getResponse.
+	writeResponses at: section put: { level1 response. level2 response. level3 response. level4 response }.
+	^ level4 response 
+]
+
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper00Title [
 	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
@@ -129,6 +164,7 @@ AIA2MultiLLMPaper >> paper15Subpages [
 	paperText << '$$$$$problem$$$$$' << String lf << String lf.	
 	paperText << '$$$$$solution$$$$$' << String lf << String lf.	
 	paperText << '$$$$$defence$$$$$' << String lf << String lf.
+	paperText << '$$$$$related$$$$$' << String lf << String lf.
 	
 ]
 
@@ -138,7 +174,6 @@ AIA2MultiLLMPaper >> paper20Abstract [
 	name :=  'Abstract'.
 	(writeResponses includesKey: name) ifFalse: [ self write20Abstract ].
 	text := (writeResponses at: name) last.
-	self halt.
 	paperText := paperText copyReplaceAll:'$$$$$abstract$$$$$' with: text .
 ]
 
@@ -169,6 +204,15 @@ AIA2MultiLLMPaper >> paper50Defence [
 	paperText := paperText copyReplaceAll:'$$$$$defence$$$$$' with: text .
 ]
 
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMPaper >> paper60RelatedWork [
+    | text name |
+    name := 'Related Work'.
+    (writeResponses includesKey: name) ifFalse: [ self write60RelatedWork ].
+    text := (writeResponses at: name) last.
+    paperText := paperText copyReplaceAll: '$$$$$related$$$$$' with: text
+]
+
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paperBuild [
 	paperText := WriteStream on: ''.
@@ -179,11 +223,13 @@ AIA2MultiLLMPaper >> paperBuild [
 		paper15Subpages.
 	paperText << self getAppendix .	
 	paperText := paperText contents.
+
 	self	
 		paper20Abstract;
 		paper30Problem;
 		paper40Solution;
-		paper50Defence .
+		paper50Defence;
+		paper60RelatedWork .
 	
 ]
 
@@ -242,7 +288,7 @@ Your Solution section should cover:
 2. Implementation (AIAHistory framework)
 3. Task design (aaa=2, bbb=3, sum=?)
 4. Scoring methodology (+/-/error)
-5. Coverage (28 models, 7 providers)
+5. Coverage (models, providers)
 Do not write text that is already in the backgound text, but you may reference it.'.
 ]
 
@@ -267,37 +313,68 @@ Your Defence section should cover:
 Do not write text that is already in the backgound text, but you may reference it.'.
 ]
 
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMPaper >> write60RelatedWork [
+    ^ self
+        writeSection: 'Related Work'
+        withPrompt: 'Section type: Related Work
+Goal: Position this work against prior research and convince the reader of novelty
+Structure guidance from Kent Beck:
+"The final section describes what other people have done in the area. Upon reading this section, the PC member should be convinced that what you have done is novel."
+
+Your Related Work section must:
+1. Briefly summarise the most relevant prior work on LLM prompt brittleness, role sensitivity, and multi-turn failures.
+2. Cover key areas: chat vs completion APIs, prompt injection / jailbreaks that exploit roles, empirical cross-model studies, agent orchestration failures.
+3. Explicitly contrast with this paper: we provide the first systematic cross-provider empirical demonstration that pure assistant-turn histories deterministically suppress even trivial reasoning, and that a single trailing user turn reliably restores it.
+4. Do NOT hallucinate citations or claim specific papers unless they are explicitly mentioned in the Appendix or background.
+5. Keep the tone factual and academic; avoid claiming "first ever" unless justified by the evidence.
+
+Write concisely (300-500 words). Use only information grounded in widely known results or directly observable in the Appendix.'
+]
+
 { #category : 'Protocol (writing) - 6 selector(s)' }
 AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
-	| level1 level2 level3 level4 |
-	level1 := AIAHistory new.
-	level1 
-		api: (self apiFourLevels first);
-		background: self getAppendix;
-		background: self getKentBeckLLM;
-		user: prompt;
-		responseType: ('Start your response with "## {1}"' format: {section});
-		getResponse.
-	level2 := AIAHistory new.
-	level2 
-		api: (self apiFourLevels second);
-		addPreHistory: level1;
-		user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
-		getResponse.
-	level3 := AIAHistory new.
-	level3
-		api: (self apiFourLevels third );
-		addPreHistory: level2;
-		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
-		getResponse.
-	level4 := AIAHistory new.
-	level4
-		api: (self apiFourLevels fourth );
-		addPreHistory: level3;
-		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
-		user: 'Based on the discussion, Re', prompt ;
-		responseType: 'Only include the ',section, ' text in your response';
-		getResponse.
-	writeResponses at: section put: { level1 response. level2 response. level3 response. level4 response }.
-	^ level4 response 
+    | level1 level2 level3 level4 |
+    level1 := AIAHistory new.
+    level1
+        api: (self apiFourLevels first);
+        background: self getAppendix;
+        background: self getKentBeckLLM;
+        user: prompt;
+        responseType: ('Start your response with "## {1}"' format: {section});
+        getResponse.
+
+    level2 := AIAHistory new.
+    level2
+        api: (self apiFourLevels second);
+        background: self getKentBeckLLM;
+        addPreHistory: level1;
+        user: 'What do you see as its strengths, what do you see as its weaknesses, and what do you see as its missing areas?';
+        getResponse.
+
+    level3 := AIAHistory new.
+    level3
+        api: (self apiFourLevels third);
+        background: self getKentBeckLLM;
+        addPreHistory: level2;
+        user: 'Based on the previous answer, what do you see as its strengths, what do you see as its weaknesses, and what do you see as its missing areas? Do not summarize, but include aspects you think are important.';
+        getResponse.
+
+    level4 := AIAHistory new.
+    level4
+        api: (self apiFourLevels fourth);
+        background: self getKentBeckLLM;
+        addPreHistory: level3;
+        user: 'You have received feedback on strengths, weaknesses, and missing areas from previous drafts.
+Your task now is to produce the FINAL version of the ', section, ' section.
+Strictly follow the original guidelines in this prompt.
+Do NOT continue critiquing or discussing strengths/weaknesses.
+Output ONLY the section text itself, without any additional commentary or meta-text.
+
+Original guidelines: ', prompt;
+        responseType: 'Only include the ', section, ' text in your response';
+        getResponse.
+
+    writeResponses at: section put: { level1 response. level2 response. level3 response. level4 response }.
+    ^ level4 response
 ]
