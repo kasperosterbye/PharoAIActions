@@ -13,6 +13,12 @@ Class {
 	#tag : 'Experiments'
 }
 
+{ #category : 'examples' }
+AIA2MultiLLMPaper class >> clearPaper [
+	<example>
+	paper := nil
+]
+
 { #category : 'accessing' }
 AIA2MultiLLMPaper class >> paper [
 	paper ifNil: [ paper := self new ].
@@ -77,7 +83,8 @@ Output discipline:
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> getPaperStyle: style [
-	{ #technical -> ''.
+	| styleSpecification |
+	styleSpecification := { #technical -> ''.
 	#academic -> ''.
 	#practitioner -> ''.
 	#expertReviewer -> 'Write in a concise, technical conference-paper style for expert reviewers.
@@ -85,7 +92,8 @@ Avoid rhetorical, journalistic, or pedagogical language.
 Keep meta-talk minimal (avoid "In this section..." and similar filler).
 Prefer concrete observations, mechanisms, and implications over motivation or storytelling.
 Assume the reader is technically competent and impatient.' 
-	} asDictionary at: style 
+	} asDictionary at: style.
+	^ styleSpecification 
 ]
 
 { #category : 'initialization' }
@@ -126,12 +134,23 @@ AIA2MultiLLMPaper >> paper10Author [
 ]
 
 { #category : 'paper build' }
+AIA2MultiLLMPaper >> paper15Subpages [
+	
+	paperText << '$$$$$abstract$$$$$' << String lf << String lf.	
+	paperText << '$$$$$problem$$$$$' << String lf << String lf.	
+	paperText << '$$$$$solution$$$$$' << String lf << String lf.	
+	paperText << '$$$$$defence$$$$$' << String lf << String lf.
+	
+]
+
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper20Abstract [ 
 	| text name|
 	name :=  'Abstract'.
-	(writeResponses includes: name) ifFalse: [ self write20Abstract ].
+	(writeResponses includesKey: name) ifFalse: [ self write20Abstract ].
 	text := (writeResponses at: name) last.
-	paperText << text << String lf << String lf.
+	self halt.
+	paperText := paperText copyReplaceAll:'$$$$$abstract$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
@@ -140,7 +159,7 @@ AIA2MultiLLMPaper >> paper30Problem [
 	name :=  'Problem'.
 	(writeResponses includes: name) ifFalse: [ self write30Problem ].
 	text := (writeResponses at: name) last.
-	paperText << text << String lf << String lf.
+	paperText := paperText copyReplaceAll:'$$$$$problem$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
@@ -149,7 +168,7 @@ AIA2MultiLLMPaper >> paper40Solution [
 		name :=  'Solution'.
 	(writeResponses includes: name) ifFalse: [ self write40Solution ].
 	text := (writeResponses at: name) last.
-	paperText << text << String lf << String lf.
+	paperText := paperText copyReplaceAll:'$$$$$solution$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
@@ -158,7 +177,7 @@ AIA2MultiLLMPaper >> paper50Defence [
 	name :=  'Defence'.
 	(writeResponses includes: name) ifFalse: [ self write50Defence ].
 	text := (writeResponses at: name) last.
-	paperText << text << String lf << String lf.
+	paperText := paperText copyReplaceAll:'$$$$$defence$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
@@ -168,14 +187,15 @@ AIA2MultiLLMPaper >> paperBuild [
 	self
 		paper00Title;
 		paper10Author;
-		paper20Abstract";
+		paper15Subpages.
+	paperText << self getAppendix .	
+	paperText := paperText contents.
+	self	
+		paper20Abstract;
 		paper30Problem;
 		paper40Solution;
-		paper50Defence ".
+		paper50Defence .
 	
-	paperText << self getAppendix .
-	
-	paperText := paperText contents
 ]
 
 { #category : 'accessing' }
@@ -213,7 +233,9 @@ Your Problem section should cover:
 2. Why it exists (natural for chat)
 3. Why it''s never been tested (seems "obvious")
 4. Why it matters (security, reliability, multi-agent systems)
-5. The research gap this paper fills'.
+5. The research gap this paper fills
+Do not write text that is already in the backgound text, but you may reference it.
+'.
 ]
 
 { #category : 'writing' }
@@ -231,7 +253,8 @@ Your Solution section should cover:
 2. Implementation (AIAHistory framework)
 3. Task design (aaa=2, bbb=3, sum=?)
 4. Scoring methodology (+/-/error)
-5. Coverage (28 models, 7 providers)'.
+5. Coverage (28 models, 7 providers)
+Do not write text that is already in the backgound text, but you may reference it.'.
 ]
 
 { #category : 'writing' }
@@ -251,10 +274,11 @@ Your Defence section should cover:
 2. Failure mode analysis
 3. Provider-level patterns
 4. Cross-cutting observations
-5. Implications for production systems'.
+5. Implications for production systems
+Do not write text that is already in the backgound text, but you may reference it.'.
 ]
 
-{ #category : 'writing' }
+{ #category : 'Protocol (writing) - 6 selector(s)' }
 AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
 	| level1 level2 level3 level4 |
 	level1 := AIAHistory new.
@@ -262,7 +286,6 @@ AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
 		api: (self apiFourLevels first);
 		background: self getAppendix;
 		background: self getKentBeckLLM;
-		background: (self getPaperStyle: #expertReviewer);
 		user: prompt;
 		responseType: ('Start your response with "## {1}"' format: {section});
 		getResponse.
@@ -270,20 +293,21 @@ AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
 	level2 
 		api: (self apiFourLevels second);
 		addPreHistory: level1;
-		user: 'Evaluate only the generated section text. What do you see as its strengths, what do you see as its weaknesses, and what do you see as its missing areas?. Do not evaluate the Appendix or any background instructions.';
+		user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
 		getResponse.
 	level3 := AIAHistory new.
 	level3
 		api: (self apiFourLevels third );
 		addPreHistory: level2;
-		user: 'Evaluate only the generated section text. Based on the previous answer, what do you see as its strengths, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important. Do not evaluate the Appendix or any background instructions.';
+		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
 		getResponse.
 	level4 := AIAHistory new.
 	level4
 		api: (self apiFourLevels fourth );
 		addPreHistory: level3;
-		user: 'Based on the discussion, rewrite the previous ' , section,  ' to satisfy all constraints below. Keep the same meaning; improve only structure, precision, and compliance.' ;
-		responseType: 'Only include the ',section, ' text in your response. No heading, no preface, no bullets unless required by the section.';
+		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
+		user: 'Based on the discussion, Re', prompt ;
+		responseType: 'Only include the ',section, ' text in your response';
 		getResponse.
 	writeResponses at: section put: { level1 response. level2 response. level3 response. level4 response }.
 	^ level4 response 
