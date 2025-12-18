@@ -101,17 +101,6 @@ AIA2MultiLLMPaper >> initialize [
 	writeResponses := OrderedDictionary new.
 ]
 
-{ #category : 'writing' }
-AIA2MultiLLMPaper >> old_write20Abstract [
-	^ self 
-		writeSection: 'Abstract' 
-		withPrompt: 'write a 4-sentence Abstract following Kent Beck''s structure:
-1. Problem statement
-2. Why it''s a problem
-3. Startling sentence (main finding)
-4. Implication'.
-]
-
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper00Title [
 	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
