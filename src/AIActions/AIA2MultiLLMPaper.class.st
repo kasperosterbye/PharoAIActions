@@ -101,6 +101,34 @@ AIA2MultiLLMPaper >> initialize [
 	writeResponses := OrderedDictionary new.
 ]
 
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMPaper >> old_paper60RelatedWork [
+    | text name |
+    name := 'Related Work'.
+    (writeResponses includesKey: name) ifFalse: [ self write60RelatedWork ].
+    text := (writeResponses at: name) last.
+    paperText := paperText copyReplaceAll: '$$$$$related$$$$$' with: text
+]
+
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMPaper >> old_write60RelatedWork [
+    ^ self
+        writeSection: 'Related Work'
+        withPrompt: 'Section type: Related Work
+Goal: Position this work against prior research and convince the reader of novelty
+Structure guidance from Kent Beck:
+"The final section describes what other people have done in the area. Upon reading this section, the PC member should be convinced that what you have done is novel."
+
+Your Related Work section must:
+1. Briefly summarise the most relevant prior work on LLM prompt brittleness, role sensitivity, and multi-turn failures.
+2. Cover key areas: chat vs completion APIs, prompt injection / jailbreaks that exploit roles, empirical cross-model studies, agent orchestration failures.
+3. Explicitly contrast with this paper: we provide the first systematic cross-provider empirical demonstration that pure assistant-turn histories deterministically suppress even trivial reasoning, and that a single trailing user turn reliably restores it.
+4. Do NOT hallucinate citations or claim specific papers unless they are explicitly mentioned in the Appendix or background.
+5. Keep the tone factual and academic; avoid claiming "first ever" unless justified by the evidence.
+
+Write concisely (300-500 words). Use only information grounded in widely known results or directly observable in the Appendix.'
+]
+
 { #category : 'Protocol (writing) - 6 selector(s)' }
 AIA2MultiLLMPaper >> old_writeSection: section withPrompt: prompt [
 	| level1 level2 level3 level4 |
@@ -206,11 +234,16 @@ AIA2MultiLLMPaper >> paper50Defence [
 
 { #category : 'as yet unclassified' }
 AIA2MultiLLMPaper >> paper60RelatedWork [
-    | text name |
-    name := 'Related Work'.
-    (writeResponses includesKey: name) ifFalse: [ self write60RelatedWork ].
-    text := (writeResponses at: name) last.
-    paperText := paperText copyReplaceAll: '$$$$$related$$$$$' with: text
+   | relatedList text  |
+	relatedList := AIA2ReportBuilder relatedReports.
+   text := WriteStream on: ''.
+	text << '## Related Work' << String lf << String lf.
+	1 to: relatedList size do: [ :index |
+		(relatedList at: index) third = 'UNRELATED' 
+			ifFalse: [text << (relatedList at: index) third << String lf << String lf]
+		 ] .
+	paperText := paperText copyReplaceAll:'$$$$$related$$$$$' with: text contents .
+	^ text contents.
 ]
 
 { #category : 'paper build' }
@@ -311,25 +344,6 @@ Your Defence section should cover:
 4. Cross-cutting observations
 5. Implications for production systems
 Do not write text that is already in the backgound text, but you may reference it.'.
-]
-
-{ #category : 'as yet unclassified' }
-AIA2MultiLLMPaper >> write60RelatedWork [
-    ^ self
-        writeSection: 'Related Work'
-        withPrompt: 'Section type: Related Work
-Goal: Position this work against prior research and convince the reader of novelty
-Structure guidance from Kent Beck:
-"The final section describes what other people have done in the area. Upon reading this section, the PC member should be convinced that what you have done is novel."
-
-Your Related Work section must:
-1. Briefly summarise the most relevant prior work on LLM prompt brittleness, role sensitivity, and multi-turn failures.
-2. Cover key areas: chat vs completion APIs, prompt injection / jailbreaks that exploit roles, empirical cross-model studies, agent orchestration failures.
-3. Explicitly contrast with this paper: we provide the first systematic cross-provider empirical demonstration that pure assistant-turn histories deterministically suppress even trivial reasoning, and that a single trailing user turn reliably restores it.
-4. Do NOT hallucinate citations or claim specific papers unless they are explicitly mentioned in the Appendix or background.
-5. Keep the tone factual and academic; avoid claiming "first ever" unless justified by the evidence.
-
-Write concisely (300-500 words). Use only information grounded in widely known results or directly observable in the Appendix.'
 ]
 
 { #category : 'Protocol (writing) - 6 selector(s)' }

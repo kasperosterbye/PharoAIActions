@@ -85,9 +85,9 @@ AIA2ReportBuilder >> arxivPapers [
 "was the response form aaa1"
 	^ 'https://arxiv.org/abs/2307.03172
 https://arxiv.org/abs/2307.15043
+https://arxiv.org/abs/2305.13598
 https://arxiv.org/abs/2305.14726
 https://arxiv.org/abs/2210.11416
-https://arxiv.org/abs/2305.13598
 https://arxiv.org/abs/2302.06476
 https://arxiv.org/abs/2305.08382
 https://arxiv.org/abs/2304.05335
@@ -97,13 +97,15 @@ https://arxiv.org/abs/2305.15771' lines
 
 { #category : 'as yet unclassified' }
 AIA2ReportBuilder >> compare [
-	| prompt hist |
+	| prompt previousResponses hist |
 	prompt := self getPrompt .
+	previousResponses := (String lf, String lf) join: (self class relatedReports collect: [:item | item third]).
 	hist := AIAHistory new.
 	hist 
 		api: (OpenAIApi newOnModel: 1);
 		background: 'THIS PAPER: ', paperOriginal ;
 		background: 'EXTERNAL PAPER: ', textFromWeb ;
+		background: 'PREVIOUS RELATED WORK: ', previousResponses;
 		user: 'TASK: ', prompt;
 		getResponse.
 	relatedCompare := hist response.
@@ -153,10 +155,12 @@ AIA2ReportBuilder >> getExternalWebForIndex:  index [
 	| directory pdfFile textFile pdf command  |
 	pdf :=  ZnClient new get: ((self arxivPapers at: index) copyReplaceAll: 'abs' with: 'pdf').
 	directory := FileSystem workingDirectory.
-	pdfFile := directory / 'reportFile.pdf'.
-	textFile := directory / 'reportFile.txt'.
+	pdfFile := directory / ('reportFile-', index asString, '.pdf').
+	textFile := directory / ('reportFile-', index asString, '.txt').
+	pdfFile exists ifTrue: [ pdfFile delete ].
+	textFile exists ifTrue: [ textFile delete ].
 	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: pdf ].
-	command := 'pdftotext {1}' format: {pdfFile fullName}.
+	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
 	LibC system: command.
 	"read the textFile..."
 	textFromWeb := textFile readStream contents.
@@ -165,22 +169,31 @@ AIA2ReportBuilder >> getExternalWebForIndex:  index [
 
 { #category : 'as yet unclassified' }
 AIA2ReportBuilder >> getPrompt [
-	^ 'Write a short related-work comparison (max 300 words, single paragraph).
+	^ 'Task: Decide whether the external paper is RELATED or UNRELATED to THIS PAPER.
 
-Start the paragraph exactly like this:
-"This paper is related to \"{1}\" ({2}), because ..."
+If RELATED:
+- Write a short related-work comparison (max 150 words, single paragraph).
+- Start the paragraph exactly like this:
+  "This paper is related to \"{1}\" ({2}), because ..."
+- The paragraph must include, in this order:
+  (1) one sentence stating the main overlap in problem or method,
+  (2) one sentence stating the single most important difference,
+  (3) one sentence stating the novelty: what THIS PAPER does that the external paper does not.
 
-In the paragraph:
-- Briefly state the main overlap in problem or method.
-- State the single most important difference.
-- End with one clear novelty sentence explaining what THIS PAPER does that the external paper does not.
+If UNRELATED:
+- Output exactly the single token:
+  UNRELATED
+
+Already-covered dimensions are provided in the background as PREVIOUS RELATED WORK.
+Do NOT reuse any already-covered dimension.
+If the external paper only matches covered dimensions, classify it as UNRELATED.
 
 Rules:
 - No lists.
 - No section headings.
 - No praise or critique.
 - Base all claims strictly on the provided texts.
-- If a claim cannot be supported, state it explicitly.
+- Do not explain why you chose UNRELATED.
 ' format: { textTitle. (self class relatedReports size + 1) asString }
 ]
 
@@ -201,40 +214,30 @@ AIA2ReportBuilder >> getReports [
 		self getExternalWebForIndex:  index.
 		self getExternalPaperInfo.
 		self getReportFor: index.
-		self class addReport: {textTitle. textBib. relatedCompare} 
+		self class addReport: {textTitle copy. textBib copy. relatedCompare copy} 
 	].
 	^ self class relatedReports
 ]
 
 { #category : 'as yet unclassified' }
-AIA2ReportBuilder >> old_getPdfFrom: arXivAbs [
-	"https://arxiv.org/abs/2302.12173"
-	| pdf |
-	pdf := ZnClient new get: (arXivAbs copyReplaceAll: 'abs' with: 'pdf').
-	^ pdf
-]
+AIA2ReportBuilder >> old_getPrompt [
+	^ 'Write a short related-work comparison (max 150 words, single paragraph).
 
-{ #category : 'as yet unclassified' }
-AIA2ReportBuilder >> old_getReport [
-	self error: 'Should not be called'.
-	textFromWeb := self getExternalWebForIndex: 1.
-	paperOriginal := AIA2MultiLLMPaper paper paperText .
-	self compare.
-	^ relatedCompare 
-]
+Start the paragraph exactly like this:
+"This paper is related to \"{1}\" ({2}), because ..."
 
-{ #category : 'as yet unclassified' }
-AIA2ReportBuilder >> old_getReports [
-	| max |
-	self class clearSelectedReports.
-	max := self arxivPapers size.
-	1 to: 3 do: [ :index |
-		self getExternalWebForIndex:  index.
-		self getExternalPaperInfo.
-		self getReportFor: index.
-		self class addReport: {textTitle. textBib. relatedCompare} 
-	].
-	^ self class relatedReports
+In the paragraph:
+- Briefly state the main overlap in problem or method.
+- State the single most important difference.
+- End with one clear novelty sentence explaining what THIS PAPER does that the external paper does not.
+
+Rules:
+- No lists.
+- No section headings.
+- No praise or critique.
+- Base all claims strictly on the provided texts.
+- If a claim cannot be supported, state it explicitly.
+' format: { textTitle. (self class relatedReports size + 1) asString }
 ]
 
 { #category : 'accessing' }
