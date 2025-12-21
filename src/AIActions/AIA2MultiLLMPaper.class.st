@@ -235,7 +235,7 @@ AIA2MultiLLMPaper >> paper50Defence [
 { #category : 'as yet unclassified' }
 AIA2MultiLLMPaper >> paper60RelatedWork [
    | relatedList text  |
-	relatedList := AIA2ReportBuilder relatedReports.
+	relatedList := AIA2RelatedBuilder relatedReports.
    text := WriteStream on: ''.
 	text << '## Related Work' << String lf << String lf.
 	1 to: relatedList size do: [ :index |
