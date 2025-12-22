@@ -2,7 +2,8 @@ Class {
 	#name : 'AIA2RelatedBuilder',
 	#superclass : 'Object',
 	#instVars : [
-		'myID',
+		'myId',
+		'myPdf',
 		'externalPdfText',
 		'ownPaperOriginal',
 		'buildBibTeX',
@@ -10,52 +11,38 @@ Class {
 		'buildFormattedRef',
 		'buildComparison'
 	],
-	#classInstVars : [
-		'reporterx',
-		'relatedReportsx'
-	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
 	#tag : 'Experiments'
 }
 
-{ #category : 'instance creation' }
-AIA2RelatedBuilder class >> new [
-	"Raise an error if new is called without an argument use new: instead"
-	self error: 'Use new:'
-]
-
-{ #category : 'instance creation' }
-AIA2RelatedBuilder class >> new: id [
-	^ self basicNew initialize: id; yourself.
-]
-
 { #category : 'building' }
 AIA2RelatedBuilder >> build [
+	"Builds the related work comparison for a paper by fetching external PDF text, processing it, and generating a comparison with the original paper."
 	self 
 		build10OwnPaperOriginal;
 		build20ExternalPdfText;
-		build30ExternalPaperInfo;
+		build30ExternalPaperDetails;
 		build40Comparison.
 ]
 
 { #category : 'as yet unclassified' }
 AIA2RelatedBuilder >> build10OwnPaperOriginal [
-	ownPaperOriginal := AIA2MultiLLMPaper paper paperText .
+	"Sets the original paper text for comparison purposes"
+	ownPaperOriginal := "AIA2MultiLLMPaper paper paperText" 
+		AIA2MultiLLMArchive paperExperiment .
 ]
 
 { #category : 'as yet unclassified' }
 AIA2RelatedBuilder >> build20ExternalPdfText [
-	"Converts PlantUML text to an image using the plantuml command line tool."
-	| directory pdfFile textFile pdf command  |
-	pdf :=  ZnClient new get: 
-		((AIA2RelatedBuilderList default arxivPapers at: myID ) copyReplaceAll: 'abs' with: 'pdf').
+	"Fetches external PDF text, converts it to a readable format, and stores it for comparison purposes"
+	| directory pdfFile textFile  command  |
 	directory := FileSystem workingDirectory.
-	pdfFile := directory / ('reportFile-', myID asString, '.pdf').
-	textFile := directory / ('reportFile-', myID asString, '.txt').
+	pdfFile := directory / ('reportFile.pdf').
+	textFile := directory / ('reportFile.txt').
 	pdfFile exists ifTrue: [ pdfFile delete ].
 	textFile exists ifTrue: [ textFile delete ].
-	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: pdf ].
+	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: myPdf ].
 	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
 	LibC system: command.
 	"read the textFile..."
@@ -64,7 +51,7 @@ AIA2RelatedBuilder >> build20ExternalPdfText [
 ]
 
 { #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> build30ExternalPaperInfo [
+AIA2RelatedBuilder >> build30ExternalPaperDetails [
 	| prompt hist |
 	prompt := 'Produce a biblatex for the background paper. Just for the paper itself, not its references'.
 	hist := AIAHistory new.
@@ -102,7 +89,7 @@ If a field is missing, omit that line silently.';
 AIA2RelatedBuilder >> build40Comparison [
 	| prompt previousResponses hist |
 	prompt := self getPrompt .
-	previousResponses := (String lf, String lf) join: (self class relatedReports collect: [:item | item third]).
+	previousResponses := AIA2RelatedBuilderList default summaryOfRelatedWork.
 	hist := AIAHistory new.
 	hist 
 		api: (OpenAIApi newOnModel: 1);
@@ -117,8 +104,20 @@ AIA2RelatedBuilder >> build40Comparison [
 	
 ]
 
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> buildComparison [
+	^ buildComparison
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> buildTitle [
+
+	^ buildTitle
+]
+
 { #category : 'as yet unclassified' }
 AIA2RelatedBuilder >> getPrompt [
+	"Returns the prompt for generating a related-work comparison between the external paper and the original paper"
 	^ 'Task: Decide whether the external paper is RELATED or UNRELATED to THIS PAPER.
 
 If RELATED:
@@ -144,107 +143,27 @@ Rules:
 - No praise or critique.
 - Base all claims strictly on the provided texts.
 - Do not explain why you chose UNRELATED.
-' format: { buildTitle. myID asString }
+' format: { buildTitle. myId asString }
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> initialize [
+	super initialize.
 ]
 
 { #category : 'accessing' }
 AIA2RelatedBuilder >> initialize: id [
 	super initialize.
-	myID := id.
-]
-
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> old_getExternalPdfText [
-	"Converts PlantUML text to an image using the plantuml command line tool."
-	| directory pdfFile textFile pdf command  |
-	pdf :=  ZnClient new get: 
-		((AIA2RelatedBuilderList default arxivPapers at: myID ) copyReplaceAll: 'abs' with: 'pdf').
-	directory := FileSystem workingDirectory.
-	pdfFile := directory / ('reportFile-', myID asString, '.pdf').
-	textFile := directory / ('reportFile-', myID asString, '.txt').
-	pdfFile exists ifTrue: [ pdfFile delete ].
-	textFile exists ifTrue: [ textFile delete ].
-	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: pdf ].
-	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
-	LibC system: command.
-	"read the textFile..."
-	externalPdfText := textFile readStream contents.
-	^ externalPdfText 
-]
-
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> old_getExternalWebForIndex:  index [
-	"Converts PlantUML text to an image using the plantuml command line tool."
-	| directory pdfFile textFile pdf command  |
-	pdf :=  ZnClient new get: 
-		((AIA2RelatedBuilderList default arxivPapers at: index) copyReplaceAll: 'abs' with: 'pdf').
-	directory := FileSystem workingDirectory.
-	pdfFile := directory / ('reportFile-', index asString, '.pdf').
-	textFile := directory / ('reportFile-', index asString, '.txt').
-	pdfFile exists ifTrue: [ pdfFile delete ].
-	textFile exists ifTrue: [ textFile delete ].
-	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: pdf ].
-	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
-	LibC system: command.
-	"read the textFile..."
-	externalPdfText := textFile readStream contents.
-	^ externalPdfText 
-]
-
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> old_getPrompt [
-	^ 'Write a short related-work comparison (max 150 words, single paragraph).
-
-Start the paragraph exactly like this:
-"This paper is related to \"{1}\" ({2}), because ..."
-
-In the paragraph:
-- Briefly state the main overlap in problem or method.
-- State the single most important difference.
-- End with one clear novelty sentence explaining what THIS PAPER does that the external paper does not.
-
-Rules:
-- No lists.
-- No section headings.
-- No praise or critique.
-- Base all claims strictly on the provided texts.
-- If a claim cannot be supported, state it explicitly.
-' format: { buildTitle. (self class relatedReports size + 1) asString }
-]
-
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> old_getReportFor [
-	externalPdfText := self getExternalWeb.
-	ownPaperOriginal := AIA2MultiLLMPaper paper paperText .
-	self build40Comparison.
-	^ buildComparison 
-]
-
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> old_getReportFor: id [
-	myID := id.
-	externalPdfText := self getExternalWeb.
-	ownPaperOriginal := AIA2MultiLLMPaper paper paperText .
-	self build40Comparison.
-	^ buildComparison 
 ]
 
 { #category : 'accessing' }
-AIA2RelatedBuilder >> old_original [
-	^ AIA2MultiLLMPaper paper paperText 
+AIA2RelatedBuilder >> myId: anObject [
+
+	myId := anObject
 ]
 
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> old_pdfToString: pdf [
-	"Converts PlantUML text to an image using the plantuml command line tool."
-	| directory pdfFile textFile  command  |
-	directory := FileSystem workingDirectory.
-	pdfFile := directory / 'reportFile.pdf'.
-	textFile := directory / 'reportFile.txt'.
-	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: pdf ].
-	command := 'pdftotext {1}' format: {pdfFile fullName}.
-	LibC system: command.
-	"read the textFile..."
-	externalPdfText := textFile readStream contents.
-	^ externalPdfText 
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> myPdf: anObject [
+
+	myPdf := anObject
 ]

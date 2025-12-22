@@ -2,7 +2,12 @@ Class {
 	#name : 'AIA2RelatedBuilderList',
 	#superclass : 'Object',
 	#instVars : [
-		'relatedReports'
+		'arxivList',
+		'rejectedArxivList'
+	],
+	#classVars : [
+		'ArxivListX',
+		'RejectedArxivListX'
 	],
 	#classInstVars : [
 		'default'
@@ -29,21 +34,62 @@ AIA2RelatedBuilderList class >> resetDefault [
 	default := nil
 ]
 
-{ #category : 'adding' }
-AIA2RelatedBuilderList >> addReport: aReport [
-	relatedReports add: aReport 
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> arxivCollect [
+
+	arxivList := OrderedCollection new.
+	rejectedArxivList := OrderedCollection new.
+	[ arxivList size < 10 ] whileTrue: [
+			| responses |
+			responses := self arxivLLMCollect.
+			responses do: [ :response |
+					| pdfLocation pdfContents candidate |
+					pdfLocation := response copyReplaceAll: 'abs' with: 'pdf'.
+					[ pdfContents := ZnClient new get: pdfLocation ]
+						on: Error
+						do: [ pdfContents := nil ].
+					pdfContents class name = #ByteArray ifTrue: [
+							candidate := AIA2RelatedBuilder new.
+							candidate
+								myId: arxivList size + 1;
+								myPdf: pdfContents.
+							candidate build.
+							candidate buildComparison = 'UNRELATED' 
+								ifFalse: [ arxivList add: candidate ]
+								ifTrue: [ rejectedArxivList add: candidate ] ].
+				] 
+	]
 ]
 
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilderList >> arxivFindRelated [
-"Works for 'GeminiApi: gemini-2.5-pro'"
-^ 'Task: Return between 5 and 20 lines.
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> arxivLLMCollect [
+	| hist |
+	hist := AIAHistory new.
+	hist
+		api: (GeminiApi newOnModel: 2);
+		background: AIA2MultiLLMArchive paperExperiment;
+		user: self arxivRelated;
+		getResponse.
+	^ hist response lines
+]
+
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> arxivRelated [
+    | both excludedText |
+	 both := arxivList  | rejectedArxivList collect: [ :a | a buildTitle ].
+    excludedText := both isEmpty 
+        ifTrue: [ 'None' ] 
+        ifFalse: [ String lf join: both ].
+	^ 'Task: Return around 5 lines.
 
 Important:
 - Only use papers you already know from training (no web lookup, no guessing).
 - It is NOT required that the papers are recent.
 - I am explicitly interested in what YOU already know to exist.
 - Treat the title below as the title of MY paper; do not question whether it exists.
+
+EXCLUDE these URLs (already found):
+', excludedText, '
 
 Output format:
 - Each line must be EITHER:
@@ -61,14 +107,11 @@ Selection criterion:
 - Prefer papers that isolate structural effects over content.
 
 Paper title (my paper):
-"The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling"
-
-Background (full paper text):
-' q0: [ AIA2MultiLLMPaper paper paperText ].
+"The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling"'
 ]
 
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilderList >> arxivPapers [
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> previous_arxivPapers [
 "was the response form aaa1"
 	^ 'https://arxiv.org/abs/2307.03172
 https://arxiv.org/abs/2307.15043
@@ -82,32 +125,9 @@ https://arxiv.org/abs/2201.11903
 https://arxiv.org/abs/2305.15771' lines
 ]
 
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilderList >> buildReports [
-	| max |
-	relatedReports := OrderedCollection new.
-	max := self arxivPapers size.
-	2 to: 2 do: [ :index |
-		| reference |
-		reference := AIA2RelatedBuilder new: index .
-		reference build.
-		self addReport: reference.
-	].
-	^ relatedReports 
-]
-
-{ #category : 'Protocol (initialization) - 1 selector(s)' }
-AIA2RelatedBuilderList >> initialize [ 
-	super initialize.
-	relatedReports := OrderedCollection new.
-]
-
-{ #category : 'adding' }
-AIA2RelatedBuilderList >> relatedReports [
-	^ relatedReports
-]
-
-{ #category : 'adding' }
-AIA2RelatedBuilderList >> relatedReports: relatedReportList [
-	relatedReports := relatedReportList 
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> summaryOfRelatedWork [
+	| summary |
+	summary := (String lf, String lf) join: (arxivList collect: [:item | item buildComparison]).
+	^ summary 
 ]
