@@ -1,3 +1,37 @@
+"
+# Class Comment for AIA2RelatedBuilderList
+
+The `AIA2RelatedBuilderList` class manages collections of arXiv paper references related to LLM conversation handling research. It maintains two primary collections:
+
+- `arxivList`: Contains validated, relevant papers that meet the selection criteria
+- `rejectedArxivList`: Stores papers that were evaluated but deemed unrelated
+
+The class provides functionality to:
+1. Collect and validate arXiv references using LLM APIs
+2. Process PDF content from arXiv papers
+3. Generate summaries of related work
+4. Maintain exclusion lists to avoid duplicate recommendations
+
+## Usage Example
+
+```st
+""AIA2RelatedBuilderList usage example in Playground""
+
+""Get the default instance""
+builder := AIA2RelatedBuilderList default.
+
+""Collect related papers (may take several minutes)""
+builder arxivCollect.
+
+""View the collected papers""
+builder getArxivList.
+
+""Generate a summary of related work""
+builder summaryOfRelatedWork inspect.
+```
+
+The class is designed for research purposes in the field of LLM conversation handling, particularly focusing on turn-taking patterns and role sensitivity in chat-based APIs.
+"
 Class {
 	#name : 'AIA2RelatedBuilderList',
 	#superclass : 'Object',
@@ -35,46 +69,176 @@ AIA2RelatedBuilderList class >> resetDefault [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> arxivCollect [
+AIA2RelatedBuilderList >> arxiv20CollectInner: url [
+    | pdfLocation pdfContents candidate |
+    pdfLocation := url copyReplaceAll: 'abs' with: 'pdf'.
+    pdfContents := [ ZnClient new get: pdfLocation ] on: Error do: [ nil ].
+    
+    (pdfContents notNil and: [ pdfContents isBytes ]) ifTrue: [
+        candidate := AIA2RelatedBuilder new.
+        candidate
+            myId: arxivList size + 1;
+            myHttps: pdfLocation;
+            externalPdfText: (self arxiv25ExternalPdfText: pdfContents);
+            ownPaperOriginal: AIA2MultiLLMArchive paperExperiment;
+            build30ExternalPaperDetails; "Crucial for Title/BibTeX"
+            build41Comparison. "Sets the RELATED/UNRELATED state"
+            
+        candidate relatedState = 'RELATED'
+            ifTrue: [ arxivList add: candidate ]
+            ifFalse: [ rejectedArxivList add: candidate ] ]
+]
 
-	arxivList := OrderedCollection new.
-	rejectedArxivList := OrderedCollection new.
-	[ arxivList size < 10 ] whileTrue: [
-			| responses |
-			responses := self arxivLLMCollect.
-			responses do: [ :response |
-					| pdfLocation pdfContents candidate |
-					pdfLocation := response copyReplaceAll: 'abs' with: 'pdf'.
-					[ pdfContents := ZnClient new get: pdfLocation ]
-						on: Error
-						do: [ pdfContents := nil ].
-					pdfContents class name = #ByteArray ifTrue: [
-							candidate := AIA2RelatedBuilder new.
-							candidate
-								myId: arxivList size + 1;
-								myPdf: pdfContents.
-							candidate build.
-							candidate buildComparison = 'UNRELATED' 
-								ifFalse: [ arxivList add: candidate ]
-								ifTrue: [ rejectedArxivList add: candidate ] ].
-				] 
-	]
+{ #category : 'as yet unclassified' }
+AIA2RelatedBuilderList >> arxiv25ExternalPdfText: pdfBytes [
+	"Fetches external PDF text, converts it to a readable format, and stores it for comparison purposes"
+	| directory pdfFile textFile  command  |
+	directory := FileSystem workingDirectory.
+	pdfFile := directory / ('reportFile.pdf').
+	textFile := directory / ('reportFile.txt').
+	pdfFile exists ifTrue: [ pdfFile delete ].
+	textFile exists ifTrue: [ textFile delete ].
+	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: pdfBytes ].
+	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
+	LibC system: command.
+	"read the textFile..."
+	^ textFile readStream contents
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> arxivLLMCollect [
+AIA2RelatedBuilderList >> arxivCollect [
+    | builder relatedURLs |
+    arxivList ifNotNil: [ ^ self ].
+    arxivList := OrderedCollection new.
+    rejectedArxivList := OrderedCollection new.
+
+    "New Integration Point"
+    builder := AIA2RelatedBuildeArXiv default.
+    builder relatedPaperHTTPS ifNil: [ builder response ].
+    relatedURLs := builder relatedPaperHTTPS.
+
+    relatedURLs do: [ :url | 
+        self arxiv20CollectInner: url ]
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilderList >> getArxivList [
+	^ arxivList
+]
+
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> old2_arxiv20CollectInner: anArxivURL [
+    | pdfLocation pdfContents candidate |
+    "Convert /abs/ to /pdf/ and ensure .pdf extension if needed"
+    pdfLocation := anArxivURL copyReplaceAll: 'abs' with: 'pdf'.
+    (pdfLocation endsWith: '.pdf') ifFalse: [ pdfLocation := pdfLocation, '.pdf' ].
+
+    [ pdfContents := ZnClient new get: pdfLocation ]
+        on: Error
+        do: [ pdfContents := nil ].
+
+    (pdfContents notNil and: [ pdfContents isBytes ]) ifTrue: [
+        candidate := AIA2RelatedBuilder new.
+        candidate
+            myId: arxivList size + 1;
+            myHttps: pdfLocation;
+            externalPdfText: (self arxiv25ExternalPdfText: pdfContents);
+            ownPaperOriginal: AIA2MultiLLMArchive paperExperiment;
+            build30ExternalPaperDetails; "Added this to get Title/BibTeX"
+            build41Comparison.
+        
+        candidate relatedState = 'UNRELATED'
+            ifFalse: [ arxivList add: candidate ]
+            ifTrue: [ rejectedArxivList add: candidate ] ]
+]
+
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> old_arxiv10LLMCollect [
 	| hist |
 	hist := AIAHistory new.
 	hist
 		api: (GeminiApi newOnModel: 2);
 		background: AIA2MultiLLMArchive paperExperiment;
-		user: self arxivRelated;
+		user: self arxiv15Related;
 		getResponse.
 	^ hist response lines
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> arxivRelated [
+AIA2RelatedBuilderList >> old_arxiv15Related [
+	| both excludedText |
+	both := arxivList | rejectedArxivList collect: [ :a | a buildTitle ].
+	excludedText := both isEmpty
+		ifTrue: [ 'None' ]
+		ifFalse: [ String lf join: both ].
+
+	^ 'Task: Propose arXiv papers that are CLOSEST to THIS PAPER, based on the THIS PAPER text in the background.
+
+Hard focus (must match THIS PAPER):
+- Chat-role metadata / message roles (user vs assistant) in chat APIs
+- Role-sequence / turn-pattern effects (e.g., AAA vs AAAU / user-final gating)
+- Deterministic failure modes like echoing the last instruction instead of answering
+- Cross-provider / cross-model empirical testing of such structural effects
+
+Important:
+- Use ONLY papers you genuinely remember from training. No web lookup. No guessing.
+- If you are not confident, output UNKNOWN.
+
+Exclude (already seen):
+', excludedText, '
+
+Output format:
+- Output 3 to 6 lines.
+- Each line must be EITHER:
+  - a single URL matching: ^https://arxiv\.org/abs/\d{4}\.\d{5}$
+  - OR the single token: UNKNOWN
+- No other text. One item per line. No duplicates.
+
+Selection rule:
+- Prefer papers about chat formatting / role handling / conversation templates over general “prompting” papers.
+- Prefer empirical characterizations of failure modes over broad benchmarks.
+
+Paper title (THIS PAPER):
+"The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling"'
+
+]
+
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> old_arxiv20CollectInner: response [
+
+	| pdfLocation pdfContents candidate |
+	pdfLocation := response copyReplaceAll: 'abs' with: 'pdf'.
+	[ pdfContents := ZnClient new get: pdfLocation ]
+		on: Error
+		do: [ pdfContents := nil ].
+	pdfContents class name = #ByteArray ifTrue: [
+			candidate := AIA2RelatedBuilder new.
+			candidate
+				myId: arxivList size + 1;
+				myHttps: pdfLocation;
+				externalPdfText: (self arxiv25ExternalPdfText: pdfContents);
+				ownPaperOriginal: AIA2MultiLLMArchive paperExperiment;
+				"AIA2MultiLLMPaper paper paperText"
+				build41Comparison.
+			candidate relatedState = 'UNRELATED'
+				ifFalse: [ arxivList add: candidate ]
+				ifTrue: [ rejectedArxivList add: candidate ] ]
+]
+
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> old_arxivCollect [
+	arxivList ifNotNil: [ ^ self ]. "use the class side resetDefault to restart"
+	arxivList := OrderedCollection new.
+	rejectedArxivList := OrderedCollection new.
+	[ arxivList size < 2 ] whileTrue: [
+			| responses |
+			responses := self arxiv10LLMCollect.
+			responses do: [ :response | self arxiv20CollectInner: response ] 
+	]
+]
+
+{ #category : 'arxiv' }
+AIA2RelatedBuilderList >> old_arxivRelated [
     | both excludedText |
 	 both := arxivList  | rejectedArxivList collect: [ :a | a buildTitle ].
     excludedText := both isEmpty 

@@ -1,11 +1,55 @@
+"
+# Class Comment for AIA2RelatedBuilder
+
+The `AIA2RelatedBuilder` class is responsible for constructing and managing related-work comparisons between academic papers. It facilitates the automated generation of BibTeX entries, formatted references, and comparative analyses of external research papers relative to a specified original paper.
+
+## Key Features
+
+- **PDF Processing**: Converts external PDF documents to text for analysis
+- **Comparison Generation**: Produces structured related-work comparisons following specific formatting rules
+- **BibTeX Generation**: Creates BibTeX entries for external papers
+- **Reference Formatting**: Generates human-readable references from BibTeX data
+- **Relatedness Assessment**: Determines if external papers are related to the original work
+
+## Usage Example
+
+```st
+""AIA2RelatedBuilder usage example in Playground""
+
+| builder comparison |
+builder := AIA2RelatedBuilder new
+    myId: 123;
+    myHttps: 'https://example.com/paper.pdf';
+    ownPaperOriginal: 'This is the text of our original paper...';
+    build.
+
+""Fetch and process the external PDF""
+builder build20ExternalPdfText.
+
+""Generate the comparison""
+comparison := builder build40Comparison.
+
+""Inspect the results""
+{ builder buildBibTeX. builder buildTitle. builder buildFormattedRef. comparison }
+```
+
+The builder follows a specific workflow:
+1. Initialise with paper identifiers and original text
+2. Process external PDF content
+3. Generate comparison materials
+4. Produce final comparison output
+
+The generated comparisons follow strict formatting rules to ensure consistency in academic writing.
+"
 Class {
 	#name : 'AIA2RelatedBuilder',
 	#superclass : 'Object',
 	#instVars : [
 		'myId',
-		'myPdf',
+		'myHttps',
 		'externalPdfText',
 		'ownPaperOriginal',
+		'relatedState',
 		'buildBibTeX',
 		'buildTitle',
 		'buildFormattedRef',
@@ -21,8 +65,8 @@ AIA2RelatedBuilder >> build [
 	"Builds the related work comparison for a paper by fetching external PDF text, processing it, and generating a comparison with the original paper."
 	self 
 		build10OwnPaperOriginal;
-		build20ExternalPdfText;
-		build30ExternalPaperDetails;
+		build20ExternalPdfText;"
+		build30ExternalPaperDetails;"
 		build40Comparison.
 ]
 
@@ -31,23 +75,6 @@ AIA2RelatedBuilder >> build10OwnPaperOriginal [
 	"Sets the original paper text for comparison purposes"
 	ownPaperOriginal := "AIA2MultiLLMPaper paper paperText" 
 		AIA2MultiLLMArchive paperExperiment .
-]
-
-{ #category : 'as yet unclassified' }
-AIA2RelatedBuilder >> build20ExternalPdfText [
-	"Fetches external PDF text, converts it to a readable format, and stores it for comparison purposes"
-	| directory pdfFile textFile  command  |
-	directory := FileSystem workingDirectory.
-	pdfFile := directory / ('reportFile.pdf').
-	textFile := directory / ('reportFile.txt').
-	pdfFile exists ifTrue: [ pdfFile delete ].
-	textFile exists ifTrue: [ textFile delete ].
-	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: myPdf ].
-	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
-	LibC system: command.
-	"read the textFile..."
-	externalPdfText := textFile readStream contents.
-	^ externalPdfText 
 ]
 
 { #category : 'as yet unclassified' }
@@ -89,6 +116,7 @@ If a field is missing, omit that line silently.';
 AIA2RelatedBuilder >> build40Comparison [
 	| prompt previousResponses hist |
 	prompt := self getPrompt .
+	self halt.
 	previousResponses := AIA2RelatedBuilderList default summaryOfRelatedWork.
 	hist := AIAHistory new.
 	hist 
@@ -104,6 +132,23 @@ AIA2RelatedBuilder >> build40Comparison [
 	
 ]
 
+{ #category : 'as yet unclassified' }
+AIA2RelatedBuilder >> build41Comparison [
+    | prompt hist previous |
+    prompt := self getPromptRelatedOrUnrelated.
+    previous := AIA2RelatedBuilderList default summaryOfRelatedWork.
+    hist := AIAHistory new.
+    hist 
+        api: (OpenAIApi newOnModel: 1);
+        background: 'THIS PAPER: ', ownPaperOriginal;
+        background: 'PREVIOUS RELATED WORK: ', previous;
+        background: 'EXTERNAL PAPER: ', externalPdfText;
+        user: 'TASK: ', prompt;
+        getResponse.
+    relatedState := hist response.
+    ^ relatedState
+]
+
 { #category : 'accessing' }
 AIA2RelatedBuilder >> buildComparison [
 	^ buildComparison
@@ -113,6 +158,18 @@ AIA2RelatedBuilder >> buildComparison [
 AIA2RelatedBuilder >> buildTitle [
 
 	^ buildTitle
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> externalPdfText [
+
+	^ externalPdfText
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> externalPdfText: anObject [
+
+	externalPdfText := anObject
 ]
 
 { #category : 'as yet unclassified' }
@@ -146,6 +203,25 @@ Rules:
 ' format: { buildTitle. myId asString }
 ]
 
+{ #category : 'as yet unclassified' }
+AIA2RelatedBuilder >> getPromptRelatedOrUnrelated [
+	^ 'Task: Decide whether the EXTERNAL PAPER is RELATED or UNRELATED to THIS PAPER.
+
+Definition:
+- RELATED means: the external paper addresses the same phenomenon, mechanism, or engineering constraint as THIS PAPER
+  (e.g., chat role metadata, message-role sequencing, turn-structure sensitivity in chat-based LLM APIs),
+  and contributes non-trivially beyond what is already covered in PREVIOUS RELATED WORK.
+- UNRELATED means: it does not, or it only repeats dimensions already covered.
+
+Output:
+- Output exactly ONE token: RELATED or UNRELATED.
+- No other text. No punctuation. No explanation.
+
+Rule:
+- If the external paper only matches dimensions already covered in PREVIOUS RELATED WORK, output UNRELATED.'
+
+]
+
 { #category : 'accessing' }
 AIA2RelatedBuilder >> initialize [
 	super initialize.
@@ -157,13 +233,84 @@ AIA2RelatedBuilder >> initialize: id [
 ]
 
 { #category : 'accessing' }
+AIA2RelatedBuilder >> myHttps [
+
+	^ myHttps
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> myHttps: anObject [
+
+	myHttps := anObject
+]
+
+{ #category : 'accessing' }
 AIA2RelatedBuilder >> myId: anObject [
 
 	myId := anObject
 ]
 
-{ #category : 'accessing' }
-AIA2RelatedBuilder >> myPdf: anObject [
+{ #category : 'as yet unclassified' }
+AIA2RelatedBuilder >> old_build20ExternalPdfText [
+	"Fetches external PDF text, converts it to a readable format, and stores it for comparison purposes"
+	| directory pdfFile textFile  command  |
+	directory := FileSystem workingDirectory.
+	pdfFile := directory / ('reportFile.pdf').
+	textFile := directory / ('reportFile.txt').
+	pdfFile exists ifTrue: [ pdfFile delete ].
+	textFile exists ifTrue: [ textFile delete ].
+	pdfFile binaryWriteStreamDo: [ :stream | stream nextPutAll: myPdf ].
+	command := 'pdftotext {1} {2}' format: { pdfFile fullName. textFile fullName}.
+	LibC system: command.
+	"read the textFile..."
+	externalPdfText := textFile readStream contents.
+	^ externalPdfText 
+]
 
-	myPdf := anObject
+{ #category : 'as yet unclassified' }
+AIA2RelatedBuilder >> old_build41Comparison [
+	| prompt  hist |
+	prompt := self getPromptRelatedOrUnrelated .
+	self halt.
+	hist := AIAHistory new.
+	hist 
+		api: (OpenAIApi newOnModel: 1);
+		background: 'THIS PAPER: ', ownPaperOriginal ;
+		background: 'EXTERNAL PAPER: ', externalPdfText ;
+		user: 'TASK: ', prompt;
+		getResponse.
+	relatedState := hist response.
+	^ relatedState 
+	
+	
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> ownPaperOriginal [
+
+	^ ownPaperOriginal
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> ownPaperOriginal: anObject [
+
+	ownPaperOriginal := anObject
+]
+
+{ #category : 'printing' }
+AIA2RelatedBuilder >> printOn: aStream [
+	myHttps ifNil: [ super printOn: aStream. ^ self ].
+	aStream << '(' << myId asString << ') ' << myHttps. 
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> relatedState [
+
+	^ relatedState
+]
+
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> relatedState: anObject [
+
+	relatedState := anObject
 ]

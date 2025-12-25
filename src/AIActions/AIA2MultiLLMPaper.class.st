@@ -346,6 +346,22 @@ Your Defence section should cover:
 Do not write text that is already in the backgound text, but you may reference it.'.
 ]
 
+{ #category : 'writing' }
+AIA2MultiLLMPaper >> write70Conclusion [
+    ^ self 
+        writeSection: 'Conclusion' 
+        withPrompt: 'Section type: Conclusion
+Goal: Summarize the findings and state the final implication for the field.
+Structure guidance:
+In the spirit of the Kent Beck writing contract, the conclusion must:
+1. Reiterate the startling finding (from the Abstract) in the context of the evidence presented in the Defence.
+2. Clearly state the operational recommendation for practitioners.
+3. Reflect on the broader impact (e.g., for safety, reliability, or multi-agent orchestration).
+4. End with a single, strong sentence about the future of robust LLM API design.
+
+Do not introduce new data or citations not found in the previous sections or Appendix.'
+]
+
 { #category : 'Protocol (writing) - 6 selector(s)' }
 AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
     | level1 level2 level3 level4 |
