@@ -1,9 +1,8 @@
 Class {
 	#name : 'AIA1UAUAUTurns',
 	#superclass : 'AIA1MultiLLMResponseBase',
-	#category : 'AIActions-ExperimentsOLD',
-	#package : 'AIActions',
-	#tag : 'ExperimentsOLD'
+	#category : 'AIAExperiments',
+	#package : 'AIAExperiments'
 }
 
 { #category : 'markdown' }

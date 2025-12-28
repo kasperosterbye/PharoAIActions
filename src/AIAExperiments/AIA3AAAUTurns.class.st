@@ -1,13 +1,12 @@
 Class {
-	#name : 'AIA4AAATurns',
+	#name : 'AIA3AAAUTurns',
 	#superclass : 'AIA1MultiLLMResponseBase',
-	#category : 'AIActions-ExperimentsOLD',
-	#package : 'AIActions',
-	#tag : 'ExperimentsOLD'
+	#category : 'AIAExperiments',
+	#package : 'AIAExperiments'
 }
 
 { #category : 'markdown' }
-AIA4AAATurns >> responseOf: aiLLM [
+AIA3AAAUTurns >> responseOf: aiLLM [
 	| hist |
 	hist := AIAHistory new.
 	hist 
@@ -15,11 +14,12 @@ AIA4AAATurns >> responseOf: aiLLM [
 		assistant: 'aaa is 2';
 		assistant: 'bbb is 3';
 		assistant: 'the sum of aaa + bbb is 5';
+		user: '?';
 		getResponse.
 	^ hist response.
 ]
 
 { #category : 'matching' }
-AIA4AAATurns >> words [
-	^ 'assistant: assistant: assistant:'
+AIA3AAAUTurns >> words [
+	^ 'assistant: assistant: assistant: user:'
 ]

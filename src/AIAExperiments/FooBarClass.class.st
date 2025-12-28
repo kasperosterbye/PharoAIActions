@@ -1,9 +1,8 @@
 Class {
 	#name : 'FooBarClass',
 	#superclass : 'Object',
-	#category : 'AIActions-ExperimentsOLD',
-	#package : 'AIActions',
-	#tag : 'ExperimentsOLD'
+	#category : 'AIAExperiments',
+	#package : 'AIAExperiments'
 }
 
 { #category : 'logical operations' }
