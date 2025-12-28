@@ -45,8 +45,9 @@ Class {
 
 { #category : 'examples' }
 AIA2MultiLLMBuilder class >> clearDefault [
+	"Clears the default instance of the AIA2MultiLLMBuilder class"
 	<example>
-	default := nil
+	default := nil.
 ]
 
 { #category : 'examples' }
@@ -62,7 +63,7 @@ AIA2MultiLLMBuilder class >> new [
 
 { #category : 'building' }
 AIA2MultiLLMBuilder >> build [
-	"Builds responses for each turn pattern in the storage lines."
+	"Builds responses for all stored conversation lines by processing each line with the appropriate turn pattern handler."
 	| storeLines |
 	storeLines := AIA2MultiLLMStorage default storeRows.
 	storeLines do: [ :sl |
@@ -133,7 +134,7 @@ AIA2MultiLLMBuilder >> response4Of: storeLine [
 		assistant: 'bbb is 3';
 		assistant: 'so aaa + bbb is what. Answer with ONLY the final result.';
 		getResponse.
-	storeLine responseText: hist response..
+	storeLine responseText: hist response.
 ]
 
 { #category : 'building' }

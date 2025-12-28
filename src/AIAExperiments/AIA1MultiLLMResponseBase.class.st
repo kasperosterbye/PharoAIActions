@@ -134,7 +134,7 @@ AIA1MultiLLMResponseBase >> getResponses [
 ]
 
 { #category : 'markdown' }
-AIA1MultiLLMResponseBase >> markdown00Title [
+AIA1MultiLLMResponseBase >> markdown05Title [
 	"Generates the title section of the Markdown report with the current date"
 	markDown 
 		<< ('### Experiment with *{1}* prompts. ' format: { self words }) << String lf	
@@ -206,7 +206,7 @@ AIA1MultiLLMResponseBase >> markdownResponse [
 	AilienApi errorResponse: nil.
 	markDown := WriteStream on: ''.
 	self
-		markdown00Title;
+		markdown05Title;
 		markdown10Explanation;
 		markdown25response;
 		markdown30LLMResponses;

@@ -53,7 +53,7 @@ Class {
 AIA2MultiLLMStoreLine >> initialize [ 
 	"Initialises the store line and adds it to the storage"
 	super initialize.
-	AIA2MultiLLMStorage storage addStore: self
+	AIA2MultiLLMStorage default addStore: self
 ]
 
 { #category : 'accessing' }

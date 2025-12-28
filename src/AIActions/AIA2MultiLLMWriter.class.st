@@ -81,12 +81,41 @@ AIA2MultiLLMWriter >> appendix [
 	^ appendix
 ]
 
+{ #category : 'markdown' }
+AIA2MultiLLMWriter >> appendixWrite [
+	"Generates a comprehensive Markdown report of LLM responses, including title, explanation, model overview, and response tables."
+	"AilienApi errorResponse: 'Error bla bla happended'."
+	AilienApi errorResponse: nil.
+	self markdown00WriteStorages.
+	markDown := WriteStream on: ''.
+	self
+		markdown05Title; 
+		markdown10Explanation;
+		markdown20LLMNames;
+		markdown25PlusMinusError;
+		markdown30LLMResponses;
+		markdown40LLMFullResponses ;
+		markdown50CommentOverview.
+	appendix := markDown contents copyReplaceAll: String cr with: String lf.
+	^ appendix 
+]
+
 { #category : 'initialization' }
-AIA2MultiLLMWriter >> buildWriteStorages [
+AIA2MultiLLMWriter >> initialize [ 
+	"Initialises the writer with an empty storage collection for LLM responses"
+	super initialize.
+	writeStorage := nil.
+	markDown := nil. 
+	overview := nil.
+	appendix := nil
+]
+
+{ #category : 'markdown' }
+AIA2MultiLLMWriter >> markdown00WriteStorages [
 	"Builds the write storage by organising LLM responses by turn pattern, provider, and model number, creating simplified summaries for each combination"
 	| storage turnPatternType providerTypes llmNoTypes responseList responseListCombined|
 	writeStorage ifNotNil: [ ^ self ].
-	storage := AIA2MultiLLMStorage storage storeRows.
+	storage := AIA2MultiLLMStorage default storeRows.
 	writeStorage := OrderedCollection new.
 	turnPatternType := storage collect: [ :elem | elem turnPattern ] as: Set.
 	providerTypes := storage collect: [ :elem | elem provider ] as: Set.
@@ -109,18 +138,8 @@ AIA2MultiLLMWriter >> buildWriteStorages [
 	
 ]
 
-{ #category : 'initialization' }
-AIA2MultiLLMWriter >> initialize [ 
-	"Initialises the writer with an empty storage collection for LLM responses"
-	super initialize.
-	writeStorage := nil.
-	markDown := nil. 
-	overview := nil.
-	appendix := nil
-]
-
 { #category : 'markdown' }
-AIA2MultiLLMWriter >> markdown00Title [
+AIA2MultiLLMWriter >> markdown05Title [
 	"Generates the title section of the Markdown report with the current date"
 	markDown 
 		<< '## Appendix - Details of the four LLM turns' << String lf
@@ -335,25 +354,6 @@ REPORT_MARKDOWN_END'.
 		getResponse.
 	overview := '<!--- ', String lf, hist response , String lf, '--->' , String lf.
 	^ overview 
-]
-
-{ #category : 'markdown' }
-AIA2MultiLLMWriter >> markdownResponse [
-	"Generates a comprehensive Markdown report of LLM responses, including title, explanation, model overview, and response tables."
-	"AilienApi errorResponse: 'Error bla bla happended'."
-	AilienApi errorResponse: nil.
-	self buildWriteStorages.
-	markDown := WriteStream on: ''.
-	self
-		markdown00Title; 
-		markdown10Explanation;
-		markdown20LLMNames;
-		markdown25PlusMinusError;
-		markdown30LLMResponses;
-		markdown40LLMFullResponses ;
-		markdown50CommentOverview.
-	appendix := markDown contents copyReplaceAll: String cr with: String lf.
-	^ appendix 
 ]
 
 { #category : 'markdown' }

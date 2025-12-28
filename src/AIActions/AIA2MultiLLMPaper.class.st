@@ -1,3 +1,40 @@
+"
+# Class Comment for AIA2MultiLLMPaper
+
+AIA2MultiLLMPaper is a class responsible for generating research papers using multiple Large Language Models (LLMs) in a structured, multi-stage process. It implements Kent Beck's writing contract to produce technical conference papers suitable for expert reviewers.
+
+## Key Features
+
+- **Multi-LLM Pipeline**: Uses four different LLMs (Gemini, Together, Claude, OpenAI) in sequence to refine paper sections
+- **Structured Writing**: Follows Kent Beck's four-section structure (Problem, Solution, Defence, Related Work)
+- **Automated Feedback**: Implements a four-level critique and revision process for each section
+- **Appendix Integration**: Incorporates technical background material from the Appendix
+- **Style Control**: Supports different writing styles tailored to different audiences
+
+## Usage Example
+
+```st
+""AIA2MultiLLMPaper usage example""
+
+""Create a new paper instance""
+paper := AIA2MultiLLMPaper new.
+
+""Build the complete paper""
+paper paperBuild.
+
+""Inspect the generated paper text""
+paper paperText
+```
+
+## Design Notes
+
+- The class maintains a history of all LLM interactions for each section
+- Each section undergoes four refinement stages with increasing specificity
+- The writing process strictly follows Kent Beck's guidelines for technical papers
+- The class can be extended to support additional LLM providers or writing styles
+
+This implementation provides a reproducible, automated approach to technical writing that maintains high standards of clarity and technical rigor.
+"
 Class {
 	#name : 'AIA2MultiLLMPaper',
 	#superclass : 'Object',
@@ -6,7 +43,7 @@ Class {
 		'writeResponses'
 	],
 	#classInstVars : [
-		'paper'
+		'default'
 	],
 	#category : 'AIActions-AIAPaperBuilding',
 	#package : 'AIActions',
@@ -14,15 +51,35 @@ Class {
 }
 
 { #category : 'examples' }
-AIA2MultiLLMPaper class >> clearPaper [
+AIA2MultiLLMPaper class >> clearDefault [
 	<example>
-	paper := nil
+	default := nil
 ]
 
 { #category : 'accessing' }
-AIA2MultiLLMPaper class >> paper [
-	paper ifNil: [ paper := self new ].
-	^ paper
+AIA2MultiLLMPaper class >> default [
+	default ifNil: [ default := self new ].
+	^ default
+]
+
+{ #category : 'accessing' }
+AIA2MultiLLMPaper class >> instalationInstructions [
+	^ self.
+"
+AIA2MultiLLMStorage.
+	clearDefault
+	default makeStoreLines.
+
+AIA2MultiLLMBuilder new build.
+	AIA2MultiLLMBuilder clearDefault (Should stop it from building)
+		
+AIA2MultiLLMWriter default 
+	buildAppendix
+	
+AIA2MultiLLMPaper default 
+	paperBuild
+	paperText
+"
 ]
 
 { #category : 'paper build' }
@@ -174,7 +231,7 @@ AIA2MultiLLMPaper >> paper50Defence [
 	paperText := paperText copyReplaceAll:'$$$$$defence$$$$$' with: text .
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper60RelatedWork [
    |  text  |
 	(paperText findString: '$$$$$related$$$$$')  = 0 ifTrue: [ ^ self ].
@@ -185,7 +242,7 @@ AIA2MultiLLMPaper >> paper60RelatedWork [
 	^ text contents.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper70Conclusion [
    |  text  name|
 	"(paperText findString: '$$$$$conclusion$$$$$')  = 0 ifTrue: [ ^ self ]."
@@ -196,7 +253,7 @@ AIA2MultiLLMPaper >> paper70Conclusion [
 	^ text contents.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper80References [
    |  text  list |
 	"(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ]."	
