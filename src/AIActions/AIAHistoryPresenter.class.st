@@ -7,9 +7,9 @@ Class {
 		'promptText',
 		'responseText'
 	],
-	#category : 'AIActions-HistoryPresenter',
+	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
-	#tag : 'HistoryPresenter'
+	#tag : 'Experiments'
 }
 
 { #category : 'initialization' }
