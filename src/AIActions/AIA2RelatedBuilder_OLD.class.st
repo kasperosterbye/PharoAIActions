@@ -11,9 +11,9 @@ Class {
 		'buildFormattedRef',
 		'buildComparison'
 	],
-	#category : 'AIActions-Experiments',
+	#category : 'AIActions-AIAPaperBuilding',
 	#package : 'AIActions',
-	#tag : 'Experiments'
+	#tag : 'AIAPaperBuilding'
 }
 
 { #category : 'building' }

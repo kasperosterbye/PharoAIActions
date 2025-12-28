@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIA2MultiLLMArchive',
 	#superclass : 'Object',
-	#category : 'AIActions-Experiments',
+	#category : 'AIActions-AIAPaperBuilding',
 	#package : 'AIActions',
-	#tag : 'Experiments'
+	#tag : 'AIAPaperBuilding'
 }
 
 { #category : 'as yet unclassified' }
