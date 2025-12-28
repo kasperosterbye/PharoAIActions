@@ -50,7 +50,7 @@ Class {
 		'appendix'
 	],
 	#classInstVars : [
-		'writer'
+		'default'
 	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
@@ -58,21 +58,21 @@ Class {
 }
 
 { #category : 'accessing' }
-AIA2MultiLLMWriter class >> clearReport [
+AIA2MultiLLMWriter class >> clearDefault [
 	<example>
-    writer := nil
+    default := nil
 ]
 
 { #category : 'accessing' }
-AIA2MultiLLMWriter class >> writer [
-	writer ifNil: [ writer := self new ].
-	^ writer
+AIA2MultiLLMWriter class >> default [
+	default ifNil: [ default := self new ].
+	^ default
 ]
 
 { #category : 'accessing' }
-AIA2MultiLLMWriter class >> writer: anObject [
+AIA2MultiLLMWriter class >> default: anObject [
 
-	writer := anObject
+	default := anObject
 ]
 
 { #category : 'accessing' }
@@ -138,14 +138,14 @@ AIA2MultiLLMWriter >> markdown10Explanation [
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> markdown20LLMNames [ |  llms  prompts  |
 	markDown << '#### List of Providers llm models' << String lf << String lf << String lf.
-	llms := (writeStorage collect: [ :elem | elem at: #llmNo ] as: Set) asArray sorted.
+	llms := AIA2MultiLLMStorage linesToBuild at: #llmNos.
 	markDown << '| **provider** |'.
 	llms do: [ :modelId | markDown << ' **Model ' << modelId asString << '** |' ].
 	markDown << String lf.
 	markDown << '| ------------ | '.
 	llms do: [ :modelId | markDown << '----------- | ' ].
 	markDown << String lf.
-	prompts := writeStorage collect: [ :elem | elem at: #provider ] as: Set.
+	prompts := AIA2MultiLLMStorage linesToBuild at: #providers.
 	prompts do: [ :prompt |
 			| collumnsAt |
 			markDown << '| ' << prompt name asSymbol << ' | '.
@@ -171,7 +171,7 @@ AIA2MultiLLMWriter >> markdown30LLMResponses [
 	"This method generates a detailed Markdown section for LLM responses, including turn patterns, provider names, and model results. It organizes responses by turn pattern and creates a comprehensive table format for easy comparison."
 	| turnPatterns |
 	
-	turnPatterns := (writeStorage collect: [ :elem | elem at: #turnPattern ] as: Set) asArray sorted.
+	turnPatterns := AIA2MultiLLMStorage linesToBuild at: #turnPatterns.
 	turnPatterns do: [ :turnPattern | 
 		markDown << '#### Responses for ' << turnPattern << String lf 
 					<< '<!--- Per-provider, per-model results.--->' << String lf << String lf.
@@ -208,12 +208,13 @@ AIA2MultiLLMWriter >> markdown37LLMResponses: turnPattern [
 	llms do: [ :modelId | markDown << '----------- | ' ].
 	markDown << String lf.
 	elements := writeStorage select: [ :elem | (elem at: #turnPattern) = turnPattern ].
-	prompts := elements collect: [ :elem | elem at: #provider ] as: Set.
+	prompts := AIA2MultiLLMStorage linesToBuild at: #providers.
+	"prompts := elements collect: [ :elem | elem at: #provider ] as: Set."
 	prompts do: [ :prompt |
 			markDown << '| ' << prompt name asSymbol << ' | '.
 			collumnsAt := elements select: [ :elem | (elem at: #provider) = prompt ].
+			collumnsAt := collumnsAt sort: [ :a :b | (a at: #llmNo) < (b at: #llmNo) ].
 			collumnsAt do: [ :modelId | markDown << (modelId at: #summary) << ' | ' ].
-
 			markDown << String lf ].
 	markDown << String lf .
 	^ markDown contents
@@ -262,17 +263,18 @@ AIA2MultiLLMWriter >> markdown40LLMFullResponses [
     sortedPatterns := AIA2MultiLLMStorage linesToBuild at: #turnPatterns.
     sortedPatterns do: [ :pattern |
         markDown << '#### Turn Pattern: ' << pattern << String lf << String lf.
-        sortedProviders := (writeStorage collect: [:e | e at: #provider]) asSet asArray sorted: [:a :b | a name <= b name].
+		  sortedProviders := AIA2MultiLLMStorage linesToBuild at: #providers.
         sortedProviders do: [ :provider |
             markDown << '##### ' << provider name asSymbol << String lf << String lf.
-            {1. 3} do: [ :modelNo |  "or collect unique llmNo"
+            (AIA2MultiLLMStorage linesToBuild at: #llmNos) do: [ :modelNo | 
                 | lines modelName |
                 lines := AIA2MultiLLMStorage storage storageArray select: [ :e |
                     e turnPattern = pattern and: [
                     e provider = provider and: [
                     e llmNo = modelNo ]]].
                 modelName := (provider modelNames at: modelNo).
-                markDown << '###### Model ' << modelNo asString << ' (' << modelName << ')' << String lf << String lf.
+                markDown << '###### Model ' << modelNo asString 
+								<< ' (' << modelName << ')' << String lf << String lf.
                 lines withIndexDo: [ :line :idx |
                     markDown 
                         << '- Response ' << idx asString << ': ' 

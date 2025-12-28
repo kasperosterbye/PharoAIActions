@@ -64,8 +64,8 @@ Class {
 AIA2RelatedBuilder >> build [
 	"Builds the related work comparison for a paper by fetching external PDF text, processing it, and generating a comparison with the original paper."
 	self 
-		build10OwnPaperOriginal;
-		build20ExternalPdfText;"
+		build10OwnPaperOriginal;"
+		build20ExternalPdfText;
 		build30ExternalPaperDetails;"
 		build40Comparison.
 ]
@@ -116,7 +116,6 @@ If a field is missing, omit that line silently.';
 AIA2RelatedBuilder >> build40Comparison [
 	| prompt previousResponses hist |
 	prompt := self getPrompt .
-	self halt.
 	previousResponses := AIA2RelatedBuilderList default summaryOfRelatedWork.
 	hist := AIAHistory new.
 	hist 
@@ -172,35 +171,35 @@ AIA2RelatedBuilder >> externalPdfText: anObject [
 	externalPdfText := anObject
 ]
 
+{ #category : 'accessing' }
+AIA2RelatedBuilder >> getFormattedReference [
+	^ buildFormattedRef
+]
+
 { #category : 'as yet unclassified' }
 AIA2RelatedBuilder >> getPrompt [
-	"Returns the prompt for generating a related-work comparison between the external paper and the original paper"
-	^ 'Task: Decide whether the external paper is RELATED or UNRELATED to THIS PAPER.
 
-If RELATED:
-- Write a short related-work comparison (max 150 words, single paragraph).
-- Start the paragraph exactly like this:
-  "This paper is related to \"{1}\" ({2}), because ..."
-- The paragraph must include, in this order:
-  (1) one sentence stating the main overlap in problem or method,
-  (2) one sentence stating the single most important difference,
-  (3) one sentence stating the novelty: what THIS PAPER does that the external paper does not.
+	^ 'Task: Write a short related-work comparison paragraph (max 150 words).
 
-If UNRELATED:
-- Output exactly the single token:
-  UNRELATED
+Primary Goal:
+Analyze the EXTERNAL PAPER in relation to THIS PAPER.
 
-Already-covered dimensions are provided in the background as PREVIOUS RELATED WORK.
-Do NOT reuse any already-covered dimension.
-If the external paper only matches covered dimensions, classify it as UNRELATED.
+Narrative Continuity:
+- Review the PREVIOUS RELATED WORK provided in the background.
+- If the EXTERNAL PAPER addresses the same dimension as a previous paper, acknowledge it (e.g., "Similar to [Paper X], this work examines...").
+- Do not repeat explanations of concepts already defined in PREVIOUS RELATED WORK.
+
+Structure:
+- Start exactly with: "This paper is related to \"{1}\" ({2}), because ..."
+- Sentence 1: State the main overlap with THIS PAPER (referencing PREVIOUS RELATED WORK if they share a theme).
+- Sentence 2: State the single most important difference from THIS PAPER.
+- Sentence 3: State the novelty: what THIS PAPER does that the EXTERNAL PAPER does not.
 
 Rules:
-- No lists.
-- No section headings.
+- Strictly single paragraph. No lists.
 - No praise or critique.
-- Base all claims strictly on the provided texts.
-- Do not explain why you chose UNRELATED.
-' format: { buildTitle. myId asString }
+- Direct, technical language only.' 
+format: { buildTitle . myId asString }
 ]
 
 { #category : 'as yet unclassified' }
@@ -283,6 +282,37 @@ AIA2RelatedBuilder >> old_build41Comparison [
 	^ relatedState 
 	
 	
+]
+
+{ #category : 'as yet unclassified' }
+AIA2RelatedBuilder >> old_getPrompt [
+	"Returns the prompt for generating a related-work comparison between the external paper and the original paper"
+	^ 'Task: Decide whether the external paper is RELATED or UNRELATED to THIS PAPER.
+
+If RELATED:
+- Write a short related-work comparison (max 150 words, single paragraph).
+- Start the paragraph exactly like this:
+  "This paper is related to \"{1}\" ({2}), because ..."
+- The paragraph must include, in this order:
+  (1) one sentence stating the main overlap in problem or method,
+  (2) one sentence stating the single most important difference,
+  (3) one sentence stating the novelty: what THIS PAPER does that the external paper does not.
+
+If UNRELATED:
+- Output exactly the single token:
+  UNRELATED
+
+Already-covered dimensions are provided in the background as PREVIOUS RELATED WORK.
+Do NOT reuse any already-covered dimension.
+If the external paper only matches covered dimensions, classify it as UNRELATED.
+
+Rules:
+- No lists.
+- No section headings.
+- No praise or critique.
+- Base all claims strictly on the provided texts.
+- Do not explain why you chose UNRELATED.
+' format: { buildTitle. myId asString }
 ]
 
 { #category : 'accessing' }

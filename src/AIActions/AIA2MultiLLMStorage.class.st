@@ -54,7 +54,7 @@ Class {
 		'storageArray'
 	],
 	#classInstVars : [
-		'storage'
+		'default'
 	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
@@ -62,9 +62,15 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-AIA2MultiLLMStorage class >> clearStorage [
+AIA2MultiLLMStorage class >> clearDefault [
 	<example>
-	storage := nil
+	default := nil
+]
+
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMStorage class >> default [
+	default ifNil: [ default := super new ].
+	^ default
 ]
 
 { #category : 'as yet unclassified' }
@@ -78,7 +84,7 @@ AIA2MultiLLMStorage class >> full_linesToBuild [
 ]
 
 { #category : 'as yet unclassified' }
-AIA2MultiLLMStorage class >> linesToBuild [
+AIA2MultiLLMStorage class >> last_linesToBuild [
 	"Returns a dictionary of full configuration parameters for building LLM storage"
 	^ { #providers -> {ClaudeApi. GeminiApi. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
 		#llmNos -> { 1. 3.}.
@@ -88,16 +94,19 @@ AIA2MultiLLMStorage class >> linesToBuild [
 ]
 
 { #category : 'as yet unclassified' }
-AIA2MultiLLMStorage class >> new [
-	"Use storage instead of creating a new instance"
-	self error: 'use storage instead'
+AIA2MultiLLMStorage class >> linesToBuild [
+	"Returns a dictionary of full configuration parameters for building LLM storage"
+	^ { #providers -> {ClaudeApi. GeminiApi. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
+		#llmNos -> { 1. 2. 3. 4 }.
+		#turnPatterns -> { #UAUAU. #UUU. #AAA. #AAAU }.
+		#responseIds -> (1 to: 7) asArray 
+	} asDictionary
 ]
 
 { #category : 'as yet unclassified' }
-AIA2MultiLLMStorage class >> storage [
-	"Returns the singleton storage instance for multi-LLM configurations"
-	storage ifNil: [ storage := super new ].
-	^ storage
+AIA2MultiLLMStorage class >> new [
+	"Use default instead of creating a new instance"
+	self error: 'use default instead'
 ]
 
 { #category : 'adding' }

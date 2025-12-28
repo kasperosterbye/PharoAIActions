@@ -37,7 +37,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'arxivList',
-		'rejectedArxivList'
+		'rejectedArxivListX'
 	],
 	#classVars : [
 		'ArxivListX',
@@ -74,22 +74,22 @@ AIA2RelatedBuilderList >> arxiv20CollectInner: url [
     pdfLocation := url copyReplaceAll: 'abs' with: 'pdf'.
     pdfContents := [ ZnClient new get: pdfLocation ] on: Error do: [ nil ].
     
-    (pdfContents notNil and: [ pdfContents isBytes ]) ifTrue: [
+    (pdfContents notNil and: [ pdfContents isKindOf: ByteArray ]) ifTrue: [
         candidate := AIA2RelatedBuilder new.
         candidate
             myId: arxivList size + 1;
             myHttps: pdfLocation;
             externalPdfText: (self arxiv25ExternalPdfText: pdfContents);
-            ownPaperOriginal: AIA2MultiLLMArchive paperExperiment;
-            build30ExternalPaperDetails; "Crucial for Title/BibTeX"
-            build41Comparison. "Sets the RELATED/UNRELATED state"
-            
-        candidate relatedState = 'RELATED'
-            ifTrue: [ arxivList add: candidate ]
-            ifFalse: [ rejectedArxivList add: candidate ] ]
+            ownPaperOriginal: AIA2MultiLLMArchive paperExperiment.
+        
+        "Skip the 'if related' check and go straight to details and summary"
+        candidate build30ExternalPaperDetails. 
+        candidate build40Comparison. "Generates the actual text for the paper"
+        
+        arxivList add: candidate ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'arxiv' }
 AIA2RelatedBuilderList >> arxiv25ExternalPdfText: pdfBytes [
 	"Fetches external PDF text, converts it to a readable format, and stores it for comparison purposes"
 	| directory pdfFile textFile  command  |
@@ -110,7 +110,7 @@ AIA2RelatedBuilderList >> arxivCollect [
     | builder relatedURLs |
     arxivList ifNotNil: [ ^ self ].
     arxivList := OrderedCollection new.
-    rejectedArxivList := OrderedCollection new.
+    "rejectedArxivList := OrderedCollection new."
 
     "New Integration Point"
     builder := AIA2RelatedBuildeArXiv default.
@@ -127,29 +127,24 @@ AIA2RelatedBuilderList >> getArxivList [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old2_arxiv20CollectInner: anArxivURL [
+AIA2RelatedBuilderList >> old2_arxiv20CollectInner: url [
     | pdfLocation pdfContents candidate |
-    "Convert /abs/ to /pdf/ and ensure .pdf extension if needed"
-    pdfLocation := anArxivURL copyReplaceAll: 'abs' with: 'pdf'.
-    (pdfLocation endsWith: '.pdf') ifFalse: [ pdfLocation := pdfLocation, '.pdf' ].
-
-    [ pdfContents := ZnClient new get: pdfLocation ]
-        on: Error
-        do: [ pdfContents := nil ].
-
-    (pdfContents notNil and: [ pdfContents isBytes ]) ifTrue: [
+    pdfLocation := url copyReplaceAll: 'abs' with: 'pdf'.
+    pdfContents := [ ZnClient new get: pdfLocation ] on: Error do: [ nil ].
+    
+    pdfContents class name = #ByteArray  ifTrue: [
         candidate := AIA2RelatedBuilder new.
         candidate
             myId: arxivList size + 1;
             myHttps: pdfLocation;
             externalPdfText: (self arxiv25ExternalPdfText: pdfContents);
             ownPaperOriginal: AIA2MultiLLMArchive paperExperiment;
-            build30ExternalPaperDetails; "Added this to get Title/BibTeX"
-            build41Comparison.
-        
-        candidate relatedState = 'UNRELATED'
-            ifFalse: [ arxivList add: candidate ]
-            ifTrue: [ rejectedArxivList add: candidate ] ]
+            build30ExternalPaperDetails; "Crucial for Title/BibTeX"
+            build41Comparison. "Sets the RELATED/UNRELATED state"
+            
+        candidate relatedState = 'RELATED'
+            ifTrue: [ arxivList add: candidate ]
+            ifFalse: [ rejectedArxivList add: candidate ] ]
 ]
 
 { #category : 'arxiv' }

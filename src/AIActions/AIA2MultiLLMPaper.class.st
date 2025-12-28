@@ -101,69 +101,6 @@ AIA2MultiLLMPaper >> initialize [
 	writeResponses := OrderedDictionary new.
 ]
 
-{ #category : 'as yet unclassified' }
-AIA2MultiLLMPaper >> old_paper60RelatedWork [
-    | text name |
-    name := 'Related Work'.
-    (writeResponses includesKey: name) ifFalse: [ self write60RelatedWork ].
-    text := (writeResponses at: name) last.
-    paperText := paperText copyReplaceAll: '$$$$$related$$$$$' with: text
-]
-
-{ #category : 'as yet unclassified' }
-AIA2MultiLLMPaper >> old_write60RelatedWork [
-    ^ self
-        writeSection: 'Related Work'
-        withPrompt: 'Section type: Related Work
-Goal: Position this work against prior research and convince the reader of novelty
-Structure guidance from Kent Beck:
-"The final section describes what other people have done in the area. Upon reading this section, the PC member should be convinced that what you have done is novel."
-
-Your Related Work section must:
-1. Briefly summarise the most relevant prior work on LLM prompt brittleness, role sensitivity, and multi-turn failures.
-2. Cover key areas: chat vs completion APIs, prompt injection / jailbreaks that exploit roles, empirical cross-model studies, agent orchestration failures.
-3. Explicitly contrast with this paper: we provide the first systematic cross-provider empirical demonstration that pure assistant-turn histories deterministically suppress even trivial reasoning, and that a single trailing user turn reliably restores it.
-4. Do NOT hallucinate citations or claim specific papers unless they are explicitly mentioned in the Appendix or background.
-5. Keep the tone factual and academic; avoid claiming "first ever" unless justified by the evidence.
-
-Write concisely (300-500 words). Use only information grounded in widely known results or directly observable in the Appendix.'
-]
-
-{ #category : 'Protocol (writing) - 6 selector(s)' }
-AIA2MultiLLMPaper >> old_writeSection: section withPrompt: prompt [
-	| level1 level2 level3 level4 |
-	level1 := AIAHistory new.
-	level1 
-		api: (self apiFourLevels first);
-		background: self getAppendix;
-		background: self getKentBeckLLM;
-		user: prompt;
-		responseType: ('Start your response with "## {1}"' format: {section});
-		getResponse.
-	level2 := AIAHistory new.
-	level2 
-		api: (self apiFourLevels second);
-		addPreHistory: level1;
-		user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
-		getResponse.
-	level3 := AIAHistory new.
-	level3
-		api: (self apiFourLevels third );
-		addPreHistory: level2;
-		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
-		getResponse.
-	level4 := AIAHistory new.
-	level4
-		api: (self apiFourLevels fourth );
-		addPreHistory: level3;
-		user: 'Based on the previous answer, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.';
-		user: 'Based on the discussion, Re', prompt ;
-		responseType: 'Only include the ',section, ' text in your response';
-		getResponse.
-	writeResponses at: section put: { level1 response. level2 response. level3 response. level4 response }.
-	^ level4 response 
-]
-
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper00Title [
 	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
@@ -193,12 +130,14 @@ AIA2MultiLLMPaper >> paper15Subpages [
 	paperText << '$$$$$solution$$$$$' << String lf << String lf.	
 	paperText << '$$$$$defence$$$$$' << String lf << String lf.
 	paperText << '$$$$$related$$$$$' << String lf << String lf.
-	
+	paperText << '$$$$$conclusion$$$$$' << String lf << String lf.
+	paperText << '$$$$$references$$$$$' << String lf << String lf.	
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper20Abstract [ 
 	| text name|
+	(paperText findString: '$$$$$abstract$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Abstract'.
 	(writeResponses includesKey: name) ifFalse: [ self write20Abstract ].
 	text := (writeResponses at: name) last.
@@ -208,6 +147,7 @@ AIA2MultiLLMPaper >> paper20Abstract [
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper30Problem [
 	| text name|
+	(paperText findString: '$$$$$problem$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Problem'.
 	(writeResponses includes: name) ifFalse: [ self write30Problem ].
 	text := (writeResponses at: name) last.
@@ -217,7 +157,8 @@ AIA2MultiLLMPaper >> paper30Problem [
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper40Solution [
 	| text name|
-		name :=  'Solution'.
+	(paperText findString: '$$$$$solution$$$$$')  = 0 ifTrue: [ ^ self ].
+	name :=  'Solution'.
 	(writeResponses includes: name) ifFalse: [ self write40Solution ].
 	text := (writeResponses at: name) last.
 	paperText := paperText copyReplaceAll:'$$$$$solution$$$$$' with: text .
@@ -226,6 +167,7 @@ AIA2MultiLLMPaper >> paper40Solution [
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper50Defence [
 	| name text |
+	(paperText findString: '$$$$$defence$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Defence'.
 	(writeResponses includes: name) ifFalse: [ self write50Defence ].
 	text := (writeResponses at: name) last.
@@ -234,20 +176,45 @@ AIA2MultiLLMPaper >> paper50Defence [
 
 { #category : 'as yet unclassified' }
 AIA2MultiLLMPaper >> paper60RelatedWork [
-   | relatedList text  |
-	relatedList := AIA2RelatedBuilder relatedReports.
-   text := WriteStream on: ''.
+   |  text  |
+	(paperText findString: '$$$$$related$$$$$')  = 0 ifTrue: [ ^ self ].
+	text := WriteStream on: ''.
 	text << '## Related Work' << String lf << String lf.
-	1 to: relatedList size do: [ :index |
-		(relatedList at: index) third = 'UNRELATED' 
-			ifFalse: [text << (relatedList at: index) third << String lf << String lf]
-		 ] .
+	text << AIA2RelatedBuilderList default summaryOfRelatedWork << String lf << String lf.
 	paperText := paperText copyReplaceAll:'$$$$$related$$$$$' with: text contents .
+	^ text contents.
+]
+
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMPaper >> paper70Conclusion [
+   |  text  name|
+	"(paperText findString: '$$$$$conclusion$$$$$')  = 0 ifTrue: [ ^ self ]."
+	name :=  'Solution'.
+	(writeResponses includes: name) ifFalse: [ self write70Conclusion ].
+	text := (writeResponses at: name) last.
+	"paperText := paperText copyReplaceAll:'$$$$$conclusion$$$$$' with: text contents ."
+	^ text contents.
+]
+
+{ #category : 'as yet unclassified' }
+AIA2MultiLLMPaper >> paper80References [
+   |  text  list |
+	"(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ]."	
+	text := WriteStream on: ''.
+	text << '## References' << String lf << String lf.
+	list := AIA2RelatedBuilderList default getArxivList.
+	1 to: list size do: [ :elementID |
+			text << '(' << elementID asString << ') ' 
+				<< (list at: elementID ) getFormattedReference 
+				<< String lf << String lf.
+			].
+	"paperText := paperText copyReplaceAll:'$$$$$references$$$$$' with: text contents ."
 	^ text contents.
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paperBuild [
+	paperText ifNotNil: [ ^ self ].
 	paperText := WriteStream on: ''.
 	
 	self
@@ -262,7 +229,9 @@ AIA2MultiLLMPaper >> paperBuild [
 		paper30Problem;
 		paper40Solution;
 		paper50Defence;
-		paper60RelatedWork .
+		paper60RelatedWork;
+		"paper70Conclusion;"
+		paper80References.
 	
 ]
 

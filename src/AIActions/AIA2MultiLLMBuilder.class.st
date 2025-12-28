@@ -32,17 +32,41 @@ This class is part of the `AIActions` package and is tagged under 'Experiments'.
 Class {
 	#name : 'AIA2MultiLLMBuilder',
 	#superclass : 'Object',
+	#instVars : [
+		'stop'
+	],
+	#classInstVars : [
+		'default'
+	],
 	#category : 'AIActions-Experiments',
 	#package : 'AIActions',
 	#tag : 'Experiments'
 }
 
+{ #category : 'examples' }
+AIA2MultiLLMBuilder class >> clearDefault [
+	<example>
+	default := nil
+]
+
+{ #category : 'examples' }
+AIA2MultiLLMBuilder class >> default [
+	^ default
+]
+
+{ #category : 'examples' }
+AIA2MultiLLMBuilder class >> new [
+	default := super new.
+	^ default 
+]
+
 { #category : 'building' }
 AIA2MultiLLMBuilder >> build [
 	"Builds responses for each turn pattern in the storage lines."
 	| storeLines |
-	storeLines := AIA2MultiLLMStorage storage storeRows.
+	storeLines := AIA2MultiLLMStorage default storeRows.
 	storeLines do: [ :sl |
+		self class default ifNil: [ ^ self ].
 		self buildResponseText: sl
 		 ] 
 ]
