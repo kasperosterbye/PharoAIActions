@@ -66,19 +66,17 @@ AIA2MultiLLMPaper class >> default [
 AIA2MultiLLMPaper class >> instalationInstructions [
 	^ self.
 "
-AIA2MultiLLMStorage.
-	clearDefault
-	default makeStoreLines.
+AIA2MultiLLMStorage default.
+AIA2MultiLLMStorage clearDefault.
+AIA2MultiLLMStorage default makeStoreLines.
 
 AIA2MultiLLMBuilder new build.
-	AIA2MultiLLMBuilder clearDefault (Should stop it from building)
+AIA2MultiLLMBuilder clearDefault (Should stop it from building).
 		
-AIA2MultiLLMWriter default 
-	buildAppendix
+AIA2MultiLLMWriter default buildAppendix.
 	
-AIA2MultiLLMPaper default 
-	paperBuild
-	paperText
+AIA2MultiLLMPaper default paperBuild.
+AIA2MultiLLMPaper paperText
 "
 ]
 
@@ -93,7 +91,7 @@ AIA2MultiLLMPaper >> apiFourLevels [
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> getAppendix [
-	^ AIA2MultiLLMWriter writer appendix
+	^ AIA2MultiLLMWriter default appendix
 ]
 
 { #category : 'paper build' }
@@ -159,13 +157,7 @@ AIA2MultiLLMPaper >> initialize [
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper00Title [
-	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
-		<< String lf << String lf
-]
-
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> paper10Author [
+AIA2MultiLLMPaper >> old_paper10Author [
 	|superNumbers modelName|
 	superNumbers := '¹²³⁴⁵'.
 	paperText << '> Kasper Østerbye¹, Gemini AIlien², Owen AIlien³, OpenAI AIlien⁴, Anthropic AILien⁵' 
@@ -177,6 +169,30 @@ AIA2MultiLLMPaper >> paper10Author [
 		].
 	paperText << String lf << String lf.
 	
+]
+
+{ #category : 'paper build' }
+AIA2MultiLLMPaper >> paper00Title [
+	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
+		<< String lf << String lf
+]
+
+{ #category : 'paper build' }
+AIA2MultiLLMPaper >> paper10Author [
+    | superNumbers modelName |
+    superNumbers := '¹²³⁴⁵'.
+    
+   	 paperText << '> Gemini AIlien¹, Owen AIlien², OpenAI AIlien³, Anthropic AILien⁴, Kasper Østerbye⁵'
+        << String lf .
+    
+    1 to: 4 do: [ :index |
+        modelName := (self apiFourLevels at: index) printString copyReplaceAll: 'Api' with: ''.
+        paperText << '> ' << (superNumbers at: index) asString << ' ' << modelName << '<br>' << String lf
+    ].
+    
+    paperText << '> ' << (superNumbers at: 5) asString << ' Kasper Østerbye, IT University of Copenhagen (retired) <br>' << '<br>' << String lf.
+    
+    paperText << String lf << String lf.
 ]
 
 { #category : 'paper build' }
@@ -245,18 +261,18 @@ AIA2MultiLLMPaper >> paper60RelatedWork [
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper70Conclusion [
    |  text  name|
-	"(paperText findString: '$$$$$conclusion$$$$$')  = 0 ifTrue: [ ^ self ]."
-	name :=  'Solution'.
+	(paperText findString: '$$$$$conclusion$$$$$')  = 0 ifTrue: [ ^ self ].
+	name :=  'Conclusion'.
 	(writeResponses includes: name) ifFalse: [ self write70Conclusion ].
 	text := (writeResponses at: name) last.
-	"paperText := paperText copyReplaceAll:'$$$$$conclusion$$$$$' with: text contents ."
+	paperText := paperText copyReplaceAll:'$$$$$conclusion$$$$$' with: text contents .
 	^ text contents.
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper80References [
    |  text  list |
-	"(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ]."	
+	(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ].	
 	text := WriteStream on: ''.
 	text << '## References' << String lf << String lf.
 	list := AIA2RelatedBuilderList default getArxivList.
@@ -265,31 +281,30 @@ AIA2MultiLLMPaper >> paper80References [
 				<< (list at: elementID ) getFormattedReference 
 				<< String lf << String lf.
 			].
-	"paperText := paperText copyReplaceAll:'$$$$$references$$$$$' with: text contents ."
+	paperText := paperText copyReplaceAll:'$$$$$references$$$$$' with: text contents .
 	^ text contents.
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paperBuild [
-	paperText ifNotNil: [ ^ self ].
-	paperText := WriteStream on: ''.
-	
-	self
-		paper00Title;
-		paper10Author;
-		paper15Subpages.
-	paperText << self getAppendix .	
-	paperText := paperText contents.
 
-	self	
+	paperText ifNil: [
+			paperText := WriteStream on: ''.
+
+			self
+				paper00Title;
+				paper10Author;
+				paper15Subpages.
+			paperText << self getAppendix.
+			paperText := paperText contents ].
+	self
 		paper20Abstract;
 		paper30Problem;
 		paper40Solution;
 		paper50Defence;
 		paper60RelatedWork;
-		"paper70Conclusion;"
-		paper80References.
-	
+		paper70Conclusion;
+		paper80References
 ]
 
 { #category : 'accessing' }

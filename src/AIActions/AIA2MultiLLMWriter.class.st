@@ -77,7 +77,7 @@ AIA2MultiLLMWriter class >> default: anObject [
 
 { #category : 'accessing' }
 AIA2MultiLLMWriter >> appendix [
-	appendix ifNil: [ self markdownResponse ].
+	appendix ifNil: [ self appendixWrite ].
 	^ appendix
 ]
 
@@ -287,7 +287,7 @@ AIA2MultiLLMWriter >> markdown40LLMFullResponses [
             markDown << '##### ' << provider name asSymbol << String lf << String lf.
             (AIA2MultiLLMStorage linesToBuild at: #llmNos) do: [ :modelNo | 
                 | lines modelName |
-                lines := AIA2MultiLLMStorage storage storageArray select: [ :e |
+                lines := AIA2MultiLLMStorage default storageArray select: [ :e |
                     e turnPattern = pattern and: [
                     e provider = provider and: [
                     e llmNo = modelNo ]]].
@@ -372,35 +372,36 @@ AIA2MultiLLMWriter >> markdownSimplifiedResponse: originalResponse [
 
 { #category : 'markdown' }
 AIA2MultiLLMWriter >> rebuildOverview [
-	"Rebuilds the HTML comment overview for the LLM report using explicit report content only"
-	| prompt  hist |
-	prompt := 'You will output a hidden HTML comment for later LLM edits of this report.
+    "Rebuilds the HTML comment overview for the LLM report using explicit report content only. Optimized to help subsequent LLMs understand main topics and write sections like Abstract."
+    | prompt hist |
+    prompt := 'You will output a hidden HTML comment intended for later LLM (AI model) processing and editing of this report. 
+The reader is an AI model, not a human, so focus on concise, factual summaries without explanations.
 Use ONLY information explicitly present between REPORT_MARKDOWN_BEGIN/END.
-Do NOT infer or compute any numbers not explicitly stated.
-
+Do NOT infer, compute, or estimate any numbers or details not explicitly stated.
+The comment should help the LLM understand the main topics, key findings, and structure of the appendix for tasks like writing research sections (e.g., Abstract).
+Highlight surprising or model-specific results where present.
 Return EXACTLY 6 lines. Each line MUST start with the exact prefix shown:
 Scope:
 Experimental setup:
 What each table cell represents:
 Aggregates:
 Known failure modes:
-Editing priorities:
-
+Surprising results:
 Rules:
-- No markdown, no bullets, no extra lines.
-- Each line <= 120 characters.
-- If unsupported by explicit text, write: Unknown
-- Do not quote the report text.
-
-REPORT_MARKDOWN_BEGIN<br> 
-', markDown contents,  '
-<br>REPORT_MARKDOWN_END'.
-	hist := AIAHistory new.
-	hist 
-		api: (OpenAIApi newOnModel: 1);
-		background: 'LLM Temperature = 0.0 everywhere';
-		user: prompt;
-		getResponse.
-	overview := '<!--- ', String lf, hist response , String lf, '--->' , String lf.
-	^ overview 
+- No markdown, no bullets, no numbering, no extra lines.
+- If information is missing or unclear, write: Unknown
+- Do not quote or repeat report text.
+REPORT_MARKDOWN_BEGIN
+', markDown contents, '
+REPORT_MARKDOWN_END'.
+    hist := AIAHistory new.
+    hist
+        api: (ClaudeApi newOnModel: 5);  "Keep as is, or make configurable later"
+        background: 'LLM Temperature = 0.0 everywhere';
+        user: prompt;
+        getResponse.
+    overview := (hist response beginsWith: '<!--')
+        ifTrue: [ String lf, hist response , String lf ]
+        ifFalse: [ '<!--- ', String lf, hist response , String lf, '--->' , String lf ].
+    ^ overview
 ]
