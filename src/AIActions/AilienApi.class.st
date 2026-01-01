@@ -215,32 +215,6 @@ AilienApi class >> chatLastHistory [
 	^ historyText contents
 ]
 
-{ #category : 'as yet unclassified' }
-AilienApi class >> checkModels [
-	"Generates a markdown table comparing the first four models of each AI provider, testing each with a simple math question to verify functionality"
-
-	| md llm |
-	md := WriteStream on: ''.
-	md << '| Provider | Model 1 | Model 2 | Model 3 | Model 4 |' << String cr << '| ---- | ---- | ---- | ---- | ---- |' << String cr.
-
-	AilienApi subclasses do: [ :provider |
-			md << '| ' << provider name asString.
-			1 to: 4 do: [ :modelId |
-					| resp |
-					llm := provider newOnModel: modelId.
-					md << ' | '.
-					resp := (AIAHistory new
-						        api: llm;
-						        user: 'Is 2+3 <= 5. Please just response yes or no';
-						        getResponse;
-						        response) lines first.
-					resp := resp first: (resp size min: 5).
-					md << resp ].
-			md << ' | ' << String cr ].
-	AIAPresenter onText: md contents.
-	^ md contents
-]
-
 { #category : 'AI models' }
 AilienApi class >> defaultModel [
 	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."

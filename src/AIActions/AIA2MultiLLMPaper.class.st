@@ -94,7 +94,7 @@ AIA2MultiLLMPaper >> getAppendix [
 	^ AIA2MultiLLMWriter default appendix
 ]
 
-{ #category : 'paper build' }
+{ #category : 'as yet unclassified' }
 AIA2MultiLLMPaper >> getKentBeck [
 	^ 'Kent Beck says:
 I will not talk about a topic area, like my distinguished fellow panelists. I will present the process I use as I am writing my papers. You can adapt it for your writing process, or you can use it as a check list for evaluating finished papers (if this is starting to sound like patterns, well, fancy that). Much of what I will say is "common sense," found in any book about writing. Having looked at hundreds of submissions, though, I can state with certainty that most of the authors don''t follow this advice.
@@ -136,39 +136,9 @@ Output discipline:
 - Output only the section text; no commentary about the process.'
 ]
 
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> getPaperStyle: style [
-	| styleSpecification |
-	styleSpecification := { #technical -> ''.
-	#academic -> ''.
-	#practitioner -> ''.
-	#expertReviewer -> 'Write in a concise, technical conference-paper style for expert reviewers.
-Avoid rhetorical, journalistic, or pedagogical language.
-Keep meta-talk minimal (avoid "In this section..." and similar filler).
-Prefer concrete observations, mechanisms, and implications over motivation or storytelling.
-Assume the reader is technically competent and impatient.' 
-	} asDictionary at: style.
-	^ styleSpecification 
-]
-
 { #category : 'initialization' }
 AIA2MultiLLMPaper >> initialize [ 
 	writeResponses := OrderedDictionary new.
-]
-
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> old_paper10Author [
-	|superNumbers modelName|
-	superNumbers := '¹²³⁴⁵'.
-	paperText << '> Kasper Østerbye¹, Gemini AIlien², Owen AIlien³, OpenAI AIlien⁴, Anthropic AILien⁵' 
-		<< String lf << '> ¹ IT University of Copenhagen (retired) <br>' << String lf.
-
-	1 to: 4 do: [ :index | 
-		modelName := (self apiFourLevels at: index) printString copyReplaceAll: 'Api' with: ''.
-		paperText << '> ' << (superNumbers at: index + 1) asString << ' ' << modelName << '<br>' << String lf
-		].
-	paperText << String lf << String lf.
-	
 ]
 
 { #category : 'paper build' }
