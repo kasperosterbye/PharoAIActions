@@ -238,6 +238,14 @@ AIA2MultiLLMPaper >> paper40Solution [
 ]
 
 { #category : 'paper build' }
+AIA2MultiLLMPaper >> paper45SolutionPlantUML [
+	
+	
+"Good experience with Grok/2"
+'In the background there is paper with 4 methods. Can you combine those four and results into a PlantUML code example. I want to add it next the the "Solution". Only return the PlantUML, no explanation' q0: [ paperText ]
+]
+
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper50Defence [
 	| name text |
 	(paperText findString: '$$$$$defence$$$$$')  = 0 ifTrue: [ ^ self ].
@@ -305,6 +313,20 @@ AIA2MultiLLMPaper >> paperBuild [
 		paper60RelatedWork;
 		paper70Conclusion;
 		paper80References
+]
+
+{ #category : 'paper build' }
+AIA2MultiLLMPaper >> paperLatex [
+	"Grok makes something useful"
+	"But in reallity, one need to 1) Split the contents of the sections into an ordered dictionary, and 2) Define the header of the latex - eg something like.
+	\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{array}"
+	'Can you make a Latex structure for background markdown. I have some other system that produces each "\section" part, so it is just the outer strucure for a scientific latex paper I am interested in.' q0: [  self paperText]
 ]
 
 { #category : 'accessing' }

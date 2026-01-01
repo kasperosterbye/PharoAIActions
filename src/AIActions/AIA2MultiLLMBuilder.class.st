@@ -1,40 +1,41 @@
 "
 # Class Comment for AIA2MultiLLMBuilder
 
-The `AIA2MultiLLMBuilder` class is responsible for constructing and managing responses from multiple Large Language Model (LLM) providers. It handles different conversation patterns (turn patterns) and generates appropriate responses based on the specified LLM model and provider.
+The `AIA2MultiLLMBuilder` class is responsible for constructing and managing multi-turn conversations with Large Language Models (LLMs). It processes stored conversation lines by applying appropriate turn pattern handlers to generate responses. The builder supports various conversation patterns, including user-assistant interactions and assistant-only responses, and can be extended to accommodate additional patterns as needed.
 
 ## Key Features
 
-- **Turn Pattern Handling**: Processes various conversation patterns (e.g., `UAUAU`, `UUU`, `AAAU`, `AAA`) to generate context-aware responses.
-- **LLM Integration**: Utilises different LLM providers and models to generate responses.
-- **Response Construction**: Builds responses by simulating conversations with user and assistant messages.
-- **Storage Management**: Works with `AIA2MultiLLMStorage` to manage and process stored conversation lines.
+- **Turn Pattern Handling**: Maps specific conversation patterns (e.g., `#UAUAU`, `#UUU`) to corresponding response methods.
+- **Response Generation**: Constructs responses by simulating conversations with LLMs, including user and assistant messages.
+- **Flexible Configuration**: Allows customisation of conversation flows and response logic through configurable turn patterns.
 
 ## Usage Example
 
 ```st
-""Example of building responses for stored conversation lines""
-builder := AIA2MultiLLMBuilder new.
-builder build. ""Processes all stored lines and generates responses""
+""AIA2MultiLLMBuilder example usage in the Playground""
 
-""Inspect the first response""
-builder inspect.
+""Create a new builder instance""
+builder := AIA2MultiLLMBuilder new.
+
+""Define a sample store line with conversation details""
+storeLine := AIA2MultiLLMStorage new
+    turnPattern: #UAUAU;
+    provider: AIAOpenAI;
+    llmNo: 'gpt-3.5-turbo';
+    yourself.
+
+""Build the response for the store line""
+builder buildResponseText: storeLine.
+
+""Inspect the generated response""
+storeLine responseText
 ```
 
-## Design Considerations
-
-- **Fluid Interface**: Designed for interactive scripting in the Playground.
-- **Separation of Concerns**: Separates response construction from installation logic.
-- **Extensibility**: Can be extended with custom turn pattern handlers.
-
-This class is part of the `AIActions` package and is tagged under 'Experiments'.
+This example demonstrates how to create a builder, configure a conversation scenario, and generate a response using the `AIA2MultiLLMBuilder`. The response is stored in the `responseText` slot of the store line and can be inspected for verification.
 "
 Class {
 	#name : 'AIA2MultiLLMBuilder',
 	#superclass : 'Object',
-	#instVars : [
-		'stop'
-	],
 	#classInstVars : [
 		'default'
 	],

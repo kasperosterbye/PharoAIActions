@@ -73,7 +73,7 @@ AIA2RelatedBuilder >> build [
 { #category : 'as yet unclassified' }
 AIA2RelatedBuilder >> build10OwnPaperOriginal [
 	"Sets the original paper text for comparison purposes"
-	ownPaperOriginal := "AIA2MultiLLMPaper paper paperText" 
+	ownPaperOriginal := "AIA2MultiLLMPaper default paperText" 
 		AIA2MultiLLMArchive paperExperiment .
 ]
 

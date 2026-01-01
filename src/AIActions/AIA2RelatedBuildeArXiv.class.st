@@ -70,12 +70,12 @@ AIA2RelatedBuildeArXiv >> myPaper [
 	
 ]
 
-{ #category : 'initialization' }
+{ #category : 'Protocol (initialization) - 10 selector(s)' }
 AIA2RelatedBuildeArXiv >> prompt [
-	"Generates a prompt for constructing an arXiv API query based on the background paper"
+	"Constructs a prompt for generating a sophisticated arXiv API query from background paper"
 	^ 'Task: Generate a sophisticated URL-encoded arXiv API query based on the abstract below.
 
-Goal: Find the top 20 most relevant papers that discuss role sensitivity, turn-taking assumptions, or structural prompt failures in LLMs.
+Goal: Find the top 30 most relevant papers that discuss role sensitivity, turn-taking assumptions, or structural prompt failures in LLMs.
 
 Constraints for your response:
 
@@ -87,7 +87,8 @@ Use a complex search_query with logical operators (AND, OR) and prefixes (ti:, a
 
 Pick key search from my paper.
 
-Set max_results=20 and sortBy=relevance.'
+Set max_results=30 and sortBy=relevance.'
+	
 ]
 
 { #category : 'initialization' }
