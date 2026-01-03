@@ -33,15 +33,11 @@ builder summaryOfRelatedWork inspect.
 The class is designed for research purposes in the field of LLM conversation handling, particularly focusing on turn-taking patterns and role sensitivity in chat-based APIs.
 "
 Class {
-	#name : 'AIA2RelatedBuilderList',
+	#name : 'AIA2RelatedListBuilder',
 	#superclass : 'Object',
 	#instVars : [
 		'arxivList',
-		'rejectedArxivListX'
-	],
-	#classVars : [
-		'ArxivListX',
-		'RejectedArxivListX'
+		'relatedPapersList'
 	],
 	#classInstVars : [
 		'default'
@@ -52,24 +48,24 @@ Class {
 }
 
 { #category : 'accessing' }
-AIA2RelatedBuilderList class >> default [
+AIA2RelatedListBuilder class >> default [
 	default ifNil: [ default := self basicNew. default initialize ].
 	^ default 
 ]
 
 { #category : 'accessing' }
-AIA2RelatedBuilderList class >> new [
+AIA2RelatedListBuilder class >> new [
 	self error: 'Use default'
 ]
 
 { #category : 'accessing' }
-AIA2RelatedBuilderList class >> resetDefault [
+AIA2RelatedListBuilder class >> resetDefault [
 	<example>
 	default := nil
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> arxiv20CollectInner: url [
+AIA2RelatedListBuilder >> arxiv20CollectInner: url [
     | pdfLocation pdfContents candidate |
     pdfLocation := url copyReplaceAll: 'abs' with: 'pdf'.
     pdfContents := [ ZnClient new get: pdfLocation ] on: Error do: [ nil ].
@@ -90,7 +86,7 @@ AIA2RelatedBuilderList >> arxiv20CollectInner: url [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> arxiv25ExternalPdfText: pdfBytes [
+AIA2RelatedListBuilder >> arxiv25ExternalPdfText: pdfBytes [
 	"Fetches external PDF text, converts it to a readable format, and stores it for comparison purposes"
 	| directory pdfFile textFile  command  |
 	directory := FileSystem workingDirectory.
@@ -106,7 +102,7 @@ AIA2RelatedBuilderList >> arxiv25ExternalPdfText: pdfBytes [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> arxivCollect [
+AIA2RelatedListBuilder >> arxivCollect [
     | builder relatedURLs |
     arxivList ifNotNil: [ ^ self ].
     arxivList := OrderedCollection new.
@@ -122,12 +118,12 @@ AIA2RelatedBuilderList >> arxivCollect [
 ]
 
 { #category : 'accessing' }
-AIA2RelatedBuilderList >> getArxivList [
+AIA2RelatedListBuilder >> getArxivList [
 	^ arxivList
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old2_arxiv20CollectInner: url [
+AIA2RelatedListBuilder >> old2_arxiv20CollectInner: url [
     | pdfLocation pdfContents candidate |
     pdfLocation := url copyReplaceAll: 'abs' with: 'pdf'.
     pdfContents := [ ZnClient new get: pdfLocation ] on: Error do: [ nil ].
@@ -148,7 +144,7 @@ AIA2RelatedBuilderList >> old2_arxiv20CollectInner: url [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old_arxiv10LLMCollect [
+AIA2RelatedListBuilder >> old_arxiv10LLMCollect [
 	| hist |
 	hist := AIAHistory new.
 	hist
@@ -160,7 +156,7 @@ AIA2RelatedBuilderList >> old_arxiv10LLMCollect [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old_arxiv15Related [
+AIA2RelatedListBuilder >> old_arxiv15Related [
 	| both excludedText |
 	both := arxivList | rejectedArxivList collect: [ :a | a buildTitle ].
 	excludedText := both isEmpty
@@ -199,7 +195,7 @@ Paper title (THIS PAPER):
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old_arxiv20CollectInner: response [
+AIA2RelatedListBuilder >> old_arxiv20CollectInner: response [
 
 	| pdfLocation pdfContents candidate |
 	pdfLocation := response copyReplaceAll: 'abs' with: 'pdf'.
@@ -221,7 +217,7 @@ AIA2RelatedBuilderList >> old_arxiv20CollectInner: response [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old_arxivCollect [
+AIA2RelatedListBuilder >> old_arxivCollect [
 	arxivList ifNotNil: [ ^ self ]. "use the class side resetDefault to restart"
 	arxivList := OrderedCollection new.
 	rejectedArxivList := OrderedCollection new.
@@ -233,7 +229,7 @@ AIA2RelatedBuilderList >> old_arxivCollect [
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> old_arxivRelated [
+AIA2RelatedListBuilder >> old_arxivRelated [
     | both excludedText |
 	 both := arxivList  | rejectedArxivList collect: [ :a | a buildTitle ].
     excludedText := both isEmpty 
@@ -270,7 +266,7 @@ Paper title (my paper):
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> previous_arxivPapers [
+AIA2RelatedListBuilder >> previous_arxivPapers [
 "was the response form aaa1"
 	^ 'https://arxiv.org/abs/2307.03172
 https://arxiv.org/abs/2307.15043
@@ -285,7 +281,7 @@ https://arxiv.org/abs/2305.15771' lines
 ]
 
 { #category : 'arxiv' }
-AIA2RelatedBuilderList >> summaryOfRelatedWork [
+AIA2RelatedListBuilder >> summaryOfRelatedWork [
 	| summary |
 	summary := (String lf, String lf) join: (arxivList collect: [:item | item buildComparison]).
 	^ summary 

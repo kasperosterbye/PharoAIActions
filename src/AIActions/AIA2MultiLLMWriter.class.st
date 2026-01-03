@@ -276,6 +276,7 @@ AIA2MultiLLMWriter >> markdown40LLMFullResponses [
 	"This method generates a detailed Markdown report of raw LLM responses, organised by turn pattern and provider, including model-specific results."
     | sortedPatterns sortedProviders |
     markDown 
+		  << '<!---'
         << '## Raw LLM Responses' << String lf
         << '### Date: ' << Date today asString << String lf << String lf.
 
@@ -304,7 +305,8 @@ AIA2MultiLLMWriter >> markdown40LLMFullResponses [
             markDown << String lf.
         ].
     ].
-    ^ markDown contents
+	markDown << '--->' << String lf.
+   ^ markDown contents
 ]
 
 { #category : 'markdown' }

@@ -116,7 +116,7 @@ If a field is missing, omit that line silently.';
 AIA2RelatedBuilder >> build40Comparison [
 	| prompt previousResponses hist |
 	prompt := self getPrompt .
-	previousResponses := AIA2RelatedBuilderList default summaryOfRelatedWork.
+	previousResponses := AIA2RelatedListBuilder default summaryOfRelatedWork.
 	hist := AIAHistory new.
 	hist 
 		api: (OpenAIApi newOnModel: 1);
@@ -135,7 +135,7 @@ AIA2RelatedBuilder >> build40Comparison [
 AIA2RelatedBuilder >> build41Comparison [
     | prompt hist previous |
     prompt := self getPromptRelatedOrUnrelated.
-    previous := AIA2RelatedBuilderList default summaryOfRelatedWork.
+    previous := AIA2RelatedListBuilder default summaryOfRelatedWork.
     hist := AIAHistory new.
     hist 
         api: (OpenAIApi newOnModel: 1);

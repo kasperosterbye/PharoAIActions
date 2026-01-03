@@ -153,11 +153,13 @@ AIAHistory >> api [
 
 { #category : 'accessing' }
 AIAHistory >> api: anObject [
+	"Returns the API instance, creating a new AilienApi provider if none exists"
 	api := anObject
 ]
 
 { #category : 'accessing' }
 AIAHistory >> apiMessageList [
+	"Returns a list of API messages including user and assistant messages from current and pre-histories, formatted with role labels"
 	| assocKey messageList all |
 	assocKey := [ :assoc | '[', assoc key,'] ',  assoc value ].
 	messageList := OrderedCollection new.
@@ -179,12 +181,14 @@ AIAHistory >> assistant: aString [
 
 { #category : 'context roles' }
 AIAHistory >> background [
+	"Returns the background roles from the first roles collection, collecting their values."
 	^ (firstRoles select: [ :role |  role key = 'background']) 
 		collect: [ :role | role value ]
 ]
 
 { #category : 'context roles' }
 AIAHistory >> background: string [
+	"Adds a background role to the first roles collection with the given string"
 	firstRoles add: 'background' -> string 
 ]
 

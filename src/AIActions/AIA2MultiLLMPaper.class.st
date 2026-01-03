@@ -40,7 +40,8 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'paperText',
-		'writeResponses'
+		'writeResponses',
+		'paperDict'
 	],
 	#classInstVars : [
 		'default'
@@ -139,30 +140,36 @@ Output discipline:
 { #category : 'initialization' }
 AIA2MultiLLMPaper >> initialize [ 
 	writeResponses := OrderedDictionary new.
+	paperDict := OrderedDictionary new.
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper00Title [
-	paperText << '# The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling' 
+	| title |
+	title := 'The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling'.
+	paperDict at: 0 put: { 'title'. title }.
+	paperText << '# ' << title  
 		<< String lf << String lf
 ]
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> paper10Author [
-    | superNumbers modelName |
-    superNumbers := '¹²³⁴⁵'.
-    
-   	 paperText << '> Gemini AIlien¹, Owen AIlien², OpenAI AIlien³, Anthropic AILien⁴, Kasper Østerbye⁵'
-        << String lf .
-    
-    1 to: 4 do: [ :index |
-        modelName := (self apiFourLevels at: index) printString copyReplaceAll: 'Api' with: ''.
-        paperText << '> ' << (superNumbers at: index) asString << ' ' << modelName << '<br>' << String lf
-    ].
-    
-    paperText << '> ' << (superNumbers at: 5) asString << ' Kasper Østerbye, IT University of Copenhagen (retired) <br>' << '<br>' << String lf.
-    
-    paperText << String lf << String lf.
+
+	| authors superNumbers modelName |
+	
+	authors := self apiFourLevels , {'Kasper Østerbye' }.
+	paperDict at: 10 put: {'authors'. authors}.
+	superNumbers := '¹²³⁴⁵'.
+	paperText << '> Gemini AIlien¹, Owen AIlien², OpenAI AIlien³, Anthropic AILien⁴, Kasper Østerbye⁵' << String lf.
+
+	1 to: 4 do: [ :index |
+			modelName := (self apiFourLevels at: index) printString copyReplaceAll: 'Api' with: ''.
+			paperText << '> ' << (superNumbers at: index) asString << ' ' << modelName << '<br>' << String lf ].
+
+	paperText << '> ' << (superNumbers at: 5) asString << ' Kasper Østerbye, IT University of Copenhagen (retired) <br>' << '<br>'
+	<< String lf.
+
+	paperText << String lf << String lf
 ]
 
 { #category : 'paper build' }
@@ -231,7 +238,7 @@ AIA2MultiLLMPaper >> paper60RelatedWork [
 	(paperText findString: '$$$$$related$$$$$')  = 0 ifTrue: [ ^ self ].
 	text := WriteStream on: ''.
 	text << '## Related Work' << String lf << String lf.
-	text << AIA2RelatedBuilderList default summaryOfRelatedWork << String lf << String lf.
+	text << AIA2RelatedListBuilder default summaryOfRelatedWork << String lf << String lf.
 	paperText := paperText copyReplaceAll:'$$$$$related$$$$$' with: text contents .
 	^ text contents.
 ]
@@ -253,7 +260,7 @@ AIA2MultiLLMPaper >> paper80References [
 	(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ].	
 	text := WriteStream on: ''.
 	text << '## References' << String lf << String lf.
-	list := AIA2RelatedBuilderList default getArxivList.
+	list := AIA2RelatedListBuilder default getArxivList.
 	1 to: list size do: [ :elementID |
 			text << '(' << elementID asString << ') ' 
 				<< (list at: elementID ) getFormattedReference 

@@ -376,6 +376,7 @@ AilienApi class >> providers [
 
 { #category : 'accessing' }
 AilienApi >> apiGenerateUrl [
+	"Returns the URL endpoint for the AI provider's API, combining base URL with model-specific path. Subclasses must implement this method to provide provider-specific API routing."
 	self subclassResponsibility
 ]
 
@@ -387,7 +388,7 @@ AilienApi >> bodyForEntityWithPrompt [
 
 { #category : 'responses' }
 AilienApi >> errorResponse: jsonResponse [
-	"ErrorResponse := nil"
+	"Returns the error response string, either the provided error message or the default error response if none is set"
 	ErrorResponse isNil 
 		ifTrue: [ ^ 'Error bla bla: ' , jsonResponse ]
 		ifFalse: [ ^ ErrorResponse ]
@@ -395,6 +396,7 @@ AilienApi >> errorResponse: jsonResponse [
 
 { #category : 'accessing' }
 AilienApi >> headers: foo [
+	"Sets HTTP headers for API requests, including authentication and content type. Subclasses must implement this method to provide provider-specific header configuration."
 	self subclassResponsibility
 ]
 
@@ -416,7 +418,7 @@ AilienApi >> jsonHistory [
 			{'role' -> item key.
 			'content' -> item value.})
 	].
-	"LastHistory := history."
+	"LastHistory := jsonHistory."
 	^ jsonHistory asArray.
 ]
 
@@ -442,6 +444,7 @@ AilienApi >> loadResponse: history [
 
 { #category : 'accessing' }
 AilienApi >> messageList: anObject [
+	"Sets the message list for the API interaction, storing role-content pairs in chronological order for conversation history management"
 
 	messageList := anObject
 ]
@@ -460,38 +463,21 @@ AilienApi >> model: anObject [
 ]
 
 { #category : 'accessing' }
-AilienApi >> old_loadResponse [
-	"Executes HTTP request to AI provider endpoint and processes response into conversation history with error handling"
-	
-	| jsonResponse llmCall |
-	[  jsonResponse := ZnClient new
-								timeout: self responseWaitingInSecs ;
-			                url: self apiGenerateUrl;
-			                entity: self bodyForEntityWithPrompt.
-		self headers: jsonResponse.
-		llmCall := jsonResponse
-			           post;
-			           contents.
-		self response: (self responseOf: llmCall).
-		"history assistant: response. "
-		]
-		on: Error
-		do: [ :ex | self response:  ex messageText ]
-]
-
-{ #category : 'accessing' }
 AilienApi >> responseOf: llmCall [
+	"Extracts the assistant's response from the raw API response, handling provider-specific JSON structures and error cases."
 	self subclassResponsibility
 ]
 
 { #category : 'accessing' }
 AilienApi >> responseWaitingInSecs [
+	"Returns the timeout duration in seconds for waiting for an AI response"
 
 	^ responseWaitingInSecs
 ]
 
 { #category : 'accessing' }
 AilienApi >> responseWaitingInSecs: anObject [
+	"Sets the timeout duration in seconds for waiting for an AI response"
 
 	responseWaitingInSecs := anObject
 ]
