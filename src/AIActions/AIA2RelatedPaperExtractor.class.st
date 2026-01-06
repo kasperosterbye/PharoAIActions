@@ -25,6 +25,7 @@ Class {
 	#name : 'AIA2RelatedPaperExtractor',
 	#superclass : 'Object',
 	#instVars : [
+		'listId',
 		'arXivHTTP',
 		'arXivText',
 		'arXivExtracted'
@@ -36,6 +37,14 @@ Class {
 	#package : 'AIActions',
 	#tag : 'AIAPaperBuilding'
 }
+
+{ #category : 'accessing' }
+AIA2RelatedPaperExtractor class >> all [
+	| all |
+	all := AIA2RelatedBuildeArXiv default relatedPaperHTTPS.
+	self clearExtractorList.
+	all do: [ :http | self on: http ]
+]
 
 { #category : 'examples' }
 AIA2RelatedPaperExtractor class >> clearExtractorList [
@@ -70,6 +79,11 @@ AIA2RelatedPaperExtractor class >> on: http [
 	obj build.
 	ExtractorList add: obj.
 	^ obj
+]
+
+{ #category : 'accessing' }
+AIA2RelatedPaperExtractor >> arXivExtracted [
+	^ arXivExtracted
 ]
 
 { #category : 'accessing' }
@@ -122,20 +136,22 @@ AIA2RelatedPaperExtractor >> build20ArXivExtracted [
 		background: arXivText;
 		user: self buildArXivExtractedPrompt;
 		getResponse.
-	arXivExtracted := hist response
+	arXivExtracted := self splitExtracted: hist response
 ]
 
 { #category : 'building' }
 AIA2RelatedPaperExtractor >> buildArXivExtractedPrompt [
 	"Constructs the prompt for extracting paper details from arXiv text using an LLM model"
 	^ '
-from the paper given as background, your response must follow this form:
+From the paper given as background, your response must follow this form:
 TITLE: name of the title of the paper
 AUTHORS: One line per author like this "author name; author affiliation (or SOMEWHERE if you do not know)"
 BIBTEX: A full bibtex of the paper on the form 
+
 ```bibtex
 bibtex info of the paper, whith as much info you can find. D
 ```
+
 PAPER: Extract the following about the paper (max 1000 words total):
 1. CORE_CONTRIBUTION: What is the novel contribution in one sentence?
 2. METHOD_TYPE: Classify as experimental, theoretical, systems, or survey
@@ -146,8 +162,41 @@ PAPER: Extract the following about the paper (max 1000 words total):
 
 Be factual and descriptive, not evaluative. Use the paper''''s own terminology.
 
-RESPONSETYPE: factual, neutral, non-comparative. No superlatives.
+<RESPONSETYPE> factual, neutral, non-comparative. No superlatives.</RESPONSETYPE>
 '
 	
     
+]
+
+{ #category : 'building' }
+AIA2RelatedPaperExtractor >> splitExtracted: extracted [
+
+	| lines lineIndex title authors bibtex paper |
+	lines := extracted lines.
+	title := lines first copyFrom: 'TITLE:' size + 2 to: lines first size.
+
+	lineIndex := 2.
+	[ (lines at: lineIndex) beginsWith: 'AUTHORS:' ] whileFalse: [ lineIndex := lineIndex + 1 ].
+	authors := OrderedCollection new.
+	authors add: ((lines at: lineIndex) copyFrom: 'AUTHORS:' size + 2 to: (lines at: lineIndex) size).
+	lineIndex := lineIndex + 1.
+	[ (lines at: lineIndex) isNotEmpty ] whileTrue: [
+			authors add: (lines at: lineIndex).
+			lineIndex := lineIndex + 1 ].
+	authors := authors asArray.
+
+	[ (lines at: lineIndex) includesSubstring: '```bibtex' ] whileFalse: [ lineIndex := lineIndex + 1 ].
+	bibtex := OrderedCollection new.
+	lineIndex := lineIndex + 1.
+	[ (lines at: lineIndex) beginsWith:  '```' ] whileFalse: [
+			bibtex add: (lines at: lineIndex).
+			lineIndex := lineIndex + 1 ].
+	bibtex := bibtex asArray .
+	
+	[ (lines at: lineIndex) beginsWith: 'PAPER:' ] whileFalse: [ lineIndex := lineIndex + 1 ].
+	paper := lines allButFirst: lineIndex.
+	paper := String lf join: paper.
+	
+	arXivExtracted := { 'title'->title. 'authors'->authors. 'bibtex'->bibtex. 'paper'->paper } asDictionary.
+	^ arXivExtracted 
 ]

@@ -138,6 +138,7 @@ AIA2RelatedBuildeArXiv >> response [
 	self response30QualityReport.
 	self response40SortedQuality.
 	self response50RelatedPaperHTTPS.
+	self halt. "Insert into the list of AIA3RelatedPaper and the list of them AIA3RelatedPaperList"
 	^ relatedPaperHTTPS
 ]
 
