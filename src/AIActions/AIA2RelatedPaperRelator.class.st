@@ -333,8 +333,8 @@ AIA2RelatedPaperRelator class >> rawRelationStringFor: anArray [
 	| all  |
 	all := WriteStream on: ''.
 	anArray do: [ :index | 
-		all << '## (' << index asString << ') ' << String lf 
-			<<  (RawRelationList at: index) << String lf << String lf.
+		all << '## This is externalPaper (' << index asString << ') ' << String lf 
+			<<  (RawRelationList at: index) rawRelation << String lf << String lf.
 	 ].
 	^ all contents
 ]

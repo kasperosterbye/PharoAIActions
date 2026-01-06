@@ -144,6 +144,22 @@ AIA2MultiLLMPaper >> initialize [
 ]
 
 { #category : 'paper build' }
+AIA2MultiLLMPaper >> old_paper80References [
+   |  text  list |
+	(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ].	
+	text := WriteStream on: ''.
+	text << '## References' << String lf << String lf.
+	list := AIA2RelatedListBuilder default getArxivList.
+	1 to: list size do: [ :elementID |
+			text << '(' << elementID asString << ') ' 
+				<< (list at: elementID ) getFormattedReference 
+				<< String lf << String lf.
+			].
+	paperText := paperText copyReplaceAll:'$$$$$references$$$$$' with: text contents .
+	^ text contents.
+]
+
+{ #category : 'paper build' }
 AIA2MultiLLMPaper >> paper00Title [
 	| title |
 	title := 'The Turn-Taking Assumption: Cross-Provider Testing of LLM Conversation Handling'.
@@ -260,7 +276,7 @@ AIA2MultiLLMPaper >> paper80References [
 	(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ].	
 	text := WriteStream on: ''.
 	text << '## References' << String lf << String lf.
-	list := AIA2RelatedListBuilder default getArxivList.
+	list := AIA2RelatedPaperExtractor extractorList.
 	1 to: list size do: [ :elementID |
 			text << '(' << elementID asString << ') ' 
 				<< (list at: elementID ) getFormattedReference 

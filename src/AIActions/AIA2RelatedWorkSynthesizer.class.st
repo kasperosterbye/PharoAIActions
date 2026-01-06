@@ -26,7 +26,7 @@ AIA2RelatedWorkSynthesizer class >> default [
 { #category : 'instance creation' }
 AIA2RelatedWorkSynthesizer class >> llmModel [
 	"Returns a new instance of the Claude API configured for model version 1"
-	^ ClaudeApi newOnModel: 1
+	^ OpenAIApi newOnModel: 1
 ]
 
 { #category : 'accessing' }
@@ -172,9 +172,13 @@ AIA2RelatedWorkSynthesizer >> groupSynthesizer: idArray [
 	externals := AIA2RelatedPaperRelator rawRelationStringFor: idArray.
 	hist := AIAHistory new.
 	hist
-		api: self class llmModel;
+		api: self class llmModel.
+	synthesizedRelatedPaper contents size > 10 ifTrue: [
+		hist user: 'Previous responces for other external papers. Avoid writing thise topics again. ',
+				 synthesizedRelatedPaper contents].
+	hist
 		user: 'Single or group of `externalPapers` ', String lf, externals ;
-		user: (self groupSynthesizerPrompt) ;
+		user: self groupSynthesizerPrompt ;
 		getResponse.
 	synthesizedRelatedPaper << hist response << String lf << String lf
 ]
@@ -187,14 +191,16 @@ NEW PAPERS: `externalPapers`
 
 TASK:
 1. Write one sentence that the issue the `externalPapers` have in common.
-2. Make sure you refer to each element in  `externalPapers`. "
-3. Make sure that the combined text still flows as one paragraph.
-4. Response must at absloute max size be 75-100 words pr element in `externalPapers` , and response must not have a header'
+2. Make sure you refer to paper title and number of each element in  `externalPapers`. "
+3. Relate the externalPapers to our paper.
+4. Make sure that the combined text still flows as one paragraph.
+5. Response must at absloute max size be 75-100 words pr element in `externalPapers` , and response must not have a header'
 ]
 
 { #category : 'as yet unclassified' }
 AIA2RelatedWorkSynthesizer >> groupingRelator [
 	| hist response|
+	relatorGroups ifNotNil: [ ^ relatorGroups ].
 	hist := AIAHistory new.
 	hist
 		api: (ClaudeApi newOnModel: 1);
@@ -207,6 +213,7 @@ AIA2RelatedWorkSynthesizer >> groupingRelator [
 		relatorGroups add: (CodeImporter evaluateString: line)
 	].
 	relatorGroups := relatorGroups asArray.
+	^ relatorGroups
 	
 ]
 
