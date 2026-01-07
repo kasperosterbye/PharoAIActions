@@ -65,6 +65,11 @@ Quite another matter - I can''t read, and need a computer to convert your answer
 ]
 
 { #category : 'as yet unclassified' }
+AIAHistory class >> clearHistories [
+	Histories := OrderedCollection new.
+]
+
+{ #category : 'as yet unclassified' }
 AIAHistory class >> dDiscussion [
 	<example>
 	| dDiscussion index |
@@ -90,17 +95,6 @@ AIAHistory class >> histories [
 { #category : 'initialization' }
 AIAHistory class >> historyAt: id [
 	^ Histories detect: [ :hist | hist title = id ]
-]
-
-{ #category : 'initialization' }
-AIAHistory class >> old_historyAt: id [
-	^ Histories at: id ifAbsent: [ self error ]
-]
-
-{ #category : 'initialization' }
-AIAHistory class >> old_setHistory: idName to: hist [
-	Histories ifNil: [ Histories := Dictionary new ].
-	Histories at: idName put: hist
 ]
 
 { #category : 'as yet unclassified' }
@@ -246,7 +240,7 @@ AIAHistory >> includeInHistories [
 	Histories add: self.
 	firstNoTitle := 0.
 	noOfNoTitle := 0.
-	maxNoTitles := 10.
+	maxNoTitles := 25.
 	1 to: Histories size do: [ :index |
 		(Histories at: index) title ifNil: [ 
 			firstNoTitle > 0 ifFalse: [ firstNoTitle := index ].

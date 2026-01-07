@@ -1,38 +1,48 @@
 "
-# Class Comment for AIA2RelatedPaperRelator
+### Class: AIA2RelatedPaperRelator
 
-The `AIA2RelatedPaperRelator` class is responsible for establishing and documenting relationships between a specified paper (typically the author's own work) and external papers extracted from arXiv. It serves as a bridge between the local paper representation and external academic literature, facilitating the creation of structured related work sections.
+This class is designed to analyze and relate a paper (represented by `ourPaper`) to an external paper extracted from arXiv (represented by `arXivExtracted`). It uses an LLM (Language Model) to generate a ""raw relation"" – a textual description of the relationship between the two papers, in a related-work style.
 
-## Key Responsibilities
+The class manages a shared list (`RawRelationList`) to store the generated relations.
 
-1. **Paper Representation**: Maintains both the local paper text and extracted arXiv content
-2. **Relationship Generation**: Uses LLM models to create dense, factual related work entries
-3. **Documentation**: Records the raw relationship text for later use in academic publications
+**Responsibilities:**
 
-## Usage Example
+*   Extracts information from arXiv.
+*   Builds a raw relation between the current paper and an external paper using an LLM.
+*   Stores the raw relation.
 
-```st
-""Create a new relator instance and inspect it""
-relator := AIA2RelatedPaperRelator new
-    buildOurPaper: '## My Research Paper
-    This is the abstract of my groundbreaking work...';
-    arXivExtracted: '## External Paper
-    This is an interesting related work from arXiv...';
-    buildRawRelation;
+**Usage Example (in Playground):**
+
+```smalltalk
+| relator extractedData |
+
+""First, we need some extracted data from arXiv.  This is a placeholder; in a real scenario, you'd get this from an AIA2RelatedPaperExtractor.""
+extractedData := Dictionary new
+    at: 'title' put: 'A Hypothetical Paper Title';
+    at: 'paper' put: 'This is the content of the external paper.  It discusses similar concepts...';
     yourself.
 
-""Inspect the generated relationship""
-relator rawRelation
+""Create a relator instance.""
+relator := AIA2RelatedPaperRelator new.
+
+""Set the content of our paper (replace with your actual paper content).""
+relator getOurPaper.
+
+""Set the extracted data from arXiv.""
+relator arXivExtracted: extractedData.
+
+""Build the raw relation using the LLM.""
+relator buildRawRelation.
+
+""Access the generated raw relation.""
+relator rawRelation.
+
+""Add the relator to the shared list (for later access).""
+AIA2RelatedPaperRelator class rawRelationList add: relator.
+
+""To see all the relations:""
+AIA2RelatedPaperRelator class rawRelationString.
 ```
-
-## Design Notes
-
-- The class follows a builder pattern for constructing relationships
-- Maintains a shared collection of all created relationships
-- Uses LLM models to generate high-quality related work entries
-- Designed for integration with academic paper generation workflows
-
-The class is particularly useful for researchers who need to systematically document relationships between their work and the broader academic literature.
 "
 Class {
 	#name : 'AIA2RelatedPaperRelator',

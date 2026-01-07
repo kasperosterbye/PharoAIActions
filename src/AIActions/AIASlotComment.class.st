@@ -45,17 +45,17 @@ AIASlotComment class >> classSlotCommentDictionary [
 
 { #category : 'instance creation' }
 AIASlotComment class >> for: aClass [
-	"Generates AI comments for a class's instance variables. Uses a prompt to request comments from an AI model, then stores them in a dictionary."
-
-	|  response slotsCollection|
+	"Generates comments for instance variables of a class, using AI."
+	|  response comments slotsCollection|
 	
 	classSlotCommentDictionary ifNil: [ self initialize ].
 	response := (self promptFor: aClass) q: [ AIASourceCodeBuilder new forClass: aClass ].
 	response := response lines.
-	(response first beginsWith: '```') ifTrue: [
-		response := response copyFrom: 2 to: response size - 1].
-	
-	slotsCollection := (response collect: [ :f |
+	comments := OrderedCollection new.
+	response do: [ :resp |
+		(resp beginsWith: '#') ifTrue: [ 
+			comments add: (resp copyReplaceAll: '"' with: '""') ]].
+	slotsCollection := (comments collect: [ :f |
 				OpalCompiler new
 				        source: f;
 				        evaluate ]) asDictionary.

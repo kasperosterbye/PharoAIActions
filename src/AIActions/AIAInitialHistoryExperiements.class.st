@@ -39,7 +39,6 @@ This will execute a system test using the specified LLM model and store the resu
 - **Builder Refinement**: Consider revisiting the need for fluid class builders and refining their API for better usability and maintainability.
 
 This class is part of the `AIAExperiments` package and is tagged with 'HistoryExperiements'.
-```
 "
 Class {
 	#name : 'AIAInitialHistoryExperiements',

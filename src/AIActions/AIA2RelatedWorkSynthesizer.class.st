@@ -1,3 +1,23 @@
+"
+# Class Comment for AIA2RelatedWorkSynthesizer
+
+The `AIA2RelatedWorkSynthesizer` is responsible for generating cohesive related work sections by synthesising information from multiple external papers. It utilises large language models to create integrated narratives that highlight thematic connections and comparative insights between our research and existing literature.
+
+## Key Responsibilities:
+- **Single Paper Integration**: Generates concise, context-aware summaries that incorporate new papers into existing related work sections
+- **Multi-Paper Synthesis**: Produces cohesive paragraphs that synthesise information from groups of related papers
+- **Thematic Grouping**: Organises papers by shared topics to create more meaningful comparative analyses
+- **Word Count Management**: Ensures output adheres to specified word limits while maintaining readability
+
+## Usage Example:
+```st
+""AIA2RelatedWorkSynthesizer default
+    buildSynthesizerForGroup: #(1 2 3);
+    inspect""
+```
+
+The example demonstrates how to synthesise information from papers indexed 1, 2, and 3, with the result being ready for inspection in the Playground.
+"
 Class {
 	#name : 'AIA2RelatedWorkSynthesizer',
 	#superclass : 'Object',

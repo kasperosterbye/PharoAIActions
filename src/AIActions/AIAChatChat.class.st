@@ -1,3 +1,34 @@
+"
+# Class Comment for AIAChatChat
+
+`AIAChatChat` is a class designed to facilitate interactive chat-based interactions with large language models (LLMs). It manages conversation history and supports alternating between different LLM providers to generate responses.
+
+## Key Features
+
+- **Conversation Management**: Maintains a history of user prompts and LLM responses.
+- **Multi-Model Support**: Alternates between different LLM providers (e.g., Mistral, Grok) for varied responses.
+- **Contextual Prompting**: Generates follow-up questions based on previous responses to maintain coherent discussions.
+- **Response Formatting**: Supports academic British style responses and custom response types.
+
+## Usage Example
+
+```st
+""Create a new chat instance and start a conversation about Danish computer scientists""
+chat := AIAChatChat new.
+chat chat.
+
+""Inspect the conversation history""
+chat history
+```
+
+## Design Considerations
+
+- **Fluid API**: Designed for interactive scripting in the Playground.
+- **Provider Flexibility**: Easily switch between different LLM providers.
+- **Context Awareness**: Maintains conversation context to generate relevant follow-up questions.
+
+This class is particularly useful for educational purposes, research discussions, or any scenario requiring structured, multi-turn interactions with LLMs.
+"
 Class {
 	#name : 'AIAChatChat',
 	#superclass : 'Object',

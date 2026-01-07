@@ -1,3 +1,30 @@
+"
+# Class Comment for AIAHistoryPresenter
+
+The `AIAHistoryPresenter` is a Spec2 presenter designed to display and manage AI interaction history. It provides a user interface for viewing past AI conversations, prompts, and responses in a structured layout.
+
+## Features
+
+- Displays a list of AI history sessions
+- Shows individual prompts and responses
+- Provides text areas for viewing and editing content
+- Organises content in a horizontal split layout with left and right panels
+
+## Usage Example
+
+```smalltalk
+""AIAHistoryPresenter example usage in Playground""
+
+""Open the presenter""
+presenter := AIAHistoryPresenter new.
+presenter open.
+
+""Inspect the presenter's components""
+presenter inspect
+```
+
+This presenter is part of the AIActions package and is tagged as an 'Experiments' class.
+"
 Class {
 	#name : 'AIAHistoryPresenter',
 	#superclass : 'SpPresenter',

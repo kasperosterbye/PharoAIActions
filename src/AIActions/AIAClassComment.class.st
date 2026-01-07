@@ -37,5 +37,6 @@ AIAClassComment >> setComment: aClass [
 		copyFrom: first to: last)
 		asStringWithCr.
 	aClass comment: cleaned .
+	AIASlotComment for: aClass.
 	
 ]
