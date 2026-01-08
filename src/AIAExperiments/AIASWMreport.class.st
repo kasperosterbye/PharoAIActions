@@ -52,28 +52,15 @@ Class {
 		'MarkDown',
 		'ResponseList'
 	],
-	#category : 'AIActions-Experiments',
-	#package : 'AIActions',
-	#tag : 'Experiments'
+	#category : 'AIAExperiments-ExperimentsResearch',
+	#package : 'AIAExperiments',
+	#tag : 'ExperimentsResearch'
 }
 
 { #category : 'initialization' }
 AIASWMreport class >> initializeRTResults [
 	"Initializes the RTResults collection for storing response data"
 	<example>
-]
-
-{ #category : 'default-settings' }
-AIASWMreport class >> old_testModels [	
-	"Returns a dictionary of AI models and their versions for testing purposes"
-	^ { 
-		GrokApi -> { 2 "Grok-4-fast-reasoning". 1 "grok-code-fast-1" }.
-		MistralApi -> { 1 "codestral-latest". 3 "devstral-medium-2507" }.
-		TogetherApi -> { 4 "DeepSeek-V3.1". 3 "Qwen3-235B-A22B"  }.
-		OpenAIApi -> { 1 "gpt-5.1" }".
-		GeminiApi -> { 2  ""gemini-2.5-pro"" }"
-	}
-	
 ]
 
 { #category : 'default-settings' }

@@ -8,8 +8,9 @@ Class {
 		'currentSecondList',
 		'arraySecondsList'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIAExperiments-UIPresenters',
+	#package : 'AIAExperiments',
+	#tag : 'UIPresenters'
 }
 
 { #category : 'examples' }

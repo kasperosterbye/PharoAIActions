@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'history'
 	],
-	#category : 'AIActions-Experiments',
-	#package : 'AIActions',
-	#tag : 'Experiments'
+	#category : 'AIAExperiments-ExperimentsTools',
+	#package : 'AIAExperiments',
+	#tag : 'ExperimentsTools'
 }
 
 { #category : 'initialization' }

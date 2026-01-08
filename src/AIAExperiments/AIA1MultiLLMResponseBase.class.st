@@ -41,8 +41,9 @@ Class {
 	#classInstVars : [
 		'report'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIAExperiments-ExperimentsResearch',
+	#package : 'AIAExperiments',
+	#tag : 'ExperimentsResearch'
 }
 
 { #category : 'reporting' }

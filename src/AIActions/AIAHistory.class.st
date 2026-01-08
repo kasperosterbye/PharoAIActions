@@ -97,21 +97,30 @@ AIAHistory class >> historyAt: id [
 	^ Histories detect: [ :hist | hist title = id ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'Protocol (as yet unclassified) - 7 selector(s)' }
 AIAHistory class >> qPrefix [
+	"Returns the qPrefix history, creating it if necessary, with system text and response type"
 	<example>
-	| qHist |
-	qHist := self new.
-	qHist system: 'You are a Pharo14 Smalltalk expert. In Pharo12 and later, a typical class is written as: 
+	^ Histories 
+		detect: [ :hist | hist title = 'qPrefix' ]
+		ifNone: [
+			self new
+				title: 'qPrefix';
+				system: self qPrefixSystemText;
+				responseType: 'Please response in ', AIACommentBuilding language;
+				yourself] 
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> qPrefixSystemText [
+	"Returns the system text for the qPrefix history, defining Pharo class structure and evaluation rules"
+	^ 'You are a Pharo14 Smalltalk expert. In Pharo12 and later, a typical class is written as: 
 	Object << #AilienApi
 	slots: { #model . #messagesx . #history };
 	sharedVariables: { #LastHistoryx . #Provider };
 	tag: ''AIApi'';
 	package: ''AIActions''.
-	In Pharo and Smalltalk, the expression `2 + 3 * 4` is evaluated from left to right due to the uniform precedence of all binary messages. This means the addition is performed first, followed by the multiplication. Therefore, the expression is evaluated as `(2 + 3) * 4`, resulting in `20`.'.
-	qHist responseType: 'Please response in ', AIACommentBuilding language.
-	qHist title: 'qPrefix'.
-	^ qHist 
+	In Pharo and Smalltalk, the expression `2 + 3 * 4` is evaluated from left to right due to the uniform precedence of all binary messages. This means the addition is performed first, followed by the multiplication. Therefore, the expression is evaluated as `(2 + 3) * 4`, resulting in `20`.'
 ]
 
 { #category : 'as yet unclassified' }
@@ -236,7 +245,9 @@ AIAHistory >> getResponse [
 
 { #category : 'adding' }
 AIAHistory >> includeInHistories [
+	"Includes the current history in the shared Histories collection, managing untitled entries to maintain a maximum of 25."
 	| firstNoTitle noOfNoTitle maxNoTitles |
+	Histories ifNil: [ self class clearHistories ].
 	Histories add: self.
 	firstNoTitle := 0.
 	noOfNoTitle := 0.

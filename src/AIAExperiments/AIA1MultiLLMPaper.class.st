@@ -8,8 +8,9 @@ Class {
 	#classInstVars : [
 		'paper'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIAExperiments-ExperimentsResearch',
+	#package : 'AIAExperiments',
+	#tag : 'ExperimentsResearch'
 }
 
 { #category : 'accessing' }

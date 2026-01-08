@@ -64,8 +64,9 @@ Class {
 		'tip',
 		'tin'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIAExperiments-AlgorithmicCore',
+	#package : 'AIAExperiments',
+	#tag : 'AlgorithmicCore'
 }
 
 { #category : 'private' }

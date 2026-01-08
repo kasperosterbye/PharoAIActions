@@ -4,8 +4,9 @@ Class {
 	#instVars : [
 		'astar'
 	],
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIAExperiments-Tests',
+	#package : 'AIAExperiments',
+	#tag : 'Tests'
 }
 
 { #category : 'running' }

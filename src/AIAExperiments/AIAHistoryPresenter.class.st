@@ -34,9 +34,9 @@ Class {
 		'promptText',
 		'responseText'
 	],
-	#category : 'AIActions-Experiments',
-	#package : 'AIActions',
-	#tag : 'Experiments'
+	#category : 'AIAExperiments-UIPresenters',
+	#package : 'AIAExperiments',
+	#tag : 'UIPresenters'
 }
 
 { #category : 'initialization' }

@@ -4,9 +4,9 @@ Class {
 	#classInstVars : [
 		'digest'
 	],
-	#category : 'AIActions-Experiments',
-	#package : 'AIActions',
-	#tag : 'Experiments'
+	#category : 'AIAExperiments-ExperimentsTools',
+	#package : 'AIAExperiments',
+	#tag : 'ExperimentsTools'
 }
 
 { #category : 'as yet unclassified' }

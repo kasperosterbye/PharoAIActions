@@ -1,8 +1,9 @@
 Class {
 	#name : 'TKTWorkerPoolAITest',
 	#superclass : 'TKTWorkerPoolTest',
-	#category : 'AIAExperiments',
-	#package : 'AIAExperiments'
+	#category : 'AIAExperiments-Tests',
+	#package : 'AIAExperiments',
+	#tag : 'Tests'
 }
 
 { #category : 'accessing' }
