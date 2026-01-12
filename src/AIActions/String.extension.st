@@ -40,6 +40,15 @@ String >> d [
 ]
 
 { #category : '*AIActions' }
+String >> du [
+	| resp |
+	resp := (AIAHistory dDiscussion 
+		user: self).
+	"AIAPresenter onText: resp."
+	^ resp.
+]
+
+{ #category : '*AIActions' }
 String >> l [
 	^ (AIAHistory new
 		system:  'You are one who like giving funny answers that are Limeric. ';
