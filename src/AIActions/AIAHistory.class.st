@@ -123,11 +123,38 @@ AIAHistory class >> qPrefixSystemText [
 	In Pharo and Smalltalk, the expression `2 + 3 * 4` is evaluated from left to right due to the uniform precedence of all binary messages. This means the addition is performed first, followed by the multiplication. Therefore, the expression is evaluated as `(2 + 3) * 4`, resulting in `20`.'
 ]
 
+{ #category : 'writing' }
+AIAHistory class >> readCurrent [
+	"Serialises the current history to the specified file name."
+
+	| fileName discussion index |
+	[
+		fileName := FileSystem workingDirectory / '..' / '..'
+		            / 'dDiscussion.file'.
+		discussion := FLMaterializer materializeFromFileNamed:
+			              fileName fullName.
+		index := Histories findFirst: [ :hist | hist title = 'dDiscussion' ].
+		index = 0 ifFalse: [ (Histories at: index) title: 'old_dDiscussion'].
+		Histories at: Histories size put: discussion ]
+		on: Error
+		do: [ self error: 'No file available' ]
+]
+
 { #category : 'as yet unclassified' }
 AIAHistory class >> readCurrentTo: fileName [
 	"Serialises the current history to the specified file name."
 	FLMaterializer 
 		materializeFromFileNamed: (FileSystem workingDirectory / fileName) fullName
+]
+
+{ #category : 'writing' }
+AIAHistory class >> writeCurrent [
+	| discussion fileName |
+	discussion := Histories detect: [ :hist | hist title = 'dDiscussion' ].
+	fileName := FileSystem workingDirectory / '..' / '..' / 'dDiscussion.file'. 
+	FLSerializer 
+		serialize: discussion 
+		toFileNamed: fileName fullName
 ]
 
 { #category : 'as yet unclassified' }
