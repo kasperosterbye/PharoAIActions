@@ -140,13 +140,6 @@ AIAHistory class >> readCurrent [
 		do: [ self error: 'No file available' ]
 ]
 
-{ #category : 'as yet unclassified' }
-AIAHistory class >> readCurrentTo: fileName [
-	"Serialises the current history to the specified file name."
-	FLMaterializer 
-		materializeFromFileNamed: (FileSystem workingDirectory / fileName) fullName
-]
-
 { #category : 'writing' }
 AIAHistory class >> writeCurrent [
 	| discussion fileName |
@@ -155,17 +148,6 @@ AIAHistory class >> writeCurrent [
 	FLSerializer 
 		serialize: discussion 
 		toFileNamed: fileName fullName
-]
-
-{ #category : 'as yet unclassified' }
-AIAHistory class >> writeCurrentTo [
-	"Serialises the current history to the specified file name."
-	| fileName timePart |
-	timePart := (DateAndTime now asString copyUpTo: $.)copyReplaceAll: ':' with: '_'.
-	
-	FLSerializer 
-		serialize: self currentHistory 
-		toFileNamed: (FileSystem workingDirectory / fileName) fullName
 ]
 
 { #category : 'accessing' }
