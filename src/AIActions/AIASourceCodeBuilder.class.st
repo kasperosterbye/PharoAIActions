@@ -165,6 +165,7 @@ AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 	(self stopNow: aClass) ifTrue: [ ^ '' ].
 	
 	superClass := aClass superclass.
+	(superClass = nil) ifTrue: [ ^  '' ].
 	(self stopNow: superClass) ifTrue: [ ^ '' ].
 	(classList includes: superClass) 
 			ifTrue: [ ^ '' ].
@@ -252,10 +253,12 @@ AIASourceCodeBuilder >> response [
 
 { #category : 'as yet unclassified' }
 AIASourceCodeBuilder >> stopNow: aClass [
-	(((aClass = Object 
+	((((aClass = Object 
 		or: [ aClass = Object class ])
 		or: [ aClass = Metaclass])
-		or: [ aClass = TestCase ]) ifTrue: [ ^ true ].
+		or: [ aClass = TestCase ])
+		or: [ aClass = ProtoObject ])
+		ifTrue: [ ^ true ].
 	^ false
 ]
 
