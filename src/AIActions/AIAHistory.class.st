@@ -252,9 +252,9 @@ AIAHistory >> getResponse [
 	] asJob run.
 ]
 
-{ #category : 'adding' }
+{ #category : 'Protocol (adding) - 1 selector(s)' }
 AIAHistory >> includeInHistories [
-	"Includes the current history in the shared Histories collection, managing untitled entries to maintain a maximum of 25."
+	"Adds the current history instance to the shared Histories collection and manages its size by removing the oldest untitled instance if the maximum number of untitled instances is exceeded."
 	| firstNoTitle noOfNoTitle maxNoTitles |
 	Histories ifNil: [ self class clearHistories ].
 	Histories add: self.

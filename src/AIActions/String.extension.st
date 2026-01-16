@@ -44,7 +44,6 @@ String >> du [
 	| resp |
 	resp := (AIAHistory dDiscussion 
 		user: self).
-	"AIAPresenter onText: resp."
 	^ resp.
 ]
 

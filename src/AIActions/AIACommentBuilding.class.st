@@ -1,3 +1,49 @@
+"
+I am a helper for generating AI‑assisted comments for classes, methods, and packages.
+
+I delegate all interaction with the AI provider to an `AIAHistory` instance, which stores the system and user prompts and retrieves the final response. I do *not* talk directly to any API; instead I provide a small, composable façade around the history object, suitable for use from tools such as inspectors, browsers, or scripts.
+
+I know how to:
+
+- Keep track of the current system and user prompts (`system`, `user` accessors).
+- Trigger the AI request and manage progress and interruption (`getResponse`).
+- Answer the final formatted AI comment as a plain String (`response`).
+
+The class side maintains shared configuration for all instances:
+
+- The preferred comment language (`language`), defaulting to British English.
+- The desired comment style (`commentType`), chosen from:
+  - `#Basic`
+  - `#Beginner`
+  - `#Detailed`
+  - `#Expert`
+  - `#TestGuide`
+
+These settings are used by the surrounding tooling to steer how comments are requested and formatted.
+
+I am designed to integrate into a larger comment‑building workflow rather than to install or modify classes myself. My responsibility is *only* to orchestrate the prompts and retrieve the generated text.
+
+### Usage
+
+You typically do not instantiate me directly; tools such as browsers or dedicated commands create and configure an `AIACommentBuilding` with the appropriate history object and prompts. However, you can script with me in a Playground to experiment with AI‑driven comments.
+
+```st
+| builder |
+builder := AIACommentBuilding new.
+
+""Configure global comment preferences""
+AIACommentBuilding
+	language: 'British';
+	commentType: 'Detailed'.
+
+""Configure the underlying history with the system and user prompts""
+builder system: 'You are an AI assistant that writes Pharo code comments in British English.'.
+builder user: 'Write a detailed class comment for a Point class with x and y slots.'.
+
+""Trigger the AI request and then inspect the final response text""
+builder getResponse.
+builder response  ""Inspect me with Cmd–I""
+"
 Class {
 	#name : 'AIACommentBuilding',
 	#superclass : 'Object',
@@ -13,14 +59,14 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIACommentBuilding class >> commentType [
 	"Returns the current comment type for the AIACommentBuilding class"
 	CommentType ifNil: [ CommentType := self commentTypes first ].
 	^ CommentType 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIACommentBuilding class >> commentType: commentType [
 	"Sets the comment type for the AIACommentBuilding class"
 
@@ -34,14 +80,15 @@ AIACommentBuilding class >> commentType: commentType [
 		ifFalse: [ CommentType := self commentTypes first ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIACommentBuilding class >> commentTypes [
 	"Returns the available comment types for the AIACommentBuilding class"
-	^ { 'Basic'. 'Beginner'. 'Detailed'. 'Expert'. 'TestGuide' }
+	^ { 'Default'. 'Basic'. 'Beginner'. 'Detailed'. 'Expert'. 'TestGuide' }
 ]
 
 { #category : 'examples' }
 AIACommentBuilding class >> exampleAIClassComment [
+	"Open an inspector on the AI generated comment for this class for demonstration"
 	self aiaComment inspect
 ]
 

@@ -127,3 +127,49 @@ foo := GeminiApi newOnModel: 1.
 
 ''What was the name of the Ottawa region before europeans arrived'' q0.'
 ]
+
+{ #category : 'as yet unclassified' }
+AIABuilder class >> paperBuilder [
+	'AIASourceCodeBuilder new forClasses: {AIACommentBuilding . AIAClassComment. AIAMethodComment. AIAPackageComment } .
+
+AIASourceCodeBuilder new for: { ''AIActions'' } .
+
+AIASourceCodeBuilder new forClass: AIAHistory .
+
+AIASlotComment for: AIA2MultiLLMStoreLine.
+AIASlotComment for: AIA2MultiLLMWriter.
+
+
+AIA2MultiLLMStorage default.
+AIA2MultiLLMStorage clearDefault .
+AIA2MultiLLMStorage default makeStoreLines.
+
+AIA2MultiLLMBuilder new build .
+AIA2MultiLLMBuilder clearDefault.
+
+AIA2MultiLLMWriter default .
+AIA2MultiLLMWriter default appendixWrite.
+
+
+AIA2MultiLLMPaper default.
+AIA2MultiLLMPaper default paperBuild .
+AIA2MultiLLMPaper default paperText .
+
+
+AIA2MultiLLMStorage default.
+AIA2MultiLLMStorage clearDefault.
+AIA2MultiLLMStorage default makeStoreLines.
+
+AIA2MultiLLMBuilder new build.
+AIA2MultiLLMBuilder clearDefault "Should stop it from building".
+		
+AIA2MultiLLMWriter default buildAppendix.
+	
+AIA2MultiLLMPaper default paper10Author .
+AIA2MultiLLMPaper default paperText
+
+
+
+
+'
+]
