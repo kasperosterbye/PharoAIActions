@@ -129,6 +129,16 @@ AIAClassComment >> aiaCommentExpert: aClass [
 ]
 
 { #category : 'accessing' }
+AIAClassComment >> aiaCommentLLM: aClass [
+
+	history
+		background: (AIASourceCodeBuilder new forClass: aClass);
+		user: 'This is a Pharo question. Please give a class comment for ', aClass asString;
+		user: 'The reader of the response is a LLM, so be short, precise and nonrepeating'.
+	history getResponse
+]
+
+{ #category : 'accessing' }
 AIAClassComment >> aiaCommentTestGuide: aClass [
 	"Generates a test‑oriented AI class comment for aClass, in the same
 	style as #aiaComment:."

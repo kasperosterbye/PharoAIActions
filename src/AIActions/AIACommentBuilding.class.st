@@ -83,7 +83,7 @@ AIACommentBuilding class >> commentType: commentType [
 { #category : 'accessing' }
 AIACommentBuilding class >> commentTypes [
 	"Returns the available comment types for the AIACommentBuilding class"
-	^ { 'Default'. 'Basic'. 'Beginner'. 'Detailed'. 'Expert'. 'TestGuide' }
+	^ { 'Default'. 'LLM'. 'Beginner'. 'Detailed'. 'Expert'. 'TestGuide' }
 ]
 
 { #category : 'examples' }
