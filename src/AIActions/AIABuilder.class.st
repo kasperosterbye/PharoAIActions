@@ -24,7 +24,7 @@ AIABuilder class >> exampleOttawa [
 	AIAPresenter onText: self ottawa
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'model system' }
 AIABuilder class >> itu [
 	
 	^ 'AIATestBuilder aITestClassPostfix: ''AITest_a1'' .
@@ -67,7 +67,7 @@ AIATestBuilder class isMeta .
 AIATestBuilder class instVarNames size .'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'model system' }
 AIABuilder class >> lund [
 	^ '" ---- APP - API - LLM ---- "
 ''What is my name'' q0.
@@ -104,7 +104,7 @@ bib2 := ''Please produce a biblatex format for the paper with a note from its co
 AIABibLaTex biblatex.'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'model system' }
 AIABuilder class >> ottawa [
 	^ 'AilienApi providers.
 
@@ -128,7 +128,7 @@ foo := GeminiApi newOnModel: 1.
 ''What was the name of the Ottawa region before europeans arrived'' q0.'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'model system' }
 AIABuilder class >> paperBuilder [
 	'AIASourceCodeBuilder new forClasses: {AIACommentBuilding . AIAClassComment. AIAMethodComment. AIAPackageComment } .
 
@@ -170,6 +170,14 @@ AIA2MultiLLMPaper default paperText
 
 
 
+
+'
+]
+
+{ #category : 'model system' }
+AIABuilder class >> ukSmall01 [
+	
+	^ '
 
 '
 ]

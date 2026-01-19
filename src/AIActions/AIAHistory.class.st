@@ -113,8 +113,7 @@ AIAHistory class >> qPrefix [
 
 { #category : 'as yet unclassified' }
 AIAHistory class >> qPrefixSystemText [
-	"Returns the system text for the qPrefix history, defining Pharo class structure and evaluation rules"
-	^ 'You are a Pharo14 Smalltalk expert. In Pharo12 and later, a typical class is written as: 
+	^ 'You are a Pharo14 Smalltalk expert. Pharo 14 is the last version of Pharo. In Pharo a typical class is written as: 
 	Object << #AilienApi
 	slots: { #model . #messagesx . #history };
 	sharedVariables: { #LastHistoryx . #Provider };
