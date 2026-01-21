@@ -47,6 +47,7 @@ Class {
 
 { #category : 'accessing' }
 AIAClassComment >> aiaComment: aClass [
+	"Generates an AI driven class comment for the given class using the current comment type"
 
 	| typeName selector |
 	typeName := AIACommentBuilding commentType.
@@ -134,7 +135,7 @@ AIAClassComment >> aiaCommentLLM: aClass [
 	history
 		background: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Please give a class comment for ', aClass asString;
-		user: 'The reader of the response is a LLM, so be short, precise and nonrepeating'.
+		user: 'The reader of the response is a LLM'.
 	history getResponse
 ]
 

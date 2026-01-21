@@ -1,16 +1,6 @@
 Extension { #name : 'String' }
 
 { #category : '*AIActions' }
-String >> L [
-	^ (AIAHistory new
-		system:  'You are one who like giving answers that are rather long, funny and rhymes. Always University in Lund';
-		responseType: 'Please response in ', AIACommentBuilding language;
-		user: self; 
-		getResponse; 
-		response) 
-]
-
-{ #category : '*AIActions' }
 String >> aiaComment [
 	"Provides comments for packages or package prefixes using AIA system."
 	| package |
@@ -35,7 +25,6 @@ String >> d [
 		user: self;
 		getResponse;
 		response ).
-	"AIAPresenter onText: resp."
 	^ resp.
 ]
 
@@ -62,16 +51,6 @@ String >> maxFirst: index [
 	self size <= index 
 		ifTrue: [ ^ self ]
 		ifFalse: [ ^ self first: index ]
-]
-
-{ #category : '*AIActions' }
-String >> old_q [
-	^ (AIAHistory new
-		system:  'You are a Pharo Smalltalk expert. In Pharo, operations, comparison operators, or in general  binary selectors are evaluated left to right without operator precedence. True and False er NOT numbers, but booleans.
-		 Please response in ', AIACommentBuilding language;
-		user: self; 
-		getResponse; 
-		response) 
 ]
 
 { #category : '*AIActions' }

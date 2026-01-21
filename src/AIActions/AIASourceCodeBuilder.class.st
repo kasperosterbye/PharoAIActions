@@ -1,39 +1,3 @@
-"
-# Class Comment for AIASourceCodeBuilder
-
-The `AIASourceCodeBuilder` is a utility class designed to generate formatted source code descriptions for Pharo Smalltalk classes, methods, and packages. It provides comprehensive documentation by extracting and formatting class definitions, instance variables, methods, and their relationships, making it ideal for code analysis, documentation generation, and system exploration.
-
-## Key Features
-
-- **Comprehensive Documentation**: Generates detailed documentation including class headers, instance variables, method implementations, and inheritance hierarchies.
-- **Package and Class Analysis**: Can process individual classes, entire packages, or wildcard-matching package names.
-- **Method Caller Analysis**: Identifies and documents method callers within the same package for better code understanding.
-- **Fluid Syntax Support**: Works with Pharo's fluid class definition syntax for interactive scripting.
-- **Non-Destructive Operations**: Safely generates documentation without modifying the system.
-
-## Usage Example
-
-```st
-""Example: Generate documentation for the Point class and inspect the result""
-builder := AIASourceCodeBuilder new.
-builder forClass: Point.
-builder response contents inspect
-```
-
-## Design Considerations
-
-- **Interactive Scripting**: Designed to work in the Playground with immediate inspection capabilities.
-- **Non-Invasive**: Operates in read-only mode, preserving the original system state.
-- **Extensible**: Can be extended with different builder enhancers for specialized documentation needs.
-- **Future-Proof**: API is aligned with Pharo's class definition standards, with plans for future API refinements.
-
-## Limitations
-
-- Currently focuses on documentation generation rather than code modification.
-- May require API adjustments to better align with Pharo's evolving class definition standards.
-
-This class serves as a valuable tool for developers needing to understand and document Pharo Smalltalk codebases efficiently.
-"
 Class {
 	#name : 'AIASourceCodeBuilder',
 	#superclass : 'Object',
