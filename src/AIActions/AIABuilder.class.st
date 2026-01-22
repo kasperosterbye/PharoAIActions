@@ -174,10 +174,72 @@ AIA2MultiLLMPaper default paperText
 '
 ]
 
+{ #category : 'as yet unclassified' }
+AIABuilder class >> plantUMLDemo [
+	^ 'You are analysing a Pharo system that integrates LLMs.
+
+Create a PlantUML overview diagram that shows the end-to-end flow from:
+
+Playground / Application → AIAHistory → AilienApi (provider) → LLM → AilienApi → AIAHistory → Application response.
+
+Constraints:
+	•	This is an architectural overview, not a full design.
+	•	Show key classes only, no methods, no instance variables.
+	•	Emphasise data flow and responsibility, not inheritance details.
+	•	AIAHistory must be shown as the central coordinator.
+	•	AilienApi must be shown as an abstract provider with concrete examples (e.g. GeminiApi, OpenAIApi).
+	•	Show where tool calls (if any) conceptually occur, without provider-specific JSON.
+	•	Do not include HTTP, JSON, or UI details.
+	•	The diagram should help a human understand “what talks to what, and why” in under 30 seconds.
+
+Output:
+	•	Only PlantUML code
+	•	No explanation text.'
+]
+
 { #category : 'model system' }
 AIABuilder class >> ukSmall01 [
 	
 	^ '
+AilienApi provider: OpenAIApi .
+AilienApi info. 
+
+a00 := ''Who is Kasper Østerbye. If you have not heard about him, just say "sorry I do not know"'' q0.
+
+AilienApi provider: GeminiApi.
+AilienApi info. 
+
+a01 := ''Who is Kasper Østerbye. If you have not heard about him, just say "sorry I do not know"'' q0.
+
+(String >> #q0) inspect.
+
+AilienApi provider: OpenAIApi .
+AilienApi info. 
+
+(String >> #q) inspect.
+
+a02 := ''What is the essence of AIAHistory. If you have not heard about him, just say "sorry I do not know"'' q.
+
+AIASourceCodeBuilder new forTagsLike: AIAHistory.
+(String >> #q:) inspect.
+a03 := ''What is the essence of AIAHistory. If you have not heard about him, just say "sorry I do not know"'' q: [ AIASourceCodeBuilder new forTagsLike: AIAHistory ] .
+
+"------ PLANT UML --------"
+
+AIAPlantUML umlToImage: (a04 :=  ''Create a PlantUML diagram for AIAHistory being called by "user:", and show the method calls involved. It must be an overview'' q: [ AIASourceCodeBuilder new forTagsLike: AIAHistory ]) .
+AIAPlantUML umlToImage: a04.
+
+AIAHistory histories .
+
+AIAPlantUML umlToImage: (a05 :=  ''I am making class comments. Can you show me a PlantUML diagram show which classes are used. Do not whow me the methods of each class. The key class is AIAClassComment'' q: [ AIASourceCodeBuilder new for: {''AIActions''} ]) .
+AIAPlantUML umlToImage: a05.
+
+"------ Details -----"
+
+
+"------ Comments ------"
+
+"------ Workshop Paper ------"
 
 '
 ]
