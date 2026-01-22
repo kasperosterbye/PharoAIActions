@@ -109,7 +109,7 @@ AIA1MultiLLMResponseBase >> clearOverview [
 { #category : 'markdown' }
 AIA1MultiLLMResponseBase >> excludeProviders [
 	"This method excludes specific providers from the list of available models."
-	^ { MistralApiWithTools." OllamaApi. OpenAIApi.  TogetherApi. ClaudeApi. GeminiApi" }
+	^ { OLD_MistralApiWithTools." OllamaApi. OpenAIApi.  TogetherApi. ClaudeApi. GeminiApi" }
 ]
 
 { #category : 'markdown' }
