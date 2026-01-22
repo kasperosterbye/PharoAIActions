@@ -9,7 +9,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> bodyForEntityWithPrompt [
     | requestDictionary |
     requestDictionary := Dictionary newFrom: {
@@ -22,7 +22,7 @@ MistralApiWithTools >> bodyForEntityWithPrompt [
     ^ ZnEntity json: (STONJSON toString: requestDictionary)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> browseImplementorsTool [
     ^ Dictionary newFrom: {
         'type' -> 'function'.
@@ -43,7 +43,7 @@ MistralApiWithTools >> browseImplementorsTool [
     }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> evaluateExpressionTool [
     ^ Dictionary newFrom: {
         'type' -> 'function'.
@@ -64,7 +64,7 @@ MistralApiWithTools >> evaluateExpressionTool [
     }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> executeExpression: expr [
     [ ^ (OpalCompiler new evaluate: expr) printString ]
         on: Error
@@ -72,7 +72,7 @@ MistralApiWithTools >> executeExpression: expr [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> executeGetClassInfo: className [
     | cls |
     cls := Smalltalk globals at: className asSymbol ifAbsent: [ ^ 'Class not found' ].
@@ -82,7 +82,7 @@ MistralApiWithTools >> executeGetClassInfo: className [
         s << 'Comment: ' << (cls comment ifEmpty: [ 'None' ]) ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> executeImplementors: selector [
     | implementors |
     implementors := SystemNavigation default allImplementorsOf: selector asSymbol.
@@ -90,7 +90,7 @@ MistralApiWithTools >> executeImplementors: selector [
     ^ (implementors collect: [ :m | m methodClass name ]) joinUsing: ', '
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> executeToolNamed: name withArgs: args [
     name = 'evaluatePharoExpression' ifTrue: [
         ^ self executeExpression: (args at: 'expression') ].
@@ -101,7 +101,7 @@ MistralApiWithTools >> executeToolNamed: name withArgs: args [
     ^ 'Unknown tool: ', name
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> getClassInfoTool [
     ^ Dictionary newFrom: {
         'type' -> 'function'.
@@ -122,7 +122,7 @@ MistralApiWithTools >> getClassInfoTool [
     }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
@@ -141,49 +141,8 @@ MistralApiWithTools >> jsonHistory [
     ^ jsonHistory asArray
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> loadResponse: aHistory [
-    | maxTurns |
-    maxTurns := 5.
-    1 to: maxTurns do: [ :turn |
-        | rawResponse parsed message toolCalls |
-        rawResponse := ZnClient new
-            timeout: self responseWaitingInSecs;
-            url: self apiGenerateUrl;
-            entity: self bodyForEntityWithPrompt.
-        self headers: rawResponse.
-        rawResponse := rawResponse post; contents.
-        parsed := STONJSON fromString: rawResponse.
-		  (parsed includesKey: 'error') ifTrue: [
-            | error |
-            error := parsed at: 'error'.
-            aHistory assistant: ('API Error: ', (error at: 'type'), ' - ', (error at: 'message')).
-            ^ self ].
-
-        message := (parsed at: 'choices') first at: 'message'.
-        toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
-        
-        toolCalls ifNil: [
-            aHistory assistant: (message at: 'content').
-            ^ self ].
-        
-        "Add assistant's tool request to history"
-        messageList add: 'assistant' -> message.
-        
-        "Execute each tool and add results"
-        toolCalls do: [ :call |
-            | funcName funcArgs result |
-            funcName := (call at: 'function') at: 'name'.
-            funcArgs := STONJSON fromString: ((call at: 'function') at: 'arguments').
-            result := self executeToolNamed: funcName withArgs: funcArgs.
-            messageList add: 'tool' -> (Dictionary newFrom: {
-                'tool_call_id' -> (call at: 'id').
-                'content' -> result
-            }) ] ]
-]
-
-{ #category : 'as yet unclassified' }
-MistralApiWithTools >> old_loadResponse: aHistory [
     | maxTurns |
     maxTurns := 5.
     1 to: maxTurns do: [ :turn |
@@ -229,7 +188,7 @@ MistralApiWithTools >> printOn: aStream [
 	aStream << 'MistralApiWithTools: ' << self model.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> toolSpecification [
     ^ {
         self evaluateExpressionTool.
