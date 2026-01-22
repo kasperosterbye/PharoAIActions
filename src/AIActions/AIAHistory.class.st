@@ -107,18 +107,16 @@ AIAHistory class >> qPrefix [
 			self new
 				title: 'qPrefix';
 				system: self qPrefixSystemText;
-				responseType: 'Please response in ', AIACommentBuilding language;
 				yourself] 
 ]
 
 { #category : 'as yet unclassified' }
 AIAHistory class >> qPrefixSystemText [
-	^ 'You are a Pharo14 Smalltalk expert. Pharo 14 is the last version of Pharo. In Pharo a typical class is written as: 
-	Object << #AilienApi
-	slots: { #model . #messagesx . #history };
-	sharedVariables: { #LastHistoryx . #Provider };
-	tag: ''AIApi'';
-	package: ''AIActions''.
+	^ 'You are a Pharo14 Smalltalk expert. Pharo14 is the last version of Pharo. In Pharo a typical class is written as: 
+	SuperclassName << #SubclassName
+	slots: { #var1 . #var2 . #var3 };
+	sharedVariables: { #GlobalVar1 . #GlobalVar2 };
+	package: ''APackageName''.
 	In Pharo and Smalltalk, the expression `2 + 3 * 4` is evaluated from left to right due to the uniform precedence of all binary messages. This means the addition is performed first, followed by the multiplication. Therefore, the expression is evaluated as `(2 + 3) * 4`, resulting in `20`.'
 ]
 
