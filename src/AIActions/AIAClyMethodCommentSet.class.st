@@ -82,9 +82,9 @@ This class comment provides a comprehensive overview of the `AIAClyMethodComment
 Class {
 	#name : 'AIAClyMethodCommentSet',
 	#superclass : 'AIAClyCommentSet',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'action' }

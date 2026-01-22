@@ -60,9 +60,9 @@ This example shows how to create a class using the fluid syntax and inspect the 
 Class {
 	#name : 'AIAClyPackageCommentSet',
 	#superclass : 'AIAClyCommentSet',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'action' }

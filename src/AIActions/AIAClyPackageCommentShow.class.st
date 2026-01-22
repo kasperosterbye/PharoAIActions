@@ -7,9 +7,9 @@ The `AIAClyPackageCommentShow` class is designed to display comments associated 
 Class {
 	#name : 'AIAClyPackageCommentShow',
 	#superclass : 'AIAClyCommentShow',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'actions' }

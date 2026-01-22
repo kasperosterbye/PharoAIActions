@@ -42,9 +42,9 @@ Class {
 		'Current',
 		'Histories'
 	],
-	#category : 'AIActions-AIADiscussion',
+	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
-	#tag : 'AIADiscussion'
+	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }

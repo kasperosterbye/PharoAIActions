@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIAClyMethodCommentShow',
 	#superclass : 'AIAClyCommentShow',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'actions' }

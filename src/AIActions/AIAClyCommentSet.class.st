@@ -7,9 +7,9 @@ The `AIAClyCommentSet` class is designed to manage and manipulate sets of commen
 Class {
 	#name : 'AIAClyCommentSet',
 	#superclass : 'AIAClyComment',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'accessing' }

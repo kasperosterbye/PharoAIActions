@@ -60,9 +60,9 @@ The classes are not installed or modified by `AIAClyClassCommentSet`. The job of
 Class {
 	#name : 'AIAClyClassCommentSet',
 	#superclass : 'AIAClyCommentSet',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'action' }

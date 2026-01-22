@@ -7,9 +7,9 @@ The `AIAClyCommentShow` class is designed to facilitate the creation and managem
 Class {
 	#name : 'AIAClyCommentShow',
 	#superclass : 'AIAClyComment',
-	#category : 'AIActions-BrowserAIAComments',
+	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
-	#tag : 'BrowserAIAComments'
+	#tag : 'CommentBuilder'
 }
 
 { #category : 'accessing' }
