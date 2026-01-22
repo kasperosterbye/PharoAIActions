@@ -82,7 +82,6 @@ AIATestBuilder class >> buildTestClass: sourceClass [
 { #category : 'instance creation' }
 AIATestBuilder >> build: aMethod [
 	"Builds a test for a given method, using AI to generate and validate the test code. Returns the chat history of the AI interaction."
-
 	self for: aMethod.
 	self compileAndChechBuildedTestOf: aMethod.
 	^ self chatHistory 
@@ -172,7 +171,7 @@ AIATestBuilder >> generateTest [
 	chatBuilder getResponse.
 	testMethod := chatBuilder response.
 	self repairResponseMethod.
-	chatBuilder history last value: testMethod
+	"chatBuilder history last value: testMethod"
 	 
 ]
 
@@ -186,7 +185,7 @@ AIATestBuilder >> historyBuilder [
 AIATestBuilder >> initialize [ 
 	"Initializes the AI test builder with a new AI chat builder instance, setting up the foundation for AI-driven test generation."
 	super initialize.
-	chatBuilder := AilienApi provider new.
+	chatBuilder := AIAHistory new.
 	
 ]
 
