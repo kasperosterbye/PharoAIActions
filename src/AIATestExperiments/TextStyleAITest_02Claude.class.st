@@ -1,3 +1,44 @@
+"
+# TextStyleAITest_02Claude Class Comment
+
+## Overview
+
+`TextStyleAITest_02Claude` is a **test class** that verifies the behavior of `TextStyle` in Pharo. It inherits from `TestCase`, making it part of the SUnit testing framework.
+
+## Purpose
+
+This class contains automated tests to ensure that `TextStyle` (which manages font collections and text formatting properties like margins and indents) works correctly.
+
+## Instance Variable
+
+- **`refTextStyle`** - A reference `TextStyle` instance created fresh for each test in the `setUp` method.
+
+## What It Tests
+
+| Test Method | What It Checks |
+|-------------|----------------|
+| `testClearIndents` | Verifies that `clearIndents` resets all margins to 0 |
+| `testLeftMarginTabAt` | Checks that invalid indices return 0 |
+| `testConsolidate` | Ensures fonts are properly shared with default style |
+| `testVeryDeepCopyWith` | Confirms shallow copying behavior |
+
+## Example Usage
+
+```smalltalk
+""Run all tests in this class""
+TextStyleAITest_02Claude buildSuite run.
+
+""Run a single test""
+(TextStyleAITest_02Claude selector: #testClearIndents) run.
+```
+
+## Key Concepts for Beginners
+
+1. **`setUp`** runs before each test, creating a fresh `refTextStyle`
+2. **`self assert:equals:`** checks if two values are equal
+3. **`self deny:`** checks that something is false
+4. Tests should be independent and not affect each other
+"
 Class {
 	#name : 'TextStyleAITest_02Claude',
 	#superclass : 'TestCase',

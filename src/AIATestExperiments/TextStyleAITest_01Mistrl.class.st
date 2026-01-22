@@ -1,3 +1,27 @@
+"
+### Class Comment for TextStyleAITest_01Mistrl
+#### `TextStyleAITest_01Mistrl`
+##### A test class to verify the behavior of `TextStyle` class.
+
+This class contains tests for various methods in the `TextStyle` class, including:
+
+*   `clearIndents`: Verifies that this method resets all indent settings to 0.
+*   `leftMarginTabAt`: Tests that it returns the correct margin tab value for valid and invalid indices.
+*   `veryDeepCopyWith`: Checks if the method correctly shares instances as per its comment.
+*   `consolidate`: Tests that it replaces fonts with references to the default style's fonts when they match.
+
+#### Example Usage
+```markdown
+| Test | Description |
+| --- | --- |
+| testClearIndents | Verifies that clearIndents resets all indent settings to 0. |
+| testLeftMarginTabAt | Tests that leftMarginTabAt returns the correct margin tab value for valid and invalid indices. |
+| testVeryDeepCopyWith | Checks if veryDeepCopyWith correctly shares instances as per its comment. |
+| testConsolidate | Tests that consolidate replaces fonts with references to the default style's fonts when they match. |
+```
+
+Note: The `setUp` method is used to initialize a new instance of `TextStyle` before each test.
+"
 Class {
 	#name : 'TextStyleAITest_01Mistrl',
 	#superclass : 'TestCase',

@@ -1,3 +1,37 @@
+"
+### Class Comment: TextStyleAITest_01Grok
+#### Overview
+
+This class is a test case for the `TextStyle` class, specifically designed to verify its behavior and functionality. It provides a set of tests to ensure that the `TextStyle` class works as expected.
+
+#### Purpose
+
+The purpose of this class is to provide a comprehensive testing framework for the `TextStyle` class, covering various aspects such as:
+
+* Margin tab at index
+* Clearing indents
+* Consolidation of fonts
+* Deep copying with sharing
+
+#### Key Features
+
+* Provides a set of tests to verify the behavior of the `TextStyle` class
+* Covers various aspects of the class, including margin tabs, clearing indents, consolidation of fonts, and deep copying
+* Uses Pharo's testing framework to write and run tests
+
+#### Example Usage
+
+To use this class, you would typically create an instance of it and run its tests using a testing framework such as Pharo's built-in `TestCase` class.
+
+```markdown
+| test |
+test := TextStyleAITest_01Grok new.
+test setUp.
+test run.
+```
+
+This example creates a new instance of the `TextStyleAITest_01Grok` class, sets up the test environment using the `setUp` method, and runs the tests using the `run` method.
+"
 Class {
 	#name : 'TextStyleAITest_01Grok',
 	#superclass : 'TestCase',
