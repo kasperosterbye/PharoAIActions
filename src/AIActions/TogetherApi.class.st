@@ -63,13 +63,14 @@ TogetherApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-TogetherApi >> headers: jsonResponse [
-	"Sets headers for Together API request with auth key and content type as json"
+TogetherApi >> buildZnClientWithHeaders [
 
-	jsonResponse
-            headerAt: 'Authorization' put: ('Bearer ', self class togetherKey );
-            headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonResponse 
+	| jsonPrompt |
+	jsonPrompt := self buildZnClient.
+	jsonPrompt
+		headerAt: 'Authorization' put: 'Bearer ' , self class togetherKey;
+		headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonPrompt
 ]
 
 { #category : 'initialization' }

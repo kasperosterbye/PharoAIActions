@@ -165,11 +165,7 @@ MistralApiWithTools >> loadResponse: aHistory [
     maxTurns := 5.
     1 to: maxTurns do: [ :turn |
         | rawResponse parsed message toolCalls |
-        rawResponse := ZnClient new
-            timeout: self responseWaitingInSecs;
-            url: self apiGenerateUrl;
-            entity: self bodyForEntityWithPrompt.
-        self headers: rawResponse.
+        rawResponse := self buildZnClientWithHeaders.
         rawResponse := rawResponse post; contents.
         parsed := STONJSON fromString: rawResponse.
 		  (parsed includesKey: 'error') ifTrue: [

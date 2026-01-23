@@ -97,13 +97,14 @@ GeminiApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-GeminiApi >> headers: jsonResponse [
-	"Adds the Gemini API key and JSON content type headers to the HTTP request"
+GeminiApi >> buildZnClientWithHeaders [
 
-	jsonResponse
+	| jsonPrompt |
+	jsonPrompt := self buildZnClient.
+	jsonPrompt
 		headerAt: 'X-goog-api-key' put: self class geminiKey;
 		headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonResponse
+	^ jsonPrompt
 ]
 
 { #category : 'initialize' }

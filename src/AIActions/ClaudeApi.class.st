@@ -95,13 +95,14 @@ ClaudeApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> headers: jsonResponse [
-
-	jsonResponse
+ClaudeApi >> buildZnClientWithHeaders [
+	| jsonPrompt |
+	jsonPrompt := self buildZnClient.
+	jsonPrompt
 		headerAt: 'x-api-key' put: self class claudeKey;
 		headerAt: 'anthropic-version' put: '2023-06-01';
 		headerAt: 'content-type' put: 'application/json'.
-	^ jsonResponse 
+	^ jsonPrompt 
 ]
 
 { #category : 'initialize' }

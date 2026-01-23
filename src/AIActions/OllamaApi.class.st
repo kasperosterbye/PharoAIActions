@@ -108,9 +108,9 @@ OllamaApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-OllamaApi >> headers: jsonResponse [
+OllamaApi >> buildZnClientWithHeaders [
 
-	^ jsonResponse 
+	^ self buildZnClient
 ]
 
 { #category : 'initialization' }

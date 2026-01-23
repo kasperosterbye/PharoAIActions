@@ -40,15 +40,16 @@ OpenAIApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-OpenAIApi >> headers: jsonResponse [
-	"Method to set headers for OpenAIApi request."
+OpenAIApi >> buildZnClientWithHeaders [
 
-	jsonResponse
-			headerAt: 'Authorization' put: self class openAI01;
-			headerAt: 'OpenAI-Organization' put: 'org-XmWYpGR0EsRqkASrs8HE3hy6';
-			headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
-			headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonResponse 
+	| jsonPrompt |
+	jsonPrompt := self buildZnClient.
+	jsonPrompt
+		headerAt: 'Authorization' put: self class openAI01;
+		headerAt: 'OpenAI-Organization' put: 'org-XmWYpGR0EsRqkASrs8HE3hy6';
+		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
+		headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonPrompt
 ]
 
 { #category : 'initialization' }

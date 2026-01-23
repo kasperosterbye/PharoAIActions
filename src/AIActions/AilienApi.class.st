@@ -386,18 +386,30 @@ AilienApi >> bodyForEntityWithPrompt [
 	self subclassResponsibility
 ]
 
+{ #category : 'accessing' }
+AilienApi >> buildZnClient [
+
+	| jsonPrompt |
+	jsonPrompt := ZnClient new.
+	jsonPrompt 
+		              timeout: self responseWaitingInSecs;
+		              url: self apiGenerateUrl;
+		              entity: self bodyForEntityWithPrompt.
+	^ jsonPrompt 
+]
+
+{ #category : 'accessing' }
+AilienApi >> buildZnClientWithHeaders [
+
+	self subclassResponsibility
+]
+
 { #category : 'responses' }
 AilienApi >> errorResponse: jsonResponse [
 	"Returns the error response string, either the provided error message or the default error response if none is set"
 	ErrorResponse isNil 
 		ifTrue: [ ^ 'Error bla bla: ' , jsonResponse ]
 		ifFalse: [ ^ ErrorResponse ]
-]
-
-{ #category : 'accessing' }
-AilienApi >> headers: foo [
-	"Sets HTTP headers for API requests, including authentication and content type. Subclasses must implement this method to provide provider-specific header configuration."
-	self subclassResponsibility
 ]
 
 { #category : 'initialization' }
@@ -426,16 +438,10 @@ AilienApi >> jsonHistory [
 AilienApi >> loadResponse: history [
 	"Executes HTTP request to AI provider endpoint and processes response into conversation history with error handling"
 
-	| jsonResponse llmCall response |
+	| jsonPrompt llmCall response |
 	[
-		jsonResponse := ZnClient new
-			                timeout: self responseWaitingInSecs;
-			                url: self apiGenerateUrl;
-			                entity: self bodyForEntityWithPrompt.
-		self headers: jsonResponse.
-		llmCall := jsonResponse
-			           post;
-			           contents.
+		jsonPrompt := self buildZnClientWithHeaders.
+		llmCall := jsonPrompt post; contents.
 		response := self responseOf: llmCall.
 		history assistant: response ]
 		on: Error

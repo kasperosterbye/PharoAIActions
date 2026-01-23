@@ -54,12 +54,14 @@ MistralApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-MistralApi >> headers: jsonResponse [
+MistralApi >> buildZnClientWithHeaders [
 
-	jsonResponse
-			headerAt: 'Authorization' put: self class esug;
-			headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonResponse 
+	| jsonPrompt |
+	jsonPrompt := self buildZnClient.
+	jsonPrompt
+		headerAt: 'Authorization' put: self class esug;
+		headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonPrompt
 ]
 
 { #category : 'initialization' }

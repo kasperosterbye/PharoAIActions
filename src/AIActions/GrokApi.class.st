@@ -40,12 +40,14 @@ GrokApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-GrokApi >> headers: jsonResponse [
+GrokApi >> buildZnClientWithHeaders [
 
-	jsonResponse
-            headerAt: 'Authorization' put: ('Bearer ', self class grokKey);
-            headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonResponse 
+	| jsonPrompt |
+	jsonPrompt := self buildZnClient.
+	jsonPrompt
+		headerAt: 'Authorization' put: 'Bearer ' , self class grokKey;
+		headerAt: 'Content-Type' put: 'application/json'.
+	^ jsonPrompt
 ]
 
 { #category : 'initialization' }
