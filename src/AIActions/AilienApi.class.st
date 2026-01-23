@@ -391,11 +391,11 @@ AilienApi >> buildZnClient [
 
 	| jsonPrompt |
 	jsonPrompt := ZnClient new.
-	jsonPrompt 
-		              timeout: self responseWaitingInSecs;
-		              url: self apiGenerateUrl;
-		              entity: self bodyForEntityWithPrompt.
-	^ jsonPrompt 
+	jsonPrompt
+		timeout: self responseWaitingInSecs;
+		url: self apiGenerateUrl;
+		entity: self bodyForEntityWithPrompt.
+	^ jsonPrompt
 ]
 
 { #category : 'accessing' }

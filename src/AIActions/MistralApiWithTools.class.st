@@ -108,6 +108,18 @@ MistralApiWithTools >> executeImplementors: selector [
     ^ (implementors collect: [ :m | m methodClass name ]) joinUsing: ', '
 ]
 
+{ #category : 'as yet unclassified' }
+MistralApiWithTools >> executeToolCalls: toolCalls [
+    toolCalls do: [ :call |
+        | funcName funcArgs result |
+        funcName := (call at: 'function') at: 'name'.
+        funcArgs := STONJSON fromString: ((call at: 'function') at: 'arguments').
+        result := self executeToolNamed: funcName withArgs: funcArgs.
+        messageList add: 'tool' -> (Dictionary newFrom: {
+            'tool_call_id' -> (call at: 'id').
+            'content' -> result }) ]
+]
+
 { #category : 'tools support' }
 MistralApiWithTools >> executeToolNamed: name withArgs: args [
     name = 'evaluatePharoExpression' ifTrue: [
@@ -117,6 +129,12 @@ MistralApiWithTools >> executeToolNamed: name withArgs: args [
     name = 'browseImplementors' ifTrue: [
         ^ self executeImplementors: (args at: 'selector') ].
     ^ 'Unknown tool: ', name
+]
+
+{ #category : 'testing' }
+MistralApiWithTools >> extractContent: responseDict [
+	"Extracts the textual content from the first message choice."
+	^ ((responseDict at: 'choices') first at: 'message') at: 'content'
 ]
 
 { #category : 'tools support' }
@@ -159,7 +177,7 @@ MistralApiWithTools >> jsonHistory [
     ^ jsonHistory asArray
 ]
 
-{ #category : 'tools support' }
+{ #category : 'Protocol (tools support) - 11 selector(s)' }
 MistralApiWithTools >> loadResponse: aHistory [
     | maxTurns |
     maxTurns := 5.
@@ -184,22 +202,57 @@ MistralApiWithTools >> loadResponse: aHistory [
         "Add assistant's tool request to history"
         messageList add: 'assistant' -> message.
         
+
         "Execute each tool and add results"
-        toolCalls do: [ :call |
-            | funcName funcArgs result |
-            funcName := (call at: 'function') at: 'name'.
-            funcArgs := STONJSON fromString: ((call at: 'function') at: 'arguments').
-            result := self executeToolNamed: funcName withArgs: funcArgs.
-            messageList add: 'tool' -> (Dictionary newFrom: {
-                'tool_call_id' -> (call at: 'id').
-                'content' -> result
-            }) ] ]
+		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
+]
+
+{ #category : 'Protocol (tools support) - 11 selector(s)' }
+MistralApiWithTools >> new_loadResponse: aHistory [
+    | maxTurns |
+    maxTurns := 5.
+    1 to: maxTurns do: [ :turn |
+        | rawResponse parsed message toolCalls |
+        rawResponse := self buildZnClientWithHeaders.
+        rawResponse := rawResponse post; contents.
+        parsed := STONJSON fromString: rawResponse.
+		  (parsed includesKey: 'error') ifTrue: [
+            | error |
+            error := parsed at: 'error'.
+            aHistory assistant: ('API Error: ', (error at: 'type'), ' - ', (error at: 'message')).
+            ^ self ].
+
+        message := (parsed at: 'choices') first at: 'message'.
+        toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
+        
+        toolCalls ifNil: [
+            aHistory assistant: (message at: 'content').
+            ^ self ].
+        
+        "Add assistant's tool request to history"
+        messageList add: 'assistant' -> message.
+        
+        "Execute each tool and add results"
+        toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
 ]
 
 { #category : 'printing' }
 MistralApiWithTools >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'MistralApiWithTools: ' << self model.
+]
+
+{ #category : 'as yet unclassified' }
+MistralApiWithTools >> processToolCall: call [
+	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
+    | func result |
+    func := call at: 'function'.
+    result := self 
+        executeToolNamed: (func at: 'name') 
+        withArgs: (STONJSON fromString: (func at: 'arguments')).
+    ^ 'tool' -> (Dictionary newFrom: {
+        'tool_call_id' -> (call at: 'id').
+        'content' -> result })
 ]
 
 { #category : 'as yet unclassified' }
