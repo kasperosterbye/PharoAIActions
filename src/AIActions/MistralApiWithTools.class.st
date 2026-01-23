@@ -82,6 +82,24 @@ MistralApiWithTools >> executeGetClassInfo: className [
         s << 'Comment: ' << (cls comment ifEmpty: [ 'None' ]) ]
 ]
 
+{ #category : 'as yet unclassified' }
+MistralApiWithTools >> executeGitHubSearch: aQuery [
+    | response url |
+    "Vi tvinger Pharo/Smalltalk filteret her for at undgå støj"
+    url := 'https://api.github.com/search/repositories?q=', 
+           aQuery urlEncoded, 
+           '+language:smalltalk'.
+    
+    response := ZnClient new
+        get: url.
+    
+    ^ String streamContents: [ :s | | items |
+        items := (STONJSON fromString: response) at: 'items' ifAbsent: [ #() ].
+        items isEmpty ifTrue: [ s << 'Ingen resultater fundet.' ].
+        (items first: (5 min: items size)) do: [ :repo |
+            s << '- ' << (repo at: 'full_name') << ': ' << (repo at: 'description') << String cr ] ]
+]
+
 { #category : 'tools support' }
 MistralApiWithTools >> executeImplementors: selector [
     | implementors |
@@ -186,6 +204,27 @@ MistralApiWithTools >> loadResponse: aHistory [
 MistralApiWithTools >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'MistralApiWithTools: ' << self model.
+]
+
+{ #category : 'as yet unclassified' }
+MistralApiWithTools >> searchGitHubTool [
+    ^ Dictionary newFrom: {
+        'type' -> 'function'.
+        'function' -> (Dictionary newFrom: {
+            'name' -> 'searchGitHubSmalltalk'.
+            'description' -> 'Søger efter Pharo/Smalltalk projekter på GitHub baseret på nøgleord.'.
+            'parameters' -> (Dictionary newFrom: {
+                'type' -> 'object'.
+                'properties' -> (Dictionary newFrom: {
+                    'query' -> (Dictionary newFrom: { 
+                        'type' -> 'string'. 
+                        'description' -> 'Søgetermer (f.eks. "LLM", "Graphics")' 
+                    })
+                }).
+                'required' -> #('query')
+            })
+        })
+    }
 ]
 
 { #category : 'tools support' }
