@@ -128,6 +128,8 @@ MistralApiWithTools >> executeToolNamed: name withArgs: args [
         ^ self executeGetClassInfo: (args at: 'className') ].
     name = 'browseImplementors' ifTrue: [
         ^ self executeImplementors: (args at: 'selector') ].
+    name = 'searchGitHubSmalltalk' ifTrue: [
+        ^ self executeGetClassInfo: (args at: 'className') ].
     ^ 'Unknown tool: ', name
 ]
 
@@ -186,19 +188,13 @@ MistralApiWithTools >> loadResponse: aHistory [
         rawResponse := self buildZnClientWithHeaders.
         rawResponse := rawResponse post; contents.
         parsed := STONJSON fromString: rawResponse.
-		  (parsed includesKey: 'error') ifTrue: [
-            | error |
-            error := parsed at: 'error'.
-            aHistory assistant: ('API Error: ', (error at: 'type'), ' - ', (error at: 'message')).
-            ^ self ].
+		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
         message := (parsed at: 'choices') first at: 'message'.
         toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
-        
         toolCalls ifNil: [
             aHistory assistant: (message at: 'content').
             ^ self ].
-        
         "Add assistant's tool request to history"
         messageList add: 'assistant' -> message.
         
@@ -256,18 +252,27 @@ MistralApiWithTools >> processToolCall: call [
 ]
 
 { #category : 'as yet unclassified' }
+MistralApiWithTools >> responseError: parsed hist: aHistory [
+
+	| error |
+	error := parsed at: 'error'.
+	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message').
+	^ self
+]
+
+{ #category : 'as yet unclassified' }
 MistralApiWithTools >> searchGitHubTool [
     ^ Dictionary newFrom: {
         'type' -> 'function'.
         'function' -> (Dictionary newFrom: {
             'name' -> 'searchGitHubSmalltalk'.
-            'description' -> 'Søger efter Pharo/Smalltalk projekter på GitHub baseret på nøgleord.'.
+            'description' -> 'Searching for Pharo/Smalltalk projects on GitHub based on keywords.'.
             'parameters' -> (Dictionary newFrom: {
                 'type' -> 'object'.
                 'properties' -> (Dictionary newFrom: {
                     'query' -> (Dictionary newFrom: { 
                         'type' -> 'string'. 
-                        'description' -> 'Søgetermer (f.eks. "LLM", "Graphics")' 
+                        'description' -> 'Search terms (e.g. "LLM", "Graphics")' 
                     })
                 }).
                 'required' -> #('query')
