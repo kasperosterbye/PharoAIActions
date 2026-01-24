@@ -131,7 +131,6 @@ AIAClassComment >> aiaCommentExpert: aClass [
 
 { #category : 'accessing' }
 AIAClassComment >> aiaCommentLLM: aClass [
-
 	history
 		background: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Please give a class comment for ', aClass asString;
