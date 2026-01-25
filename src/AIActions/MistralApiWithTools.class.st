@@ -36,9 +36,6 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'MistralApiWithTools',
 	#superclass : 'MistralApi',
-	#instVars : [
-		'toolExecutor'
-	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'

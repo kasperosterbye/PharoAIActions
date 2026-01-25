@@ -32,6 +32,7 @@ GrokApi >> bodyForEntityWithPrompt [
     requestDictionary := Dictionary newFrom: {
         'model' -> self model.
         'messages' -> self jsonHistory.
+'Killroy' -> 'Was not here'.
         'temperature' -> 0.0.
         'stream' -> false.
     }.
