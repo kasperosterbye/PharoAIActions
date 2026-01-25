@@ -75,7 +75,7 @@ MistralApiWithTools >> browseImplementorsTool [
     }
 ]
 
-{ #category : 'tools support' }
+{ #category : 'Protocol (as yet unclassified) - 5 selector(s)' }
 MistralApiWithTools >> evaluateExpressionTool [
     ^ Dictionary newFrom: {
         'type' -> 'function'.
@@ -150,20 +150,16 @@ MistralApiWithTools >> executeImplementors: selector [
     ^ (implementors collect: [ :m | m methodClass name ]) joinUsing: ', '
 ]
 
-{ #category : 'as yet unclassified' }
-MistralApiWithTools >> executeToolCalls: toolCalls [
-    toolCalls do: [ :call |
-        | funcName funcArgs result |
-        funcName := (call at: 'function') at: 'name'.
-        funcArgs := STONJSON fromString: ((call at: 'function') at: 'arguments').
-        result := self executeToolNamed: funcName withArgs: funcArgs.
-        messageList add: 'tool' -> (Dictionary newFrom: {
-            'tool_call_id' -> (call at: 'id').
-            'content' -> result }) ]
-]
-
 { #category : 'Protocol (tools support) - 10 selector(s)' }
 MistralApiWithTools >> executeToolNamed: name withArgs: args [
+	AilienApiTool subclasses do: [ :tool | 
+		| instance |
+		instance := tool new.
+		instance name = name ifTrue:[
+			self halt.
+			^ instance executeTool: args
+			] ].
+"self halt.
     name = 'evaluatePharoExpression' ifTrue: [
         ^ self executeExpression: (args at: 'expression') ].
     name = 'getClassInfo' ifTrue: [
@@ -173,7 +169,7 @@ MistralApiWithTools >> executeToolNamed: name withArgs: args [
     name = 'searchGitHubSmalltalk' ifTrue: [
         ^ self executeGetClassInfo: (args at: 'query') ].
     name = 'getWeather' ifTrue: [
-        ^ self executeGetWeather: (args at: 'city') ].
+        ^ self executeGetWeather: (args at: 'city') ]."
     ^ 'Unknown tool: ', name
 ]
 
@@ -262,7 +258,6 @@ MistralApiWithTools >> loadResponse: aHistory [
             ^ self ].
         "Add assistant's tool request to history"
         messageList add: 'assistant' -> message.
-        
 
         "Execute each tool and add results"
 		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
@@ -320,10 +315,10 @@ MistralApiWithTools >> searchGitHubTool [
 { #category : 'tools support' }
 MistralApiWithTools >> toolSpecification [
     ^ {
-        self evaluateExpressionTool.
+        self evaluateExpressionTool".
         self getClassInfoTool.
         self browseImplementorsTool.
 		  self searchGitHubTool.
-		  self getWeatherTool.
+		  self getWeatherTool."
     }
 ]

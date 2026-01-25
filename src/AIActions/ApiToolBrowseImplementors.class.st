@@ -1,5 +1,5 @@
 Class {
-	#name : 'ApiToolExpression',
+	#name : 'ApiToolBrowseImplementors',
 	#superclass : 'AilienApiTool',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -7,10 +7,10 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-ApiToolExpression >> evaluateTool [
+ApiToolBrowseImplementors >> evaluateTool [
 	| desc desc1 |
-	desc := 'Evaluates Pharo Smalltalk expression. Returns printString of result. Handles arithmetic, object creation, collection operations.'.
-	desc1 := 'Pharo expression to evaluate'.
+	desc := 'Returns list of classes implementing a given selector.'.
+	desc1 := 'Method selector to find implementors of'.
     ^ Dictionary newFrom: {
         'type' -> 'function'.
         'function' -> (Dictionary newFrom: {
@@ -30,19 +30,19 @@ ApiToolExpression >> evaluateTool [
     }
 ]
 
-{ #category : 'as yet unclassified' }
-ApiToolExpression >> executeTool: args [
-	| expr |
-	self halt.
-	expr := args at: required.
-    [ ^ (OpalCompiler new evaluate: expr) printString ]
-        on: Error
-        do: [ :ex | ^ 'Error: ', ex messageText ]
+{ #category : 'initialization' }
+ApiToolBrowseImplementors >> executeTool: args [
+    | selector implementors |
+self halt.
+	 selector := args at: required.
+    implementors := SystemNavigation default allImplementorsOf: selector asSymbol.
+    implementors ifEmpty: [ ^ 'No implementors found' ].
+    ^ (implementors collect: [ :m | m methodClass name ]) joinUsing: ', '
 
 ]
 
 { #category : 'initialization' }
-ApiToolExpression >> initialize [
-	name := 'evaluatePharoExpression'.
-	required := 'expression'
+ApiToolBrowseImplementors >> initialize [
+	name := 'browseImplementors'.
+	required := 'selector'
 ]

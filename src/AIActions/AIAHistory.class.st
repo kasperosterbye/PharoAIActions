@@ -303,7 +303,7 @@ AIAHistory >> printOn: stream [
 AIAHistory >> printPrompt [
 	(messages isNotNil and: [ messages size > 1 ])
 		ifTrue: [ ^ messages first value maxFirst: 20  ] 
-		ifFalse: [ '> No prompt' ]
+		ifFalse: [ ^ '> No prompt' ]
 ]
 
 { #category : 'accessing' }

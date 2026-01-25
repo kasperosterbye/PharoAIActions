@@ -1,5 +1,5 @@
 Class {
-	#name : 'ApiToolExpression',
+	#name : 'ApiToolClassInfo',
 	#superclass : 'AilienApiTool',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -7,10 +7,10 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-ApiToolExpression >> evaluateTool [
+ApiToolClassInfo >> evaluateTool [
 	| desc desc1 |
-	desc := 'Evaluates Pharo Smalltalk expression. Returns printString of result. Handles arithmetic, object creation, collection operations.'.
-	desc1 := 'Pharo expression to evaluate'.
+	desc := 'Returns class comment, instance variables, and method selectors for a Pharo class.'.
+	desc1 := 'Name of the Pharo class'.
     ^ Dictionary newFrom: {
         'type' -> 'function'.
         'function' -> (Dictionary newFrom: {
@@ -30,19 +30,18 @@ ApiToolExpression >> evaluateTool [
     }
 ]
 
-{ #category : 'as yet unclassified' }
-ApiToolExpression >> executeTool: args [
-	| expr |
-	self halt.
-	expr := args at: required.
-    [ ^ (OpalCompiler new evaluate: expr) printString ]
-        on: Error
-        do: [ :ex | ^ 'Error: ', ex messageText ]
-
+{ #category : 'initialization' }
+ApiToolClassInfo >> executeTool: args [
+	| cls |
+    cls := Smalltalk globals at: args asSymbol ifAbsent: [ ^ 'Class not found' ].
+    ^ String streamContents: [ :s |
+        s << '## ' << args << String cr.
+        s << 'Slots: ' << (cls instVarNames joinUsing: ' ') << String cr.
+        s << 'Comment: ' << (cls comment ifEmpty: [ 'None' ]) ]
 ]
 
 { #category : 'initialization' }
-ApiToolExpression >> initialize [
-	name := 'evaluatePharoExpression'.
-	required := 'expression'
+ApiToolClassInfo >> initialize [
+	name := 'getClassInfo'.
+	required := 'className'
 ]

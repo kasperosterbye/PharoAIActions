@@ -9,3 +9,13 @@ Class {
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
+
+{ #category : 'accessing' }
+AilienApiTool >> name [
+	^ name
+]
+
+{ #category : 'accessing' }
+AilienApiTool >> required [
+	^ required
+]

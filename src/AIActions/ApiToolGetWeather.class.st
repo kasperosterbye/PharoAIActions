@@ -31,8 +31,9 @@ ApiToolGetWeather >> evaluateTool [
 ]
 
 { #category : 'as yet unclassified' }
-ApiToolGetWeather >> executeTool: aCityName [
-    | url response |
+ApiToolGetWeather >> executeTool: args [
+    | aCityName url response |
+	 aCityName := args at: required.
     url := 'http://wttr.in/', aCityName urlEncoded, '?format=3'.
     [ response := ZnClient new get: url.
       ^ response trimBoth
