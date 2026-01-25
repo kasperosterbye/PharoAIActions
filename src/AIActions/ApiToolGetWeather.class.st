@@ -11,34 +11,21 @@ ApiToolGetWeather >> evaluateTool [
 	| desc desc1 |
 	desc := 'Fetches the current weather for a city in any country. '.
 	desc1 := 'The city name, e.g., London'.
-    ^ Dictionary newFrom: {
-        'type' -> 'function'.
-        'function' -> (Dictionary newFrom: {
-            'name' -> name.
-            'description' -> desc.
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> 'object'.
-                'properties' -> (Dictionary newFrom: {
-                    'city' -> (Dictionary newFrom: {
-                         'type' -> 'string'.
-                         'description' -> desc1
-                     })
-                }).
-                'required' -> { required }
-            })
-        })
-    }
+    ^ self evaluateTool: { desc. desc1 }
 ]
 
 { #category : 'as yet unclassified' }
 ApiToolGetWeather >> executeTool: args [
-    | aCityName url response |
-	 aCityName := args at: required.
-    url := 'http://wttr.in/', aCityName urlEncoded, '?format=3'.
-    [ response := ZnClient new get: url.
-      ^ response trimBoth
-    ] on: Error do: [ :ex |
-        ^ 'Couldn''t fetch weather for ', aCityName, ': ', ex messageText ]
+
+	| aCityName url response |
+	super executeTool: args.
+	aCityName := args at: required.
+	url := 'http://wttr.in/' , aCityName urlEncoded , '?format=3'.
+	[
+		response := ZnClient new get: url.
+		^ response trimBoth ]
+		on: Error
+		do: [ :ex | ^ 'Couldn''t fetch weather for ' , aCityName , ': ' , ex messageText ]
 ]
 
 { #category : 'initialization' }

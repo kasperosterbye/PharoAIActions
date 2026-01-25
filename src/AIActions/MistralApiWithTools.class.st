@@ -55,170 +55,14 @@ MistralApiWithTools >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'tools support' }
-MistralApiWithTools >> browseImplementorsTool [
-    ^ Dictionary newFrom: {
-        'type' -> 'function'.
-        'function' -> (Dictionary newFrom: {
-            'name' -> 'browseImplementors'.
-            'description' -> 'Returns list of classes implementing a given selector.'.
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> 'object'.
-                'properties' -> (Dictionary newFrom: {
-                    'selector' -> (Dictionary newFrom: {
-                        'type' -> 'string'.
-                        'description' -> 'Method selector to find implementors of'
-                    })
-                }).
-                'required' -> #('selector')
-            })
-        })
-    }
-]
-
-{ #category : 'Protocol (as yet unclassified) - 5 selector(s)' }
-MistralApiWithTools >> evaluateExpressionTool [
-    ^ Dictionary newFrom: {
-        'type' -> 'function'.
-        'function' -> (Dictionary newFrom: {
-            'name' -> 'evaluatePharoExpression'.
-            'description' -> 'Evaluates Pharo Smalltalk expression. Returns printString of result. Handles arithmetic, object creation, collection operations.'.
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> 'object'.
-                'properties' -> (Dictionary newFrom: {
-                    'expression' -> (Dictionary newFrom: {
-                        'type' -> 'string'.
-                        'description' -> 'Pharo expression to evaluate'
-                    })
-                }).
-                'required' -> #('expression')
-            })
-        })
-    }
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> executeExpression: expr [
-    [ ^ (OpalCompiler new evaluate: expr) printString ]
-        on: Error
-        do: [ :ex | ^ 'Error: ', ex messageText ]
-
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> executeGetClassInfo: className [
-    | cls |
-    cls := Smalltalk globals at: className asSymbol ifAbsent: [ ^ 'Class not found' ].
-    ^ String streamContents: [ :s |
-        s << '## ' << className << String cr.
-        s << 'Slots: ' << (cls instVarNames joinUsing: ' ') << String cr.
-        s << 'Comment: ' << (cls comment ifEmpty: [ 'None' ]) ]
-]
-
-{ #category : 'as yet unclassified' }
-MistralApiWithTools >> executeGetWeather: aCityName [
-    | url response |
-    url := 'http://wttr.in/', aCityName urlEncoded, '?format=3'.
-    [ response := ZnClient new get: url.
-      ^ response trimBoth
-    ] on: Error do: [ :ex |
-        ^ 'Couldn''t fetch weather for ', aCityName, ': ', ex messageText ]
-]
-
-{ #category : 'as yet unclassified' }
-MistralApiWithTools >> executeGitHubSearch: aQuery [
-    | response url |
-    "Vi tvinger Pharo/Smalltalk filteret her for at undgå støj"
-    url := 'https://api.github.com/search/repositories?q=', 
-           aQuery urlEncoded, 
-           '+language:smalltalk'.
-    
-    response := ZnClient new
-        get: url.
-    
-    ^ String streamContents: [ :s | | items |
-        items := (STONJSON fromString: response) at: 'items' ifAbsent: [ #() ].
-        items isEmpty ifTrue: [ s << 'Ingen resultater fundet.' ].
-        (items first: (5 min: items size)) do: [ :repo |
-            s << '- ' << (repo at: 'full_name') << ': ' << (repo at: 'description') << String cr ] ]
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> executeImplementors: selector [
-    | implementors |
-    implementors := SystemNavigation default allImplementorsOf: selector asSymbol.
-    implementors ifEmpty: [ ^ 'No implementors found' ].
-    ^ (implementors collect: [ :m | m methodClass name ]) joinUsing: ', '
-]
-
-{ #category : 'Protocol (tools support) - 10 selector(s)' }
 MistralApiWithTools >> executeToolNamed: name withArgs: args [
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
 		instance := tool new.
 		instance name = name ifTrue:[
-			self halt.
 			^ instance executeTool: args
 			] ].
-"self halt.
-    name = 'evaluatePharoExpression' ifTrue: [
-        ^ self executeExpression: (args at: 'expression') ].
-    name = 'getClassInfo' ifTrue: [
-        ^ self executeGetClassInfo: (args at: 'className') ].
-    name = 'browseImplementors' ifTrue: [
-        ^ self executeImplementors: (args at: 'selector') ].
-    name = 'searchGitHubSmalltalk' ifTrue: [
-        ^ self executeGetClassInfo: (args at: 'query') ].
-    name = 'getWeather' ifTrue: [
-        ^ self executeGetWeather: (args at: 'city') ]."
     ^ 'Unknown tool: ', name
-]
-
-{ #category : 'testing' }
-MistralApiWithTools >> extractContent: responseDict [
-	"Extracts the textual content from the first message choice."
-	^ ((responseDict at: 'choices') first at: 'message') at: 'content'
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> getClassInfoTool [
-    ^ Dictionary newFrom: {
-        'type' -> 'function'.
-        'function' -> (Dictionary newFrom: {
-            'name' -> 'getClassInfo'.
-            'description' -> 'Returns class comment, instance variables, and method selectors for a Pharo class.'.
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> 'object'.
-                'properties' -> (Dictionary newFrom: {
-                    'className' -> (Dictionary newFrom: {
-                        'type' -> 'string'.
-                        'description' -> 'Name of the Pharo class'
-                    })
-                }).
-                'required' -> #('className')
-            })
-        })
-    }
-]
-
-{ #category : 'as yet unclassified' }
-MistralApiWithTools >> getWeatherTool [
-    ^ Dictionary newFrom: {
-        'type' -> 'function'.
-        'function' -> (Dictionary newFrom: {
-            'name' -> 'getWeather'.
-            'description' -> 'Fetches the current weather for a city in any country. '.
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> 'object'.
-                'properties' -> (Dictionary newFrom: {
-                    'city' -> (Dictionary newFrom: {
-                         'type' -> 'string'.
-                         'description' -> 'The city name, e.g., London'
-                     })
-                }).
-                'required' -> #('city')
-            })
-        })
-    }
 ]
 
 { #category : 'tools support' }
@@ -240,10 +84,10 @@ MistralApiWithTools >> jsonHistory [
     ^ jsonHistory asArray
 ]
 
-{ #category : 'Protocol (tools support) - 11 selector(s)' }
+{ #category : 'tools support' }
 MistralApiWithTools >> loadResponse: aHistory [
     | maxTurns |
-    maxTurns := 5.
+    maxTurns := 10.
     1 to: maxTurns do: [ :turn |
         | rawResponse parsed message toolCalls |
         rawResponse := self buildZnClientWithHeaders.
@@ -263,13 +107,13 @@ MistralApiWithTools >> loadResponse: aHistory [
 		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
 ]
 
-{ #category : 'printing' }
+{ #category : 'tools support' }
 MistralApiWithTools >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'MistralApiWithTools: ' << self model.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
     | func result |
@@ -282,7 +126,7 @@ MistralApiWithTools >> processToolCall: call [
         'content' -> result })
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'tools support' }
 MistralApiWithTools >> responseError: parsed hist: aHistory [
 
 	| error |
@@ -291,34 +135,9 @@ MistralApiWithTools >> responseError: parsed hist: aHistory [
 	^ self
 ]
 
-{ #category : 'as yet unclassified' }
-MistralApiWithTools >> searchGitHubTool [
-    ^ Dictionary newFrom: {
-        'type' -> 'function'.
-        'function' -> (Dictionary newFrom: {
-            'name' -> 'searchGitHubSmalltalk'.
-            'description' -> 'Searching for Pharo/Smalltalk projects on GitHub based on keywords.'.
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> 'object'.
-                'properties' -> (Dictionary newFrom: {
-                    'query' -> (Dictionary newFrom: { 
-                        'type' -> 'string'. 
-                        'description' -> 'Search terms (e.g. "LLM", "Graphics")' 
-                    })
-                }).
-                'required' -> #('query')
-            })
-        })
-    }
-]
-
 { #category : 'tools support' }
 MistralApiWithTools >> toolSpecification [
-    ^ {
-        self evaluateExpressionTool".
-        self getClassInfoTool.
-        self browseImplementorsTool.
-		  self searchGitHubTool.
-		  self getWeatherTool."
-    }
+	| all |
+	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
+   ^ all 
 ]
