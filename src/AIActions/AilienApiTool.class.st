@@ -1,25 +1,43 @@
 "
-The `AilienApiTool` class is designed to facilitate interactions with various AI tools and APIs. It provides a structured way to define, configure, and execute these tools, ensuring that the necessary parameters are provided and the actions are logged appropriately.
+# Class Comment for AilienApiTool
 
-### Class Comment for AilienApiTool
+# AilienApiTool
 
-```markdown
-AilienApiTool is a utility class designed to manage and interact with various AI tools and APIs. It provides methods to configure, evaluate, and execute these tools, ensuring that the required parameters are provided and the actions are logged for transparency and debugging purposes.
+A tool for interacting with AI APIs in a structured way.
 
-Instance Variables:
-- name: A string representing the name of the tool.
-- required: A string representing the required parameter for the tool.
+## Key Features
 
-Methods:
-- name: Returns the name of the tool.
-- required: Returns the required parameter for the tool.
-- evaluateTool: descs: Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration.
-- executeTool: args: Executes the tool with the provided arguments and logs the action to the Transcript.
+- **Tool Configuration**: Manages API tool configurations including name and required parameters
+- **Tool Evaluation**: Converts tool descriptions into a standardized dictionary format
+- **Tool Execution**: Handles the execution of API tools with proper argument passing
 
-The class is part of the 'AIActions' package and is tagged with 'AIApi' for easy identification and categorization.
+## Example Usage
+
+```smalltalk
+""Create a new tool""
+tool := AilienApiTool new
+    name: 'weather_check';
+    required: 'location'.
+
+""Evaluate the tool with descriptions""
+config := tool evaluateTool: {
+    'Check the current weather'.
+    'The city name to check weather for'
+}.
+
+""Execute the tool with arguments""
+tool executeTool: (Dictionary with: 'location' -> 'Paris').
 ```
 
-This comment provides a clear and concise overview of the class's purpose, instance variables, and methods, making it easier for developers to understand and use the class effectively.
+## Key Methods
+
+- `name` - Returns the tool's name
+- `required` - Returns the required parameter
+- `evaluateTool:` - Converts tool descriptions to a function dictionary
+- `executeTool:` - Runs the tool with provided arguments
+
+This class provides a bridge between AI tool definitions and their execution, making it easier to work with API-based tools in a structured manner.
+```
 "
 Class {
 	#name : 'AilienApiTool',

@@ -47,7 +47,6 @@ AIASlotComment class >> classSlotCommentDictionary [
 AIASlotComment class >> for: aClass [
 	"Generates comments for instance variables of a class, using AI."
 	|  response comments slotsCollection|
-	
 	classSlotCommentDictionary ifNil: [ self initialize ].
 	response := (self promptFor: aClass) q: [ AIASourceCodeBuilder new forClass: aClass ].
 	response := response lines.
@@ -92,6 +91,6 @@ Include the exact class name of the value each variable holds, and a brief expla
 AIASlotComment class >> slotCommentFor: slot in: aClass [
 	| shots slotComment |
 	shots := classSlotCommentDictionary at: aClass ifAbsent: [ ^ '' ].
-	slotComment := shots at: slot name asString ifAbsent: [ ^ 'undefined.' ].
-	^ ' " {1}"' format: {slotComment}
+	slotComment := shots at: slot name asString ifAbsent: [ ^ '' ].
+	^ ' " ', slotComment , '"'
 ]
