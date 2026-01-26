@@ -124,7 +124,7 @@ AIACommentBuilding >> getResponse [
 AIACommentBuilding >> initialize [ 
 	"Initialises the AI comment builder with a new AI API provider, setting up the necessary infrastructure for generating AI-driven comments."
 	super initialize.
-	history :=AIAHistory new.
+	history := AIAHistory new.
 ]
 
 { #category : 'accessing' }

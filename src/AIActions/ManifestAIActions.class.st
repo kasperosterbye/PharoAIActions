@@ -14,10 +14,24 @@ ManifestAIActions class >> ruleBadMessageRule2V1FalsePositive [
 ]
 
 { #category : 'code-critics' }
+ManifestAIActions class >> ruleCascadedNextPutAllsRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2026-01-26T16:16:27.479822+01:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIActions class >> ruleCollectionProtocolRuleV1FalsePositive [
 
 	<ignoreForCoverage>
 	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2025-08-27T08:15:54.641638+02:00') )
+]
+
+{ #category : 'code-critics' }
+ManifestAIActions class >> ruleInconsistentMethodClassificationRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2026-01-26T16:16:20.86571+01:00') )
 ]
 
 { #category : 'code-critics' }

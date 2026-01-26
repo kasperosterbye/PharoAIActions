@@ -70,13 +70,14 @@ AIAClassComment >> aiaCommentBasic: aClass [
 
 { #category : 'Protocol (as yet unclassified) - 1 selector(s)' }
 AIAClassComment >> aiaCommentBeginner: aClass [ 
-	self system: (AIASourceCodeBuilder new forClass: aClass).
-	
-	self user: 'This is a Pharo question. Can your give a class comment for ' , 
-		aClass asString, 
-		'. Use Markdown format in your response',
-		' The reader of your response is a beginner, so please focus on the key aspects only, and give some examples'.
-	self getResponse.
+	history
+		system: (AIASourceCodeBuilder new forClass: aClass);
+		user: 'This is a Pharo question. Can your give a class comment for ' , 
+			aClass asString, 
+			'. Use Markdown format in your response',
+			' The reader of your response is a beginner, so please focus on the key aspects only, and give some examples';
+		responseType: 'Please write the response in ', AIACommentBuilding language.
+	history getResponse.
 ]
 
 { #category : 'accessing' }
@@ -134,7 +135,7 @@ AIAClassComment >> aiaCommentLLM: aClass [
 	history
 		background: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Please give a class comment for ', aClass asString;
-		user: 'The reader of the response is a LLM'.
+		user: 'Response is meant for a non-human AI LLM model to read. Purpos is for a LLM to understand the essence of the class through reading this comment'.
 	history getResponse
 ]
 

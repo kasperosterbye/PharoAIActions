@@ -60,14 +60,42 @@ AIAMethodComment >> aiaBlackComment: aCompiledMethod [
 
 { #category : 'internals' }
 AIAMethodComment >> aiaComment: aCompiledMethod [
-	history background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass).
-	history background: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
-	history user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name.
-	 
-	history responseType: 'The answer must only be the comment.'.
-	history responseType: 'Please response in ', AIACommentBuilding language.
-	history responseType: 'Response should be max 100 chacters, and not longer, and only letters and spaces, and no `"`'.
+	history 
+		background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);
+		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
+		user: 'This is a Pharo question. Give a test code for method ' , aCompiledMethod name;
+		user: 'Describe an implementation strategy for this method.'.
 	history getResponse.
+	
+	"If it halts, it is likely because there is markdown that it should not make"
+	(history response beginsWith: '```') ifTrue:[ self error]
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> aiaRegularComment: aCompiledMethod [
+	history 
+		background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);
+		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
+		user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name;
+	 
+		responseType: 'The answer must only be the comment.';
+		responseType: 'Please response in ', AIACommentBuilding language;
+		responseType: 'Response should be max 100 chacters, and not longer, and only letters and spaces, and no `"`'.
+	history getResponse.
+	
+	"If it halts, it is likely because there is markdown that it should not make"
+	(history response beginsWith: '```') ifTrue:[ self error]
+]
+
+{ #category : 'internals' }
+AIAMethodComment >> aiaTestComment: aCompiledMethod [
+	history 
+		"background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);"
+		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
+		user: 'This is a Pharo question. Give a test code for method ' , aCompiledMethod name;
+		user: 'Describe an implementation strategy for this method.'.
+	history getResponse.
+	
 	"If it halts, it is likely because there is markdown that it should not make"
 	(history response beginsWith: '```') ifTrue:[ self error]
 ]
