@@ -90,6 +90,8 @@ Include the exact class name of the value each variable holds, and a brief expla
 { #category : 'instance creation' }
 AIASlotComment class >> slotCommentFor: slot in: aClass [
 	| shots slotComment |
+	
+	Transcript << 'Slots comment: "' << slot asString << '" at: "' << aClass name asString << '"' <<String lf.
 	shots := classSlotCommentDictionary at: aClass ifAbsent: [ ^ '' ].
 	slotComment := shots at: slot name asString ifAbsent: [ ^ '' ].
 	^ ' " ', slotComment , '"'

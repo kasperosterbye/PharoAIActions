@@ -74,7 +74,7 @@ AIAClassComment >> aiaCommentBeginner: aClass [
 		system: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Can your give a class comment for ' , 
 			aClass asString, 
-			'. Use Markdown format in your response',
+			'. Just return the Class comment, no prior explanation response. ',
 			' The reader of your response is a beginner, so please focus on the key aspects only, and give some examples';
 		responseType: 'Please write the response in ', AIACommentBuilding language.
 	history getResponse.
@@ -159,17 +159,33 @@ AIAClassComment >> aiaCommentTestGuide: aClass [
 ]
 
 { #category : 'accessing' }
-AIAClassComment >> setComment: aClass [
+AIAClassComment >> old_setComment: aClass [
 	| cleaned response first last|
 	self aiaComment: aClass.
 	response := self response.
 	first := 1. last := response lines size.
+	"Should be updated, to remove markdown prefix, and if present, the last ``` should be removed as well"
 	(response lines first includesSubstring: '```markdown') 
 		ifTrue: [first := 2. last := last - 1].
-	cleaned := (response lines
-		copyFrom: first to: last)
-		asStringWithCr.
+	cleaned := String lf join: (response lines copyFrom: first to: last).
 	aClass comment: cleaned .
 	AIASlotComment for: aClass.
+	
+]
+
+{ #category : 'accessing' }
+AIAClassComment >> setComment: aClass [
+	| cleaned response first last|
+	self aiaComment: aClass.
+	response := self response.
+	first := response lines detectIndex: [ :each | each = '```markdown' ] ifNone: [ 0 ].
+	last := response lines lastIndexOf: '```' ifAbsent: [ 0 ].
+	cleaned := first > 0 ifTrue: [ 
+		last = response lines size 
+			ifTrue: [ String lf join: (response lines copyFrom: first+1 to: last-1) ]
+			ifFalse: [ String lf join: (response lines copyFrom: first+1 to: response lines size)  ]]
+		ifFalse: [ response ].
+	aClass comment: cleaned .
+	aClass instVarNames ifNotEmpty:[ AIASlotComment for: aClass]
 	
 ]

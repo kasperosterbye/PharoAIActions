@@ -79,7 +79,7 @@ AilienApiTool >> evaluateTool: descs [
 { #category : 'initialization' }
 AilienApiTool >> executeTool: args [
 	"Executes the tool with the provided arguments and logs the action to the Transcript."
-	Transcript << self class name asString << ': ' << (args values first) << String cr.
+	Transcript << self class name asString << ': ' << (args values first) << String lf.
 ]
 
 { #category : 'accessing' }

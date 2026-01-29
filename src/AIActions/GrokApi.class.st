@@ -1,3 +1,24 @@
+"
+# Class comment for GrokApi
+
+GrokApi provides an interface to interact with the Grok AI models via their API. It handles authentication, request formatting, and response processing for Grok's language models.
+
+## Key Features:
+- Connects to Grok's API endpoints
+- Manages conversation history
+- Supports multiple Grok models (e.g., 'grok-code-fast-1')
+- Handles JSON request/response formatting
+
+## Example Usage:
+```smalltalk
+| grok |
+grok := GrokApi new.
+grok model: 'grok-code-fast-1'.
+grok messageList: {('user' -> 'Explain quantum computing').}.
+grok loadResponse.
+grok responseOf: grok lastResponse.
+```
+"
 Class {
 	#name : 'GrokApi',
 	#superclass : 'AilienApi',

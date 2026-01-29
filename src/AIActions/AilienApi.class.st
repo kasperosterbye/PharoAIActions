@@ -1,3 +1,22 @@
+"
+# Class comment
+
+AilienApi is the base class for interacting with various AI language model providers. It manages conversation history, handles API requests, and processes responses. Subclasses implement provider-specific functionality.
+
+Key features:
+- Maintains message history in role-content pairs
+- Handles API timeouts and error responses
+- Provides model selection and configuration
+- Supports multiple AI providers through subclassing
+
+Example usage:
+```smalltalk
+api := MistralApi new.
+api model: 'mistral-tiny'.
+api messageList: {('user' -> 'Hello'). ('assistant' -> 'Hi there')}.
+response := api loadResponse: api messageList.
+```
+"
 Class {
 	#name : 'AilienApi',
 	#superclass : 'Object',
