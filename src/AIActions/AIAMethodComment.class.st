@@ -63,8 +63,11 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 	history 
 		background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);
 		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
-		user: 'This is a Pharo question. Give a test code for method ' , aCompiledMethod name;
-		user: 'Describe an implementation strategy for this method.'.
+		user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name;
+	 
+		responseType: 'The answer must only be the comment.';
+		responseType: 'Please response in ', AIACommentBuilding language;
+		responseType: 'Response should be max 100 chacters, and not longer, and only letters and spaces, and no `"`'.
 	history getResponse.
 	
 	"If it halts, it is likely because there is markdown that it should not make"
