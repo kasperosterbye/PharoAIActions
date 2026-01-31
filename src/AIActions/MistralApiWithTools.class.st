@@ -71,7 +71,13 @@ MistralApiWithTools >> jsonHistory [
     jsonHistory := OrderedCollection new.
     messageList do: [ :item |
         item key = 'assistant'
-            ifTrue: [ jsonHistory add: item value ]  "Already a dict from API"
+            ifTrue: [ 
+                "Handle both dict (from tool loop) and string (from aHistory assistant:)"
+                item value isDictionary
+                    ifTrue: [ jsonHistory add: item value ]
+                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
+                        'role' -> 'assistant'.
+                        'content' -> item value }) ] ]
             ifFalse: [
                 item key = 'tool'
                     ifTrue: [ jsonHistory add: (Dictionary newFrom: {
