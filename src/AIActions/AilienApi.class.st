@@ -429,9 +429,9 @@ AilienApi >> loadResponse: history [
 		jsonPrompt := self buildZnClientWithHeaders.
 		llmCall := jsonPrompt post; contents.
 		response := self responseOf: llmCall.
-		history assistant: response ]
+		history assistant: response from: self]
 		on: Error
-		do: [ :ex | history assistant: ex messageText ]
+		do: [ :ex | history assistant: ex messageText from: self ]
 ]
 
 { #category : 'accessing' }

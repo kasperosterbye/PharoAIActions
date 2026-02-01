@@ -11,9 +11,9 @@ Class {
 		'AITestClass',
 		'AITestClassPostfix'
 	],
-	#category : 'AIActions-TestBuilder',
-	#package : 'AIActions',
-	#tag : 'TestBuilder'
+	#category : 'AIAExperiments-TestBuiler',
+	#package : 'AIAExperiments',
+	#tag : 'TestBuiler'
 }
 
 { #category : 'accessing' }

@@ -44,9 +44,9 @@ Class {
 		'responseId',
 		'responseText'
 	],
-	#category : 'AIActions-AIAPaperBuilding',
-	#package : 'AIActions',
-	#tag : 'AIAPaperBuilding'
+	#category : 'AIAExperiments-PaperWriting',
+	#package : 'AIAExperiments',
+	#tag : 'PaperWriting'
 }
 
 { #category : 'initialization' }

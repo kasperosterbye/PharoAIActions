@@ -77,6 +77,7 @@ AIAHistory class >> dDiscussion [
 	index := Histories findFirst: [ :hist | hist title =  dDiscussion].
 	index = 0 ifTrue: [ 
 		| newDiscussion |
+		self qPrefix.
 		newDiscussion := self new.
 		newDiscussion 
 			title: dDiscussion;
@@ -175,7 +176,7 @@ AIAHistory >> apiMessageList [
 	all := self selfAndPreHistories.
    all do: [ :hist | hist firstRoles do: [ :assoc | 
 				messageList add: 'user' -> (assocKey value: assoc) ]].
-	all do: [ :hist | hist messages do: [ :m | messageList add: m ]].
+	all do: [ :hist | hist getMessages do: [ :m | messageList add: m ]].
 	all do: [ :hist | hist lastRoles do: [ :assoc | 
 				messageList add: 'user' -> (assocKey value: assoc) ]].
 	^ messageList
@@ -184,8 +185,13 @@ AIAHistory >> apiMessageList [
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
 	"Adds an assistant message to the messages collection after sanitising the input string."
-	
 	messages add: 'assistant' -> (self sanitizedResonse: aString)
+]
+
+{ #category : 'accessing' }
+AIAHistory >> assistant: aString from: ailienInfo [
+	"Adds an assistant message to the messages collection after sanitising the input string."
+	messages add: 'assistant' -> { self sanitizedResonse: aString. ailienInfo }
 ]
 
 { #category : 'context roles' }
@@ -218,6 +224,17 @@ AIAHistory >> chatHistory [
 { #category : 'accessing' }
 AIAHistory >> firstRoles [
 	^ firstRoles
+]
+
+{ #category : 'accessing' }
+AIAHistory >> getMessages [
+	| ailienMessageList |
+	ailienMessageList := messages collect: [ :element |
+		element key = 'assistant'
+			ifFalse: [ element ]
+			ifTrue: [ element second key -> element second value  ]
+		 ].
+	^ ailienMessageList 
 ]
 
 { #category : 'llm call' }
@@ -309,7 +326,7 @@ AIAHistory >> printPrompt [
 { #category : 'accessing' }
 AIAHistory >> response [
 	(messages last key = 'assistant')
-		ifTrue: [ ^ messages last value ]
+		ifTrue: [ ^ messages last value first ]
 		ifFalse: [ ^ nil ]
 ]
 

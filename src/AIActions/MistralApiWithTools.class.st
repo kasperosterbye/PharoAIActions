@@ -109,7 +109,7 @@ MistralApiWithTools >> loadResponse: aHistory [
         message := (parsed at: 'choices') first at: 'message'.
         toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
         toolCalls ifNil: [
-            aHistory assistant: (message at: 'content').
+            aHistory assistant: (message at: 'content') from: self.
             ^ self ].
         "Add assistant's tool request to history"
         messageList add: 'assistant' -> message.
@@ -142,7 +142,7 @@ MistralApiWithTools >> responseError: parsed hist: aHistory [
 
 	| error |
 	error := parsed at: 'error'.
-	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message').
+	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') from: self.
 	^ self
 ]
 

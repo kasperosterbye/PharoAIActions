@@ -56,9 +56,9 @@ Class {
 	#classVars : [
 		'RawRelationList'
 	],
-	#category : 'AIActions-AIAPaperBuilding',
-	#package : 'AIActions',
-	#tag : 'AIAPaperBuilding'
+	#category : 'AIAExperiments-PaperWriting',
+	#package : 'AIAExperiments',
+	#tag : 'PaperWriting'
 }
 
 { #category : 'accessing' }
