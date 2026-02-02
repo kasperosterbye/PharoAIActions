@@ -191,7 +191,7 @@ AIAHistory >> assistant: aString [
 { #category : 'accessing' }
 AIAHistory >> assistant: aString from: ailienInfo [
 	"Adds an assistant message to the messages collection after sanitising the input string."
-	messages add: 'assistant' -> { self sanitizedResonse: aString. ailienInfo }
+	messages add: 'assistant' -> (self sanitizedResonse: aString)
 ]
 
 { #category : 'context roles' }
@@ -226,13 +226,13 @@ AIAHistory >> firstRoles [
 	^ firstRoles
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Protocol (accessing) - 17 selector(s)' }
 AIAHistory >> getMessages [
 	| ailienMessageList |
 	ailienMessageList := messages collect: [ :element |
 		element key = 'assistant'
 			ifFalse: [ element ]
-			ifTrue: [ element second key -> element second value  ]
+			ifTrue: [ element key -> element value  ]
 		 ].
 	^ ailienMessageList 
 ]
@@ -326,7 +326,7 @@ AIAHistory >> printPrompt [
 { #category : 'accessing' }
 AIAHistory >> response [
 	(messages last key = 'assistant')
-		ifTrue: [ ^ messages last value first ]
+		ifTrue: [ ^ messages last value ]
 		ifFalse: [ ^ nil ]
 ]
 

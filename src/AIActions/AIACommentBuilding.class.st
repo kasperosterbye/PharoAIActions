@@ -75,14 +75,14 @@ AIACommentBuilding class >> commentType: commentType [
 			CommentType := self commentTypes at: commentType.
 			^ self ].
 	index := self commentTypes indexOf: commentType.
-	index > 0
-		ifTrue: [ CommentType := commentType ]
-		ifFalse: [ CommentType := self commentTypes first ]
+	CommentType := index > 0
+		ifTrue: [ commentType ]
+		ifFalse: [ self commentTypes first ]
 ]
 
 { #category : 'accessing' }
 AIACommentBuilding class >> commentTypes [
-	^ { 'Default'. 'LLM'. 'Beginner'. 'Detailed'. 'Expert'. 'TestGuide' }
+	^ { 'Default'. 'LLM'. 'Beginner'. 'Basic'. 'Expert'. 'TestGuide' }
 ]
 
 { #category : 'examples' }

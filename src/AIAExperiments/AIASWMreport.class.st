@@ -1,43 +1,3 @@
-"
-# Class Comment for AIASWMreport
-
-The `AIASWMreport` class is designed to facilitate automated analysis of scientific papers using multiple AI models. It implements a multi-stage evaluation process that:
-
-1. Extracts and processes paper content
-2. Generates independent evaluations from multiple AI models
-3. Synthesizes these evaluations into a cohesive report
-4. Produces a comprehensive Markdown report combining all findings
-
-## Key Features
-
-- **Multi-model evaluation**: Uses different AI providers (Grok, Mistral, Together, etc.) to generate diverse perspectives
-- **Three-tiered analysis**:
-  - Level 1: Independent evaluations of each model
-  - Level 2: Synthesized evaluations combining all Level 1 responses
-  - Final: Consolidated assessment from a high-level model
-- **Comprehensive reporting**: Generates detailed Markdown reports including:
-  - Paper metadata (title, authors, BibTeX)
-  - Summary of findings
-  - Strengths, weaknesses, and missing areas
-  - Individual model evaluations
-
-## Usage Example
-
-```st
-""Create and execute a report for a specific paper""
-report := AIASWMreport new.
-report forPaper: 'Paper1.txt'.
-
-""Inspect the generated Markdown report""
-report markdownReport inspect.
-```
-
-This class is particularly useful for:
-- Automated literature reviews
-- Comparative analysis of AI model evaluations
-- Systematic assessment of scientific papers
-- Generating reproducible evaluation reports
-"
 Class {
 	#name : 'AIASWMreport',
 	#superclass : 'Object',
@@ -308,6 +268,6 @@ single-perspective analyses.' << String cr << String cr.
 { #category : 'markdown' }
 AIASWMreport >> modelsList [
 	"The method retrieves the list of AI models configured for testing in the AIASWMreport class."
-self halt. "DELETE ME if not used..."
+self error. "DELETE ME if not used..."
 	^ self class testModels
 ]

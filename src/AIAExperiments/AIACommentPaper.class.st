@@ -36,7 +36,7 @@ paper paperText
 This implementation provides a reproducible, automated approach to technical writing that maintains high standards of clarity and technical rigor.
 "
 Class {
-	#name : 'AIA2MultiLLMPaper',
+	#name : 'AIACommentPaper',
 	#superclass : 'Object',
 	#instVars : [
 		'paperText',
@@ -53,19 +53,19 @@ Class {
 }
 
 { #category : 'examples' }
-AIA2MultiLLMPaper class >> clearDefault [
+AIACommentPaper class >> clearDefault [
 	<example>
 	default := nil
 ]
 
 { #category : 'accessing' }
-AIA2MultiLLMPaper class >> default [
+AIACommentPaper class >> default [
 	default ifNil: [ default := self new ].
 	^ default
 ]
 
 { #category : 'accessing' }
-AIA2MultiLLMPaper class >> instalationInstructions [
+AIACommentPaper class >> instalationInstructions [
 	^ self.
 "
 AIA2MultiLLMStorage default.
@@ -83,7 +83,7 @@ AIA2MultiLLMPaper paperText
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> apiFourLevels [
+AIACommentPaper >> apiFourLevels [
 	^ { GeminiApi newOnModel: 2.
 		TogetherApi newOnModel: 3.
 		ClaudeApi newOnModel: 5.
@@ -91,27 +91,69 @@ AIA2MultiLLMPaper >> apiFourLevels [
 	 }
 ]
 
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> getAppendix [
-	appendix ifNil: [ appendix := AIA2MultiLLMWriter default appendix].
-	^ appendix 
-]
-
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> getComment [
-	|app |
-	app := WriteStream on: ''.
-	app << '[SOURCECODE]' << String lf
+{ #category : 'markdown' }
+AIACommentPaper >> appendixBuilder [
+	"Generates the title section of the Markdown report with the current date"
+	| appendixBuilder |
+	appendixBuilder := WriteStream on: ''.
+	appendix 
+		<< '## Appendix' << String lf
+		<< '### On '<< Date today asString << String lf << String lf
+		<< '$$$$$comment$$$$$' << String lf << String lf
+		<< '[SOURCECODE]' << String lf
 		<< (AIASourceCodeBuilder new forTagsLike: AIAHistory ) 
 		<< String lf << '[END-OF-SOURCECODE]' << String lf
 		<< '[COMMENTBUILDERCODE]' << String lf
 		<< (AIASourceCodeBuilder new forTagsLike: AIASourceCodeBuilder ) 
 		<< String lf << '[END-OF-COMMENTBUILDERCODE]' << String lf.
-	^ app contents
+	appendix := appendixBuilder contents.
+]
+
+{ #category : 'paper build' }
+AIACommentPaper >> build [
+
+	paperText ifNil: [
+			paperText := WriteStream on: ''.
+
+			self
+				paper00Title;
+				paper10Author;
+				paper15Subpages.
+			paperText << self getAppendix.
+			paperText := paperText contents ].
+	self
+		paper20Abstract;
+		paper30Problem;
+		paper40Solution;
+		paper50Defence;
+		"paper60RelatedWork;"
+		paper70Conclusion.
+		"paper80References"
+]
+
+{ #category : 'paper build' }
+AIACommentPaper >> getAppendix [
+	"Generates the title section of the Markdown report with the current date"
+	| appendixBuilder comment|
+	appendixBuilder := WriteStream on: ''.
+	appendixBuilder 
+		<< '## Appendix' << String lf
+		<< '### On '<< Date today asString << String lf << String lf
+		<< '$$$$$comment$$$$$' << String lf << String lf
+		<< '[SOURCECODE]' << String lf
+		<< (AIASourceCodeBuilder new forTagsLike: AIAHistory ) 
+		<< String lf << '[END-OF-SOURCECODE]' << String lf
+		<< '[COMMENTBUILDERCODE]' << String lf
+		<< (AIASourceCodeBuilder new forTagsLike: AIASourceCodeBuilder ) 
+		<< String lf << '[END-OF-COMMENTBUILDERCODE]' << String lf.
+	appendix := appendixBuilder contents.
+	comment := self rebuildOverview.
+	appendix := appendix copyReplaceAll:'$$$$$comment$$$$$' with: comment.
+	^ appendix 
 ]
 
 { #category : 'as yet unclassified' }
-AIA2MultiLLMPaper >> getKentBeck [
+AIACommentPaper >> getKentBeck [
 	^ 'Kent Beck says:
 I will not talk about a topic area, like my distinguished fellow panelists. I will present the process I use as I am writing my papers. You can adapt it for your writing process, or you can use it as a check list for evaluating finished papers (if this is starting to sound like patterns, well, fancy that). Much of what I will say is "common sense," found in any book about writing. Having looked at hundreds of submissions, though, I can state with certainty that most of the authors don''t follow this advice.
 1. Write to the program committee. Never forget that before you can write to the vast, eager, and appreciative OOPSLA audience you must first get past the program committee. Before I begin I fix in my mind a picture of a harried PC member, desk piled with papers. Mine comes to the top. I have maybe thirty seconds to grab their interest. Remember that the program committee is made up of experts in the field. Even if your topic is of broad interest to beginners, there must still be some spark in it to keep an expert reading to the end. If your topic is highly technical, it may not be in an area that they are familiar with, so it must readably present the novel aspects of the work. 
@@ -122,7 +164,7 @@ I will not talk about a topic area, like my distinguished fellow panelists. I wi
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> getKentBeckLLM [
+AIACommentPaper >> getKentBeckLLM [
 	^ '[KEN BECK WRITING CONTRACT — LLM VERSION]
 
 You are writing one section of a research paper for expert reviewers.
@@ -153,29 +195,48 @@ Output discipline:
 ]
 
 { #category : 'initialization' }
-AIA2MultiLLMPaper >> initialize [ 
+AIACommentPaper >> initialize [ 
 	writeResponses := OrderedDictionary new.
 	paperDict := OrderedDictionary new.
 ]
 
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> old_paper80References [
-   |  text  list |
-	(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ].	
-	text := WriteStream on: ''.
-	text << '## References' << String lf << String lf.
-	list := AIA2RelatedListBuilder default getArxivList.
-	1 to: list size do: [ :elementID |
-			text << '(' << elementID asString << ') ' 
-				<< (list at: elementID ) getFormattedReference 
-				<< String lf << String lf.
-			].
-	paperText := paperText copyReplaceAll:'$$$$$references$$$$$' with: text contents .
-	^ text contents.
+{ #category : 'markdown' }
+AIACommentPaper >> old_rebuildOverview [
+    "Rebuilds the HTML comment overview for the LLM report using explicit report content only. Optimized to help subsequent LLMs understand main topics and write sections like Abstract."
+    | prompt hist response |
+    prompt := 'You will output a hidden HTML comment intended for later LLM (AI model) processing and editing of this report. 
+The reader is an AI model, not a human, so focus on concise, factual summaries without explanations.
+Use ONLY information explicitly present between REPORT_MARKDOWN_BEGIN/END.
+Do NOT infer, compute, or estimate any numbers or details not explicitly stated.
+The comment should help the LLM understand the main topics, key findings, and structure of the appendix for tasks like writing research sections (e.g., Abstract).
+Highlight surprising or model-specific results where present.
+Return EXACTLY 6 lines. Each line MUST start with the exact prefix shown:
+Scope:
+Experimental setup:
+What each table cell represents:
+Aggregates:
+Known failure modes:
+Surprising results:
+Rules:
+- No markdown, no bullets, no numbering, no extra lines.
+- If information is missing or unclear, write: Unknown
+- Do not quote or repeat report text.
+REPORT_MARKDOWN_BEGIN
+', appendix , '
+REPORT_MARKDOWN_END'.
+    hist := AIAHistory new.
+    hist
+        api: (GrokApi newOnModel: 2);  "Keep as is, or make configurable later"
+        user: prompt;
+        getResponse.
+	 response := (hist response beginsWith: '<!--')
+        ifTrue: [ String lf, hist response , String lf ]
+        ifFalse: [ '<!--- ', String lf, hist response , String lf, '--->' , String lf ].
+    ^ response 
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper00Title [
+AIACommentPaper >> paper00Title [
 	| title |
 	title := 'How to build live comments using AI support'.
 	paperDict at: 0 put: { 'title'. title }.
@@ -184,7 +245,7 @@ AIA2MultiLLMPaper >> paper00Title [
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper10Author [
+AIACommentPaper >> paper10Author [
 
 	| authors superNumbers modelName |
 	
@@ -204,7 +265,7 @@ AIA2MultiLLMPaper >> paper10Author [
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper15Subpages [
+AIACommentPaper >> paper15Subpages [
 	
 	paperText << '$$$$$abstract$$$$$' << String lf << String lf.	
 	paperText << '$$$$$problem$$$$$' << String lf << String lf.	
@@ -216,37 +277,40 @@ AIA2MultiLLMPaper >> paper15Subpages [
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper20Abstract [ 
+AIACommentPaper >> paper20Abstract [ 
 	| text name|
 	(paperText findString: '$$$$$abstract$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Abstract'.
+	Transcript << 'Building ' << name  << String lf.
 	(writeResponses includesKey: name) ifFalse: [ self write20Abstract ].
 	text := (writeResponses at: name) last.
 	paperText := paperText copyReplaceAll:'$$$$$abstract$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper30Problem [
+AIACommentPaper >> paper30Problem [
 	| text name|
 	(paperText findString: '$$$$$problem$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Problem'.
+	Transcript << 'Building ' << name  << String lf.
 	(writeResponses includes: name) ifFalse: [ self write30Problem ].
 	text := (writeResponses at: name) last.
 	paperText := paperText copyReplaceAll:'$$$$$problem$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper40Solution [
+AIACommentPaper >> paper40Solution [
 	| text name|
 	(paperText findString: '$$$$$solution$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Solution'.
+	Transcript << 'Building ' << name  << String lf.
 	(writeResponses includes: name) ifFalse: [ self write40Solution ].
 	text := (writeResponses at: name) last.
 	paperText := paperText copyReplaceAll:'$$$$$solution$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper45SolutionPlantUML [
+AIACommentPaper >> paper45SolutionPlantUML [
 	
 	
 "Good experience with Grok/2"
@@ -254,19 +318,22 @@ AIA2MultiLLMPaper >> paper45SolutionPlantUML [
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper50Defence [
+AIACommentPaper >> paper50Defence [
 	| name text |
 	(paperText findString: '$$$$$defence$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Defence'.
+	Transcript << 'Building ' << name  << String lf.
 	(writeResponses includes: name) ifFalse: [ self write50Defence ].
 	text := (writeResponses at: name) last.
 	paperText := paperText copyReplaceAll:'$$$$$defence$$$$$' with: text .
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper60RelatedWork [
+AIACommentPaper >> paper60RelatedWork [
    |  text  |
 	(paperText findString: '$$$$$related$$$$$')  = 0 ifTrue: [ ^ self ].
+	
+	Transcript << 'Building ' << 'Related Work'  << String lf.
 	text := WriteStream on: ''.
 	text << '## Related Work' << String lf << String lf.
 	text << AIA2RelatedListBuilder default summaryOfRelatedWork << String lf << String lf.
@@ -275,10 +342,11 @@ AIA2MultiLLMPaper >> paper60RelatedWork [
 ]
 
 { #category : 'paper build' }
-AIA2MultiLLMPaper >> paper70Conclusion [
+AIACommentPaper >> paper70Conclusion [
    |  text  name|
 	(paperText findString: '$$$$$conclusion$$$$$')  = 0 ifTrue: [ ^ self ].
 	name :=  'Conclusion'.
+	Transcript << 'Building ' << name  << String lf.
 	(writeResponses includes: name) ifFalse: [ self write70Conclusion ].
 	text := (writeResponses at: name) last.
 	paperText := paperText copyReplaceAll:'$$$$$conclusion$$$$$' with: text contents .
@@ -286,9 +354,10 @@ AIA2MultiLLMPaper >> paper70Conclusion [
 ]
 
 { #category : 'Protocol (paper build) - 21 selector(s)' }
-AIA2MultiLLMPaper >> paper80References [
+AIACommentPaper >> paper80References [
    |  text  list |
 	(paperText findString: '$$$$$references$$$$$') = 0 ifTrue: [ ^ self ].	
+	Transcript << 'Building ' << 'References'  << String lf.
 	text := WriteStream on: ''.
 	text << '## References' << String lf << String lf.
 	list := AIA2RelatedPaperExtractor extractorList.
@@ -301,49 +370,35 @@ AIA2MultiLLMPaper >> paper80References [
 	^ text contents.
 ]
 
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> paperBuild [
-
-	paperText ifNil: [
-			paperText := WriteStream on: ''.
-
-			self
-				paper00Title;
-				paper10Author;
-				paper15Subpages.
-			paperText << self getAppendix.
-			paperText := paperText contents ].
-	self
-		paper20Abstract;
-		paper30Problem;
-		paper40Solution;
-		paper50Defence;
-		paper60RelatedWork;
-		paper70Conclusion;
-		paper80References
-]
-
-{ #category : 'paper build' }
-AIA2MultiLLMPaper >> paperLatex [
-	"Grok makes something useful"
-	"But in reallity, one need to 1) Split the contents of the sections into an ordered dictionary, and 2) Define the header of the latex - eg something like.
-	\documentclass[12pt]{article}
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{hyperref}
-\usepackage{multirow}
-\usepackage{array}"
-	'Can you make a Latex structure for background markdown. I have some other system that produces each "\section" part, so it is just the outer strucure for a scientific latex paper I am interested in.' q0: [  self paperText]
-]
-
 { #category : 'accessing' }
-AIA2MultiLLMPaper >> paperText [
+AIACommentPaper >> paperText [
 	^ paperText
 ]
 
+{ #category : 'markdown' }
+AIACommentPaper >> rebuildOverview [
+    "Rebuilds the HTML comment overview for the LLM report using explicit report content only. Optimized to help subsequent LLMs understand main topics and write sections like Abstract."
+    | prompt hist response |
+    prompt := 'Please explain what the main purpose and possible usages of the background is'.
+    hist := AIAHistory new.
+    hist
+        api: (GrokApi newOnModel: 2);  "Keep as is, or make configurable later"
+		  background: appendix;
+        user: prompt;
+        getResponse.
+	 response := (hist response beginsWith: '<!--')
+        ifTrue: [ String lf, hist response , String lf ]
+        ifFalse: [ '<!--- ', String lf, hist response , String lf, '--->' , String lf ].
+    ^ response 
+]
+
+{ #category : 'paper build' }
+AIACommentPaper >> setAppendix: appendixText [
+	appendix := appendixText 
+]
+
 { #category : 'writing' }
-AIA2MultiLLMPaper >> write20Abstract [
+AIACommentPaper >> write20Abstract [
 	^ self 
 		writeSection: 'Abstract' 
 		withPrompt: 'write a 4-sentence Abstract following Kent Beck''s structure:
@@ -357,7 +412,7 @@ Include at least one quantitative or directly observable result from the Appendi
 ]
 
 { #category : 'writing' }
-AIA2MultiLLMPaper >> write30Problem [
+AIACommentPaper >> write30Problem [
 	^ self 
 		writeSection: 'Problem' 
 		withPrompt: 'Section type: Problem
@@ -378,7 +433,7 @@ Do not write text that is already in the backgound text, but you may reference i
 ]
 
 { #category : 'writing' }
-AIA2MultiLLMPaper >> write40Solution [
+AIACommentPaper >> write40Solution [
 	^ self 
 		writeSection: 'Solution' 
 		withPrompt: 'Section type: Solution
@@ -397,7 +452,7 @@ Do not write text that is already in the backgound text, but you may reference i
 ]
 
 { #category : 'writing' }
-AIA2MultiLLMPaper >> write50Defence [
+AIACommentPaper >> write50Defence [
 	^ self 
 		writeSection: 'Defence' 
 		withPrompt: 'Section type: Defence
@@ -418,7 +473,7 @@ Do not write text that is already in the backgound text, but you may reference i
 ]
 
 { #category : 'writing' }
-AIA2MultiLLMPaper >> write70Conclusion [
+AIACommentPaper >> write70Conclusion [
     ^ self 
         writeSection: 'Conclusion' 
         withPrompt: 'Section type: Conclusion
@@ -434,7 +489,7 @@ Do not introduce new data or citations not found in the previous sections or App
 ]
 
 { #category : 'Protocol (writing) - 6 selector(s)' }
-AIA2MultiLLMPaper >> writeSection: section withPrompt: prompt [
+AIACommentPaper >> writeSection: section withPrompt: prompt [
     | level1 level2 level3 level4 |
     level1 := AIAHistory new.
     level1

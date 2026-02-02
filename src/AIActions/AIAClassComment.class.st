@@ -1,42 +1,3 @@
-"
-# AIAClassComment
-
-`AIAClassComment` is a specialized builder class designed to generate AI-driven class comments in Pharo. It extends the `AIACommentBuilding` framework to provide targeted, context-aware documentation for classes, leveraging AI to produce comments at varying levels of detail (basic, beginner, detailed, expert, test-guide).
-
-## Design Intent
-
-The primary purpose of `AIAClassComment` is to automate the creation of high-quality class comments by interacting with an AI model. It encapsulates the logic for constructing prompts, processing responses, and formatting the output in Markdown. The class is designed to be extensible, allowing for customisation of comment styles and languages.
-
-## Key Features
-
-- **Multi-Level Comment Generation**: Supports different comment types (basic, beginner, detailed, expert, test-guide) to cater to diverse audiences.
-- **AI Integration**: Uses `AIAHistory` to manage conversation history with the AI model, ensuring context-aware responses.
-- **Markdown Formatting**: All comments are generated in Markdown, ensuring readability and compatibility with Pharo's documentation tools.
-- **Error Handling**: Robust error handling in `response` and `getResponse` methods to manage API failures gracefully.
-
-## Usage Example
-
-```smalltalk
-""AIAClassComment example: Generate an expert-level comment for a class""
-AIAClassComment new
-    aiaCommentExpert: AIAClassComment;
-    inspect
-```
-
-## Extension Points
-
-- **Custom Prompts**: The `system:` and `user:` methods can be overridden to tailor prompts for specific use cases.
-- **Response Processing**: The `response` method can be extended to include post-processing of AI responses.
-- **Language Support**: The `language:` class method allows for easy switching of comment languages.
-
-## Known Trade-offs
-
-- **AI Dependency**: The quality of comments depends on the underlying AI model and its training data.
-- **Response Time**: Generating comments may take time, especially for complex classes.
-- **Determinism**: AI-generated content is non-deterministic, meaning repeated calls may produce slightly different results.
-
-This class is part of the `AIActions` package and is intended for use in development environments where automated documentation is valuable.
-"
 Class {
 	#name : 'AIAClassComment',
 	#superclass : 'AIACommentBuilding',
@@ -57,13 +18,11 @@ AIAClassComment >> aiaComment: aClass [
 
 { #category : 'accessing' }
 AIAClassComment >> aiaCommentBasic: aClass [
-	"Generates a basic AI-driven class comment for aClass, following the same
-	style and structure as #aiaComment:."
-
 	history
 		background: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Please give a short, basic class comment for ', aClass asString;
-		responseType: 'The answer must only be the class comment text.';
+		user: 'The reader is a programmer who is a Pharo/Smalltalk expert';
+		user: 'Response must be short, focus on purpose, no focus on implementation, no focus on varables';
 		responseType: 'Please write the response in ', AIACommentBuilding language.
 	history getResponse
 ]
@@ -71,7 +30,7 @@ AIAClassComment >> aiaCommentBasic: aClass [
 { #category : 'Protocol (as yet unclassified) - 1 selector(s)' }
 AIAClassComment >> aiaCommentBeginner: aClass [ 
 	history
-		system: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Can your give a class comment for ' , 
 			aClass asString, 
 			'. Just return the Class comment, no prior explanation response. ',
@@ -85,7 +44,7 @@ AIAClassComment >> aiaCommentDefault: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 
 	history 
-		system: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCodeBuilder new forClass: aClass);
 		background: 'When giving an example using the definition of a class, use: ' , 
 			String cr, ShiftClassBuilder comment;
 		user: 'This is a Pharo question. Can your give a class comment for ' , aClass asString;
@@ -130,12 +89,13 @@ AIAClassComment >> aiaCommentExpert: aClass [
 	history getResponse
 ]
 
-{ #category : 'accessing' }
+{ #category : 'Protocol (accessing) - 10 selector(s)' }
 AIAClassComment >> aiaCommentLLM: aClass [
 	history
 		background: (AIASourceCodeBuilder new forClass: aClass);
 		user: 'This is a Pharo question. Please give a class comment for ', aClass asString;
-		user: 'Response is meant for a non-human AI LLM model to read. Purpos is for a LLM to understand the essence of the class through reading this comment'.
+		user: 'Return ONLY a compact machine-readable summary in plain text with these keys: purpose, inputs, outputs, collaborators, side_effects, invariants, extension_points, example_calls. No headings, no narrative, no Markdown.';
+		user: 'Use one line per key. Format EXACTLY: key = value. No colons. No bullet points. No extra keys.'.
 	history getResponse
 ]
 
@@ -159,18 +119,13 @@ AIAClassComment >> aiaCommentTestGuide: aClass [
 ]
 
 { #category : 'accessing' }
-AIAClassComment >> old_setComment: aClass [
-	| cleaned response first last|
-	self aiaComment: aClass.
-	response := self response.
-	first := 1. last := response lines size.
-	"Should be updated, to remove markdown prefix, and if present, the last ``` should be removed as well"
-	(response lines first includesSubstring: '```markdown') 
-		ifTrue: [first := 2. last := last - 1].
-	cleaned := String lf join: (response lines copyFrom: first to: last).
-	aClass comment: cleaned .
-	AIASlotComment for: aClass.
-	
+AIAClassComment >> aiaMetaComment: aClass [
+	"Generates an AI driven class comment for the given class using the current comment type"
+
+	| typeName selector |
+	typeName := AIACommentBuilding commentType.
+	selector := ('aiaComment' , typeName , ':') asSymbol.
+	self perform: selector with: aClass
 ]
 
 { #category : 'accessing' }

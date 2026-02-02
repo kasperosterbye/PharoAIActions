@@ -318,45 +318,6 @@ AIA2MultiLLMWriter >> markdown50CommentOverview [
 ]
 
 { #category : 'markdown' }
-AIA2MultiLLMWriter >> markdown51EnsureComment [
-	"Ensures the report includes a hidden HTML comment for later LLM edits, using explicit report content only"
-| prompt  hist |
-	prompt := 'You will output a hidden HTML comment for later LLM edits of this report.
-Use ONLY information explicitly present between REPORT_MARKDOWN_BEGIN/END.
-Do NOT infer, calculate, or estimate any numbers not explicitly written.
-Return EXACTLY 6 lines. Each line MUST:
-- Start with the exact prefix below followed by a single space and colon
-- Have content <= 110 characters (to leave margin under 120)
-- Have no leading or trailing whitespace on the content
-- Be followed directly by the next line (no blank lines)
-
-Scope:
-Experimental setup:
-What each table cell represents:
-Aggregates:
-Known failure modes:
-Editing priorities:
-
-Rules:
-- No markdown, no bullets, no numbering, no extra lines.
-- If information is missing or unclear, write: Unknown
-- Do not quote or repeat report text.
-- **Stop after the 6th line. Do not add anything else.**
-
-REPORT_MARKDOWN_BEGIN
-', markDown contents, '
-REPORT_MARKDOWN_END'.
-	hist := AIAHistory new.
-	hist 
-		api: (OpenAIApi newOnModel: 1);
-		background: 'LLM Temperature = 0.0 everywhere';
-		user: prompt;
-		getResponse.
-	overview := '<!--- ', String lf, hist response , String lf, '--->' , String lf.
-	^ overview 
-]
-
-{ #category : 'markdown' }
 AIA2MultiLLMWriter >> markdownSimplifiedResponse: originalResponse [
 	"Simplifies LLM response text by joining lines and categorising as 'E' for errors, '+' for correct answers, or '-' for incorrect answers"
 	| simplifiedResponse |
