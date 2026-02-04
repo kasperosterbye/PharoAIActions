@@ -70,11 +70,11 @@ OllamaApiWithTools >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
     messageList do: [ :item |
-			Transcript 
+			"Transcript 
 					<< 'JSON key: ' << item key 
 					<< ' Value: ' << (item value asString 
 							copyFrom: 1 
-							to: (60 min: item value asString  size)) << String lf.
+							to: (60 min: item value asString  size)) << String lf."
         item key = 'assistant'
             ifTrue: [ 
                 "Handle both dict (from tool loop) and string (from aHistory assistant:)"
