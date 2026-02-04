@@ -44,7 +44,6 @@ ApiToolGetWeather >> executeTool: args [
 	weatherResponse := ZnClient new url: weatherUrl; get.
 	weatherData := STONJSON fromString: weatherResponse contents.
 	temperature := (weatherData at: 'current_weather') at: 'temperature'.
-	
 	^ temperature asString]
 	on: Error do: [ :ex | 
 		^ 'Error fetching weather for ', aCityName, ': ', ex description ].
