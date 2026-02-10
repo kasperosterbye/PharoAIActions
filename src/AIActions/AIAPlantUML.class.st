@@ -1,32 +1,39 @@
 "
-# AIAPlantUML
+# Class Comment for AIAPlantUML
 
-A utility class for converting PlantUML text to images using the PlantUML command-line tool. This class provides a simple interface to generate UML diagrams from PlantUML code and display them as images in the Pharo environment.
+A utility class for generating and visualising PlantUML diagrams. This class provides methods to convert PlantUML text into images and display them using the `plantuml` command-line tool. It supports various UML diagram types and can be used to generate examples programmatically.
 
-## Usage
+## Usage Example
 
-The class can be used to convert PlantUML code to images and display them. It supports various UML diagram types through example methods that query an AI model for PlantUML code examples.
-
-### Example in Playground
-
-```st
-""AIAPlantUML exampleClassDiagram""
+```smalltalk
+""A simple example demonstrating how to generate a PlantUML diagram and display it.""
+| uml |
+uml := '@startuml
+Alice -> Bob : Hello!
+Bob --> Alice : Hi!
+@enduml'.
+AIAPlantUML umlToImage: uml
 ```
-
-This will generate a class diagram example by querying an AI model for PlantUML code, convert it to an image, and display it.
 
 ## Key Features
 
-- Converts PlantUML text to PNG images using the `plantuml` command-line tool
-- Provides example methods for various UML diagram types
-- Handles both raw PlantUML code and code enclosed in markdown code blocks
-- Displays the resulting image in a new window
+- **Diagram Generation**: Converts PlantUML text to PNG images.
+- **AI Integration**: Can generate UML examples using AI prompts.
+- **Visualisation**: Displays generated diagrams in a `SpImagePresenter`.
 
-## Design Notes
+## Design Decisions
 
-The class is designed to be simple and focused on the conversion task. It doesn't modify or install any classes in the system. The actual conversion is done by calling the external PlantUML tool and reading the resulting PNG file.
+- **Command-Line Dependency**: Relies on the `plantuml` tool being installed and available in the system path.
+- **Temporary Files**: Uses temporary files for intermediate storage during diagram generation.
+- **AI Prompting**: Supports dynamic generation of UML examples via AI queries.
 
-For more complex class building needs, consider using the `ShiftClassInstaller` or other class building utilities in the system.
+## Example Methods
+
+- `umlToImage:`: Converts PlantUML text to an image and displays it.
+- `uml:`: Processes PlantUML text, handling markdown formatting if present.
+- `example*`: Methods for generating specific UML diagram examples (e.g., `exampleClassDiagram`, `exampleSequenceDiagram`).
+
+This class is particularly useful for developers working with PlantUML and requiring programmatic generation and visualisation of UML diagrams.
 "
 Class {
 	#name : 'AIAPlantUML',

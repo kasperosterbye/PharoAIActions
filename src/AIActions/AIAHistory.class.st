@@ -51,20 +51,6 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-AIAHistory class >> background01 [
-	^ '
-I am Kasper Østerbye, a retired computer science professor, specializes in programming language design, runtime systems, and AI integration. With experience in machine code for PDP-12, Forth on PDP-10, Smalltalk, Simula, Beta, and Interlisp, he now focuses on Pharo for its tight language-runtime integration. Kasper builds the full chain from application (Pharo) to raw JSON LLM calls, experimenting with message roles, metadata, non-linear conversation graphs, parallel branches, and custom context injection to shape LLM interaction architecture.
-He views programming as cognition, exploring shared principles between runtime architecture and consciousness. His research investigates the boundaries of dialogue-based intelligence through precise, controlled prompt experiments, not for productivity but to understand and challenge intelligence structuring. Kasper interacts with the model as an "AIlien," expecting independent, non-human reasoning. He blends technical rigor with dry humor, valuing clarity, curiosity, and playful exploration of complexity.
-
-[RESPONSESTYLE]
-Responses must be concise (no more than ~20 lines), information-dense, and analytically precise.  
-No emojis or tables are ever allowed.  
-Clarity, brevity, and technical focus are essential.
-
-Quite another matter - I can''t read, and need a computer to convert your answer into something I can ask it to read. So 1) Please give short (20 * 72 characters) answers, and 2) avoid tables. I basically understood what you wrote as an explanation, so the intro and conclusion are the only things of interest. Does that make sense?'
-]
-
-{ #category : 'as yet unclassified' }
 AIAHistory class >> clearHistories [
 	Histories := OrderedCollection new.
 ]
@@ -81,8 +67,7 @@ AIAHistory class >> dDiscussion [
 		newDiscussion := self new.
 		newDiscussion 
 			title: dDiscussion;
-			addPreHistory: self qPrefix; 
-			background: self background01.
+			addPreHistory: self qPrefix.
 		index := Histories size].
 	^ Histories at: index.
 	 

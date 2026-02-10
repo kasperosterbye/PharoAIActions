@@ -3,7 +3,8 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'response',
-		'classList'
+		'classList',
+		'sourcePackage'
 	],
 	#category : 'AIActions-CommentBuilder',
 	#package : 'AIActions',
@@ -79,22 +80,22 @@ AIASourceCodeBuilder >> for: packages [
 
 { #category : 'accessing' }
 AIASourceCodeBuilder >> forClass: aClass [
+
 	| metaClass |
-		(classList includes: aClass) 
-			ifTrue: [ ^ response contents ].
-		classList add: aClass.
-		metaClass := aClass class.
-		classList add: metaClass.
-			
-		self classHeaderFor: aClass.
-		self methodsFor: aClass.
-		
-		self classHeaderFor: metaClass.
-		self methodsFor: metaClass.
-		
-		response << (self forSuperClassesOf: aClass).
+	sourcePackage := aClass package name asString.
+	(classList includes: aClass) ifTrue: [ ^ response contents ].
+	classList add: aClass.
+	metaClass := aClass class.
+	classList add: metaClass.
+
+	self classHeaderFor: aClass.
+	self methodsFor: aClass.
+
+	self classHeaderFor: metaClass.
+	self methodsFor: metaClass.
+
+	response << (self forSuperClassesOf: aClass).
 	^ response contents
-		
 ]
 
 { #category : 'accessing' }
@@ -217,13 +218,14 @@ AIASourceCodeBuilder >> response [
 
 { #category : 'as yet unclassified' }
 AIASourceCodeBuilder >> stopNow: aClass [
-	((((aClass = Object 
+	^ sourcePackage = aClass package name asString.
+	"((((aClass = Object 
 		or: [ aClass = Object class ])
 		or: [ aClass = Metaclass])
 		or: [ aClass = TestCase ])
 		or: [ aClass = ProtoObject ])
 		ifTrue: [ ^ true ].
-	^ false
+	^ false"
 ]
 
 { #category : 'internal' }
