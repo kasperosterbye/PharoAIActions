@@ -162,6 +162,7 @@ AIAGitHub >> issueInfo: issue [
 
 { #category : 'llm support' }
 AIAGitHub >> llmOpenIssue: issueNumber [
+	"Returns the open issue with the specified number from the collection of open issues."
 	| issue |
 	issue := openIssues detect: [ :f | (f at: 'number') = issueNumber ].
 	^ issue
