@@ -1,3 +1,28 @@
+"
+# Class Comment for AIAGitHub
+
+The `AIAGitHub` class provides an interface to interact with GitHub repositories, specifically for fetching and processing issues and comments. It supports pagination for large result sets and includes methods for extracting key information from GitHub API responses.
+
+## Key Features
+
+- **Issue Management**: Fetch open issues from a specified repository, including pagination support.
+- **Comment Processing**: Retrieve and format comments associated with specific issues.
+- **Repository Configuration**: Set and retrieve the target GitHub repository.
+
+## Usage Example
+
+```st
+""Create an instance and fetch open issues from the Microdown repository""
+github := AIAGitHub new.
+github repository: 'pillar-markup/Microdown'.
+github fetchOpenIssues.
+
+""Inspect the first issue's details""
+github llmOpenIssue: (github openIssues first at: 'number').
+```
+
+This class is designed for interactive use in the Pharo Playground, with methods returning collections or objects suitable for inspection.
+"
 Class {
 	#name : 'AIAGitHub',
 	#superclass : 'Object',
@@ -32,7 +57,7 @@ AIAGitHub class >> default [
 	^ default
 ]
 
-{ #category : 'examples' }
+{ #category : 'token' }
 AIAGitHub class >> gitHubToken [
 	"From https://github.com/settings/tokens"
 	^(FileSystem disk workingDirectory / '../../gitHubToken.txt') readStream contents trimBoth.
@@ -46,7 +71,7 @@ AIAGitHub class >> pillar [
 	^ pillar
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'fetching' }
 AIAGitHub >> commentsFrom: comments [
 	"This method processes a collection of GitHub comments, extracting key information such as the user, creation date, and body text. It returns a formatted list of these comments."
 
@@ -60,7 +85,7 @@ AIAGitHub >> commentsFrom: comments [
 	^ commentsList
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'fetching' }
 AIAGitHub >> fetchOpenIssues [
 	"Fetches open issues from the GitHub repository, paginating through results and storing them in the openIssues collection."
 
@@ -84,7 +109,7 @@ AIAGitHub >> fetchOpenIssues [
 	^ openIssues
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'fetching' }
 AIAGitHub >> fetchOpenIssuesComments: issueNumber [
 	"Fetches and processes comments for a specific GitHub issue, storing them in the issue's dictionary."
 
@@ -107,7 +132,7 @@ AIAGitHub >> fetchOpenIssuesComments: issueNumber [
 	^ self
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'intialization' }
 AIAGitHub >> initialize [ 
 	"Initialises the GitHub repository and open issues collection"
 	super initialize.
@@ -115,14 +140,14 @@ AIAGitHub >> initialize [
 	repository := 'pillar-markup/Microdown'.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'fetching' }
 AIAGitHub >> issue: issue at: name [
 	"Returns a dictionary entry for the specified issue attribute, handling the 'user' case separately to extract the login name."
 	name = 'user' ifTrue: [ ^ 'user' -> ((issue at: 'user') at: 'login') ].
 	^ name -> (issue at: name)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'fetching' }
 AIAGitHub >> issueInfo: issue [
 	"Returns a dictionary containing key information about a GitHub issue, including number, user, title, update date, comment count, and body text."
 
@@ -135,27 +160,27 @@ AIAGitHub >> issueInfo: issue [
 		  (self issue: issue at: 'body') } asDictionary
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'llm support' }
 AIAGitHub >> llmOpenIssue: issueNumber [
 	| issue |
 	issue := openIssues detect: [ :f | (f at: 'number') = issueNumber ].
 	^ issue
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'llm support' }
 AIAGitHub >> llmOpenIssues [
 	"Returns the open issues as a string representation"
 	^ openIssues asString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAGitHub >> repository [
 	"Returns the GitHub repository name"
 
 	^ repository
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAGitHub >> repository: anObject [
 	"Sets the GitHub repository name for the instance"
 
