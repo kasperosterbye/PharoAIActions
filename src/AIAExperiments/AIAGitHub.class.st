@@ -161,17 +161,43 @@ AIAGitHub >> issueInfo: issue [
 ]
 
 { #category : 'llm support' }
+AIAGitHub >> llmCommentsFor: issue in: issueMD [
+	(issue at: 'comments') asString = 0 ifTrue: [ ^ self ].
+	(issue at: 'commentList') do: [ :comment | | time |
+		time := ((comment at: 'created_at') copyReplaceFrom: 11 to: 11 with: ' ') allButLast .
+		issueMD 
+			<< '### ' << (comment at: 'user') << ' (' << time << ')' << String lf << String lf
+			<< '`````comment' << String lf
+			<< (comment at: 'body') << String lf
+			<< '`````' << String lf << String lf
+		 ]
+]
+
+{ #category : 'llm support' }
 AIAGitHub >> llmOpenIssue: issueNumber [
 	"Returns the open issue with the specified number from the collection of open issues."
-	| issue |
+	| issue issueMD time|
 	issue := openIssues detect: [ :f | (f at: 'number') = issueNumber ].
-	^ issue
+	time := ((issue at: 'updated_at') copyReplaceFrom: 11 to: 11 with: ' ') allButLast .
+	issueMD := WriteStream on: ''.
+	issueMD 
+		<< '# Issue #' << (issue at: 'number') asString << ': ' << (issue at: 'title') << String lf
+		<< '- Author: ' << (issue at: 'user') << String lf 
+		<< '- Updated: ' << time << String lf 
+		<< '- Comments: ' << (issue at: 'comments') asString << String lf.
+	self llmCommentsFor: issue in: issueMD .
+	^ issueMD contents
 ]
 
 { #category : 'llm support' }
 AIAGitHub >> llmOpenIssues [
-	"Returns the open issues as a string representation"
-	^ openIssues asString
+	"Returns the open issue with the specified number from the collection of open issues."
+	| issueMD |
+	issueMD := WriteStream on: ''.
+	openIssues do: [:issue | 
+		issueMD << (self llmOpenIssue: (issue at: 'number')) << String lf << String lf
+		].
+	^ issueMD contents
 ]
 
 { #category : 'accessing' }
