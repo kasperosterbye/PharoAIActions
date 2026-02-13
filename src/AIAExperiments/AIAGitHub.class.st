@@ -166,10 +166,9 @@ AIAGitHub >> llmCommentsFor: issue in: issueMD [
 	(issue at: 'commentList') do: [ :comment | | time |
 		time := ((comment at: 'created_at') copyReplaceFrom: 11 to: 11 with: ' ') allButLast .
 		issueMD 
+			<< String lf
 			<< '### ' << (comment at: 'user') << ' (' << time << ')' << String lf << String lf
-			<< '`````comment' << String lf
 			<< (comment at: 'body') << String lf
-			<< '`````' << String lf << String lf
 		 ]
 ]
 
@@ -184,7 +183,8 @@ AIAGitHub >> llmOpenIssue: issueNumber [
 		<< '# Issue #' << (issue at: 'number') asString << ': ' << (issue at: 'title') << String lf
 		<< '- Author: ' << (issue at: 'user') << String lf 
 		<< '- Updated: ' << time << String lf 
-		<< '- Comments: ' << (issue at: 'comments') asString << String lf.
+		<< '- Comments: ' << (issue at: 'comments') asString << String lf << String lf
+		<< (issue at: 'body') << String lf.
 	self llmCommentsFor: issue in: issueMD .
 	^ issueMD contents
 ]
