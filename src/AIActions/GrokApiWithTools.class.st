@@ -86,7 +86,7 @@ GrokApiWithTools >> jsonHistory [
 { #category : 'tools support' }
 GrokApiWithTools >> loadResponse: aHistory [
     | maxTurns |
-    maxTurns := 10.
+    maxTurns := 50.
     1 to: maxTurns do: [ :turn |
         | rawResponse parsed message toolCalls |
         rawResponse := self buildZnClientWithHeaders.

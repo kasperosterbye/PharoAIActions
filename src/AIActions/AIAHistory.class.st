@@ -51,6 +51,13 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
+AIAHistory class >> chatHistories [
+	| historyList |
+	historyList := AIAHistory histories.
+	^ historyList collect: [ :hist | hist chatHistory ]
+]
+
+{ #category : 'as yet unclassified' }
 AIAHistory class >> clearHistories [
 	Histories := OrderedCollection new.
 ]
