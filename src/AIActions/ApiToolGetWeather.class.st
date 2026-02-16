@@ -18,11 +18,38 @@ ApiToolGetWeather >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
+{ #category : 'as yet unclassified' }
+ApiToolGetWeather >> evaluateTool: descs [
+	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
+	| desc desc1|
+	desc := descs first.
+	desc1 := descs second.
+    ^ Dictionary newFrom: {
+        'type' -> 'function'.
+        'function' -> (Dictionary newFrom: {
+            'name' -> name.
+            'description' -> desc.
+            'parameters' -> (Dictionary newFrom: {
+                'type' -> 'object'.
+                'properties' -> (Dictionary newFrom: {
+                    required -> (Dictionary newFrom: {
+                        'type' -> 'array'.
+							  'items' -> (Dictionary newFrom: { 'type' -> 'string'}).
+                        'description' -> desc1
+                    })
+                }).
+                'required' -> {required} 
+            })
+        })
+    }
+]
+
 { #category : 'Protocol (as yet unclassified) - 4 selector(s)' }
 ApiToolGetWeather >> executeTool: args [
 	"Fetches the current weather for a city in any country"
 
 	|  aCityName geoUrl geoResponse geoData lat lon weatherUrl weatherResponse weatherData temperature  |
+	self halt.
 	super executeTool: args.
 	aCityName := args at: required.
 	[ 
