@@ -17,6 +17,7 @@ ApiToolExpression >> evaluateTool [
 
 { #category : 'as yet unclassified' }
 ApiToolExpression >> executeTool: args [
+	"Evaluates the provided Pharo expression and returns its string representation handling any errors"
 
 	| expr |
 	super executeTool: args.
