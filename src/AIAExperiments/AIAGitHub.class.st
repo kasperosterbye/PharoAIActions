@@ -184,8 +184,7 @@ AIAGitHub >> llmOpenIssue: issueNumber [
 		<< '- Author: ' << (issue at: 'user') << String lf 
 		<< '- Updated: ' << time << String lf 
 		<< '- Comments: ' << (issue at: 'comments') asString << String lf << String lf
-		"Maybe a test should be made if there are none"
-		<< (issue at: 'body') << String lf.
+		<< ((issue at: 'body') ifNil: ['(Info in the title)'] )<< String lf.
 	self llmCommentsFor: issue in: issueMD .
 	^ issueMD contents
 ]
