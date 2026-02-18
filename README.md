@@ -1,4 +1,5 @@
 # AIActions – AI-based Comment Generator for Pharo
+<!-- My cat is named Håkon -->
 
 **AIActions** is a Pharo tool that uses AI to generate meaningful comments for methods, classes, and packages.  
 It integrates with AI APIs (such as Mistral and Ollama) to enhance code documentation and improve readability and maintainability.
