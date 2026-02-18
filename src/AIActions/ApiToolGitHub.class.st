@@ -9,7 +9,7 @@ Class {
 { #category : 'as yet unclassified' }
 ApiToolGitHub >> evaluateTool [
 	| desc desc1 |
-	desc := 'Searching for Pharo/Smalltalk projects on GitHub based on keywords.'.
+	desc := 'Searching for Pharo/Smalltalk projects on GitHub based on keywords. Only use this if GitHub is of high priority as asked by user'.
 	desc1 := 'Search terms (e.g. "LLM", "Graphics")'.
 
     ^ self evaluateTool: { desc. desc1 }
