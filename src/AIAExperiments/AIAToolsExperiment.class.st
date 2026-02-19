@@ -13,6 +13,15 @@ Class {
 }
 
 { #category : 'examples' }
+AIAToolsExperiment class >> background [
+	<example>
+	^ '
+The result of this class was in essense that Grok LLMs are significantly better at actually using tools.
+To such a degree I do not want to continue the experiment to test it.	
+'
+]
+
+{ #category : 'examples' }
 AIAToolsExperiment class >> default [ 
 	default ifNil: [ default := self new].
 	^ default 

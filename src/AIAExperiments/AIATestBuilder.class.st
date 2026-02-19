@@ -80,6 +80,12 @@ AIATestBuilder class >> buildTestClass: sourceClass [
 ]
 
 { #category : 'instance creation' }
+AIATestBuilder >> backgroundGenerator [
+	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."
+	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+]
+
+{ #category : 'instance creation' }
 AIATestBuilder >> build: aMethod [
 	"Builds a test for a given method, using AI to generate and validate the test code. Returns the chat history of the AI interaction."
 	self for: aMethod.
@@ -91,7 +97,7 @@ AIATestBuilder >> build: aMethod [
 AIATestBuilder >> buildTestChat [
 	"Builds the chat context for AI test generation, combining system details, method info, and prompts to guide AI in creating accurate test cases."
 
-	self systemGenerator.
+	self backgroundGenerator.
 	self historyBuilder.
 	self promptGenerator.
 ]
@@ -205,7 +211,7 @@ AIATestBuilder >> promptGenerator [
 	"The promptGenerator method creates a user prompt for AI test generation, guiding AI in generating appropriate test cases.
 "
 
-	chatBuilder user: ('You must only use code that you know is existing in Pharo, never use figurative code.
+	chatBuilder user: ('You must only use code that you know is existing in Pharo14, never use figurative code, but use the TOOL `evaluatePharoExpression` to find information.
 The setUp method of any test methos is called before the test is executed.
 Do not declare local variables that are already provided as instance variables. 
 Insert comments in the test method you create.
