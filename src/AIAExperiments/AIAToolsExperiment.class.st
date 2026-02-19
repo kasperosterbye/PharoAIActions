@@ -45,16 +45,6 @@ AIAToolsExperiment >> modelsCollection [
 ]
 
 { #category : 'as yet unclassified' }
-AIAToolsExperiment >> old_promptTools [
-	Transcript reset.
-	responses := OrderedCollection new.
-	self prompts do: [ :prompt | 
-		self responseTools do: [ :tool | 
-			self prompt: prompt responseTool: tool ] ].
-	^ responses 
-]
-
-{ #category : 'as yet unclassified' }
 AIAToolsExperiment >> prompt01 [
 	^ 'What superclasses does class RSEquidistantCircleLayout have. I want a recursive answer. Just return the names of the super classes in plain text, and no comments'
 ]
@@ -74,11 +64,11 @@ AIAToolsExperiment >> prompt: prompt responseTool: tool [
 
 	| hist |
 	self providers do: [ :provider |
-			1 to: 1 "4" do: [ :providerId |
+			1 to:  4 do: [ :providerId |
 					| api results |
 					api := provider newOnModel: providerId.
 					results := OrderedCollection new.
-					1 to: 1 "5" do: [ :experiment |
+					1 to: 2 do: [ :experiment |
 							| toolsLast tools |
 							toolsLast := Transcript contents lines size + 1.
 							hist := AIAHistory new.
@@ -100,7 +90,6 @@ AIAToolsExperiment >> prompt: prompt responseTool: tool [
 
 { #category : 'as yet unclassified' }
 AIAToolsExperiment >> promptTools [
-	Transcript reset.
 	responses := OrderedCollection new.
 	self prompts do: [ :prompt | 
 		self responseTools do: [ :tool | 
@@ -137,4 +126,8 @@ AIAToolsExperiment >> responseTool03 [
 { #category : 'as yet unclassified' }
 AIAToolsExperiment >> responseTools [
 	^ { "self responseTool01. self responseTool02." self responseTool03 }
+]
+
+{ #category : 'as yet unclassified' }
+AIAToolsExperiment >> responses [ ^ responses
 ]
