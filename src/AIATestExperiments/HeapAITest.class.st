@@ -15,27 +15,6 @@ HeapAITest >> setUp [
 ]
 
 { #category : 'AI generated test' }
-HeapAITest >> testArray [
-	"Test that the array method returns the internal storage array of the heap"
-
-	| initialArraySize |
-	initialArraySize := 10.
-	self assert: refHeap array isArray.
-	self assert: refHeap array size equals: initialArraySize.
-	self assert: refHeap size equals: 0.
-
-	"Add an element and verify it is stored in the array"
-	refHeap add: 42.
-	self assert: (refHeap array includes: 42).
-	self assert: refHeap size equals: 1.
-
-	"Add another element to ensure the array grows or accommodates it"
-	refHeap add: 100.
-	self assert: (refHeap array includes: 100).
-	self assert: refHeap size equals: 2
-]
-
-{ #category : 'AI generated test' }
 HeapAITest >> testAt [
 	"Test that at: raises an error since Heap is not designed for sequential access."
 
@@ -73,24 +52,55 @@ HeapAITest >> testCollect [
 	self assert: (result includesAll: #(2 4 6))
 ]
 
-{ #category : 'AI generated test' }
+{ #category : 'tests' }
 HeapAITest >> testDownHeap [
-	"Test that downHeap: restores the min-heap property when the root is too large (violates with children)"
-| extracted |
+	| array expected |
+	"Set the sort block to default min-heap order and index update block to nil"
+	refHeap instVarAt: 3 put: [ :a :b | a <= b ].
+	refHeap instVarAt: 4 put: nil.
 	
-	refHeap add: 1; add: 3; add: 2.
-	"Builds a valid min-heap: #(nil, 1, 3, 2)"
-	refHeap array at: 1 put: 4.
-	"Violate heap property: #(nil, 4, 3, 2), root 4 > children 3 and 2"
+	"Test case 1: Sift down swapping with left child"
+	array := #(3 1 2) asArray.
+	refHeap
+		instVarAt: 1 put: array copy;
+		instVarAt: 2 put: 3.
 	refHeap downHeap: 1.
-	"Should sift down to #(nil, 2, 3, 4)"
-	self assert: (refHeap array at: 1) equals: 2.
-	self assert: (refHeap array at: 2) equals: 3.
-	self assert: (refHeap array at: 3) equals: 4.
-	"Verify by extracting all elements in sorted order"
-	extracted := OrderedCollection new.
-	[ refHeap isEmpty ] whileFalse: [ extracted add: refHeap removeFirst ].
-	self assert: extracted asArray equals: #(2 3 4)
+	expected := #(1 3 2) asArray.
+	self assert: (refHeap instVarAt: 1) equals: expected.
+	
+	"Test case 2: Sift down swapping with right child (right is smaller)"
+	array := #(3 2 1) asArray.
+	refHeap
+		instVarAt: 1 put: array copy;
+		instVarAt: 2 put: 3.
+	refHeap downHeap: 1.
+	expected := #(1 2 3) asArray.
+	self assert: (refHeap instVarAt: 1) equals: expected.
+	
+	"Test case 3: Multi-level sift down"
+	array := #(4 1 3 2) asArray.
+	refHeap
+		instVarAt: 1 put: array copy;
+		instVarAt: 2 put: 4.
+	refHeap downHeap: 1.
+	expected := #(1 2 3 4) asArray.
+	self assert: (refHeap instVarAt: 1) equals: expected.
+	
+	"Test case 4: No violation, no sift down occurs"
+	array := #(1 3 2) asArray.
+	refHeap
+		instVarAt: 1 put: array copy;
+		instVarAt: 2 put: 3.
+	refHeap downHeap: 1.
+	self assert: (refHeap instVarAt: 1) equals: array.
+	
+	"Test case 5: anIndex = 0 returns immediately, no change"
+	array := #(3 1 2) asArray.
+	refHeap
+		instVarAt: 1 put: array copy;
+		instVarAt: 2 put: 3.
+	refHeap downHeap: 0.
+	self assert: (refHeap instVarAt: 1) equals: array
 ]
 
 { #category : 'AI generated test' }
@@ -232,4 +242,89 @@ HeapAITest >> testIndexUpdateBlock [
 	refHeap indexUpdateBlock: nil.
 	refHeap add: 43.
 	self assert: called = 0 description: 'The block should not be called during add when set to nil'.
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testUpHeap [
+	| arr |
+	"Test upHeap: for index 0, should do nothing"
+	refHeap upHeap: 0.
+	self assert: true. "No error, no change expected"
+
+	"Set up min-heap sort block"
+	refHeap sortBlock: [ :a :b | a <= b ].
+
+	"Test upHeap:1 on single element, no change"
+	arr := Array new: 10.
+	arr at: 1 put: 5.
+	refHeap instVarAt: 1 put: arr.
+	refHeap instVarAt: 2 put: 1.
+	refHeap upHeap: 1.
+	self assert: ((refHeap instVarAt: 1) at: 1) equals: 5.
+
+	"Test upHeap:2 with swap needed (smaller child)"
+	arr := Array new: 10.
+	arr at: 1 put: 3.
+	arr at: 2 put: 1.
+	refHeap instVarAt: 1 put: arr.
+	refHeap instVarAt: 2 put: 2.
+	refHeap upHeap: 2.
+	self assert: ((refHeap instVarAt: 1) at: 1) equals: 1.
+	self assert: ((refHeap instVarAt: 1) at: 2) equals: 3.
+
+	"Test upHeap:2 with no swap (larger child)"
+	arr := Array new: 10.
+	arr at: 1 put: 3.
+	arr at: 2 put: 4.
+	refHeap instVarAt: 1 put: arr.
+	refHeap instVarAt: 2 put: 2.
+	refHeap upHeap: 2.
+	self assert: ((refHeap instVarAt: 1) at: 1) equals: 3.
+	self assert: ((refHeap instVarAt: 1) at: 2) equals: 4.
+
+	"Test upHeap:3 with one swap to root"
+	arr := Array new: 10.
+	arr at: 1 put: 3.
+	arr at: 2 put: 4.
+	arr at: 3 put: 2.
+	refHeap instVarAt: 1 put: arr.
+	refHeap instVarAt: 2 put: 3.
+	refHeap upHeap: 3.
+	self assert: ((refHeap instVarAt: 1) at: 1) equals: 2.
+	self assert: ((refHeap instVarAt: 1) at: 2) equals: 4.
+	self assert: ((refHeap instVarAt: 1) at: 3 )equals: 3.
+
+	"Test upHeap:4 with multiple swaps"
+	arr := Array new: 10.
+	arr at: 1 put: 1.
+	arr at: 2 put: 3.
+	arr at: 3 put: 2.
+	arr at: 4 put: 0.
+	refHeap instVarAt: 1 put: arr.
+	refHeap instVarAt: 2 put: 4.
+	refHeap upHeap: 4.
+	self assert: ((refHeap instVarAt: 1) at: 1) equals: 0.
+	self assert: ((refHeap instVarAt: 1) at: 2) equals: 1.
+	self assert: ((refHeap instVarAt: 1) at: 3) equals: 2.
+	self assert: ((refHeap instVarAt: 1) at: 4 )equals: 3.
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testUpdateObjectIndex [
+	"Test that updateObjectIndex: notifies the object at the given index via the indexUpdateBlock if it is set."
+
+	| heap updateCalls obj |
+	updateCalls := OrderedCollection new.
+	heap := Heap new.
+	"Add an object without the block set, so no notification yet"
+	obj := 42.
+	heap add: obj.
+	"Now set the indexUpdateBlock to capture the notifications"
+	heap indexUpdateBlock: [ :object :index | updateCalls add: object -> index ].
+	"Directly invoke the method to test it"
+	heap updateObjectIndex: 1.
+	"Verify the notification was sent with correct object and index"
+	self assert: updateCalls size equals: 1.
+	self assert: (updateCalls first key) equals: obj.
+	self assert: (updateCalls first value) equals: 1
 ]

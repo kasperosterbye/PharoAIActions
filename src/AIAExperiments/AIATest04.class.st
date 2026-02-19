@@ -28,12 +28,13 @@ The name of the test method is `{2}`'
 { #category : 'instance creation' }
 AIATest04 >> historyBuilder [
 
-	chatBuilder 
+	chatBuilder
+		background: 'You are a TOOL using AI.';
 		user: 'The test must be written in Pharo14';
 		user: 'Remember, variables in a method must be declared before the actual code';
 		user: 'In Pharo/Smalltalk, arrays first elememnt is at index 1';
 		user: 'If you need more information about specifics of Pharo14, use TOOL `evaluatePharoExpression`';
-		user: '(TestResult new runCase: (`testClassName`` selector: ``#testMethodName`` )) errors size should return `0`, if not your test code is not working'.
+		user: 'Use this to check your generated test: (TestResult new runCase: (`testClassName`` selector: ``#testMethodName`` )) errors size should return `0`, if not your test code is not working'.
 	self hist2WhereToPlaceTestMethod.
 		
 	
