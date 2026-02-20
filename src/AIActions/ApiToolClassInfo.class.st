@@ -1,6 +1,6 @@
 Class {
 	#name : 'ApiToolClassInfo',
-	#superclass : 'Object',
+	#superclass : 'AilienApiTool',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
