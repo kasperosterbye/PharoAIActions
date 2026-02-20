@@ -55,6 +55,18 @@ AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 					meta methods do: [ :method | self methodNameAndCommentFor: method in: superComment ] ] ]
 ]
 
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> classList [
+
+	^ classList
+]
+
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> classList: anObject [
+
+	classList := anObject
+]
+
 { #category : 'internal' }
 AIASourceCodeBuilder >> classesInPackage: aPackage [
 	"Generates formatted documentation for all classes in a package, including their definitions, instance variables, and methods, appending to the response stream."
@@ -189,7 +201,7 @@ AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 
 { #category : 'internal' }
 AIASourceCodeBuilder >> methodNameAndCommentFor: method in: superComment [
-	"Adds method name and comment to stream for documentation. Handles nil comments gracefully. Formats for readability. Preserves original structure."
+
 
 	superComment << 'Method: ' << method name << String cr.
 	method comment ifNotNil: [
@@ -216,16 +228,27 @@ AIASourceCodeBuilder >> response [
 	^ response 
 ]
 
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> response: anObject [
+
+	response := anObject
+]
+
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> sourcePackage [
+
+	^ sourcePackage
+]
+
+{ #category : 'accessing' }
+AIASourceCodeBuilder >> sourcePackage: anObject [
+
+	sourcePackage := anObject
+]
+
 { #category : 'as yet unclassified' }
 AIASourceCodeBuilder >> stopNow: aClass [
 	^ sourcePackage ~= aClass package name asString.
-	"((((aClass = Object 
-		or: [ aClass = Object class ])
-		or: [ aClass = Metaclass])
-		or: [ aClass = TestCase ])
-		or: [ aClass = ProtoObject ])
-		ifTrue: [ ^ true ].
-	^ false"
 ]
 
 { #category : 'internal' }

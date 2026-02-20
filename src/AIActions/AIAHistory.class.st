@@ -248,12 +248,12 @@ AIAHistory >> getResponse [
 			^ self
 		].
 		secs := self api responseWaitingInSecs.
-		1 to: secs * 10 do: [:each |
+		1 to: secs * 2 do: [:each |
 			job
-				progress: ((1/(secs * 10)) * each) ;
+				progress: ((1/(secs * 2)) * each) ;
 				title: ( self api asString, ' working {1} of {2}' 
-					format: {(each/10) asFloat printString. secs}).
-				self response ifNil: [100 milliSeconds wait].
+					format: {(each/2) asFloat printString. secs}).
+				self response ifNil: [500 milliSeconds wait].
 		].
 	] asJob run.
 ]
