@@ -218,7 +218,7 @@ AIASourceCodeBuilder >> response [
 
 { #category : 'as yet unclassified' }
 AIASourceCodeBuilder >> stopNow: aClass [
-	^ sourcePackage = aClass package name asString.
+	^ sourcePackage ~= aClass package name asString.
 	"((((aClass = Object 
 		or: [ aClass = Object class ])
 		or: [ aClass = Metaclass])
