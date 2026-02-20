@@ -9,7 +9,7 @@ Class {
 { #category : 'as yet unclassified' }
 ApiToolExpression >> evaluateTool [
 	| desc desc1 |
-	desc := 'Evaluates Pharo Smalltalk expression. Returns printString of result. Handles arithmetic, object creation, collection operations.'.
+	desc := 'Evaluates Pharo Smalltalk expression. Returns printString of result. Handles arithmetic, object creation, collection operations, blocks etc.'.
 	desc1 := 'Pharo expression to evaluate'.
 
     ^ self evaluateTool: { desc. desc1 }
