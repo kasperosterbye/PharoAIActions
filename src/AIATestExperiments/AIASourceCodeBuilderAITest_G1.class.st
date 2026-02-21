@@ -151,11 +151,11 @@ AIASourceCodeBuilderAITest_G1 >> testForWildcard [
 { #category : 'AI generated test' }
 AIASourceCodeBuilderAITest_G1 >> testInitialize [
 	"Test that initialize sets response to a WriteStream on an empty string and classList to an empty Set."
-	
-	self assert: refAIASourceCodeBuilder response class equals: WriteStream.
-	self assert: refAIASourceCodeBuilder response contents equals: ''.
-	self assert: refAIASourceCodeBuilder classList class equals: Set.
-	self assert: refAIASourceCodeBuilder classList isEmpty
+
+	self assert: (refAIASourceCodeBuilder instVarNamed: #response) class equals: WriteStream.
+	self assert: (refAIASourceCodeBuilder instVarNamed: #response) contents equals: ''.
+	self assert: (refAIASourceCodeBuilder instVarNamed: #classList) class equals: Set.
+	self assert: (refAIASourceCodeBuilder instVarNamed: #classList) isEmpty.
 ]
 
 { #category : 'AI generated test' }

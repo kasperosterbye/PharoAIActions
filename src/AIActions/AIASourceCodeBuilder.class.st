@@ -55,18 +55,6 @@ AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 					meta methods do: [ :method | self methodNameAndCommentFor: method in: superComment ] ] ]
 ]
 
-{ #category : 'accessing' }
-AIASourceCodeBuilder >> classList [
-
-	^ classList
-]
-
-{ #category : 'accessing' }
-AIASourceCodeBuilder >> classList: anObject [
-
-	classList := anObject
-]
-
 { #category : 'internal' }
 AIASourceCodeBuilder >> classesInPackage: aPackage [
 	"Generates formatted documentation for all classes in a package, including their definitions, instance variables, and methods, appending to the response stream."
@@ -232,18 +220,6 @@ AIASourceCodeBuilder >> response [
 AIASourceCodeBuilder >> response: anObject [
 
 	response := anObject
-]
-
-{ #category : 'accessing' }
-AIASourceCodeBuilder >> sourcePackage [
-
-	^ sourcePackage
-]
-
-{ #category : 'accessing' }
-AIASourceCodeBuilder >> sourcePackage: anObject [
-
-	sourcePackage := anObject
 ]
 
 { #category : 'as yet unclassified' }

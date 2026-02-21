@@ -29,6 +29,6 @@ ApiToolExpression >> executeTool: args [
 
 { #category : 'initialization' }
 ApiToolExpression >> initialize [
-	name := 'evaluatePharoExpression'.
+	name := 'executePharoExpression'.
 	required := 'expression'
 ]

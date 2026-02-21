@@ -31,11 +31,9 @@ AIATest04 >> historyBuilder [
 	chatBuilder
 		background: 'You are a TOOL using AI.';
 		user: 'The test must be written in Pharo14';
-		user: 'Variables aaa defined in class XXX, cannot be read using a method aaa, or set using aaa: . Use instVarAt: and instVarAt:  put';
-		user: 'Remember, variables in a method must be declared before the actual code';
-		user: 'In Pharo/Smalltalk, arrays first elememnt is at index 1';
-		responseType: 'You must use TOOL `evaluatePharoExpression` to ensure that the methods you use actually exists';
-		user: 'IMPORTANT: Always check your generated test: (TestResult new runCase: (`testClassName`` selector: ``#testMethodName`` )) errors size should return `0`, if not your test code is not working'.
+		user: 'Instance variables/slots cannot be read via direct methods (e.g., no obj ivar). Always use obj instVarNamed: #ivarName to read and obj instVarNamed: #ivarName put: value to set; do not use instVarAt: (requires Integer index).';
+		user: 'For assert: statements, always wrap the condition in parentheses to avoid left-to-right parsing errors, e.g., self assert: (response isKindOf: WriteStream) . Not self assert: response isKindOf: WriteStream .';
+		responseType: 'You must use TOOL `executePharoExpression` to ensure that the methods you use actually exists'.
 	self hist2WhereToPlaceTestMethod.
 		
 	

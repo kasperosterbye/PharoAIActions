@@ -1,5 +1,5 @@
 Class {
-	#name : 'AIASourceCodeBuilderAITest',
+	#name : 'AIASourceCodeBuilderClassAITest',
 	#superclass : 'TestCase',
 	#instVars : [
 		'refAIASourceCodeBuilder'
@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : 'initialization' }
-AIASourceCodeBuilderAITest >> setUp [
+AIASourceCodeBuilderClassAITest >> setUp [
 	super setUp.
-	refAIASourceCodeBuilder := AIASourceCodeBuilder new.
+	refAIASourceCodeBuilder := AIASourceCodeBuilder class new.
 ]
