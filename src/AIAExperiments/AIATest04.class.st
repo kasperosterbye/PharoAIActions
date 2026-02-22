@@ -8,8 +8,6 @@ Class {
 
 { #category : 'test builder' }
 AIATest04 >> hist2WhereToPlaceTestMethod [
-	
-
 	chatBuilder user: ('I want to write a test method for `{1}` in class `{2}`. 
 In what test class do I place it, and what do I name the test method' format: {
 				 self sourceMethodStringName.

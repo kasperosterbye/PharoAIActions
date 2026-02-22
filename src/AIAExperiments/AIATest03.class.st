@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIATest03',
 	#superclass : 'AIATestBuilder',
-	#category : 'AIAExperiments-TestBuiler',
+	#category : 'AIAExperiments-Tests',
 	#package : 'AIAExperiments',
-	#tag : 'TestBuiler'
+	#tag : 'Tests'
 }
 
 { #category : 'test builder' }

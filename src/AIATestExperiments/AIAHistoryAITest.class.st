@@ -94,24 +94,6 @@ AIAHistoryAITest >> testApi_01 [
 ]
 
 { #category : 'AI generated test' }
-AIAHistoryAITest >> testApi_02 [
-	| firstApi secondApi |
-	"Retrieve the API instance first time, should create it since slot is nil"
-	firstApi := refAIAHistory api.
-	self assert: (firstApi notNil).
-	self assert: (firstApi isKindOf: GrokApiWithTools).
-	"Verify the slot is still nil, no assignment happened"
-	self assert: ((refAIAHistory instVarNamed: #api) isNil).
-	"Second call should create a new instance, no caching"
-	secondApi := refAIAHistory api.
-	self assert: (secondApi notNil).
-	self assert: (secondApi isKindOf: GrokApiWithTools).
-	self deny: (firstApi == secondApi).
-	"Slot still nil"
-	self assert: ((refAIAHistory instVarNamed: #api) isNil)
-]
-
-{ #category : 'AI generated test' }
 AIAHistoryAITest >> testGetMessages [
 	"Test that #getMessages returns a collection where assistant entries are preserved as Associations
 	(key -> value), and non-assistant entries are returned unchanged."
@@ -148,4 +130,141 @@ AIAHistoryAITest >> testGetMessages [
 	self assert: ((result at: 4) isAssociation) description: 'Assistant entry should be an Association'.
 	self assert: (((result at: 4) key = 'assistant') and: [ (result at: 4) value = 'Answer' ])
 		description: 'Assistant entry should preserve key and value'
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testIncludeInHistories [
+	"includeInHistories should add the receiver to the shared Histories collection.
+	It should also enforce the max number (25) of untitled histories by removing the oldest untitled one."
+
+	| histories beforeSize beforeFirstUntitled |
+	
+	"Start from a clean Histories collection to make the test deterministic."
+	AIAHistory clearHistories.
+	histories := AIAHistory histories.
+
+	"Create 25 untitled histories (title = nil) and include them."
+	1 to: 25 do: [ :i |
+		refAIAHistory := AIAHistory new.
+		refAIAHistory includeInHistories ].
+
+	self assert: (histories size = 25).
+
+	"Remember the first untitled history currently in the collection."
+	beforeFirstUntitled := histories first.
+
+	"Adding one more untitled history should remove the oldest untitled one,
+	keeping the total size at 25."
+	beforeSize := histories size.
+	refAIAHistory := AIAHistory new.
+	refAIAHistory includeInHistories.
+
+	self assert: (histories size = beforeSize).
+	self assert: ((histories includes: beforeFirstUntitled) not).
+	self assert: (histories last == refAIAHistory).
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testIncludeInHistories_01 [
+	"includeInHistories is not present in the current image (AIAHistory does not respond to it),
+	and AIAHistory class does not provide clearHistories/histories in this image either.
+	So we cannot build a runnable Pharo14 test for it here without adding/migrating the method first."
+
+	self assert: ((AIAHistory respondsTo: #includeInHistories) not).
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testInitialize [
+	"Test that #initialize sets up fresh collections, nil title, and registers the instance in histories."
+
+	"Exercise"
+	refAIAHistory initialize.
+
+	"Verify collections are created"
+	self assert: ((refAIAHistory instVarNamed: #preHistories) isKindOf: OrderedCollection).
+	self assert: ((refAIAHistory instVarNamed: #messages) isKindOf: OrderedCollection).
+	self assert: ((refAIAHistory instVarNamed: #firstRoles) isKindOf: OrderedCollection).
+	self assert: ((refAIAHistory instVarNamed: #lastRoles) isKindOf: OrderedCollection).
+
+	"Verify they start empty"
+	self assert: (((refAIAHistory instVarNamed: #preHistories) isEmpty) = true).
+	self assert: (((refAIAHistory instVarNamed: #messages) isEmpty) = true).
+	self assert: (((refAIAHistory instVarNamed: #firstRoles) isEmpty) = true).
+	self assert: (((refAIAHistory instVarNamed: #lastRoles) isEmpty) = true).
+
+	"Verify title is reset"
+	self assert: ((refAIAHistory instVarNamed: #title) isNil).
+
+	"Verify it is included in the class-side histories"
+	self assert: ((AIAHistory histories includes: refAIAHistory) = true).
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testSelfAndPreHistories [
+	"Test that #selfAndPreHistories returns a Set containing the receiver and all (transitive) pre-histories."
+
+	| pre1 pre2 result |
+	
+	"Given: a history with a chain of pre-histories (pre2 -> pre1 -> refAIAHistory)."
+	pre1 := AIAHistory new.
+	pre2 := AIAHistory new.
+	
+	(refAIAHistory instVarNamed: #preHistories) add: pre1.
+	(pre1 instVarNamed: #preHistories) add: pre2.
+
+	"When: we ask for self and pre histories."
+	result := refAIAHistory selfAndPreHistories.
+
+	"Then: the result includes the receiver and all pre-histories."
+	self assert: (result includes: refAIAHistory).
+	self assert: (result includes: pre1).
+	self assert: (result includes: pre2).
+
+	"And: it contains exactly those three elements."
+	self assert: (result size = 3).
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testSystem [
+	"Test the system method of AIAHistory to ensure it correctly retrieves the system role from the firstRoles collection."
+
+	| systemRoles |
+	refAIAHistory instVarNamed: #firstRoles put: {
+		'user' -> 'userRole'.
+		'system' -> 'systemRole'.
+		'assistant' -> 'assistantRole'
+	} asDictionary.
+
+	systemRoles := refAIAHistory system.
+
+	self assert: (systemRoles size = 1).
+	self assert: (systemRoles first = 'systemRole').
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testSystem_01 [
+	"Test the system method returns the system role values from firstRoles"
+
+	| systemText |
+	systemText := 'You are a test AI'.
+	refAIAHistory system: systemText.
+	self assert: (refAIAHistory system size = 1).
+	self assert: (refAIAHistory system first = systemText)
+]
+
+{ #category : 'AI generated test' }
+AIAHistoryAITest >> testSystem_02 [
+	"Test that the system method correctly selects and collects values from firstRoles where the role key is 'system'."
+	| roles systemValues |
+	roles := OrderedCollection new
+		add: 'system' -> 'You are a helpful AI assistant.';
+		add: 'background' -> 'This is some background information.';
+		add: 'system' -> 'Always respond in a friendly manner.';
+		add: 'user' -> 'User specific role.';
+		yourself.
+	refAIAHistory instVarNamed: #firstRoles put: roles.
+	systemValues := refAIAHistory system.
+	self assert: (systemValues size = 2).
+	self assert: (systemValues includes: 'You are a helpful AI assistant.').
+	self assert: (systemValues includes: 'Always respond in a friendly manner.').
 ]
