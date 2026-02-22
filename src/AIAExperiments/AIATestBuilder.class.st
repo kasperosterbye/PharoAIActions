@@ -87,8 +87,16 @@ AIATestBuilder >> backgroundGenerator [
 { #category : 'instance creation' }
 AIATestBuilder >> build: aMethod [
 	"Builds a test for a given method, using AI to generate and validate the test code. Returns the chat history of the AI interaction."
-	self for: aMethod.
-	self compileAndChechBuildedTest.
+	| testGenCounter |
+	testGenCounter := 1. 
+	testColor := 'None'.
+	[ testGenCounter <= 3 and: [ testColor ~= Color green ]  ]
+		whileTrue: [
+			Transcript << 'Test ' << testGenCounter asString << ' for ' << aMethod name << String lf.
+			self for: aMethod.
+			self compileAndChechBuildedTest.
+			testGenCounter := testGenCounter + 1.
+			].
 	^ self chatHistory .
 	
 ";
@@ -99,9 +107,9 @@ AIATestBuilder >> build: aMethod [
 AIATestBuilder >> buildTestChat [
 	"Builds the chat context for AI test generation, combining system details, method info, and prompts to guide AI in creating accurate test cases."
 
-	self backgroundGenerator.
+	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
 	self historyBuilder.
-	self promptGenerator.
+	chatBuilder user: self promptGenerator.
 ]
 
 { #category : 'instance creation' }
@@ -113,50 +121,6 @@ AIATestBuilder >> buildTestChatHistoryFor: aMethod [
 	self historyBuilder.
 	self promptGenerator.
 	^ chatBuilder chatHistory.
-]
-
-{ #category : 'builder' }
-AIATestBuilder >> buildTestClass: sourceClass [ 
-	"Creates or retrieves a test class for a given method, compiling setup code and handling instance variables. Returns the test class."
-
-    |  superClass newTestClassName shifter instanceVarName |
-    "Identify the name of the new test class based on the method's class."
-	 AITestClassPostfix ifNil: [ AITestClassPostfix := 'AITest' ].
-	self halt.
-	sourceClass isMeta 
-		ifFalse: [ newTestClassName := sourceClass name asString, AITestClassPostfix .]
- 		ifTrue: [ newTestClassName := sourceClass soleInstance name asString,
-			'Class', AITestClassPostfix].
-    
-    "The name of the instance variable to hold the reference to the test class."
-    instanceVarName := 'ref', (sourceClass) name asString.
-	 sourceClass isMeta ifTrue: [ instanceVarName := instanceVarName allButLast: 6 ].
-    
-    "Try to find an existing test class."
-    AITestClass := Smalltalk globals at: newTestClassName asSymbol ifAbsent: [ nil ].
-    
-    "If the test class does not exist, create a new one."
-    AITestClass ifNil: [
-            "Check if a super test class exists (e.g., AIDijkstraTest)."
-				superClass := TestCase.
-            
-            shifter := ShiftClassBuilder new.
-            shifter
-                superclassName: superClass name;
-                name: newTestClassName asSymbol;
-                slots: { instanceVarName asSymbol };
-                package: 'AIATestExperiments'.
-            
-            AITestClass := shifter install.
-            
-            "Compile an initialize method to set up the instance variable."
-            AITestClass compile: ('setUp' , String cr,
-                                  '	super setUp.' , String cr,
-                                  '	', instanceVarName , ' := ' , sourceClass name asString , ' new.'
-                                 ) classified: 'initialization'.
-        ].
-    
-    ^ AITestClass
 ]
 
 { #category : 'accessing' }
@@ -175,29 +139,12 @@ AIATestBuilder >> chatHistory [
 { #category : 'compiling' }
 AIATestBuilder >> compileAndChechBuildedTest [
 	| testMethodName result |
-	self repairResponseMethod.
 	[
-		testMethodName := AITestClass compile: testMethod classified: 'AI generated test'. "Run the test method using SUnit infrastructure"
+		testMethodName := self getOrBuildTestClass 
+			compile: testMethod classified: 'AI generated test'. 
+		"Run the test method using SUnit infrastructure"
 		result := TestResult new.
-		result runCase: (AITestClass selector: testMethodName asSymbol).
-		result passedCount > 0 ifTrue: [ testColor := Color green ].
-		result failureCount > 0 ifTrue: [ testColor := Color yellow ].
-		result errorCount > 0 ifTrue: [ testColor := Color red ] ]
-		on: Error
-		do: [
-				testMethodName := self fictiveTestMethod.
-				testColor := Color black ].
-	^ self chatHistory
-]
-
-{ #category : 'compiling' }
-AIATestBuilder >> compileAndChechBuildedTestOf: aMethodXX [
-	| testMethodName result |
-	self repairResponseMethod.
-	[
-		testMethodName := AITestClass compile: testMethod classified: 'AI generated test'. "Run the test method using SUnit infrastructure"
-		result := TestResult new.
-		result runCase: (AITestClass selector: testMethodName asSymbol).
+		result runCase: (self getOrBuildTestClass selector: testMethodName asSymbol).
 		result passedCount > 0 ifTrue: [ testColor := Color green ].
 		result failureCount > 0 ifTrue: [ testColor := Color yellow ].
 		result errorCount > 0 ifTrue: [ testColor := Color red ] ]
@@ -220,14 +167,15 @@ AIATestBuilder >> fictiveTestMethod [
 	fictiveTest := header , String cr
 	               , '	self fail: ''Test code could not be generated'' '
 	               , String cr , String cr , testMethod asComment.
-	^ AITestClass compile: fictiveTest classified: 'Failed generated test'
+	^ self getOrBuildTestClass compile: fictiveTest classified: 'Failed generated test'
 ]
 
 { #category : 'instance creation' }
 AIATestBuilder >> for: aMethod [
 	"aMethod is the compiled method to which a test should be renerated."
+	"Build the test class"
 	sourceMethod := aMethod.
-	AIATestClassBuilder new ensureTestClass: aMethod methodClass.
+	self getOrBuildTestClass.
 	
 	self buildTestChat.
 	self generateTest.
@@ -238,11 +186,16 @@ AIATestBuilder >> for: aMethod [
 { #category : 'instance creation' }
 AIATestBuilder >> generateTest [
 	"The generateTest method uses AI to create test methods for source methods by combining system context and specific prompts to produce clean test code."
+	
 	chatBuilder getResponse.
 	testMethod := chatBuilder response.
 	self repairResponseMethod.
-	"chatBuilder history last value: testMethod"
 	 
+]
+
+{ #category : 'instance creation' }
+AIATestBuilder >> getOrBuildTestClass [
+	^ AIATestClassBuilder ensureTestClass: sourceMethod methodClass.
 ]
 
 { #category : 'instance creation' }
@@ -272,10 +225,7 @@ AIATestBuilder >> old_systemGenerator [
 
 { #category : 'test builder' }
 AIATestBuilder >> promptGenerator [
-	"The promptGenerator method creates a user prompt for AI test generation, guiding AI in generating appropriate test cases.
-"
-
-	chatBuilder user: ('You must only use code that you know is existing in Pharo14, never use figurative code, but use the TOOL `evaluatePharoExpression` to find information.
+	^ ('You must only use code that you know is existing in Pharo14, never use figurative code, but use the TOOL `evaluatePharoExpression` to find information.
 The setUp method of any test methos is called before the test is executed.
 Do not declare local variables that are already provided as instance variables. 
 Insert comments in the test method you create.
@@ -337,7 +287,7 @@ AIATestBuilder >> sourceClassFirstInstanceVariable [
 	"This method returns the first instance variable of the test class associated with the source method. It handles cases where the test class has no instance variables by returning an empty string."
 	| testClassVariables |
 	"(Smalltalk at: (self sourceClassStringName,'Test') asSymbol) instanceVariables first name."
-	testClassVariables := (Smalltalk at: (self sourceClassStringName, AIATestClassBuilder new testClassPostfix ) asSymbol) instanceVariables.
+	testClassVariables := (Smalltalk at: (self sourceClassStringName, AIATestClassBuilder testClassPostfix ) asSymbol) instanceVariables.
 	testClassVariables size = 0 
 		ifTrue: [ ^ '' ]
 		ifFalse: [^ testClassVariables first name.]
@@ -374,4 +324,33 @@ AIATestBuilder >> testMethodName [
 	"The testMethodName method constructs a test method name by capitalizing the source method's keywords and prefixing with 'test'. It ensures proper naming conventions for AI-generated test methods."
 	^ 'test', ((self sourceMethodStringName keywords collect: [:kw | 
 		(kw copyReplaceAll: ':' with: '') capitalized]) joinUsing: '')
+]
+
+{ #category : 'instance creation' }
+AIATestBuilder >> xxx_build: aMethod [
+	"Builds a test for a given method, using AI to generate and validate the test code. Returns the chat history of the AI interaction."
+	self for: aMethod.
+	self compileAndChechBuildedTest.
+	^ self chatHistory .
+	
+";
+		user: 'IMPORTANT: Always check your generated test: (TestResult new runCase: (`testClassName`` selector: ``#testMethodName`` )) errors size should return `0`, if not your test code is not working'"
+]
+
+{ #category : 'compiling' }
+AIATestBuilder >> xxx_compileAndChechBuildedTestOf: aMethodXX [
+	| testMethodName result |
+	self repairResponseMethod.
+	[
+		testMethodName := self getOrBuildTestClass compile: testMethod classified: 'AI generated test'. "Run the test method using SUnit infrastructure"
+		result := TestResult new.
+		result runCase: (self getOrBuildTestClass selector: testMethodName asSymbol).
+		result passedCount > 0 ifTrue: [ testColor := Color green ].
+		result failureCount > 0 ifTrue: [ testColor := Color yellow ].
+		result errorCount > 0 ifTrue: [ testColor := Color red ] ]
+		on: Error
+		do: [
+				testMethodName := self fictiveTestMethod.
+				testColor := Color black ].
+	^ self chatHistory
 ]
