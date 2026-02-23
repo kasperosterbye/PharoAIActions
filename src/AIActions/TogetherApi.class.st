@@ -31,7 +31,7 @@ TogetherApi class >> modelNames [
 	"Check https://api.together.ai/models (use GitHub at login) for updates."
 	"Account area: https://api.together.ai/settings/api-keys"
     ^ #( 	'Qwen/Qwen3-Next-80B-A3B-Instruct'
-			'togethercomputer/Refuel-Llm-V2'
+			'ServiceNow-AI/Apriel-1.5-15b-Thinker'
 			'Qwen/Qwen3-235B-A22B-Thinking-2507'
 			'deepseek-ai/DeepSeek-V3.1').
 ]

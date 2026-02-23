@@ -22,7 +22,9 @@ ApiToolExpression >> executeTool: args [
 	| expr |
 	super executeTool: args.
 	expr := args at: required.
-	[ ^ (OpalCompiler new evaluate: expr) printString ]
+	[  (expr includesSubstring: 'compile:') 
+		ifTrue: [ ^ 'Sorry, I will not compile and make new methods' ].
+		^ (OpalCompiler new evaluate: expr) printString ]
 		on: Error
 		do: [ :ex | ^ 'Error: ' , ex messageText ]
 ]

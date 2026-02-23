@@ -12,6 +12,15 @@ Class {
 	#tag : 'TestBuiler'
 }
 
+{ #category : 'as yet unclassified' }
+AIATestBuilder class >> aiBuildList [
+	^ { 
+		GrokApiWithTools newOnModel: 2.
+		GrokApiWithTools newOnModel: 3.
+		OpenAIApiWithTools newOnModel: 1.
+		 }
+]
+
 { #category : 'instance creation' }
 AIATestBuilder class >> buildAll: aClass [
 	"Builds test methods for all methods in a class using Mistral AI"
@@ -33,47 +42,20 @@ AIATestBuilder >> build: aMethod [
 	
 	testGenCounter := 1. 
 	testColor := 'None'.
-	[ testGenCounter <= 3 and: [ testColor ~= Color green ]  ]
+	[ testGenCounter <= 2 and: [ testColor ~= Color green ]  ]
 		whileTrue: [
 			Transcript << 'Test ' << testGenCounter asString 
-					<< ' for ' << sourceMethod name << String lf.
-			self generateTest.
+					<< ' (' <<  (self class aiBuildList at: testGenCounter ) printString << ') '
+					<< 'for ' << sourceMethod name << String lf.
+			chatBuilder api: (self class aiBuildList at: testGenCounter ).
+			testGenCounter = 1
+				ifTrue: [ self generateTest10 ]
+				ifFalse: [ self generateTest20 ].
+				
 			self compileAndChechBuildedTest.
-			self halt. chatBuilder.
 			testGenCounter := testGenCounter + 1.
 			].
 	^ self chatHistory .
-]
-
-{ #category : 'as yet unclassified' }
-AIATestBuilder >> captureErrorFor: aSelector in: aTestClass [
-    | result suite case |
-    suite := TestSuite new.
-    case := aTestClass selector: aSelector.
-    suite addTest: case.
-    result := suite run.
-    
-    result errors ifNotEmpty: [ :errors | 
-        | ex |
-        ex := errors first exception.
-        ^ 'SYNTAX/RUNTIME ERROR: ', ex description, 
-          ' at: ', (ex signalerContext method selector asString) ].
-    ^ nil
-]
-
-{ #category : 'as yet unclassified' }
-AIATestBuilder >> captureFailureFor: aSelector in: aTestClass [
-    | result suite case |
-    suite := TestSuite new.
-    case := aTestClass selector: aSelector.
-    suite addTest: case.
-    result := suite run.
-
-    result failures ifNotEmpty: [ :failures |
-        | signal |
-        signal := failures first exception.
-        ^ 'LOGIC FAILURE: ', signal messageText ].
-    ^ nil
 ]
 
 { #category : 'accessing' }
@@ -84,23 +66,26 @@ AIATestBuilder >> chatHistory [
 ]
 
 { #category : 'as yet unclassified' }
-AIATestBuilder >> checkBuildedTest: testMethodName [
+AIATestBuilder >> checkBuildedTest: testMethodRef [
 	"Run the test method using SUnit infrastructure"
 
 	| result |
+	testColor := Color red.
 	result := TestResult new.
-	result runCase: (self getOrBuildTestClass selector: testMethodName asSymbol).
+	result runCase: testMethodRef.
 	result passedCount > 0 ifTrue: [ testColor := Color green ].
 	result failureCount > 0 ifTrue: [ testColor := Color yellow ].
-	result errorCount > 0 ifTrue: [ testColor := Color red ]
+	result errorCount > 0 ifTrue: [ testColor := Color red ].
+	
 ]
 
 { #category : 'compiling' }
 AIATestBuilder >> compileAndChechBuildedTest [
-	| testMethodName  |
+	| testMethodName testMethodRef|
 	testMethodName := self getOrBuildTestClass 
 					compile: testMethod classified: 'AI generated test'. 
-	self checkBuildedTest: testMethodName.
+	testMethodRef := self getOrBuildTestClass selector: testMethodName asSymbol.
+	self checkBuildedTest: testMethodRef.
 	
 	^ self chatHistory
 ]
@@ -111,6 +96,30 @@ AIATestBuilder >> generateTest [
 	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
 	self historyBuilder.
 	chatBuilder user: self promptGenerator.
+	
+	chatBuilder getResponse.
+	testMethod := chatBuilder response.
+	self repairResponseMethod.
+	 
+]
+
+{ #category : 'instance creation' }
+AIATestBuilder >> generateTest10 [
+	
+	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	self historyBuilder.
+	chatBuilder user: self promptGenerator.
+	
+	chatBuilder getResponse.
+	testMethod := chatBuilder response.
+	self repairResponseMethod.
+	 
+]
+
+{ #category : 'instance creation' }
+AIATestBuilder >> generateTest20 [
+	
+	chatBuilder user: 'The previous generated test class did not work. Please try again'.
 	
 	chatBuilder getResponse.
 	testMethod := chatBuilder response.
@@ -135,20 +144,6 @@ AIATestBuilder >> initialize [
 	super initialize.
 	chatBuilder := AIAHistory new.
 	
-]
-
-{ #category : 'as yet unclassified' }
-AIATestBuilder >> joeSilly: testMethodName [
-"Inside your build: method"
-testColor = Color red ifTrue: [ 
-    chatBuilder user: 'The test failed with a syntax error: ', 
-        (self captureErrorFor: testMethodName in: self getOrBuildTestClass).
-    chatBuilder user: 'Please fix the syntax and return the full corrected method.' ].
-
-testColor = Color yellow ifTrue: [ 
-    chatBuilder user: 'The test failed an assertion: ', 
-        (self captureFailureFor: testMethodName in: self getOrBuildTestClass).
-    chatBuilder user: 'Please adjust the logic and return the full corrected method.' ].
 ]
 
 { #category : 'test builder' }
@@ -215,4 +210,39 @@ AIATestBuilder >> testMethodName [
 		joinUsing: ''.
 	testName := 'test', name.
 	^ testName
+]
+
+{ #category : 'as yet unclassified' }
+AIATestBuilder >> xxx_captureErrorFor: aSelector in: aTestClass [
+    | result suite case |
+self halt.
+    suite := TestSuite new.
+    case := aTestClass selector: aSelector.
+    suite addTest: case.
+    result := suite run.
+    result errors ifNotEmpty: [ :errors | 
+        | ex |
+
+self halt.
+        ex := errors first exception.
+        ^ 'SYNTAX/RUNTIME ERROR: ', ex description, 
+          ' at: ', (ex signalerContext method selector asString) ].
+    ^ nil
+
+
+]
+
+{ #category : 'as yet unclassified' }
+AIATestBuilder >> xxx_captureFailureFor: aSelector in: aTestClass [
+    | result suite case |
+    suite := TestSuite new.
+    case := aTestClass selector: aSelector.
+    suite addTest: case.
+    result := suite run.
+
+    result failures ifNotEmpty: [ :failures |
+        | signal |
+        signal := failures first exception.
+        ^ 'LOGIC FAILURE: ', signal messageText ].
+    ^ nil
 ]

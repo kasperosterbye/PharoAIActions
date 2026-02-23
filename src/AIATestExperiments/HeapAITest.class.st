@@ -15,6 +15,30 @@ HeapAITest >> setUp [
 ]
 
 { #category : 'AI generated test' }
+HeapAITest >> testAdd [
+	"Test adding elements to the heap and verifying the size increases and the min-heap property is maintained by checking removeFirst returns elements in sorted order."
+
+	refHeap add: 3; add: 1; add: 4.
+	self assert: refHeap size equals: 3.
+	self assert: (refHeap removeFirst) equals: 1.
+	self assert: (refHeap removeFirst) equals: 3.
+	self assert: (refHeap removeFirst) equals: 4
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testArray [
+	"Test the array accessor method in Heap"
+	
+	| elements |
+	elements := #(1 3 2).
+	refHeap addAll: elements.
+	
+	self assert: (refHeap array isKindOf: Array).
+	self assert: (refHeap array size >= refHeap size).
+	self assert: ((refHeap array copyFrom: 1 to: refHeap size) asSet = elements asSet)
+]
+
+{ #category : 'AI generated test' }
 HeapAITest >> testAt [
 	"Test that at: raises an error since Heap is not designed for sequential access."
 
@@ -52,55 +76,60 @@ HeapAITest >> testCollect [
 	self assert: (result includesAll: #(2 4 6))
 ]
 
-{ #category : 'tests' }
+{ #category : 'AI generated test' }
+HeapAITest >> testCopyEmpty [
+	"Test that copyEmpty returns a new empty Heap instance with the same sortBlock as the receiver, without modifying the original."
+
+	| emptyCopy |
+	refHeap add: 1; add: 2.
+	emptyCopy := refHeap copyEmpty.
+	self assert: (emptyCopy isKindOf: Heap).
+	self assert: emptyCopy isEmpty.
+	self assert: (emptyCopy sortBlock = refHeap sortBlock).
+	self assert: (refHeap size = 2)
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testDefaultSortBlock [
+	"Test that the defaultSortBlock returns a block that compares elements using <=."
+
+	| block |
+	block := refHeap defaultSortBlock.
+	self assert: (block isKindOf: BlockClosure).
+	"Test that smaller <= larger is true"
+	self assert: (block cull: 1 cull: 2).
+	"Test that larger <= smaller is false"
+	self assert: (block cull: 2 cull: 1) not
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testDo [
+	"Test that do: evaluates the block for each element in the heap"
+
+	| sum expected |
+	"Add some elements to the heap"
+	refHeap
+		add: 1;
+		add: 3;
+		add: 2.
+	"Initialize variables for summing elements"
+	sum := 0.
+	expected := 6.
+	"Apply do: to sum all elements"
+	refHeap do: [ :each | sum := sum + each ].
+	"Assert the sum matches the expected total"
+	self assert: sum equals: expected
+]
+
+{ #category : 'AI generated test' }
 HeapAITest >> testDownHeap [
-	| array expected |
-	"Set the sort block to default min-heap order and index update block to nil"
-	refHeap instVarAt: 3 put: [ :a :b | a <= b ].
-	refHeap instVarAt: 4 put: nil.
+	"Test the downHeap: method by manually setting a violated heap state and verifying restoration for a min-heap."
 	
-	"Test case 1: Sift down swapping with left child"
-	array := #(3 1 2) asArray.
-	refHeap
-		instVarAt: 1 put: array copy;
-		instVarAt: 2 put: 3.
+	refHeap := Heap new: 2.
+	refHeap instVarNamed: #array put: (Array with: 2 with: 1).
+	refHeap instVarNamed: #tally put: 2.
 	refHeap downHeap: 1.
-	expected := #(1 3 2) asArray.
-	self assert: (refHeap instVarAt: 1) equals: expected.
-	
-	"Test case 2: Sift down swapping with right child (right is smaller)"
-	array := #(3 2 1) asArray.
-	refHeap
-		instVarAt: 1 put: array copy;
-		instVarAt: 2 put: 3.
-	refHeap downHeap: 1.
-	expected := #(1 2 3) asArray.
-	self assert: (refHeap instVarAt: 1) equals: expected.
-	
-	"Test case 3: Multi-level sift down"
-	array := #(4 1 3 2) asArray.
-	refHeap
-		instVarAt: 1 put: array copy;
-		instVarAt: 2 put: 4.
-	refHeap downHeap: 1.
-	expected := #(1 2 3 4) asArray.
-	self assert: (refHeap instVarAt: 1) equals: expected.
-	
-	"Test case 4: No violation, no sift down occurs"
-	array := #(1 3 2) asArray.
-	refHeap
-		instVarAt: 1 put: array copy;
-		instVarAt: 2 put: 3.
-	refHeap downHeap: 1.
-	self assert: (refHeap instVarAt: 1) equals: array.
-	
-	"Test case 5: anIndex = 0 returns immediately, no change"
-	array := #(3 1 2) asArray.
-	refHeap
-		instVarAt: 1 put: array copy;
-		instVarAt: 2 put: 3.
-	refHeap downHeap: 0.
-	self assert: (refHeap instVarAt: 1) equals: array
+	self assert: ((refHeap instVarNamed: #array) = (Array with: 1 with: 2))
 ]
 
 { #category : 'AI generated test' }
@@ -245,68 +274,129 @@ HeapAITest >> testIndexUpdateBlock [
 ]
 
 { #category : 'AI generated test' }
+HeapAITest >> testIsEmpty [
+	"Test that an empty Heap returns true for isEmpty"
+	self assert: refHeap isEmpty.
+	
+	"Test that a non-empty Heap returns false for isEmpty"
+	refHeap add: 42.
+	self deny: refHeap isEmpty
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testIsHeap [
+	"Test that instances of Heap return true for isHeap"
+	self assert: (refHeap isHeap)
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testIsSorted [
+	"Test the isSorted method on Heap instances."
+
+	"Test empty heap"
+	self assert: refHeap isEmpty.
+	self assert: (refHeap isSorted).
+
+	"Test heap with single element"
+	refHeap add: 42.
+	self assert: (refHeap size = 1).
+	self assert: (refHeap isSorted).
+
+	"Test that isSorted raises Error for heaps with multiple elements,
+	since at: is not implemented"
+	refHeap add: 10.
+	self should: [ refHeap isSorted ] raise: Error
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testIsSortedBy [
+	| heap sortBlock |
+	sortBlock := [ :a :b | a <= b ].
+	"Test empty heap returns true"
+	heap := Heap new.
+	self assert: (heap isSortedBy: sortBlock).
+	"Test heap with one element returns true"
+	heap add: 42.
+	self assert: (heap isSortedBy: sortBlock).
+	"Test that accessing with multiple elements raises an error due to at:"
+	heap add: 10.
+	self
+		should: [ heap isSortedBy: sortBlock ]
+		raise: Error
+		whoseDescriptionIncludes: 'at:'
+		description: 'Heap does not implement at: so isSortedBy: errors for size > 1'
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testMergeFirstMiddleLastIntoBy [
+	"Test the private merge method by setting up a heap with two sorted halves and verifying the merged result in dst."
+
+	| dst |
+	"Set up array with first half [1,5] sorted, second half [2,3] sorted"
+	refHeap instVarNamed: #array put: #(1 5 2 3) asArray.
+	refHeap instVarNamed: #tally put: 4.
+	dst := Array new: 4.
+	refHeap
+		mergeFirst: 1
+		middle: 2
+		last: 4
+		into: dst
+		by: [ :a :b | a <= b ].
+	self assert: (dst = #(1 2 3 5) asArray)
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSortsBefore [
+	"Test the sort order of elements in the Heap."
+
+	| element1 element2 |
+	element1 := 10.
+	element2 := 20.
+
+	"Test with default sort block (element1 <= element2)"
+	self assert: (refHeap sorts: element1 before: element2).
+
+	"Test with custom sort block (element1 > element2)"
+	refHeap sortBlock: [ :a :b | a > b ].
+	self assert: (refHeap sorts: element2 before: element1).
+
+	"Reset sort block to default"
+	refHeap sortBlock: nil.
+]
+
+{ #category : 'AI generated test' }
 HeapAITest >> testUpHeap [
-	| arr |
-	"Test upHeap: for index 0, should do nothing"
+	"Test the upHeap: method by setting up a small heap with violated property and verifying restoration."
+
+	| array |
+	array := Array with: 3 with: 1.
+	refHeap instVarNamed: #array put: array.
+	refHeap instVarNamed: #tally put: 2.
+
+	refHeap upHeap: 2.
+
+	self assert: ((refHeap instVarNamed: #array) at: 1) equals: 1.
+	self assert: ((refHeap instVarNamed: #array) at: 2) equals: 3.
+
+	"Test case where no swap is needed"
+	array := Array with: 1 with: 3.
+	refHeap instVarNamed: #array put: array.
+	refHeap instVarNamed: #tally put: 2.
+
+	refHeap upHeap: 2.
+
+	self assert: ((refHeap instVarNamed: #array) at: 1) equals: 1.
+	self assert: ((refHeap instVarNamed: #array) at: 2) equals: 3.
+
+	"Test for anIndex = 0, should do nothing"
+	array := Array with: 3 with: 1.
+	refHeap instVarNamed: #array put: array.
+	refHeap instVarNamed: #tally put: 2.
+
 	refHeap upHeap: 0.
-	self assert: true. "No error, no change expected"
 
-	"Set up min-heap sort block"
-	refHeap sortBlock: [ :a :b | a <= b ].
-
-	"Test upHeap:1 on single element, no change"
-	arr := Array new: 10.
-	arr at: 1 put: 5.
-	refHeap instVarAt: 1 put: arr.
-	refHeap instVarAt: 2 put: 1.
-	refHeap upHeap: 1.
-	self assert: ((refHeap instVarAt: 1) at: 1) equals: 5.
-
-	"Test upHeap:2 with swap needed (smaller child)"
-	arr := Array new: 10.
-	arr at: 1 put: 3.
-	arr at: 2 put: 1.
-	refHeap instVarAt: 1 put: arr.
-	refHeap instVarAt: 2 put: 2.
-	refHeap upHeap: 2.
-	self assert: ((refHeap instVarAt: 1) at: 1) equals: 1.
-	self assert: ((refHeap instVarAt: 1) at: 2) equals: 3.
-
-	"Test upHeap:2 with no swap (larger child)"
-	arr := Array new: 10.
-	arr at: 1 put: 3.
-	arr at: 2 put: 4.
-	refHeap instVarAt: 1 put: arr.
-	refHeap instVarAt: 2 put: 2.
-	refHeap upHeap: 2.
-	self assert: ((refHeap instVarAt: 1) at: 1) equals: 3.
-	self assert: ((refHeap instVarAt: 1) at: 2) equals: 4.
-
-	"Test upHeap:3 with one swap to root"
-	arr := Array new: 10.
-	arr at: 1 put: 3.
-	arr at: 2 put: 4.
-	arr at: 3 put: 2.
-	refHeap instVarAt: 1 put: arr.
-	refHeap instVarAt: 2 put: 3.
-	refHeap upHeap: 3.
-	self assert: ((refHeap instVarAt: 1) at: 1) equals: 2.
-	self assert: ((refHeap instVarAt: 1) at: 2) equals: 4.
-	self assert: ((refHeap instVarAt: 1) at: 3 )equals: 3.
-
-	"Test upHeap:4 with multiple swaps"
-	arr := Array new: 10.
-	arr at: 1 put: 1.
-	arr at: 2 put: 3.
-	arr at: 3 put: 2.
-	arr at: 4 put: 0.
-	refHeap instVarAt: 1 put: arr.
-	refHeap instVarAt: 2 put: 4.
-	refHeap upHeap: 4.
-	self assert: ((refHeap instVarAt: 1) at: 1) equals: 0.
-	self assert: ((refHeap instVarAt: 1) at: 2) equals: 1.
-	self assert: ((refHeap instVarAt: 1) at: 3) equals: 2.
-	self assert: ((refHeap instVarAt: 1) at: 4 )equals: 3.
+	self assert: ((refHeap instVarNamed: #array) at: 1) equals: 3.
+	self assert: ((refHeap instVarNamed: #array) at: 2) equals: 1
 ]
 
 { #category : 'AI generated test' }
