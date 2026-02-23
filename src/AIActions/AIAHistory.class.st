@@ -345,8 +345,8 @@ AIAHistory >> sanitizedResonse: response [
 
 { #category : 'context roles' }
 AIAHistory >> sanitizedResonse: response forHeaderLevel: level [
-	"Sanitises response by stripping code blocks and promoting Markdown headers to match given level"
-
+	"Sanitises the response by removing code blocks and adjusting markdown header levels to match the specified level"
+	
 	| sani lines headerLines minHeaderLevel headingLevel diff headers |
 	sani := response.
 	(response beginsWith: '```') ifTrue: [ sani := String cr join: response lines allButFirst allButLast ].

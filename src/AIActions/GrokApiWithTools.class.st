@@ -108,7 +108,6 @@ GrokApiWithTools >> loadResponse: aHistory [
 
 { #category : 'tools support' }
 GrokApiWithTools >> printOn: aStream [
-	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'GrokApiWithTools: ' << self model.
 ]
 

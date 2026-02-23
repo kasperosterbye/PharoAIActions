@@ -226,19 +226,16 @@ AIAHistoryAITest >> testSelfAndPreHistories [
 
 { #category : 'AI generated test' }
 AIAHistoryAITest >> testSystem [
-	"Test the system method of AIAHistory to ensure it correctly retrieves the system role from the firstRoles collection."
-
-	| systemRoles |
-	refAIAHistory instVarNamed: #firstRoles put: {
-		'user' -> 'userRole'.
-		'system' -> 'systemRole'.
-		'assistant' -> 'assistantRole'
-	} asDictionary.
-
-	systemRoles := refAIAHistory system.
-
-	self assert: (systemRoles size = 1).
-	self assert: (systemRoles first = 'systemRole').
+	| systemTexts testSystemText |
+	testSystemText := 'You are a test system.'.
+	"Set up firstRoles with a single system role association"
+	refAIAHistory instVarNamed: #firstRoles put: (OrderedCollection with: ('system' -> testSystemText)).
+	"Retrieve the system texts from firstRoles"
+	systemTexts := refAIAHistory system.
+	"Assert that exactly one system text is returned"
+	self assert: (systemTexts size = 1).
+	"Assert that the returned system text matches the input"
+	self assert: (systemTexts first = testSystemText)
 ]
 
 { #category : 'AI generated test' }

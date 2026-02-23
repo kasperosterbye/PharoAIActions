@@ -39,15 +39,41 @@ AIATestBuilder >> build: aMethod [
 					<< ' for ' << sourceMethod name << String lf.
 			self generateTest.
 			self compileAndChechBuildedTest.
+			self halt. chatBuilder.
 			testGenCounter := testGenCounter + 1.
 			].
 	^ self chatHistory .
 ]
 
-{ #category : 'accessing' }
-AIATestBuilder >> chatBuilder [
-	"Accesses the AI chat builder instance for test generation support."
-	^ chatBuilder 
+{ #category : 'as yet unclassified' }
+AIATestBuilder >> captureErrorFor: aSelector in: aTestClass [
+    | result suite case |
+    suite := TestSuite new.
+    case := aTestClass selector: aSelector.
+    suite addTest: case.
+    result := suite run.
+    
+    result errors ifNotEmpty: [ :errors | 
+        | ex |
+        ex := errors first exception.
+        ^ 'SYNTAX/RUNTIME ERROR: ', ex description, 
+          ' at: ', (ex signalerContext method selector asString) ].
+    ^ nil
+]
+
+{ #category : 'as yet unclassified' }
+AIATestBuilder >> captureFailureFor: aSelector in: aTestClass [
+    | result suite case |
+    suite := TestSuite new.
+    case := aTestClass selector: aSelector.
+    suite addTest: case.
+    result := suite run.
+
+    result failures ifNotEmpty: [ :failures |
+        | signal |
+        signal := failures first exception.
+        ^ 'LOGIC FAILURE: ', signal messageText ].
+    ^ nil
 ]
 
 { #category : 'accessing' }
@@ -57,43 +83,26 @@ AIATestBuilder >> chatHistory [
 	^ chatBuilder chatHistory
 ]
 
-{ #category : 'compiling' }
-AIATestBuilder >> compileAndChechBuildedTest [
-	| testMethodName result |
-	[ 
-		testMethodName := self getOrBuildTestClass 
-					compile: testMethod classified: 'AI generated test'. 
-		"Run the test method using SUnit infrastructure"
-		result := TestResult new.
-		result runCase: (self getOrBuildTestClass selector: testMethodName asSymbol).
-		result passedCount > 0 ifTrue: [ testColor := Color green ].
-		result failureCount > 0 ifTrue: [ testColor := Color yellow ].
-		result errorCount > 0 ifTrue: [ testColor := Color red ] ]
-		on: Error
-		do: [
-				testMethodName := self fictiveTestMethod.
-				testColor := Color black ].
-	^ self chatHistory
+{ #category : 'as yet unclassified' }
+AIATestBuilder >> checkBuildedTest: testMethodName [
+	"Run the test method using SUnit infrastructure"
+
+	| result |
+	result := TestResult new.
+	result runCase: (self getOrBuildTestClass selector: testMethodName asSymbol).
+	result passedCount > 0 ifTrue: [ testColor := Color green ].
+	result failureCount > 0 ifTrue: [ testColor := Color yellow ].
+	result errorCount > 0 ifTrue: [ testColor := Color red ]
 ]
 
-{ #category : 'instance creation' }
-AIATestBuilder >> fictiveTestMethod [
-	"Creates a placeholder test method when AI generation fails and compiles it into the test class."
-
-	| fictiveTest |
-	self halt.
-	fictiveTest := WriteStream on: ''.
-	fictiveTest << 'test'
-	      << ((self sourceMethodStringName keywords collect: [ :kw |
-			            (kw copyReplaceAll: ':' with: '') capitalized ])
-			           joinUsing: '')
-			<< String cr
-	      << '	self fail: ''Test code could not be generated'' '
-	      << String cr << String cr 
-			<< testMethod asComment.
-	^ self getOrBuildTestClass 
-			compile: fictiveTest contents
-			classified: 'Failed generated test'
+{ #category : 'compiling' }
+AIATestBuilder >> compileAndChechBuildedTest [
+	| testMethodName  |
+	testMethodName := self getOrBuildTestClass 
+					compile: testMethod classified: 'AI generated test'. 
+	self checkBuildedTest: testMethodName.
+	
+	^ self chatHistory
 ]
 
 { #category : 'instance creation' }
@@ -126,6 +135,20 @@ AIATestBuilder >> initialize [
 	super initialize.
 	chatBuilder := AIAHistory new.
 	
+]
+
+{ #category : 'as yet unclassified' }
+AIATestBuilder >> joeSilly: testMethodName [
+"Inside your build: method"
+testColor = Color red ifTrue: [ 
+    chatBuilder user: 'The test failed with a syntax error: ', 
+        (self captureErrorFor: testMethodName in: self getOrBuildTestClass).
+    chatBuilder user: 'Please fix the syntax and return the full corrected method.' ].
+
+testColor = Color yellow ifTrue: [ 
+    chatBuilder user: 'The test failed an assertion: ', 
+        (self captureFailureFor: testMethodName in: self getOrBuildTestClass).
+    chatBuilder user: 'Please adjust the logic and return the full corrected method.' ].
 ]
 
 { #category : 'test builder' }
@@ -175,21 +198,7 @@ AIATestBuilder >> repairResponseMethod [
 
 { #category : 'accessing' }
 AIATestBuilder >> sourceClassFirstInstanceVariable [
-	| testClassName  |
-	testClassName := AIATestClassBuilder ensureTestClass: sourceMethod  methodClass.
-	^ testClassName instanceVariables first name
-]
-
-{ #category : 'accessing' }
-AIATestBuilder >> sourceClassStringName [
-	"Returns the name of the class associated with the source method as a string. Used to identify the class context for test generation."
-	^ sourceMethod  methodClass asString
-]
-
-{ #category : 'accessing' }
-AIATestBuilder >> sourceMethodStringName [
-	"The sourceMethodStringName method returns the selector of the source method as a string. It is used to identify the method for which a test is being generated."
-	^ sourceMethod selector asString
+	^ self getOrBuildTestClass slots first name
 ]
 
 { #category : 'accessing' }
@@ -200,87 +209,10 @@ AIATestBuilder >> testColor [
 { #category : 'test builder' }
 AIATestBuilder >> testMethodName [
 	"The testMethodName method constructs a test method name by capitalizing the source method's keywords and prefixing with 'test'. It ensures proper naming conventions for AI-generated test methods."
-	^ 'test', ((self sourceMethodStringName keywords collect: [:kw | 
-		(kw copyReplaceAll: ':' with: '') capitalized]) joinUsing: '')
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_backgroundGenerator [
-	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."
-	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_buildTestChat [
-	"Builds the chat context for AI test generation, combining system details, method info, and prompts to guide AI in creating accurate test cases."
-
-	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
-	self historyBuilder.
-	chatBuilder user: self promptGenerator.
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_buildTestChatHistoryFor: aMethod [
-	"Builds the chat context for AI test generation, combining system details, method info, and prompts to guide AI in creating accurate test cases."
-
-	sourceMethod := aMethod.
-	self systemGenerator.
-	self historyBuilder.
-	self promptGenerator.
-	^ chatBuilder chatHistory.
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_fictiveTestMethod [
-	"Creates a placeholder test method when AI generation fails and compiles it into the test class."
-
-	| header fictiveTest | 
-	header := 'test'
-	          , ((self sourceMethodStringName keywords collect: [ :kw |
-			            (kw copyReplaceAll: ':' with: '') capitalized ])
-			           joinUsing: '').
-	fictiveTest := header , String cr
-	               , '	self fail: ''Test code could not be generated'' '
-	               , String cr , String cr , testMethod asComment.
-	^ self getOrBuildTestClass compile: fictiveTest classified: 'Failed generated test'
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_for: aMethod [
-	self buildTestChat.
-	self generateTest.
-	
-	^ testMethod 
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_generateTest [
-	
-	chatBuilder getResponse.
-	testMethod := chatBuilder response.
-	self repairResponseMethod.
-	 
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_rebuild [
-	"The `rebuild:` method attempts to fix and recompile a failed test method, generating a corrected version and retrying compilation. "
-
-	chatBuilder user:
-		'The test method you generated contains one or more source code errors and could not be compiled by Pharo.'
-		, String cr , String cr 
-		, 'First, consider why the following code might not compile:'
-		, String cr , String cr , testMethod , String cr , String cr
-		", 'This was intended to be a test method for: '
-		, sourceMethod name asString , '.' , String cr"
-		, 'Wrap your next approach code in a fenced code block using ```smalltalk.'
-]
-
-{ #category : 'instance creation' }
-AIATestBuilder >> xxx_systemGenerator [
-	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."
-	chatBuilder system: 
-		'All background code and documentation is written in Markdown.
-		This includes Pharo packages, classes, and methods.', String cr, 
-	(AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	| name testName|
+	name := (sourceMethod selector asString keywords 
+		collect: [:kw | (kw copyReplaceAll: ':' with: '') capitalized]) 
+		joinUsing: ''.
+	testName := 'test', name.
+	^ testName
 ]
