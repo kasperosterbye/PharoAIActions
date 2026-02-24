@@ -18,6 +18,7 @@ AIATestBuilder class >> aiBuildList [
 		GrokApiWithTools newOnModel: 2.
 		GrokApiWithTools newOnModel: 3.
 		OpenAIApiWithTools newOnModel: 1.
+		OpenAIApiWithTools newOnModel: 1.
 		 }
 ]
 
@@ -42,9 +43,9 @@ AIATestBuilder >> build: aMethod [
 	
 	testGenCounter := 1. 
 	testColor := 'None'.
-	[ testGenCounter <= 2 and: [ testColor ~= Color green ]  ]
+	[ testGenCounter <= 4 and: [ testColor ~= Color green ]  ]
 		whileTrue: [
-			Transcript << 'Test ' << testGenCounter asString 
+			Transcript << String lf << 'Test ' << testGenCounter asString 
 					<< ' (' <<  (self class aiBuildList at: testGenCounter ) printString << ') '
 					<< 'for ' << sourceMethod name << String lf.
 			chatBuilder api: (self class aiBuildList at: testGenCounter ).
@@ -84,6 +85,7 @@ AIATestBuilder >> compileAndChechBuildedTest [
 	| testMethodName testMethodRef|
 	testMethodName := self getOrBuildTestClass 
 					compile: testMethod classified: 'AI generated test'. 
+					
 	testMethodRef := self getOrBuildTestClass selector: testMethodName asSymbol.
 	self checkBuildedTest: testMethodRef.
 	

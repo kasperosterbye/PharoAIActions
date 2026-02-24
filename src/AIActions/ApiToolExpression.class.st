@@ -19,14 +19,18 @@ ApiToolExpression >> evaluateTool [
 ApiToolExpression >> executeTool: args [
 	"Evaluates the provided Pharo expression and returns its string representation handling any errors"
 
-	| expr |
+	| expr result |
 	super executeTool: args.
 	expr := args at: required.
-	[  (expr includesSubstring: 'compile:') 
-		ifTrue: [ ^ 'Sorry, I will not compile and make new methods' ].
-		^ (OpalCompiler new evaluate: expr) printString ]
+	[  result := (expr includesSubstring: 'compile:') 
+			ifTrue: [  'Sorry, I will not compile and make new methods' ]
+			ifFalse: [(OpalCompiler new evaluate: expr) printString].
+		]
 		on: Error
-		do: [ :ex | ^ 'Error: ' , ex messageText ]
+		do: [ :ex | result := 'Error: ' , ex messageText ].
+	
+		Transcript << '>>> ' << result << String lf.
+		^ result 
 ]
 
 { #category : 'initialization' }

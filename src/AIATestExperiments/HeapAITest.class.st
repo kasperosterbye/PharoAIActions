@@ -8,6 +8,10 @@ Class {
 	#package : 'AIATestExperiments'
 }
 
+{ #category : 'AI generated test' }
+HeapAITest >> AI [ based response Terminated
+]
+
 { #category : 'initialization' }
 HeapAITest >> setUp [
 	super setUp.
@@ -27,15 +31,21 @@ HeapAITest >> testAdd [
 
 { #category : 'AI generated test' }
 HeapAITest >> testArray [
-	"Test the array accessor method in Heap"
-	
-	| elements |
-	elements := #(1 3 2).
-	refHeap addAll: elements.
-	
-	self assert: (refHeap array isKindOf: Array).
-	self assert: (refHeap array size >= refHeap size).
-	self assert: ((refHeap array copyFrom: 1 to: refHeap size) asSet = elements asSet)
+	"Heap>>array answers the receiver itself (see Heap>>array source: '^ self').
+	This test verifies identity and that sending #array does not change the heap."
+
+	| originalSize |
+	originalSize := refHeap size.
+
+	self assert: (refHeap array == refHeap).
+
+	"Calling #array should not mutate the heap"
+	self assert: (refHeap size = originalSize).
+
+	"After a mutation, #array should still answer the same receiver"
+	refHeap add: 42.
+	self assert: (refHeap array == refHeap).
+	self assert: (refHeap size = (originalSize + 1)).
 ]
 
 { #category : 'AI generated test' }
@@ -346,22 +356,304 @@ HeapAITest >> testMergeFirstMiddleLastIntoBy [
 ]
 
 { #category : 'AI generated test' }
+HeapAITest >> testPostCopy [
+	| copy |
+	"Add some elements to the heap to have a non-empty array"
+	refHeap add: 1; add: 3; add: 2.
+	"Create a shallow copy, which triggers postCopy"
+	copy := refHeap copy.
+	"Verify that the arrays are different objects after copying"
+	self assert: (refHeap array ~~ copy array) description: 'postCopy should create a new array copy'.
+	"Verify that the sizes are the same initially"
+	self assert: (refHeap size = copy size) description: 'Copy should have the same size'.
+	"Modify the original by removing the first element (smallest, 1)"
+	refHeap removeFirst.
+	"Verify that the copy remains unchanged"
+	self assert: (copy size = 3) description: 'Copy size should not change after modifying original'.
+	self assert: (copy first = 1) description: 'Copy first element should remain the smallest'.
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testPrivateRemoveAt [
+	| removed arrayAfter |
+	"Create a heap with elements 1,3,4,2 to form [1,2,4,3]"
+	refHeap
+		add: 1;
+		add: 3;
+		add: 4;
+		add: 2.
+	"Remove the root (index 1), which is 1, last element 3 moves to root, then downheap to [2,3,4,nil]"
+	removed := refHeap privateRemoveAt: 1.
+	self assert: (removed = 1).
+	self assert: (refHeap size = 3).
+	arrayAfter := refHeap instVarNamed: #array.
+	self assert: ((arrayAfter at: 1) = 2).
+	self assert: ((arrayAfter at: 2) = 3).
+	self assert: ((arrayAfter at: 3) = 4).
+	self assert: ((arrayAfter at: 4) = nil).
+	"Verify the heap property by sequential removal"
+	self assert: (refHeap removeFirst = 2).
+	self assert: (refHeap removeFirst = 3).
+	self assert: (refHeap removeFirst = 4).
+	self assert: refHeap isEmpty
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testPrivateReverseSort [
+	"Test that privateReverseSort arranges the heap array in descending order for a min-heap."
+
+	| elements size internalArray |
+	"Create a collection of unsorted numbers"
+	elements := (1 to: 5) shuffled.
+	"Add elements to the heap, which maintains the min-heap property"
+	elements do: [ :each | refHeap add: each ].
+	"Save the current size before sorting"
+	size := refHeap size.
+	"Invoke the private method to reverse sort"
+	refHeap privateReverseSort.
+	"Access the internal array to verify the order"
+	internalArray := refHeap instVarNamed: #array.
+	"Check that the array is sorted in descending order"
+	1 to: size - 1 do: [ :i |
+		self assert: (internalArray at: i) >= (internalArray at: i + 1) ]
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testReSort [
+	| elements extracted |
+	"Test that reSort properly heapifies an unsorted collection"
+	elements := {3. 1. 4. 1. 5}.
+	refHeap setCollection: elements tally: elements size.
+	"Before reSort, the heap is not sorted, so first is not the minimum"
+	self assert: (refHeap first = 3).
+	self assert: (refHeap first ~= 1).
+	refHeap reSort.
+	"Now extract all elements via removeFirst to verify sorted order"
+	extracted := OrderedCollection new.
+	[ refHeap isEmpty ] whileFalse: [ extracted add: refHeap removeFirst ].
+	self assert: extracted asArray equals: #(1 1 3 4 5).
+	"Test reSort on empty heap does nothing"
+	refHeap reSort.
+	self assert: refHeap isEmpty
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testRemoveAll [
+	"Test that removeAll empties the heap correctly."
+
+	| initialSize |
+	"Add some elements to the heap"
+	refHeap add: 1.
+	refHeap add: 3.
+	refHeap add: 2.
+	initialSize := refHeap size.
+	self assert: initialSize equals: 3.
+
+	"Remove all elements"
+	refHeap removeAll.
+
+	"Verify the heap is empty"
+	self assert: (refHeap isEmpty).
+	self assert: refHeap size equals: 0
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testRemoveFirst [
+	"Test that removeFirst removes and returns the smallest element according to the default sort block."
+	| removed |
+	refHeap add: 3; add: 1; add: 2.
+	self assert: (refHeap size = 3).
+	removed := refHeap removeFirst.
+	self assert: (removed = 1).
+	self assert: (refHeap size = 2).
+	self assert: (refHeap first = 2)
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testRemoveIfAbsent [
+	| removed |
+	"Test removing an existing element"
+	refHeap add: 5.
+	refHeap add: 3.
+	self assert: refHeap size equals: 2.
+	removed := refHeap remove: 5 ifAbsent: [ self error: 'Should find element' ].
+	self assert: removed equals: 5.
+	self assert: refHeap size equals: 1.
+	
+	"Test removing an absent element"
+	removed := refHeap remove: 10 ifAbsent: [ 42 ].
+	self assert: removed equals: 42.
+	self assert: refHeap size equals: 1.
+	
+	"Test removing when multiple equal elements exist"
+	refHeap add: 3.
+	refHeap add: 3.
+	self assert: refHeap size equals: 3.
+	removed := refHeap remove: 3 ifAbsent: [ self error: 'Should find element' ].
+	self assert: removed equals: 3.
+	self assert: refHeap size equals: 2.
+	"Remove another 3, confirming multiple were present"
+	removed := refHeap remove: 3 ifAbsent: [ self error: 'Should find another element' ].
+	self assert: removed equals: 3.
+	self assert: refHeap size equals: 1.
+	"Remove the last 3"
+	removed := refHeap remove: 3 ifAbsent: [ self error: 'Should find last element' ].
+	self assert: removed equals: 3.
+	self assert: refHeap size equals: 0.
+	
+	"Test absent after all removed"
+	removed := refHeap remove: 3 ifAbsent: [ 99 ].
+	self assert: removed equals: 99.
+	self assert: refHeap size equals: 0
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSetCollection [
+	| testArray |
+	testArray := #(1 2 3).
+	"Set the collection on the heap instance"
+	refHeap setCollection: testArray.
+	"Verify that the array slot is set to the provided collection"
+	self assert: (refHeap instVarNamed: #array) equals: testArray.
+	"Verify that the tally is reset to 0"
+	self assert: (refHeap instVarNamed: #tally) equals: 0
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSetCollectionTally [
+	"Test that setCollection: tally: correctly sets the array and tally slots."
+	| collection expectedTally |
+	collection := #(1 2 3).
+	expectedTally := 3.
+	refHeap setCollection: collection tally: expectedTally.
+	self assert: (refHeap instVarNamed: #array) equals: collection.
+	self assert: (refHeap instVarNamed: #tally) equals: expectedTally
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSize [
+	"Test the size method of Heap, which returns the number of elements (tally)"
+
+	"Verify empty heap has size 0"
+	self assert: (refHeap size = 0).
+
+	"Add one element and verify size is 1"
+	refHeap add: 42.
+	self assert: (refHeap size = 1).
+
+	"Add another element and verify size is 2"
+	refHeap add: 10.
+	self assert: (refHeap size = 2).
+
+	"Remove one element and verify size is 1"
+	refHeap removeFirst.
+	self assert: (refHeap size = 1)
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSort [
+	| elements sorted |
+	"Populate the heap with unsorted integers"
+	elements := #(3 1 4 1 5 9 2 6).
+	elements do: [ :each | (self instVarNamed: #refHeap) add: each ].
+
+	"Sort the heap using an ascending sort block"
+	(self instVarNamed: #refHeap) sort: [ :a :b | a <= b ].
+
+	"After sorting, removing elements sequentially should yield ascending order"
+	sorted := OrderedCollection new.
+	[ (self instVarNamed: #refHeap) isEmpty ] whileFalse: [
+		sorted add: (self instVarNamed: #refHeap) removeFirst ].
+
+	self assert: (sorted asArray = #(1 1 2 3 4 5 6 9))
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSortBlock [
+	| elements customBlock |
+	elements := #(3 1 2).
+	refHeap addAll: elements.
+	self assert: refHeap size equals: 3.
+	"Default behavior is min-heap, so first element is the smallest"
+	self assert: (refHeap first) equals: 1.
+	"Set custom sort block for max-heap (descending order)"
+	customBlock := [ :a :b | a >= b ].
+	refHeap sortBlock: customBlock.
+	"Verify the sort block was set"
+	self assert: (refHeap instVarNamed: #sortBlock) equals: customBlock.
+	"After reSort, the heap is reorganized, first should now be the largest"
+	self assert: (refHeap first) equals: 3.
+	"Verify removal order is descending"
+	self assert: refHeap removeFirst equals: 3.
+	self assert: (refHeap first) equals: 2.
+	self assert: refHeap removeFirst equals: 2.
+	self assert: (refHeap first) equals: 1.
+	self assert: refHeap removeFirst equals: 1.
+	self assert: refHeap isEmpty
+]
+
+{ #category : 'AI generated test' }
+HeapAITest >> testSorted [
+	| elements sortedHeap extracted |
+
+	"Use a small, deterministic set of numbers"
+	elements := #(4 2 5 1 3).
+
+	"Fill the reference heap provided by setUp (do not create another heap variable)"
+	elements do: [ :each |  refHeap add: each ].
+	self assert: (self refHeap size = elements size).
+
+	"sorted: should return a NEW Heap instance, sorted using default order when argument is nil"
+	sortedHeap := self refHeap sorted: nil.
+	self assert: (sortedHeap class = Heap).
+	self assert: (sortedHeap size = self refHeap size).
+
+	"Verify sorted order by repeatedly removing the first element from the sorted heap"
+	extracted := OrderedCollection new.
+	[ sortedHeap isEmpty ] whileFalse: [
+		extracted add: sortedHeap removeFirst ].
+	self assert: (extracted asArray = #(1 2 3 4 5)).
+
+	"Verify the original heap was not consumed by operations on the sorted copy"
+	self assert: (self refHeap size = elements size)
+]
+
+{ #category : 'AI generated test' }
 HeapAITest >> testSortsBefore [
-	"Test the sort order of elements in the Heap."
+	| customHeap |
+	"Test the default sort block (ascending order)"
+	self assert: (refHeap sorts: 1 before: 2).
+	self deny: (refHeap sorts: 2 before: 1).
+	
+	"Test a custom sort block (descending order)"
+	customHeap := Heap sortBlock: [ :a :b | a >= b ].
+	self assert: (customHeap sorts: 2 before: 1).
+	self deny: (customHeap sorts: 1 before: 2)
+]
 
-	| element1 element2 |
-	element1 := 10.
-	element2 := 20.
+{ #category : 'AI generated test' }
+HeapAITest >> testTrim [
+	"trim should shrink the internal storage array to exactly the heap's logical size (tally),
+	while preserving heap semantics."
 
-	"Test with default sort block (element1 <= element2)"
-	self assert: (refHeap sorts: element1 before: element2).
+	| arraySizeBefore |
+	refHeap add: 5; add: 1; add: 3.
 
-	"Test with custom sort block (element1 > element2)"
-	refHeap sortBlock: [ :a :b | a > b ].
-	self assert: (refHeap sorts: element2 before: element1).
+	"Ensure we start with spare capacity (default Heap new uses an Array of size 10)."
+	arraySizeBefore := (refHeap instVarNamed: #array) size.
+	self assert: (arraySizeBefore > refHeap size).
 
-	"Reset sort block to default"
-	refHeap sortBlock: nil.
+	"Act: trim the heap."
+	refHeap trim.
+
+	"After trim, internal array size should match the logical size."
+	self assert: (((refHeap instVarNamed: #array) size) = refHeap size).
+
+	"Heap order should still be correct after trimming."
+	self assert: ((refHeap removeFirst) = 1).
+	self assert: ((refHeap removeFirst) = 3).
+	self assert: ((refHeap removeFirst) = 5).
+	self assert: (refHeap isEmpty)
 ]
 
 { #category : 'AI generated test' }
