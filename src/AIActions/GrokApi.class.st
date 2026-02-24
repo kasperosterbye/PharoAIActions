@@ -27,6 +27,12 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+GrokApi class >> apiGenerateUrl [ 
+	^ 'https://api.x.ai/v1/chat/completions'.
+    
+]
+
 { #category : 'AI models' }
 GrokApi class >> grokKey [
     "Returns the API key for Grok, read from a local file (Bearer token)."
@@ -41,34 +47,11 @@ GrokApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
-GrokApi >> apiGenerateUrl [ 
-	^ 'https://api.x.ai/v1/chat/completions'.
-    
-]
+GrokApi >> buildZnClientWithHeaders: jsonPrompt [
 
-{ #category : 'ollama models' }
-GrokApi >> bodyForEntityWithPrompt [
-    "Creates a JSON request body for Grok API with model, messages, max_tokens, temperature, and no streaming."
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
-        'temperature' -> 0.0.
-        'stream' -> false.
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary).
-
-]
-
-{ #category : 'accessing' }
-GrokApi >> buildZnClientWithHeaders [
-
-	| jsonPrompt |
-	jsonPrompt := self buildZnClient.
 	jsonPrompt
 		headerAt: 'Authorization' put: 'Bearer ' , self class grokKey;
 		headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonPrompt
 ]
 
 { #category : 'initialization' }
@@ -83,16 +66,5 @@ GrokApi >> initialize [
 GrokApi >> printOn: aStream [
     "Prints the model name for the GrokApi instance."
     aStream << 'GrokApi: ' << self model.
-
-]
-
-{ #category : 'ollama models' }
-GrokApi >> responseOf: jsonResponse [
-    "Extracts the text content from the parsed Grok API JSON response."
-    | parsed |
-    parsed := STONJSON fromString: jsonResponse.
-    [ ^ ((parsed at: 'choices') first at: 'message') at: 'content' ]
-        on: Error
-        do: [ ^ self errorResponse: jsonResponse ].
 
 ]

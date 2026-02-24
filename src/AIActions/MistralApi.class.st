@@ -10,6 +10,12 @@ Class {
 }
 
 { #category : 'accessing' }
+MistralApi class >> apiGenerateUrl [ 
+	^ 'https://api.mistral.ai/v1/chat/completions'.
+	
+]
+
+{ #category : 'accessing' }
 MistralApi class >> esug [
 	"Return the API token for Mistral, read from a maarumlam https file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
@@ -35,33 +41,11 @@ MistralApi class >> token [
 ]
 
 { #category : 'accessing' }
-MistralApi >> apiGenerateUrl [ 
-	^ 'https://api.mistral.ai/v1/chat/completions'.
-	
-]
+MistralApi >> buildZnClientWithHeaders: jsonPrompt [
 
-{ #category : 'mistral models' }
-MistralApi >> bodyForEntityWithPrompt [
-	"Creates a JSON entity for an API request with a system message and user prompt."
-	| requestDictionary |
-	requestDictionary :=Dictionary newFrom: {
-	    'model' -> self model.
-	    'messages' -> self jsonHistory .
-		 'temperature' -> 0.0.
-	    'stream' -> false.
-		}.
-	^ ZnEntity json: (STONJSON toString: requestDictionary).
-]
-
-{ #category : 'accessing' }
-MistralApi >> buildZnClientWithHeaders [
-
-	| jsonPrompt |
-	jsonPrompt := self buildZnClient.
 	jsonPrompt
 		headerAt: 'Authorization' put: self class esug;
 		headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonPrompt
 ]
 
 { #category : 'initialization' }
@@ -75,13 +59,4 @@ MistralApi >> initialize [
 MistralApi >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'MistralApi: ' << self model.
-]
-
-{ #category : 'mistral models' }
-MistralApi >> responseOf: jsonResponse [
-	| parsed   |
-	parsed := STONJSON fromString: jsonResponse.
-	[^ ((parsed at: 'choices') first at: 'message') at: 'content' ]
-		on: Error 
-		do: [ ^ self errorResponse: jsonResponse ].
 ]

@@ -93,18 +93,15 @@ GeminiApi >> bodyForEntityWithPrompt [
 			'temperature' -> 0
 		})
 	}.
-	^ ZnEntity json: (STONJSON toString: requestDictionary)
+	^ requestDictionary 
 ]
 
 { #category : 'accessing' }
-GeminiApi >> buildZnClientWithHeaders [
+GeminiApi >> buildZnClientWithHeaders: jsonPrompt [
 
-	| jsonPrompt |
-	jsonPrompt := self buildZnClient.
 	jsonPrompt
 		headerAt: 'X-goog-api-key' put: self class geminiKey;
 		headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonPrompt
 ]
 
 { #category : 'initialize' }

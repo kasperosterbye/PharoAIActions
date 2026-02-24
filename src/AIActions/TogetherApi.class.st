@@ -25,6 +25,13 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+TogetherApi class >> apiGenerateUrl [ 
+	"Returns the URL for Together API chat completions endpoint."
+	^ 'https://api.together.xyz/v1/chat/completions'.
+    
+]
+
 { #category : 'AI models' }
 TogetherApi class >> modelNames [
    "Returns an array of available Together models. "
@@ -42,35 +49,20 @@ TogetherApi class >> togetherKey [
     ^ (FileSystem disk workingDirectory / '../../together01.txt') readStream contents trimBoth.
 ]
 
-{ #category : 'accessing' }
-TogetherApi >> apiGenerateUrl [ 
-	"Returns the URL for Together API chat completions endpoint."
-	^ 'https://api.together.xyz/v1/chat/completions'.
-    
-]
-
 { #category : 'ollama models' }
 TogetherApi >> bodyForEntityWithPrompt [
 	"Creates a json entity for the Together API request with model and conversation history."
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
+    ^ super bodyForEntityWithPrompt addAll: {
         'temperature' -> 0.0.
-        'stream' -> false.
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary).
+    } asDictionary .
 ]
 
 { #category : 'accessing' }
-TogetherApi >> buildZnClientWithHeaders [
+TogetherApi >> buildZnClientWithHeaders: jsonPrompt [
 
-	| jsonPrompt |
-	jsonPrompt := self buildZnClient.
 	jsonPrompt
 		headerAt: 'Authorization' put: 'Bearer ' , self class togetherKey;
 		headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonPrompt
 ]
 
 { #category : 'initialization' }

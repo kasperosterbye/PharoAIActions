@@ -52,6 +52,11 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+ClaudeApi class >> apiGenerateUrl [ 
+	^ 'https://api.anthropic.com/v1/messages'
+]
+
 { #category : 'AI models' }
 ClaudeApi class >> claudeKey [
 	| fileName |
@@ -76,33 +81,22 @@ ClaudeApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> apiGenerateUrl [ 
-	^ 'https://api.anthropic.com/v1/messages'
-]
-
-{ #category : 'accessing' }
 ClaudeApi >> bodyForEntityWithPrompt [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
     | requestDictionary  |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
-        'max_tokens' -> 4096.
-        'temperature' -> 0.0.
-    	  'stream' -> false.
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary).
+    requestDictionary := super bodyForEntityWithPrompt.
+	requestDictionary addAll: (Dictionary newFrom: {
+        'max_tokens' -> 4096
+    }).
+    ^ requestDictionary .
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> buildZnClientWithHeaders [
-	| jsonPrompt |
-	jsonPrompt := self buildZnClient.
+ClaudeApi >> buildZnClientWithHeaders: jsonPrompt [
 	jsonPrompt
 		headerAt: 'x-api-key' put: self class claudeKey;
 		headerAt: 'anthropic-version' put: '2023-06-01';
 		headerAt: 'content-type' put: 'application/json'.
-	^ jsonPrompt 
 ]
 
 { #category : 'initialize' }

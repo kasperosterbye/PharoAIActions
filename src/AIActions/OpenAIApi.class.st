@@ -6,6 +6,12 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+OpenAIApi class >> apiGenerateUrl [
+	"Method to generate the API URL for OpenAIApi."
+    ^ 'https://api.openai.com/v1/chat/completions'
+]
+
 { #category : 'AI models' }
 OpenAIApi class >> modelNames [
 	"returns an array with one item per model."
@@ -22,34 +28,13 @@ OpenAIApi class >> openAI01 [
 ]
 
 { #category : 'accessing' }
-OpenAIApi >> apiGenerateUrl [
-	"Method to generate the API URL for OpenAIApi."
-    ^ 'https://api.openai.com/v1/chat/completions'
-]
+OpenAIApi >> buildZnClientWithHeaders: jsonPrompt [
 
-{ #category : 'mistral models' }
-OpenAIApi >> bodyForEntityWithPrompt [
-	"Method to create a JSON body with prompt for OpenAIApi."
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> model.
-        'messages' -> self jsonHistory.
-        'stream' -> false.
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary).
-]
-
-{ #category : 'accessing' }
-OpenAIApi >> buildZnClientWithHeaders [
-
-	| jsonPrompt |
-	jsonPrompt := self buildZnClient.
 	jsonPrompt
 		headerAt: 'Authorization' put: self class openAI01;
 		headerAt: 'OpenAI-Organization' put: 'org-XmWYpGR0EsRqkASrs8HE3hy6';
 		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
 		headerAt: 'Content-Type' put: 'application/json'.
-	^ jsonPrompt
 ]
 
 { #category : 'initialization' }
@@ -63,14 +48,4 @@ OpenAIApi >> initialize [
 OpenAIApi >> printOn: aStream [
 	"Method to print the model name of OpenAIApi instance."
 	aStream << 'OpenAIApi: ' << self model.
-]
-
-{ #category : 'mistral models' }
-OpenAIApi >> responseOf: jsonResponse [
-	"Method to parse JSON response and extract content, handling errors gracefully."
-	| parsed   |
-	parsed := STONJSON fromString: jsonResponse.
-	[^ ((parsed at: 'choices') first at: 'message') at: 'content' ]
-		on: Error 
-		do: [ ^ self errorResponse: jsonResponse  ].
 ]

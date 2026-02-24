@@ -48,6 +48,12 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'accessing' }
+OllamaApi class >> apiGenerateUrl [ 
+	^ 'http://localhost:11434/api/chat'.
+	
+]
+
 { #category : 'as yet unclassified' }
 OllamaApi class >> exampleUllama [
 	"(AIAHistory new api: (OllamaApi newModel: 1)) user: 'What is your name'; getResponse ; response. "
@@ -87,30 +93,15 @@ OllamaApi class >> ollamaVersion [
 	^ (STONJSON fromString: response) at: 'version'  .
 ]
 
-{ #category : 'accessing' }
-OllamaApi >> apiGenerateUrl [ 
-	^ 'http://localhost:11434/api/chat'.
-	
-]
-
 { #category : 'ollama models' }
 OllamaApi >> bodyForEntityWithPrompt [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	|  requestDictionary |
-	requestDictionary := Dictionary newFrom:  { 
-		'model' -> model.
-		'messages' -> self jsonHistory .
-		#stream -> false.
+	requestDictionary := super bodyForEntityWithPrompt addAll:  { 
 		#options -> (Dictionary newFrom: {
     		#temperature -> 0})
-	} .
-	^ ZnEntity json: (STONJSON toString: requestDictionary).
-]
-
-{ #category : 'accessing' }
-OllamaApi >> buildZnClientWithHeaders [
-
-	^ self buildZnClient
+	} asDictionary .
+	^ requestDictionary.
 ]
 
 { #category : 'initialization' }

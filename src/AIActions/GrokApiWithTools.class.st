@@ -31,15 +31,9 @@ Class {
 
 { #category : 'tools support' }
 GrokApiWithTools >> bodyForEntityWithPrompt [
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
+    ^ super bodyForEntityWithPrompt addAll: {
         'tools' -> self toolSpecification.
-        'temperature' -> 0.0.
-        'stream' -> false
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary)
+    } asDictionary 
 ]
 
 { #category : 'tools support' }

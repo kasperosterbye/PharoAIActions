@@ -226,31 +226,52 @@ AilienApi class >> providers [
 { #category : 'accessing' }
 AilienApi >> apiGenerateUrl [
 	"Returns the URL endpoint for the AI provider's API, combining base URL with model-specific path. Subclasses must implement this method to provide provider-specific API routing."
-	self subclassResponsibility
+	^ self class apiGenerateUrl
 ]
 
-{ #category : 'accessing' }
+{ #category : 'ollama models' }
 AilienApi >> bodyForEntityWithPrompt [
-	"Returns the HTTP request body for AI API calls, typically containing the conversation history in JSON format. Subclasses must implement this method to provide provider-specific request formatting."
-	self subclassResponsibility
+	"Method to create a JSON body with prompt for OpenAIApi."
+    | requestDictionary |
+    requestDictionary := Dictionary newFrom: {
+        'model' -> model.
+        'messages' -> self jsonHistory.
+        'stream' -> false.
+        'temperature' -> 0.0
+    }.
+    ^ requestDictionary 
 ]
 
 { #category : 'accessing' }
 AilienApi >> buildZnClient [
 
-	| jsonPrompt |
+	| jsonPrompt entityPrompt|
+self halt. "Error, should call the one with :jsonPrompt"
 	jsonPrompt := ZnClient new.
+	entityPrompt := ZnEntity json: (STONJSON toString: self bodyForEntityWithPrompt).
 	jsonPrompt
 		timeout: self responseWaitingInSecs;
 		url: self apiGenerateUrl;
-		entity: self bodyForEntityWithPrompt.
+		entity: entityPrompt.
 	^ jsonPrompt
+]
+
+{ #category : 'accessing' }
+AilienApi >> buildZnClient: jsonPrompt [
+
+	|  entityPrompt|
+	entityPrompt := ZnEntity json: (STONJSON toString: self bodyForEntityWithPrompt).
+	jsonPrompt
+		timeout: self responseWaitingInSecs;
+		url: self apiGenerateUrl;
+		entity: entityPrompt.
+	
 ]
 
 { #category : 'accessing' }
 AilienApi >> buildZnClientWithHeaders [
 
-	self subclassResponsibility
+	self error: 'Should not be called...'
 ]
 
 { #category : 'responses' }
@@ -289,7 +310,9 @@ AilienApi >> loadResponse: history [
 
 	| jsonPrompt llmCall response |
 	[
-		jsonPrompt := self buildZnClientWithHeaders.
+		jsonPrompt := ZnClient new.
+		self buildZnClient: jsonPrompt.
+		self buildZnClientWithHeaders: jsonPrompt .
 		llmCall := jsonPrompt post; contents.
 		response := self responseOf: llmCall.
 		history assistant: response from: self]
@@ -317,9 +340,13 @@ AilienApi >> model: anObject [
 ]
 
 { #category : 'accessing' }
-AilienApi >> responseOf: llmCall [
-	"Extracts the assistant's response from the raw API response, handling provider-specific JSON structures and error cases."
-	self subclassResponsibility
+AilienApi >> responseOf: jsonResponse [
+	| parsed response  |
+	parsed := STONJSON fromString: jsonResponse.
+	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
+		on: Error 
+		do: [ response := self errorResponse: jsonResponse ].
+	^ response 
 ]
 
 { #category : 'accessing' }

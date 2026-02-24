@@ -44,14 +44,11 @@ Class {
 { #category : 'tools support' }
 MistralApiWithTools >> bodyForEntityWithPrompt [
     | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
+    requestDictionary := super bodyForEntityWithPrompt.
+	requestDictionary addAll: (Dictionary newFrom: {
         'tools' -> self toolSpecification.
-        'temperature' -> 0.0.
-        'stream' -> false
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary)
+	}).
+    ^ requestDictionary
 ]
 
 { #category : 'tools support' }
