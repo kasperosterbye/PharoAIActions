@@ -89,17 +89,6 @@ ClaudeApi class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> bodyForEntityWithPrompt [
-	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
-    | requestDictionary  |
-    requestDictionary := super bodyForEntityWithPrompt.
-	requestDictionary addAll: (Dictionary newFrom: {
-        'max_tokens' -> 4096
-    }).
-    ^ requestDictionary .
-]
-
-{ #category : 'accessing' }
 ClaudeApi >> printOn: aStream [
 	"Prints the model name of the ClaudeApi instance, showing the current AI model being used for interactions"
 	aStream << 'ClaudeApi: ' << self model.

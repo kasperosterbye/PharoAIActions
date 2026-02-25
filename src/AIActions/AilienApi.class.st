@@ -27,7 +27,6 @@ Class {
 	],
 	#classVars : [
 		'ErrorResponse',
-		'LastHistory',
 		'Provider'
 	],
 	#classInstVars : [
@@ -268,7 +267,6 @@ AilienApi >> jsonHistory [
 			{'role' -> item key.
 			'content' -> item value.})
 	].
-	"LastHistory := jsonHistory."
 	^ jsonHistory asArray.
 ]
 
@@ -339,7 +337,6 @@ AilienApi >> znClientBasic: jsonPrompt [
 		timeout: self responseWaitingInSecs;
 		url: self apiGenerateUrl.
 	entity := self znClientEntity.
-	self halt.
 	entityPrompt := ZnEntity json: (STONJSON toString: self znClientEntity asDictionary).
 	jsonPrompt 
 		entity: entityPrompt .
@@ -351,7 +348,7 @@ AilienApi >> znClientEntity [
 	"Method to create a JSON body with prompt for OpenAIApi."
     ^ {
         'model' -> model.
-        'messages' -> self jsonHistory.
+        'messages' -> self jsonHistory .
         'stream' -> false.
         'temperature' -> 0.0
     }

@@ -93,6 +93,11 @@ OllamaApi class >> ollamaVersion [
 	^ (STONJSON fromString: response) at: 'version'  .
 ]
 
+{ #category : 'accessing' }
+OllamaApi class >> znClientHeaders: foo [
+	"ignore me"
+]
+
 { #category : 'ollama models' }
 OllamaApi >> bodyForEntityWithPrompt [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."

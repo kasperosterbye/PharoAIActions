@@ -99,9 +99,8 @@ GeminiApi >> jsonHistory [
 	messageList do: [ :item |
 		jsonHistory add: (Dictionary newFrom:
             {'role' -> (correctedRole at: item key).
-            'parts' -> { Dictionary newFrom: { 'text' -> item value} } } )
+            'parts' -> { { 'text' -> item value} asDictionary } } )
 	].
-	LastHistory := STONJSON toString: jsonHistory asArray .
 	^ jsonHistory asArray.
 ]
 
@@ -126,11 +125,13 @@ GeminiApi >> responseOf: jsonResponse [
 { #category : 'ollama models' }
 GeminiApi >> znClientEntity [
 	"Constructs JSON entity for API request with chat history and generation config. Formats history as role-parts array and sets temperature to 0. Returns ZnEntity with JSON string."
-	self halt.
-	^ super znClientEntity union: {
-		'contents' -> self jsonHistory asDictionary .
-		'generationConfig' -> {
-			'temperature' -> 0
-		} asDictionary
-	}.
+
+	^ {
+		  'model' -> model.
+		  'generationConfig' -> (Dictionary newFrom: {
+					'temperature' -> 0
+				}).
+		  'contents' -> self jsonHistory .
+		  'generationConfig' -> { ('temperature' -> 0) } asDictionary 
+		}
 ]
