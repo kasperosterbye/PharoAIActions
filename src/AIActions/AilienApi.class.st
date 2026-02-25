@@ -217,19 +217,6 @@ AilienApi >> apiGenerateUrl [
 	^ self class apiGenerateUrl
 ]
 
-{ #category : 'ollama models' }
-AilienApi >> bodyForEntityWithPrompt [
-	"Method to create a JSON body with prompt for OpenAIApi."
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> model.
-        'messages' -> self jsonHistory.
-        'stream' -> false.
-        'temperature' -> 0.0
-    }.
-    ^ requestDictionary 
-]
-
 { #category : 'responses' }
 AilienApi >> errorResponse: jsonResponse [
 	"Returns the error response string, either the provided error message or the default error response if none is set"

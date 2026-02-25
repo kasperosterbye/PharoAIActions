@@ -99,17 +99,6 @@ OllamaApi class >> znClientHeaders: foo [
 ]
 
 { #category : 'ollama models' }
-OllamaApi >> bodyForEntityWithPrompt [
-	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
-	|  requestDictionary |
-	requestDictionary := super bodyForEntityWithPrompt addAll:  { 
-		#options -> (Dictionary newFrom: {
-    		#temperature -> 0})
-	} asDictionary .
-	^ requestDictionary.
-]
-
-{ #category : 'ollama models' }
 OllamaApi >> modelInformation [
 	"Returns detailed information about the current model by querying the Ollama API and parsing the JSON response."
 	| url jsonResponse requestBody |
@@ -176,4 +165,15 @@ OllamaApi >> znClientEntity [
 		#options -> (Dictionary newFrom: {
     		#temperature -> 0})
 	} .
+]
+
+{ #category : 'ollama models' }
+OllamaApi >> zzz_bodyForEntityWithPrompt [
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
+	|  requestDictionary |
+	requestDictionary := super bodyForEntityWithPrompt addAll:  { 
+		#options -> (Dictionary newFrom: {
+    		#temperature -> 0})
+	} asDictionary .
+	^ requestDictionary.
 ]

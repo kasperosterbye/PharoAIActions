@@ -43,6 +43,7 @@ AilienTool >> executeToolNamed: name withArgs: args [
 { #category : 'trait tools support' }
 AilienTool >> jsonHistory [
     | jsonHistory |
+self halt. "Cannot be in a Trait"
     jsonHistory := OrderedCollection new.
     self messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
     ^ jsonHistory asArray

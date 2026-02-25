@@ -36,42 +36,12 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'OllamaApiWithTools',
 	#superclass : 'OllamaApi',
+	#traits : 'AilienTool',
+	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
-
-{ #category : 'tools support' }
-OllamaApiWithTools >> addJsonHistory: jsonHistory for: item [
-	item key = 'assistant'
-            ifTrue: [ 
-                "Handle both dict (from tool loop) and string (from aHistory assistant:)"
-                item value isDictionary
-                    ifTrue: [ jsonHistory add: item value ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'assistant'.
-                        'content' -> item value }) ] ]
-            ifFalse: [
-                item key = 'tool'
-                    ifTrue: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'tool'.
-                        'tool_call_id' -> (item value at: 'tool_call_id').
-                        'content' -> (item value at: 'content') }) ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> item key.
-                        'content' -> item value }) ] ]
-]
-
-{ #category : 'trait tools support' }
-OllamaApiWithTools >> executeToolNamed: name withArgs: args [
-	AilienApiTool subclasses do: [ :tool | 
-		| instance |
-		instance := tool new.
-		instance name = name ifTrue:[
-			^ instance executeTool: args
-			] ].
-    ^ 'Unknown tool: ', name
-]
 
 { #category : 'tools support' }
 OllamaApiWithTools >> jsonHistory [
@@ -127,32 +97,10 @@ OllamaApiWithTools >> processToolCall: call [
         'content' -> result })
 ]
 
-{ #category : 'trait tools support' }
-OllamaApiWithTools >> responseError: parsed hist: aHistory [
-
-	| error |
-	error := parsed at: 'error'.
-	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') from: self.
-	^ self
-]
-
-{ #category : 'trait tools support' }
-OllamaApiWithTools >> toolSpecification [
-	| all |
-	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
-   ^ all 
-]
-
 { #category : 'tools support' }
 OllamaApiWithTools >> znClientEntity [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	^ super znClientEntity union:  {
         'tools' -> self toolSpecification.
     } .
-]
-
-{ #category : 'tools support' }
-OllamaApiWithTools >> zzz_loadResponse: aHistory [
-
-	self loadResponse: aHistory to: messageList 
 ]
