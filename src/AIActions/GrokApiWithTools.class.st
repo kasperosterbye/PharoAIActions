@@ -30,13 +30,6 @@ Class {
 }
 
 { #category : 'tools support' }
-GrokApiWithTools >> bodyForEntityWithPrompt [
-    ^ super bodyForEntityWithPrompt addAll: {
-        'tools' -> self toolSpecification.
-    } asDictionary 
-]
-
-{ #category : 'tools support' }
 GrokApiWithTools >> executeToolNamed: name withArgs: args [
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
@@ -79,25 +72,27 @@ GrokApiWithTools >> jsonHistory [
 
 { #category : 'tools support' }
 GrokApiWithTools >> loadResponse: aHistory [
-    | maxTurns |
-    maxTurns := 50.
-    1 to: maxTurns do: [ :turn |
-        | rawResponse parsed message toolCalls |
-        rawResponse := self buildZnClientWithHeaders.
-        rawResponse := rawResponse post; contents.
-        parsed := STONJSON fromString: rawResponse.
-		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
-        message := (parsed at: 'choices') first at: 'message'.
-        toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
-        toolCalls ifNil: [
-            aHistory assistant: (message at: 'content') from: self.
-            ^ self ].
-        "Add assistant's tool request to history"
-        messageList add: 'assistant' -> message.
+	| maxTurns |
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			| jsonPrompt rawResponse parsed message toolCalls |
+			jsonPrompt := ZnClient new.
+			self znClientBasic: jsonPrompt.
+			self class znClientHeaders: jsonPrompt.
+			rawResponse := jsonPrompt 
+				               post;
+				               contents.
+			parsed := STONJSON fromString: rawResponse.
+			(parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
-        "Execute each tool and add results"
-		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
+			message := (parsed at: 'choices') first at: 'message'.
+			toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
+			toolCalls ifNil: [
+					aHistory assistant: (message at: 'content') from: self.
+					^ self ]. "Add assistant's tool request to history"
+			messageList add: 'assistant' -> message. "Execute each tool and add results"
+			toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
 ]
 
 { #category : 'tools support' }
@@ -132,4 +127,12 @@ GrokApiWithTools >> toolSpecification [
 	| all |
 	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
    ^ all 
+]
+
+{ #category : 'ollama models' }
+GrokApiWithTools >> znClientEntity [
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
+	^ super znClientEntity union:  {
+        'tools' -> self toolSpecification.
+    } .
 ]

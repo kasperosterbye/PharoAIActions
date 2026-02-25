@@ -27,6 +27,7 @@ Class {
 	],
 	#classVars : [
 		'ErrorResponse',
+		'LastHistory',
 		'Provider'
 	],
 	#classInstVars : [
@@ -49,18 +50,6 @@ No emojis or tables are ever allowed.
 Clarity, brevity, and technical focus are essential.
 
 Quite another matter - I can''t read, and need a computer to convert your answer into something I can ask it to read. So 1) Please give short (20 * 72 characters) answers, and 2) avoid tables. I basically understood what you wrote as an explanation, so the intro and conclusion are the only things of interest. Does that make sense?'
-]
-
-{ #category : 'accessing' }
-AilienApi class >> chatLastHistory [
-	"Returns a formatted string of all conversation history, with each entry prefixed by its role and separated by newlines. Preserves system, user, and assistant messages in chronological order."
-	| historyText |
-	historyText := WriteStream on: ''.
-	LastHistory do: [ :item | 
-		historyText << '## ' << item key << String cr
-			<< item value << String cr << String cr
-		 ].
-	^ historyText contents
 ]
 
 { #category : 'AI models' }

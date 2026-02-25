@@ -42,19 +42,6 @@ Class {
 }
 
 { #category : 'tools support' }
-OpenAIApiWithTools >> bodyForEntityWithPrompt [
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
-        'tools' -> self toolSpecification.
-        'temperature' -> 0.0.
-        'stream' -> false
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary)
-]
-
-{ #category : 'tools support' }
 OpenAIApiWithTools >> executeToolNamed: name withArgs: args [
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
@@ -100,10 +87,14 @@ OpenAIApiWithTools >> loadResponse: aHistory [
     | maxTurns |
     maxTurns := 10.
     1 to: maxTurns do: [ :turn |
-        | rawResponse parsed message toolCalls |
-        rawResponse := self buildZnClientWithHeaders.
-        rawResponse := rawResponse post; contents.
-        parsed := STONJSON fromString: rawResponse.
+			| jsonPrompt rawResponse parsed message toolCalls |
+			jsonPrompt := ZnClient new.
+			self znClientBasic: jsonPrompt.
+			self class znClientHeaders: jsonPrompt.
+			rawResponse := jsonPrompt 
+				               post;
+				               contents.
+			parsed := STONJSON fromString: rawResponse.
 		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
         message := (parsed at: 'choices') first at: 'message'.
@@ -151,4 +142,12 @@ OpenAIApiWithTools >> toolSpecification [
 	| all |
 	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
    ^ all 
+]
+
+{ #category : 'ollama models' }
+OpenAIApiWithTools >> znClientEntity [
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
+	^ super znClientEntity union:  {
+        'tools' -> self toolSpecification.
+    } .
 ]

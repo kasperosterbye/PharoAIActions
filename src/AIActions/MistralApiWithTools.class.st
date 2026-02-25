@@ -42,16 +42,6 @@ Class {
 }
 
 { #category : 'tools support' }
-MistralApiWithTools >> bodyForEntityWithPrompt [
-    | requestDictionary |
-    requestDictionary := super bodyForEntityWithPrompt.
-	requestDictionary addAll: (Dictionary newFrom: {
-        'tools' -> self toolSpecification.
-	}).
-    ^ requestDictionary
-]
-
-{ #category : 'tools support' }
 MistralApiWithTools >> executeToolNamed: name withArgs: args [
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
@@ -97,9 +87,13 @@ MistralApiWithTools >> loadResponse: aHistory [
     | maxTurns |
     maxTurns := 10.
     1 to: maxTurns do: [ :turn |
-        | rawResponse parsed message toolCalls |
-        rawResponse := self buildZnClientWithHeaders.
-        rawResponse := rawResponse post; contents.
+        | jsonPrompt rawResponse parsed message toolCalls |
+        jsonPrompt := ZnClient new.
+			self znClientBasic: jsonPrompt.
+			self class znClientHeaders: jsonPrompt.
+			rawResponse := jsonPrompt 
+				               post;
+				               contents.
         parsed := STONJSON fromString: rawResponse.
 		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
@@ -148,4 +142,12 @@ MistralApiWithTools >> toolSpecification [
 	| all |
 	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
    ^ all 
+]
+
+{ #category : 'tools support' }
+MistralApiWithTools >> znClientEntity [
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
+	^ super znClientEntity union:  {
+        'tools' -> self toolSpecification.
+    } .
 ]
