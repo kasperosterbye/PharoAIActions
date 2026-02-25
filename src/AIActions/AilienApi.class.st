@@ -276,6 +276,12 @@ AilienApi >> loadResponse: history [
 ]
 
 { #category : 'accessing' }
+AilienApi >> messageList [
+
+	^ messageList
+]
+
+{ #category : 'accessing' }
 AilienApi >> messageList: anObject [
 	"Sets the message list for the API interaction, storing role-content pairs in chronological order for conversation history management"
 	messageList := anObject

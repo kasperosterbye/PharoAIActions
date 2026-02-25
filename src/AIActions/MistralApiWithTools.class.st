@@ -36,112 +36,31 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'MistralApiWithTools',
 	#superclass : 'MistralApi',
+	#traits : 'AilienTool',
+	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'tools support' }
-MistralApiWithTools >> executeToolNamed: name withArgs: args [
-	AilienApiTool subclasses do: [ :tool | 
-		| instance |
-		instance := tool new.
-		instance name = name ifTrue:[
-			^ instance executeTool: args
-			] ].
-    ^ 'Unknown tool: ', name
-]
-
-{ #category : 'tools support' }
 MistralApiWithTools >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
-    messageList do: [ :item |
-			"Transcript 
-					<< 'JSON key: ' << item key 
-					<< ' Value: ' << (item value asString 
-							copyFrom: 1 
-							to: (40 min: item value asString  size)) << String lf."
-        item key = 'assistant'
-            ifTrue: [ 
-                "Handle both dict (from tool loop) and string (from aHistory assistant:)"
-                item value isDictionary
-                    ifTrue: [ jsonHistory add: item value ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'assistant'.
-                        'content' -> item value }) ] ]
-            ifFalse: [
-                item key = 'tool'
-                    ifTrue: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'tool'.
-                        'tool_call_id' -> (item value at: 'tool_call_id').
-                        'content' -> (item value at: 'content') }) ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> item key.
-                        'content' -> item value }) ] ] ].
+    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
     ^ jsonHistory asArray
 ]
 
 { #category : 'tools support' }
 MistralApiWithTools >> loadResponse: aHistory [
-    | maxTurns |
-    maxTurns := 10.
-    1 to: maxTurns do: [ :turn |
-        | jsonPrompt rawResponse parsed message toolCalls |
-        jsonPrompt := ZnClient new.
-			self znClientBasic: jsonPrompt.
-			self class znClientHeaders: jsonPrompt.
-			rawResponse := jsonPrompt 
-				               post;
-				               contents.
-        parsed := STONJSON fromString: rawResponse.
-		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
-        message := (parsed at: 'choices') first at: 'message'.
-        toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
-        toolCalls ifNil: [
-            aHistory assistant: (message at: 'content') from: self.
-            ^ self ].
-        "Add assistant's tool request to history"
-        messageList add: 'assistant' -> message.
-
-        "Execute each tool and add results"
-		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
+	self loadResponse: aHistory to: messageList 
 ]
 
 { #category : 'tools support' }
 MistralApiWithTools >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
 	aStream << 'MistralApiWithTools: ' << self model.
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
-    | func result |
-    func := call at: 'function'.
-    result := self 
-        executeToolNamed: (func at: 'name') 
-        withArgs: (STONJSON fromString: (func at: 'arguments')).
-    ^ 'tool' -> (Dictionary newFrom: {
-        'tool_call_id' -> (call at: 'id').
-        'content' -> result })
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> responseError: parsed hist: aHistory [
-
-	| error |
-	error := parsed at: 'error'.
-	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') from: self.
-	^ self
-]
-
-{ #category : 'tools support' }
-MistralApiWithTools >> toolSpecification [
-	| all |
-	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
-   ^ all 
 ]
 
 { #category : 'tools support' }

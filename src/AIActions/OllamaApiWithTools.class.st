@@ -42,40 +42,8 @@ Class {
 }
 
 { #category : 'tools support' }
-OllamaApiWithTools >> bodyForEntityWithPrompt [
-    | requestDictionary |
-    requestDictionary := Dictionary newFrom: {
-        'model' -> self model.
-        'messages' -> self jsonHistory.
-        'tools' -> self toolSpecification.
-        'temperature' -> 0.0.
-        'stream' -> false
-    }.
-    ^ ZnEntity json: (STONJSON toString: requestDictionary)
-]
-
-{ #category : 'tools support' }
-OllamaApiWithTools >> executeToolNamed: name withArgs: args [
-	AilienApiTool subclasses do: [ :tool | 
-		| instance |
-		instance := tool new.
-		instance name = name ifTrue:[
-			^ instance executeTool: args
-			] ].
-    ^ 'Unknown tool: ', name
-]
-
-{ #category : 'tools support' }
-OllamaApiWithTools >> jsonHistory [
-    | jsonHistory |
-    jsonHistory := OrderedCollection new.
-    messageList do: [ :item |
-			"Transcript 
-					<< 'JSON key: ' << item key 
-					<< ' Value: ' << (item value asString 
-							copyFrom: 1 
-							to: (60 min: item value asString  size)) << String lf."
-        item key = 'assistant'
+OllamaApiWithTools >> addJsonHistory: jsonHistory for: item [
+	item key = 'assistant'
             ifTrue: [ 
                 "Handle both dict (from tool loop) and string (from aHistory assistant:)"
                 item value isDictionary
@@ -91,18 +59,47 @@ OllamaApiWithTools >> jsonHistory [
                         'content' -> (item value at: 'content') }) ]
                     ifFalse: [ jsonHistory add: (Dictionary newFrom: {
                         'role' -> item key.
-                        'content' -> item value }) ] ] ].
+                        'content' -> item value }) ] ]
+]
+
+{ #category : 'trait tools support' }
+OllamaApiWithTools >> executeToolNamed: name withArgs: args [
+	AilienApiTool subclasses do: [ :tool | 
+		| instance |
+		instance := tool new.
+		instance name = name ifTrue:[
+			^ instance executeTool: args
+			] ].
+    ^ 'Unknown tool: ', name
+]
+
+{ #category : 'tools support' }
+OllamaApiWithTools >> jsonHistory [
+    | jsonHistory |
+    jsonHistory := OrderedCollection new.
+    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
     ^ jsonHistory asArray
 ]
 
 { #category : 'tools support' }
 OllamaApiWithTools >> loadResponse: aHistory [
-    | maxTurns |
-    maxTurns := 10.
-    1 to: maxTurns do: [ :turn |
-        | rawResponse parsed message toolCalls |
-        rawResponse := self buildZnClientWithHeaders.
-        rawResponse := rawResponse post; contents.
+
+	self loadResponse: aHistory to: messageList 
+]
+
+{ #category : 'trait tools support' }
+OllamaApiWithTools >> loadResponse: aHistory to: mList [
+
+	| maxTurns |
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			| jsonPrompt rawResponse parsed message toolCalls |
+			jsonPrompt := ZnClient new.
+			self znClientBasic: jsonPrompt.
+			self class znClientHeaders: jsonPrompt.
+			rawResponse := jsonPrompt 
+				               post;
+				               contents.
         parsed := STONJSON fromString: rawResponse.
 		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
         message := parsed at: 'message'.
@@ -111,10 +108,10 @@ OllamaApiWithTools >> loadResponse: aHistory [
             aHistory assistant: (message at: 'content') from: self.
             ^ self ].
         "Add assistant's tool request to history"
-        messageList add: 'assistant' -> message.
+        mList add: 'assistant' -> message.
 
         "Execute each tool and add results"
-		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
+		  toolCalls do: [ :call | mList add: (self processToolCall: call) ] ]
 ]
 
 { #category : 'tools support' }
@@ -123,7 +120,7 @@ OllamaApiWithTools >> printOn: aStream [
 	aStream << 'OllamaApiWithTools: ' << self model.
 ]
 
-{ #category : 'tools support' }
+{ #category : 'trait tools support' }
 OllamaApiWithTools >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
     | func result |
@@ -136,7 +133,7 @@ OllamaApiWithTools >> processToolCall: call [
         'content' -> result })
 ]
 
-{ #category : 'tools support' }
+{ #category : 'trait tools support' }
 OllamaApiWithTools >> responseError: parsed hist: aHistory [
 
 	| error |
@@ -145,9 +142,17 @@ OllamaApiWithTools >> responseError: parsed hist: aHistory [
 	^ self
 ]
 
-{ #category : 'tools support' }
+{ #category : 'trait tools support' }
 OllamaApiWithTools >> toolSpecification [
 	| all |
 	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
    ^ all 
+]
+
+{ #category : 'tools support' }
+OllamaApiWithTools >> znClientEntity [
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
+	^ super znClientEntity union:  {
+        'tools' -> self toolSpecification.
+    } .
 ]

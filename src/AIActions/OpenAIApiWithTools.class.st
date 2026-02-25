@@ -36,49 +36,18 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'OpenAIApiWithTools',
 	#superclass : 'OpenAIApi',
+	#traits : 'AilienTool',
+	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'tools support' }
-OpenAIApiWithTools >> executeToolNamed: name withArgs: args [
-	AilienApiTool subclasses do: [ :tool | 
-		| instance |
-		instance := tool new.
-		instance name = name ifTrue:[
-			^ instance executeTool: args
-			] ].
-    ^ 'Unknown tool: ', name
-]
-
-{ #category : 'tools support' }
 OpenAIApiWithTools >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
-    messageList do: [ :item |
-			"Transcript 
-					<< 'JSON key: ' << item key 
-					<< ' Value: ' << (item value asString 
-							copyFrom: 1 
-							to: (40 min: item value asString  size)) << String lf."
-        item key = 'assistant'
-            ifTrue: [ 
-                "Handle both dict (from tool loop) and string (from aHistory assistant:)"
-                item value isDictionary
-                    ifTrue: [ jsonHistory add: item value ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'assistant'.
-                        'content' -> item value }) ] ]
-            ifFalse: [
-                item key = 'tool'
-                    ifTrue: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'tool'.
-                        'tool_call_id' -> (item value at: 'tool_call_id').
-                        'content' -> (item value at: 'content') }) ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> item key.
-                        'content' -> item value }) ] ] ].
+    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
     ^ jsonHistory asArray
 ]
 
@@ -116,35 +85,31 @@ OpenAIApiWithTools >> printOn: aStream [
 ]
 
 { #category : 'tools support' }
-OpenAIApiWithTools >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
-    | func result |
-    func := call at: 'function'.
-    result := self 
-        executeToolNamed: (func at: 'name') 
-        withArgs: (STONJSON fromString: (func at: 'arguments')).
-    ^ 'tool' -> (Dictionary newFrom: {
-        'tool_call_id' -> (call at: 'id').
-        'content' -> result })
+OpenAIApiWithTools >> xxx_jsonHistory [
+    | jsonHistory |
+    jsonHistory := OrderedCollection new.
+    messageList do: [ :item |
+        item key = 'assistant'
+            ifTrue: [ 
+                "Handle both dict (from tool loop) and string (from aHistory assistant:)"
+                item value isDictionary
+                    ifTrue: [ jsonHistory add: item value ]
+                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
+                        'role' -> 'assistant'.
+                        'content' -> item value }) ] ]
+            ifFalse: [
+                item key = 'tool'
+                    ifTrue: [ jsonHistory add: (Dictionary newFrom: {
+                        'role' -> 'tool'.
+                        'tool_call_id' -> (item value at: 'tool_call_id').
+                        'content' -> (item value at: 'content') }) ]
+                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
+                        'role' -> item key.
+                        'content' -> item value }) ] ] ].
+    ^ jsonHistory asArray
 ]
 
 { #category : 'tools support' }
-OpenAIApiWithTools >> responseError: parsed hist: aHistory [
-
-	| error |
-	error := parsed at: 'error'.	
-	aHistory assistant: 'API Error: ' , (error at: 'type') , String lf , (error at: 'message') from: self.
-	^ self
-]
-
-{ #category : 'tools support' }
-OpenAIApiWithTools >> toolSpecification [
-	| all |
-	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
-   ^ all 
-]
-
-{ #category : 'ollama models' }
 OpenAIApiWithTools >> znClientEntity [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	^ super znClientEntity union:  {
