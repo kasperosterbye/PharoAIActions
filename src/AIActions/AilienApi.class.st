@@ -334,11 +334,25 @@ AilienApi >> responseWaitingInSecs: anObject [
 { #category : 'accessing' }
 AilienApi >> znClientBasic: jsonPrompt [
 
-	|  entityPrompt|
-	entityPrompt := ZnEntity json: (STONJSON toString: self bodyForEntityWithPrompt).
+	|  entityPrompt entity|
 	jsonPrompt
 		timeout: self responseWaitingInSecs;
-		url: self apiGenerateUrl;
-		entity: entityPrompt.
+		url: self apiGenerateUrl.
+	entity := self znClientEntity.
+	self halt.
+	entityPrompt := ZnEntity json: (STONJSON toString: self znClientEntity asDictionary).
+	jsonPrompt 
+		entity: entityPrompt .
 	
+]
+
+{ #category : 'ollama models' }
+AilienApi >> znClientEntity [
+	"Method to create a JSON body with prompt for OpenAIApi."
+    ^ {
+        'model' -> model.
+        'messages' -> self jsonHistory.
+        'stream' -> false.
+        'temperature' -> 0.0
+    }
 ]

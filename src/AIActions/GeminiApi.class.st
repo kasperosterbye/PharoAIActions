@@ -90,27 +90,6 @@ GeminiApi >> apiGenerateUrl [
 	^ 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
 ]
 
-{ #category : 'ollama models' }
-GeminiApi >> bodyForEntityWithPrompt [
-	"Constructs JSON entity for API request with chat history and generation config. Formats history as role-parts array and sets temperature to 0. Returns ZnEntity with JSON string."
-
-	| requestDictionary |
-	requestDictionary :=Dictionary newFrom: {
-		'contents' -> self jsonHistory.
-		'generationConfig' -> (Dictionary newFrom: {
-			'temperature' -> 0
-		})
-	}.
-	^ requestDictionary 
-]
-
-{ #category : 'initialize' }
-GeminiApi >> initialize [ 
-	"Initialises a new instance with Gemini's default model and empty history ready for AI interactions"
-	super initialize.
-    self model: self class defaultModel .
-]
-
 { #category : 'accessing' }
 GeminiApi >> jsonHistory [
 	"Converts the chat history into a JSON-formatted array suitable for the Gemini API, structuring each message with role and text content."
@@ -142,4 +121,16 @@ GeminiApi >> responseOf: jsonResponse [
 		^ (message at: 'parts') first at: 'text' ]
 		on: Error
 		do: [ ^ self errorResponse: jsonResponse ]
+]
+
+{ #category : 'ollama models' }
+GeminiApi >> znClientEntity [
+	"Constructs JSON entity for API request with chat history and generation config. Formats history as role-parts array and sets temperature to 0. Returns ZnEntity with JSON string."
+	self halt.
+	^ super znClientEntity union: {
+		'contents' -> self jsonHistory asDictionary .
+		'generationConfig' -> {
+			'temperature' -> 0
+		} asDictionary
+	}.
 ]

@@ -54,14 +54,6 @@ GrokApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
 
-{ #category : 'initialization' }
-GrokApi >> initialize [
-    "Initializes the GrokApi instance with the default model."
-    super initialize.
-    self model: self class defaultModel.
-
-]
-
 { #category : 'ollama models' }
 GrokApi >> printOn: aStream [
     "Prints the model name for the GrokApi instance."

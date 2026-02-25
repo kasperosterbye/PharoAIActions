@@ -37,13 +37,6 @@ OpenAIApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
 
-{ #category : 'initialization' }
-OpenAIApi >> initialize [ 
-	"Initialises the OpenAI API instance by calling superclass initialiser and setting default model for AI interactions"
-	 super initialize.
-    self model: self class defaultModel .
-]
-
 { #category : 'printing' }
 OpenAIApi >> printOn: aStream [
 	"Method to print the model name of OpenAIApi instance."

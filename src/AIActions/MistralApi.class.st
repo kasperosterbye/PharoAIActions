@@ -48,13 +48,6 @@ MistralApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
 
-{ #category : 'initialization' }
-MistralApi >> initialize [ 
-	"Initialises a new MistralApi instance with default model and tooling enabled, ready for AI interactions. Sets up conversation management and response handling."
-    super initialize.
-    self model: self class defaultModel .
-]
-
 { #category : 'printing' }
 MistralApi >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."

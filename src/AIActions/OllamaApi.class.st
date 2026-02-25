@@ -104,14 +104,6 @@ OllamaApi >> bodyForEntityWithPrompt [
 	^ requestDictionary.
 ]
 
-{ #category : 'initialization' }
-OllamaApi >> initialize [
-	"Initializes an OllamaApi instance with default model and empty conversation history ready for API interactions"
-
-	super initialize.
-	self model: self class defaultModel
-]
-
 { #category : 'ollama models' }
 OllamaApi >> modelInformation [
 	"Returns detailed information about the current model by querying the Ollama API and parsing the JSON response."
@@ -170,4 +162,13 @@ OllamaApi >> responseOf: jsonResponse [
 	(b isNil or: [ a < b ]) ifFalse: [ ^ response ].
 	endIndex := a + '</think>' size + 1.
 	^ response allButFirst: endIndex
+]
+
+{ #category : 'ollama models' }
+OllamaApi >> znClientEntity [
+	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
+	^ super znClientEntity union:  { 
+		#options -> (Dictionary newFrom: {
+    		#temperature -> 0})
+	} .
 ]

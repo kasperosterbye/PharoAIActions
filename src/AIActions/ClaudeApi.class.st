@@ -99,13 +99,6 @@ ClaudeApi >> bodyForEntityWithPrompt [
     ^ requestDictionary .
 ]
 
-{ #category : 'initialize' }
-ClaudeApi >> initialize [ 
-	"Initialises a new ClaudeApi instance with default model and empty history ready for AI interactions"
-	super initialize.
-   self model: self class defaultModel .
-]
-
 { #category : 'accessing' }
 ClaudeApi >> printOn: aStream [
 	"Prints the model name of the ClaudeApi instance, showing the current AI model being used for interactions"
@@ -120,4 +113,12 @@ ClaudeApi >> responseOf: jsonResponse [
 	[ ^ (parsed at: 'content') first at: 'text'.]
 		on: Error
 		do: [  ^ self errorResponse: jsonResponse  ]
+]
+
+{ #category : 'accessing' }
+ClaudeApi >> znClientEntity [
+	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
+	^ super znClientEntity union:  {
+        'max_tokens' -> 4096
+    }
 ]
