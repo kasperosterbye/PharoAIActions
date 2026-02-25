@@ -68,6 +68,7 @@ TogetherApi >> buildZnClientWithHeaders: jsonPrompt [
 { #category : 'initialization' }
 TogetherApi >> initialize [
 	"Initialises TogetherApi with default model and empty history for AI interactions."
+	self error: 'Stop using this, it is of no key interest'.
     super initialize.
     self model: self class defaultModel.
 ]

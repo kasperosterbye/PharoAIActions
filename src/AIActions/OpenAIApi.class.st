@@ -28,10 +28,10 @@ OpenAIApi class >> openAI01 [
 ]
 
 { #category : 'accessing' }
-OpenAIApi >> buildZnClientWithHeaders: jsonPrompt [
+OpenAIApi class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
-		headerAt: 'Authorization' put: self class openAI01;
+		headerAt: 'Authorization' put: self openAI01;
 		headerAt: 'OpenAI-Organization' put: 'org-XmWYpGR0EsRqkASrs8HE3hy6';
 		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
 		headerAt: 'Content-Type' put: 'application/json'.

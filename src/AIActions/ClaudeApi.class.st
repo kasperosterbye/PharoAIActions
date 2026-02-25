@@ -81,6 +81,14 @@ ClaudeApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
+ClaudeApi class >> znClientHeaders: jsonPrompt [
+	jsonPrompt
+		headerAt: 'x-api-key' put: self claudeKey;
+		headerAt: 'anthropic-version' put: '2023-06-01';
+		headerAt: 'content-type' put: 'application/json'.
+]
+
+{ #category : 'accessing' }
 ClaudeApi >> bodyForEntityWithPrompt [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
     | requestDictionary  |
@@ -89,14 +97,6 @@ ClaudeApi >> bodyForEntityWithPrompt [
         'max_tokens' -> 4096
     }).
     ^ requestDictionary .
-]
-
-{ #category : 'accessing' }
-ClaudeApi >> buildZnClientWithHeaders: jsonPrompt [
-	jsonPrompt
-		headerAt: 'x-api-key' put: self class claudeKey;
-		headerAt: 'anthropic-version' put: '2023-06-01';
-		headerAt: 'content-type' put: 'application/json'.
 ]
 
 { #category : 'initialize' }

@@ -242,38 +242,6 @@ AilienApi >> bodyForEntityWithPrompt [
     ^ requestDictionary 
 ]
 
-{ #category : 'accessing' }
-AilienApi >> buildZnClient [
-
-	| jsonPrompt entityPrompt|
-self halt. "Error, should call the one with :jsonPrompt"
-	jsonPrompt := ZnClient new.
-	entityPrompt := ZnEntity json: (STONJSON toString: self bodyForEntityWithPrompt).
-	jsonPrompt
-		timeout: self responseWaitingInSecs;
-		url: self apiGenerateUrl;
-		entity: entityPrompt.
-	^ jsonPrompt
-]
-
-{ #category : 'accessing' }
-AilienApi >> buildZnClient: jsonPrompt [
-
-	|  entityPrompt|
-	entityPrompt := ZnEntity json: (STONJSON toString: self bodyForEntityWithPrompt).
-	jsonPrompt
-		timeout: self responseWaitingInSecs;
-		url: self apiGenerateUrl;
-		entity: entityPrompt.
-	
-]
-
-{ #category : 'accessing' }
-AilienApi >> buildZnClientWithHeaders [
-
-	self error: 'Should not be called...'
-]
-
 { #category : 'responses' }
 AilienApi >> errorResponse: jsonResponse [
 	"Returns the error response string, either the provided error message or the default error response if none is set"
@@ -311,8 +279,8 @@ AilienApi >> loadResponse: history [
 	| jsonPrompt llmCall response |
 	[
 		jsonPrompt := ZnClient new.
-		self buildZnClient: jsonPrompt.
-		self buildZnClientWithHeaders: jsonPrompt .
+		self znClientBasic: jsonPrompt.
+		self class znClientHeaders: jsonPrompt .
 		llmCall := jsonPrompt post; contents.
 		response := self responseOf: llmCall.
 		history assistant: response from: self]
@@ -361,4 +329,16 @@ AilienApi >> responseWaitingInSecs: anObject [
 	"Sets the timeout duration in seconds for waiting for an AI response"
 
 	responseWaitingInSecs := anObject
+]
+
+{ #category : 'accessing' }
+AilienApi >> znClientBasic: jsonPrompt [
+
+	|  entityPrompt|
+	entityPrompt := ZnEntity json: (STONJSON toString: self bodyForEntityWithPrompt).
+	jsonPrompt
+		timeout: self responseWaitingInSecs;
+		url: self apiGenerateUrl;
+		entity: entityPrompt.
+	
 ]

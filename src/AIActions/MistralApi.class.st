@@ -41,10 +41,10 @@ MistralApi class >> token [
 ]
 
 { #category : 'accessing' }
-MistralApi >> buildZnClientWithHeaders: jsonPrompt [
+MistralApi class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
-		headerAt: 'Authorization' put: self class esug;
+		headerAt: 'Authorization' put: self esug;
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
 

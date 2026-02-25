@@ -47,10 +47,10 @@ GrokApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
-GrokApi >> buildZnClientWithHeaders: jsonPrompt [
+GrokApi class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
-		headerAt: 'Authorization' put: 'Bearer ' , self class grokKey;
+		headerAt: 'Authorization' put: 'Bearer ' , self grokKey;
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
 

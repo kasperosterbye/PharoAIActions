@@ -77,6 +77,14 @@ GeminiApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
+GeminiApi class >> znClientHeaders: jsonPrompt [
+
+	jsonPrompt
+		headerAt: 'X-goog-api-key' put: self geminiKey;
+		headerAt: 'Content-Type' put: 'application/json'.
+]
+
+{ #category : 'accessing' }
 GeminiApi >> apiGenerateUrl [
 	"Constructs the specific API endpoint URL for the selected Gemini model to generate content"
 	^ 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
@@ -94,14 +102,6 @@ GeminiApi >> bodyForEntityWithPrompt [
 		})
 	}.
 	^ requestDictionary 
-]
-
-{ #category : 'accessing' }
-GeminiApi >> buildZnClientWithHeaders: jsonPrompt [
-
-	jsonPrompt
-		headerAt: 'X-goog-api-key' put: self class geminiKey;
-		headerAt: 'Content-Type' put: 'application/json'.
 ]
 
 { #category : 'initialize' }
