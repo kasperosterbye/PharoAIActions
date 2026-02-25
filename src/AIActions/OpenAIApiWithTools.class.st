@@ -53,29 +53,8 @@ OpenAIApiWithTools >> jsonHistory [
 
 { #category : 'tools support' }
 OpenAIApiWithTools >> loadResponse: aHistory [
-    | maxTurns |
-    maxTurns := 10.
-    1 to: maxTurns do: [ :turn |
-			| jsonPrompt rawResponse parsed message toolCalls |
-			jsonPrompt := ZnClient new.
-			self znClientBasic: jsonPrompt.
-			self class znClientHeaders: jsonPrompt.
-			rawResponse := jsonPrompt 
-				               post;
-				               contents.
-			parsed := STONJSON fromString: rawResponse.
-		  (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
 
-        message := (parsed at: 'choices') first at: 'message'.
-        toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
-        toolCalls ifNil: [
-            aHistory assistant: (message at: 'content') from: self.
-            ^ self ].
-        "Add assistant's tool request to history"
-        messageList add: 'assistant' -> message.
-
-        "Execute each tool and add results"
-		  toolCalls do: [ :call | messageList add: (self processToolCall: call) ] ]
+	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'tools support' }

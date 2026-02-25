@@ -56,7 +56,7 @@ ApiToolWebReader >> executeTool: args [
 	websites do: [ :aWebsite |
 		[response << (ZnClient new url: aWebsite; get) << String lf]
 			on: Error
-			do: [ self halt. response << 'ERROR occured when trying to access ' << aWebsite << String lf   ]
+			do: [ response << 'ERROR occured when trying to access ' << aWebsite << String lf   ]
 	 ].
 	^ response contents.
 	

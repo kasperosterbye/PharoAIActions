@@ -54,7 +54,7 @@ MistralApiWithTools >> jsonHistory [
 { #category : 'tools support' }
 MistralApiWithTools >> loadResponse: aHistory [
 
-	self loadResponse: aHistory to: messageList 
+	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'tools support' }

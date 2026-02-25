@@ -42,7 +42,7 @@ GrokApiWithTools >> jsonHistory [
 { #category : 'tools support' }
 GrokApiWithTools >> loadResponse: aHistory [
 
-	self loadResponse: aHistory to: messageList 
+	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'tools support' }

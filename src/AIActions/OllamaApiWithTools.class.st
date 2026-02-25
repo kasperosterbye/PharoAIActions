@@ -81,14 +81,8 @@ OllamaApiWithTools >> jsonHistory [
     ^ jsonHistory asArray
 ]
 
-{ #category : 'tools support' }
-OllamaApiWithTools >> loadResponse: aHistory [
-
-	self loadResponse: aHistory to: messageList 
-]
-
 { #category : 'trait tools support' }
-OllamaApiWithTools >> loadResponse: aHistory to: mList [
+OllamaApiWithTools >> loadResponse: aHistory [
 
 	| maxTurns |
 	maxTurns := 50.
@@ -108,10 +102,10 @@ OllamaApiWithTools >> loadResponse: aHistory to: mList [
             aHistory assistant: (message at: 'content') from: self.
             ^ self ].
         "Add assistant's tool request to history"
-        mList add: 'assistant' -> message.
+        self messageList add: 'assistant' -> message.
 
         "Execute each tool and add results"
-		  toolCalls do: [ :call | mList add: (self processToolCall: call) ] ]
+		  toolCalls do: [ :call | self messageList add: (self processToolCall: call) ] ]
 ]
 
 { #category : 'tools support' }
@@ -155,4 +149,10 @@ OllamaApiWithTools >> znClientEntity [
 	^ super znClientEntity union:  {
         'tools' -> self toolSpecification.
     } .
+]
+
+{ #category : 'tools support' }
+OllamaApiWithTools >> zzz_loadResponse: aHistory [
+
+	self loadResponse: aHistory to: messageList 
 ]
