@@ -64,31 +64,6 @@ OpenAIApiWithTools >> printOn: aStream [
 ]
 
 { #category : 'tools support' }
-OpenAIApiWithTools >> xxx_jsonHistory [
-    | jsonHistory |
-    jsonHistory := OrderedCollection new.
-    messageList do: [ :item |
-        item key = 'assistant'
-            ifTrue: [ 
-                "Handle both dict (from tool loop) and string (from aHistory assistant:)"
-                item value isDictionary
-                    ifTrue: [ jsonHistory add: item value ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'assistant'.
-                        'content' -> item value }) ] ]
-            ifFalse: [
-                item key = 'tool'
-                    ifTrue: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> 'tool'.
-                        'tool_call_id' -> (item value at: 'tool_call_id').
-                        'content' -> (item value at: 'content') }) ]
-                    ifFalse: [ jsonHistory add: (Dictionary newFrom: {
-                        'role' -> item key.
-                        'content' -> item value }) ] ] ].
-    ^ jsonHistory asArray
-]
-
-{ #category : 'tools support' }
 OpenAIApiWithTools >> znClientEntity [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	^ super znClientEntity union:  {

@@ -85,6 +85,7 @@ AilienTool >> traitLoadResponse: aHistory [
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
 			| jsonPrompt rawResponse parsed message toolCalls |
+			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
 			jsonPrompt := ZnClient new.
 			self znClientBasic: jsonPrompt.
 			self class znClientHeaders: jsonPrompt.
@@ -100,5 +101,6 @@ AilienTool >> traitLoadResponse: aHistory [
 					aHistory assistant: (message at: 'content') from: self.
 					^ self ]. "Add assistant's tool request to history"
 			self messageList add: 'assistant' -> message. "Execute each tool and add results"
-			toolCalls do: [ :call | self messageList add: (self processToolCall: call) ] ]
+			toolCalls do: [ :call | self messageList add: (self processToolCall: call) ] ].
+		^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]

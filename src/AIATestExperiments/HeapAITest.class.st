@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : 'AI generated test' }
-HeapAITest >> AI [ based response Terminated
+HeapAITest >> API [ Error: tried more than the 50 allowed TOOLS calls
 ]
 
 { #category : 'initialization' }
@@ -20,32 +20,24 @@ HeapAITest >> setUp [
 
 { #category : 'AI generated test' }
 HeapAITest >> testAdd [
-	"Test adding elements to the heap and verifying the size increases and the min-heap property is maintained by checking removeFirst returns elements in sorted order."
-
-	refHeap add: 3; add: 1; add: 4.
-	self assert: refHeap size equals: 3.
-	self assert: (refHeap removeFirst) equals: 1.
-	self assert: (refHeap removeFirst) equals: 3.
-	self assert: (refHeap removeFirst) equals: 4
+	| newObject |
+	newObject := 'testObject'.
+	refHeap add: newObject.
+	self assert: (refHeap includes: newObject).
+	self assert: (refHeap size = 1).
+	self assert: (refHeap first = newObject).
 ]
 
 { #category : 'AI generated test' }
 HeapAITest >> testArray [
-	"Heap>>array answers the receiver itself (see Heap>>array source: '^ self').
-	This test verifies identity and that sending #array does not change the heap."
+	"Test that Heap>>array answers the underlying Array used as storage.
+	We only rely on messages confirmed to exist in Pharo 14 for Heap and TestCase."
 
-	| originalSize |
-	originalSize := refHeap size.
+	| internalArray |
+	internalArray := refHeap array.
 
-	self assert: (refHeap array == refHeap).
-
-	"Calling #array should not mutate the heap"
-	self assert: (refHeap size = originalSize).
-
-	"After a mutation, #array should still answer the same receiver"
-	refHeap add: 42.
-	self assert: (refHeap array == refHeap).
-	self assert: (refHeap size = (originalSize + 1)).
+	self assert: (internalArray isKindOf: Array).
+	self assert: (internalArray == (refHeap array)).
 ]
 
 { #category : 'AI generated test' }
@@ -552,20 +544,22 @@ HeapAITest >> testSize [
 
 { #category : 'AI generated test' }
 HeapAITest >> testSort [
-	| elements sorted |
-	"Populate the heap with unsorted integers"
-	elements := #(3 1 4 1 5 9 2 6).
-	elements do: [ :each | (self instVarNamed: #refHeap) add: each ].
+	"Verify that Heap>>sort arranges elements in ascending order (using <=).
+	We validate the order by repeatedly removing the first (minimum) element."
 
-	"Sort the heap using an ascending sort block"
-	(self instVarNamed: #refHeap) sort: [ :a :b | a <= b ].
+	| previous current |
+	refHeap addAll: #(3 1 4 1 5 9 2 6 5).
 
-	"After sorting, removing elements sequentially should yield ascending order"
-	sorted := OrderedCollection new.
-	[ (self instVarNamed: #refHeap) isEmpty ] whileFalse: [
-		sorted add: (self instVarNamed: #refHeap) removeFirst ].
+	refHeap sort.
 
-	self assert: (sorted asArray = #(1 1 2 3 4 5 6 9))
+	self assert: (refHeap isEmpty not).
+
+	previous := refHeap removeFirst.
+	[ refHeap isEmpty ] whileFalse: [
+		current := refHeap removeFirst.
+		self assert: (previous <= current).
+		previous := current
+	].
 ]
 
 { #category : 'AI generated test' }
@@ -633,27 +627,29 @@ HeapAITest >> testSortsBefore [
 
 { #category : 'AI generated test' }
 HeapAITest >> testTrim [
-	"trim should shrink the internal storage array to exactly the heap's logical size (tally),
-	while preserving heap semantics."
+	"trim should remove empty slots by shrinking the internal storage array
+	to exactly the number of elements (tally/size), without changing the heap's
+	logical contents."
 
-	| arraySizeBefore |
-	refHeap add: 5; add: 1; add: 3.
+	| internalArrayBefore internalArrayAfter sizeBefore sizeAfter |
+	refHeap add: 5; add: 3; add: 7.
 
-	"Ensure we start with spare capacity (default Heap new uses an Array of size 10)."
-	arraySizeBefore := (refHeap instVarNamed: #array) size.
-	self assert: (arraySizeBefore > refHeap size).
+	"Capture internal storage size before trimming."
+	internalArrayBefore := refHeap instVarNamed: #array.
+	sizeBefore := refHeap size.
 
-	"Act: trim the heap."
+	"Sanity: internal array should be at least as large as the number of elements."
+	self assert: (internalArrayBefore size >= sizeBefore).
+
+	"Exercise"
 	refHeap trim.
 
-	"After trim, internal array size should match the logical size."
-	self assert: (((refHeap instVarNamed: #array) size) = refHeap size).
+	"Verify: size unchanged, but internal array shrunk to exactly size."
+	internalArrayAfter := refHeap instVarNamed: #array.
+	sizeAfter := refHeap size.
 
-	"Heap order should still be correct after trimming."
-	self assert: ((refHeap removeFirst) = 1).
-	self assert: ((refHeap removeFirst) = 3).
-	self assert: ((refHeap removeFirst) = 5).
-	self assert: (refHeap isEmpty)
+	self assert: (sizeAfter = sizeBefore).
+	self assert: (internalArrayAfter size = sizeAfter).
 ]
 
 { #category : 'AI generated test' }

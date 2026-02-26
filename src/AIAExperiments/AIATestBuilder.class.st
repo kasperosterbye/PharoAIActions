@@ -14,11 +14,12 @@ Class {
 
 { #category : 'as yet unclassified' }
 AIATestBuilder class >> aiBuildList [
-	^ { 
+	^ {
+		MistralApiWithTools newOnModel: 1.
 		GrokApiWithTools newOnModel: 2.
 		GrokApiWithTools newOnModel: 3.
-		OpenAIApiWithTools newOnModel: 1.
-		OpenAIApiWithTools newOnModel: 1.
+		OpenAIApiWithTools newOnModel: 1. 
+		
 		 }
 ]
 
