@@ -20,24 +20,56 @@ HeapAITest >> setUp [
 
 { #category : 'AI generated test' }
 HeapAITest >> testAdd [
-	| newObject |
-	newObject := 'testObject'.
-	refHeap add: newObject.
-	self assert: (refHeap includes: newObject).
+	"Test that add: includes the object in the heap, maintains heap property, and returns the added object"
+	| result initialSize |
+	
+	"Test adding to empty heap returns the object"
+	result := refHeap add: 10.
+	self assert: (result = 10).
+	
+	"Test heap is no longer empty after adding"
+	self assert: (refHeap isEmpty not).
 	self assert: (refHeap size = 1).
-	self assert: (refHeap first = newObject).
+	self assert: (refHeap first = 10).
+	
+	"Test adding multiple elements maintains heap property (min-heap by default)"
+	refHeap add: 5.
+	refHeap add: 15.
+	refHeap add: 3.
+	
+	"Test size increases correctly"
+	self assert: (refHeap size = 4).
+	
+	"Test heap property is maintained - smallest element should be first"
+	self assert: (refHeap first = 3).
+	
+	"Test adding to heap with existing elements"
+	initialSize := refHeap size.
+	result := refHeap add: 7.
+	self assert: (result = 7).
+	self assert: (refHeap size = (initialSize + 1)).
 ]
 
 { #category : 'AI generated test' }
 HeapAITest >> testArray [
-	"Test that Heap>>array answers the underlying Array used as storage.
-	We only rely on messages confirmed to exist in Pharo 14 for Heap and TestCase."
-
-	| internalArray |
-	internalArray := refHeap array.
-
-	self assert: (internalArray isKindOf: Array).
-	self assert: (internalArray == (refHeap array)).
+	"Test that array method returns a copy of the heap as an array with only the valid elements"
+	| result |
+	
+	"Test empty heap returns empty array"
+	result := refHeap array.
+	self assert: (result isKindOf: Heap).
+	self assert: (result isEmpty).
+	
+	"Test heap with elements returns array with elements in heap order"
+	refHeap add: 5; add: 3; add: 8; add: 1; add: 9.
+	result := refHeap array.
+	self assert: (result isKindOf: Heap).
+	self assert: (result size = 5).
+	self assert: (result first = 1). "Should be minimum element first"
+	
+	"Test that returned array is independent of original heap"
+	result add: 100.
+	self assert: (refHeap size = 5). "Original heap unchanged"
 ]
 
 { #category : 'AI generated test' }
@@ -588,28 +620,39 @@ HeapAITest >> testSortBlock [
 
 { #category : 'AI generated test' }
 HeapAITest >> testSorted [
-	| elements sortedHeap extracted |
-
-	"Use a small, deterministic set of numbers"
-	elements := #(4 2 5 1 3).
-
-	"Fill the reference heap provided by setUp (do not create another heap variable)"
-	elements do: [ :each |  refHeap add: each ].
-	self assert: (self refHeap size = elements size).
-
-	"sorted: should return a NEW Heap instance, sorted using default order when argument is nil"
-	sortedHeap := self refHeap sorted: nil.
-	self assert: (sortedHeap class = Heap).
-	self assert: (sortedHeap size = self refHeap size).
-
-	"Verify sorted order by repeatedly removing the first element from the sorted heap"
-	extracted := OrderedCollection new.
-	[ sortedHeap isEmpty ] whileFalse: [
-		extracted add: sortedHeap removeFirst ].
-	self assert: (extracted asArray = #(1 2 3 4 5)).
-
-	"Verify the original heap was not consumed by operations on the sorted copy"
-	self assert: (self refHeap size = elements size)
+	"Test that sorted returns a new sequenceable collection with the same elements sorted in ascending order using the <= operator."
+	| elements sortedResult extractedElements |
+	
+	"Test with empty heap - should return empty heap"
+	sortedResult := refHeap sorted.
+	self assert: (sortedResult isKindOf: Heap).
+	self assert: (sortedResult isEmpty).
+	
+	"Test with single element - should return heap with same element"
+	refHeap add: 42.
+	sortedResult := refHeap sorted.
+	self assert: (sortedResult isKindOf: Heap).
+	self assert: (sortedResult size = 1).
+	self assert: (sortedResult first = 42).
+	
+	"Test with multiple elements - verify sorted order by extracting all elements"
+	elements := #(5 2 8 1 9 3).
+	refHeap removeAll.
+	elements do: [ :each | refHeap add: each ].
+	
+	sortedResult := refHeap sorted.
+	self assert: (sortedResult isKindOf: Heap).
+	self assert: (sortedResult size = elements size).
+	
+	"Extract all elements from sorted result to verify ascending order"
+	extractedElements := OrderedCollection new.
+	[ sortedResult isEmpty ] whileFalse: [
+		extractedElements add: sortedResult removeFirst ].
+	
+	self assert: (extractedElements asArray = elements sorted).
+	
+	"Verify original heap is unchanged"
+	self assert: (refHeap size = elements size)
 ]
 
 { #category : 'AI generated test' }

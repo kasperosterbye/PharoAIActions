@@ -17,6 +17,20 @@ ClaudeApiWithTools >> executeToolNamed: name withArgs: args [
     ^ 'Unknown tool: ', name
 ]
 
+{ #category : 'Protocol (accessing) - 11 selector(s)' }
+ClaudeApiWithTools >> jsonHistory [
+    | jsonHistory |
+    jsonHistory := OrderedCollection new.
+    messageList do: [ :item |
+        item value isDictionary
+            ifTrue: [ jsonHistory add: item value ]
+            ifFalse: [
+                jsonHistory add: (Dictionary newFrom: {
+                    'role' -> item key.
+                    'content' -> item value }) ] ].
+    ^ jsonHistory asArray
+]
+
 { #category : 'responses' }
 ClaudeApiWithTools >> loadResponse: aHistory [ 
     | maxTurns |
@@ -35,7 +49,10 @@ ClaudeApiWithTools >> loadResponse: aHistory [
         toolCalls isEmpty ifTrue: [
             aHistory assistant: ((contentBlocks detect: [ :b | (b at: 'type') = 'text' ]) at: 'text') from: self.
             ^ self ].
-        self messageList add: 'assistant' -> parsed.
+        
+		  self messageList add: 'assistant' -> (Dictionary newFrom: {
+			    'role' -> 'assistant'.
+    			'content' -> (parsed at: 'content') }).
         toolCalls do: [ :call | self messageList add: (self processToolCall: call) ] ].
     ^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
@@ -60,4 +77,24 @@ ClaudeApiWithTools >> responseError: parsed hist: aHistory [
     error := parsed at: 'error'.
     aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') from: self.
     ^ self
+]
+
+{ #category : 'trait tools support' }
+ClaudeApiWithTools >> toolSpecification [
+    ^ AilienApiTool subclasses collect: [ :tool |
+        | openAI func params |
+        openAI := tool new evaluateTool.
+        func := openAI at: 'function'.
+        params := func at: 'parameters'.
+        Dictionary newFrom: {
+            'name' -> (func at: 'name').
+            'description' -> (func at: 'description').
+            'input_schema' -> params } ]
+]
+
+{ #category : 'accessing' }
+ClaudeApiWithTools >> znClientEntity [
+    ^ super znClientEntity union: {
+        'tools' -> self toolSpecification.
+    }
 ]

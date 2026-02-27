@@ -75,8 +75,8 @@ ClaudeApi class >> modelNames [
 	^ #(
 	'claude-sonnet-4-20250514' 
 	'claude-3-haiku-20240307'
-	'claude-3-5-haiku-20241022' 
-	'claude-3-7-sonnet-20250219'
+	'claude-haiku-4-5-20251001' 
+	'claude-opus-4-6'
 	'claude-opus-4-5-20251101') 
 ]
 
