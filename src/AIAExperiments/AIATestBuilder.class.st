@@ -15,9 +15,9 @@ Class {
 { #category : 'as yet unclassified' }
 AIATestBuilder class >> aiBuildList [
 	^ {
-		MistralApiWithTools newOnModel: 1.
 		GrokApiWithTools newOnModel: 2.
 		GrokApiWithTools newOnModel: 3.
+		OpenAIApiWithTools newOnModel: 3. 
 		OpenAIApiWithTools newOnModel: 1. 
 		
 		 }
@@ -44,7 +44,7 @@ AIATestBuilder >> build: aMethod [
 	
 	testGenCounter := 1. 
 	testColor := 'None'.
-	[ testGenCounter <= 4 and: [ testColor ~= Color green ]  ]
+	[ testGenCounter <= (self class aiBuildList size) and: [ testColor ~= Color green ]  ]
 		whileTrue: [
 			Transcript << String lf << 'Test ' << testGenCounter asString 
 					<< ' (' <<  (self class aiBuildList at: testGenCounter ) printString << ') '
@@ -190,6 +190,7 @@ AIATestBuilder >> repairResponseMethod [
 	lines := testMethod lines.
 	startIndex := lines findFirst: [ :line | line beginsWith: 'test' ].
 	startIndex > 1 ifTrue: [
+		self halt.
 			testMethod := lines findFirst: [ :line | line beginsWith: 'test' ] ]
 	
 ]
