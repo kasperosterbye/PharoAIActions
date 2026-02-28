@@ -16,10 +16,10 @@ Class {
 AIATestBuilder class >> aiBuildList [
 	^ {
 		ClaudeApiWithTools newOnModel: 1.
-		"GrokApiWithTools newOnModel: 2.
-		GrokApiWithTools newOnModel: 3.
-		OpenAIApiWithTools newOnModel: 3. 
-		OpenAIApiWithTools newOnModel: 1. "
+		GrokApiWithTools newOnModel: 2.
+		GrokApiWithTools newOnModel: 3."
+		OpenAIApiWithTools newOnModel: 3. "
+		OpenAIApiWithTools newOnModel: 1. 
 		
 		 }
 ]
