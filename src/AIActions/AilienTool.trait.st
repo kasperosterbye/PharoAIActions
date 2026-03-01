@@ -7,6 +7,7 @@ Trait {
 
 { #category : 'adding' }
 AilienTool >> addJsonHistory: jsonHistory for: item [
+	"Adds a message to the JSON history based on its role and content"
 
 	item key = 'assistant'
 		ifTrue: [ "Handle both dict (from tool loop) and string (from aHistory assistant:)"
@@ -31,6 +32,7 @@ AilienTool >> addJsonHistory: jsonHistory for: item [
 
 { #category : 'trait tools support' }
 AilienTool >> clientCall [
+	"Executes an API call to the Ailien service, handling the request and response"
 
 	| jsonPrompt rawResponse parsed |
 	jsonPrompt := ZnClient new.
@@ -45,6 +47,7 @@ AilienTool >> clientCall [
 
 { #category : 'trait tools support' }
 AilienTool >> continueToolCall: parsed orWrite: aHistory [
+	"Processes the API response, handling errors and tool calls. Returns the message if tool calls are present, otherwise writes the assistant's response to history."
 
 	| message |
 	(parsed includesKey: 'error') ifTrue: [ self responseError: parsed hist: aHistory. ^ nil ].
@@ -57,6 +60,7 @@ AilienTool >> continueToolCall: parsed orWrite: aHistory [
 
 { #category : 'trait tools support' }
 AilienTool >> executeToolNamed: name withArgs: args [
+	"Executes a tool with the given name and arguments, returning the result"
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
 		instance := tool new.
@@ -64,15 +68,6 @@ AilienTool >> executeToolNamed: name withArgs: args [
 			^ instance executeTool: args
 			] ].
     ^ 'Unknown tool: ', name
-]
-
-{ #category : 'trait tools support' }
-AilienTool >> jsonHistory [
-    | jsonHistory |
-self halt. "Cannot be in a Trait"
-    jsonHistory := OrderedCollection new.
-    self messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
-    ^ jsonHistory asArray
 ]
 
 { #category : 'trait tools support' }
@@ -90,6 +85,7 @@ AilienTool >> processToolCall: call [
 
 { #category : 'trait tools support' }
 AilienTool >> responseError: parsed hist: aHistory [
+	"Handles API error responses by adding the error message to the conversation history"
 
 	| error |
 	error := parsed at: 'error'.
@@ -99,6 +95,7 @@ AilienTool >> responseError: parsed hist: aHistory [
 
 { #category : 'trait tools support' }
 AilienTool >> toolSpecification [
+	"Returns a collection of tool specifications for all registered API tool subclasses"
 	| all |
 	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
    ^ all 
@@ -106,6 +103,7 @@ AilienTool >> toolSpecification [
 
 { #category : 'trait tools support' }
 AilienTool >> traitLoadResponse: aHistory [
+	"Loads a response from the API, processing tool calls and handling errors within a specified turn limit"
 
 	| maxTurns |
 	maxTurns := 50.
