@@ -1,9 +1,9 @@
 Class {
 	#name : 'ClaudeApiWithTools',
 	#superclass : 'ClaudeApi',
-	#category : 'AIActions-AIApi',
+	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
-	#tag : 'AIApi'
+	#tag : 'AIApiTools'
 }
 
 { #category : 'trait tools support' }

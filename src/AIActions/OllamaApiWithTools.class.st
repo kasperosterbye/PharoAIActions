@@ -38,9 +38,9 @@ Class {
 	#superclass : 'OllamaApi',
 	#traits : 'AilienTool',
 	#classTraits : 'AilienTool classTrait',
-	#category : 'AIActions-AIApi',
+	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
-	#tag : 'AIApi'
+	#tag : 'AIApiTools'
 }
 
 { #category : 'tools support' }

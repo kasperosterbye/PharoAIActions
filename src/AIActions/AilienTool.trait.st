@@ -1,8 +1,8 @@
 Trait {
 	#name : 'AilienTool',
-	#category : 'AIActions-AIApi',
+	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
-	#tag : 'AIApi'
+	#tag : 'AIApiTools'
 }
 
 { #category : 'adding' }

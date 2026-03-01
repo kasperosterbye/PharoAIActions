@@ -21,9 +21,9 @@
 Class {
 	#name : 'ApiToolTextFromImage',
 	#superclass : 'AilienApiTool',
-	#category : 'AIActions-AIApi',
+	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
-	#tag : 'AIApi'
+	#tag : 'AIApiTools'
 }
 
 { #category : 'as yet unclassified' }
