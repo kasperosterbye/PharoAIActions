@@ -30,6 +30,32 @@ AilienTool >> addJsonHistory: jsonHistory for: item [
 ]
 
 { #category : 'trait tools support' }
+AilienTool >> clientCall [
+
+	| jsonPrompt rawResponse parsed |
+	jsonPrompt := ZnClient new.
+	self znClientBasic: jsonPrompt.
+	self class znClientHeaders: jsonPrompt.
+	rawResponse := jsonPrompt
+		               post;
+		               contents.
+	parsed := STONJSON fromString: rawResponse.
+	^ parsed
+]
+
+{ #category : 'trait tools support' }
+AilienTool >> continueToolCall: parsed orWrite: aHistory [
+
+	| message |
+	(parsed includesKey: 'error') ifTrue: [ self responseError: parsed hist: aHistory. ^ nil ].
+	message := (parsed at: 'choices') first at: 'message'.
+	(message includesKey: 'tool_calls') ifFalse: [
+			aHistory assistant: (message at: 'content') from: self.
+			^ nil ].
+	^ message.
+]
+
+{ #category : 'trait tools support' }
 AilienTool >> executeToolNamed: name withArgs: args [
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
@@ -84,23 +110,12 @@ AilienTool >> traitLoadResponse: aHistory [
 	| maxTurns |
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
-			| jsonPrompt rawResponse parsed message toolCalls |
+			| parsed message |
 			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			jsonPrompt := ZnClient new.
-			self znClientBasic: jsonPrompt.
-			self class znClientHeaders: jsonPrompt.
-			rawResponse := jsonPrompt 
-				               post;
-				               contents.
-			parsed := STONJSON fromString: rawResponse.
-			(parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
-
-			message := (parsed at: 'choices') first at: 'message'.
-			toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
-			toolCalls ifNil: [
-					aHistory assistant: (message at: 'content') from: self.
-					^ self ]. "Add assistant's tool request to history"
+			parsed := self clientCall.
+			(message := self continueToolCall: parsed orWrite: aHistory) ifNil: [ ^ self ].
 			self messageList add: 'assistant' -> message. "Execute each tool and add results"
-			toolCalls do: [ :call | self messageList add: (self processToolCall: call) ] ].
-		^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+			(message at: 'tool_calls') do: [ :call | 
+				self messageList add: (self processToolCall: call) ] ].
+	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
