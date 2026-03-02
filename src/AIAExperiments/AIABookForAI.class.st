@@ -1,5 +1,5 @@
 Class {
-	#name : 'AIABookSearch',
+	#name : 'AIABookForAI',
 	#superclass : 'Object',
 	#classInstVars : [
 		'digest'
@@ -10,12 +10,20 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-AIABookSearch class >> getDigest [
+AIABookForAI class >> getDigest [
 	^ digest contents
 ]
 
 { #category : 'as yet unclassified' }
-AIABookSearch class >> replyTo: question [
+AIABookForAI class >> q: question [
+	| initialReply firstLine index book background responce |
+	initialReply := question , '. Please mention the chapter number you find best to answer this prompt. If the background does not have detailed answer, please say: "it is a cool book, but X is not there"' 
+		q0: [ self getDigest. ].
+	^ initialReply 
+]
+
+{ #category : 'as yet unclassified' }
+AIABookForAI class >> replyTo: question [
 	| initialReply firstLine index book background responce |
 	initialReply := question , '. Please mention the chapter number you find best to answer this prompt. If the background does not have detailed answer, please say: "it is a cool book, but X is not there"' 
 		q0: [ self getDigest. ].
@@ -34,13 +42,15 @@ AIABookSearch class >> replyTo: question [
 ]
 
 { #category : 'initialization' }
-AIABookSearch class >> setDigest [
+AIABookForAI class >> setDigest [
 	| book prompt background |
 	book := (FileSystem disk root / 'Users' / 'kasper' / 'Downloads' 
 				/ '2023-09-02-DeepIntoPharo.txt' ) readStream contents trimBoth.
 	digest := WriteStream on: ''.
-	1 to: 18 do: [ :index | 
-		prompt := 'Please give a detailed list of what is in Chapter {1}. 	Please structure it as Main purpose, Key concepts, How to use, Common pitfalls' format: {index}.
+	14 to: 14 do: [ :index | 
+		prompt := 'Compress Chapter {1} into a dense technical reference for an AI assistant answering Pharo questions.
+Rules: no prose, no examples unless critical, no repetition, preserve all precise facts and distinctions.
+Format: concept name followed by colon and one-line definition. Group under: Core mechanics, API, Gotchas.' format: {index}.
 		background := book 
 				copyFrom: (book findString: ('Chapter {1}' format: {index})) 
 				to: (book findString: ('Chapter {1}' format: {index + 1})) - 1.
