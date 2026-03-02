@@ -11,7 +11,6 @@ Class {
 
 { #category : 'as yet unclassified' }
 ApiToolWebReader >> evaluateTool [
-	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
 	| desc desc1 |
 	desc := 'Can load any website, returning the html at that site. Always try https before http'.
 	desc1 := 'The arrayed list of websites'.

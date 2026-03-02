@@ -10,6 +10,17 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
+ApiToolGetWeather >> describeWeatherCode: code [
+    code = 0 ifTrue: [ ^ 'clear sky' ].
+    (code between: 1 and: 3) ifTrue: [ ^ 'partly cloudy' ].
+    (code between: 51 and: 67) ifTrue: [ ^ 'rain' ].
+    (code between: 71 and: 77) ifTrue: [ ^ 'snow' ].
+    (code between: 80 and: 82) ifTrue: [ ^ 'rain showers' ].
+    (code between: 95 and: 99) ifTrue: [ ^ 'thunderstorm' ].
+    ^ 'overcast'
+]
+
+{ #category : 'as yet unclassified' }
 ApiToolGetWeather >> evaluateTool [
 	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
 	| desc desc1 |
@@ -69,28 +80,27 @@ ApiToolGetWeather >> initialize [
 
 { #category : 'accessing' }
 ApiToolGetWeather >> weatherAt: aCity [
-	|   geoUrl geoResponse geoData lat lon weatherUrl weatherResponse weatherData temperature  |
+    | geoUrl geoResponse geoData lat lon weatherUrl weatherResponse weatherData current temperature windspeed weathercode |
+    [
+        geoUrl := 'https://geocoding-api.open-meteo.com/v1/search?name={1}&count=1'
+                format: { aCity urlEncoded }.
+        geoResponse := ZnClient new url: geoUrl; get.
+        geoData := STONJSON fromString: geoResponse contents.
+        (geoData includesKey: #results) ifFalse: [ ^ 'City not found' ].
+        lat := (geoData at: #results) first at: #latitude.
+        lon := (geoData at: #results) first at: #longitude.
 
-	[ 
-		"Step 1: Geocoding - Convert city name to latitude and longitude"
-		geoUrl := 'https://geocoding-api.open-meteo.com/v1/search?name={1}&count=1' 
-				format: { aCity urlEncoded }.
-		geoResponse := ZnClient new url: geoUrl; get.
-	
-		geoData := STONJSON fromString: geoResponse contents.
-		(geoData includesKey: #results) ifFalse: [ ^ 'City not found' ].
-	
-		lat := (geoData at: #results) first at: #latitude.
-		lon := (geoData at: #results) first at: #longitude.
-	
-		"Step 2: Weather - Get current weather for the coordinates"
-		weatherUrl := 'https://api.open-meteo.com/v1/forecast?latitude={1}&longitude={2}&current_weather=true' 
-				format: { lat . lon }.
-	
-		weatherResponse := ZnClient new url: weatherUrl; get.
-		weatherData := STONJSON fromString: weatherResponse contents.
-		temperature := (weatherData at: 'current_weather') at: 'temperature'.
-		^ temperature asString]
-	on: Error do: [ :ex | 
-		^ 'Error fetching weather for ', aCity, ': ', ex description ].
+        weatherUrl := 'https://api.open-meteo.com/v1/forecast?latitude={1}&longitude={2}&current_weather=true&hourly=precipitation'
+                format: { lat . lon }.
+        weatherResponse := ZnClient new url: weatherUrl; get.
+        weatherData := STONJSON fromString: weatherResponse contents.
+        current := weatherData at: 'current_weather'.
+        temperature := (current at: 'temperature') rounded.
+        windspeed := ((current at: 'windspeed') / 3.6) rounded.
+        weathercode := (current at: 'weathercode') .
+        ^ '{1} ºC, {2}, wind {3} m/s'
+                format: { temperature asString . (self describeWeatherCode: weathercode) . windspeed asString }
+    ]
+    on: Error do: [ :ex |
+        ^ 'Error fetching weather for ' , aCity , ': ' , ex description ].
 ]

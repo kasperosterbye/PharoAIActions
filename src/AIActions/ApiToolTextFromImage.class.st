@@ -47,20 +47,6 @@ ApiToolTextFromImage >> executeTool: args [
 ]
 
 { #category : 'as yet unclassified' }
-ApiToolTextFromImage >> getImageFromUrl: url [
-	
-	| image llmTempFile type responseText|
-	image := ZnClient new get: url.
-	type := (url splitOn: $.) last.
-	llmTempFile := 'llmTempFile'.
-	(llmTempFile , '.', type) asFileReference binaryWriteStreamDo: [ :stream | stream nextPutAll: image ].
-	LibC system: ('tesseract {1}.{2} {1}' format: {llmTempFile . type}).
-	responseText := (llmTempFile , '.txt') asFileReference contents.
-	^ responseText 
-
-]
-
-{ #category : 'as yet unclassified' }
 ApiToolTextFromImage >> imageFromUrl: url [
 	
 	| image llmTempFile type responseText|

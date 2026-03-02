@@ -9,7 +9,7 @@ Class {
 { #category : 'as yet unclassified' }
 ApiToolClassInfo >> evaluateTool [
 	| desc desc1 |
-	desc := 'Returns class information, class comment, instance variables, and method selectors for a Pharo class.'.
+	desc := 'Returns structured documentation for a Pharo class: class comment, instance variables, and all method selectors with comments.'.
 	desc1 := 'Name of the Pharo class'.
 
     ^ self evaluateTool: { desc. desc1 }
