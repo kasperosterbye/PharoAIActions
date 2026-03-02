@@ -31,9 +31,7 @@ AilienTool >> addJsonHistory: jsonHistory for: item [
 ]
 
 { #category : 'trait tools support' }
-AilienTool >> clientCall [
-	"Executes an API call to the Ailien service, handling the request and response"
-
+AilienTool >> callLLM [
 	| jsonPrompt rawResponse parsed |
 	jsonPrompt := ZnClient new.
 	self znClientBasic: jsonPrompt.
@@ -47,13 +45,16 @@ AilienTool >> clientCall [
 
 { #category : 'trait tools support' }
 AilienTool >> continueToolCall: parsed orWrite: aHistory [
-	"Processes the API response, handling errors and tool calls. Returns the message if tool calls are present, otherwise writes the assistant's response to history."
+	"Continues tool calls writes assistant content or handles api errors"
 
-	| message |
-	(parsed includesKey: 'error') ifTrue: [ self responseError: parsed hist: aHistory. ^ nil ].
+	| message content |
+	(parsed includesKey: 'error') ifTrue: [ 
+		self responseError: parsed hist: aHistory. 
+		^ nil ].
 	message := (parsed at: 'choices') first at: 'message'.
-	(message includesKey: 'tool_calls') ifFalse: [
-			aHistory assistant: (message at: 'content') from: self.
+	content := message at: 'content'.
+	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
+			aHistory assistant: content" from: self".
 			^ nil ].
 	^ message.
 ]
@@ -89,7 +90,7 @@ AilienTool >> responseError: parsed hist: aHistory [
 
 	| error |
 	error := parsed at: 'error'.
-	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') from: self.
+	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') "from: self".
 	^ self
 ]
 
@@ -103,17 +104,17 @@ AilienTool >> toolSpecification [
 
 { #category : 'trait tools support' }
 AilienTool >> traitLoadResponse: aHistory [
-	"Loads a response from the API, processing tool calls and handling errors within a specified turn limit"
-
 	| maxTurns |
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
-			| parsed message |
+			| response toolCall |
+			response := self callLLM .
+			toolCall := self continueToolCall: response orWrite: aHistory. 
+			toolCall ifNil: [ ^ self ].
 			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			parsed := self clientCall.
-			(message := self continueToolCall: parsed orWrite: aHistory) ifNil: [ ^ self ].
-			self messageList add: 'assistant' -> message. "Execute each tool and add results"
-			(message at: 'tool_calls') do: [ :call | 
+			self messageList add: 'assistant' -> toolCall. 
+			"Execute each tool and add results"
+			(toolCall at: 'tool_calls') do: [ :call |
 				self messageList add: (self processToolCall: call) ] ].
 	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]

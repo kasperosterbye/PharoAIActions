@@ -183,6 +183,7 @@ AIAHistory >> assistant: aString [
 { #category : 'accessing' }
 AIAHistory >> assistant: aString from: ailienInfo [
 	"Adds an assistant message to the messages collection after sanitising the input string."
+self error: 'Should no longer be called'.
 	messages add: 'assistant' -> (self sanitizedResonse: aString)
 ]
 

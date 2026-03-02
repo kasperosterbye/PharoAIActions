@@ -47,7 +47,7 @@ ClaudeApiWithTools >> loadResponse: aHistory [
         contentBlocks := parsed at: 'content'.
         toolCalls := contentBlocks select: [ :block | (block at: 'type') = 'tool_use' ].
         toolCalls isEmpty ifTrue: [
-            aHistory assistant: ((contentBlocks detect: [ :b | (b at: 'type') = 'text' ]) at: 'text') from: self.
+            aHistory assistant: ((contentBlocks detect: [ :b | (b at: 'type') = 'text' ]) at: 'text')" from: self".
             ^ self ].
         
 		  self messageList add: 'assistant' -> (Dictionary newFrom: {
@@ -75,7 +75,7 @@ ClaudeApiWithTools >> processToolCall: call [
 ClaudeApiWithTools >> responseError: parsed hist: aHistory [
     | error |
     error := parsed at: 'error'.
-    aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') from: self.
+    aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message')" from: self".
     ^ self
 ]
 

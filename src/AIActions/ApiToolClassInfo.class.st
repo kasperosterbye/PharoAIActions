@@ -30,27 +30,3 @@ ApiToolClassInfo >> initialize [
 	name := 'getClassInfo'.
 	required := 'className'
 ]
-
-{ #category : 'initialization' }
-ApiToolClassInfo >> old2_executeTool: args [
-
-	| className cls |
-	super executeTool: args.
-	className := args at: required.
-	cls := Smalltalk globals at: className asSymbol ifAbsent: [ ^ 'Class not found' ].
-	^ String streamContents: [ :s |
-			  s << '## ' << className << String cr.
-			  s << 'Slots: ' << (cls instVarNames joinUsing: ' ') << String cr.
-			  s << 'Comment: ' << (cls comment ifEmpty: [ 'None' ]) ]
-]
-
-{ #category : 'initialization' }
-ApiToolClassInfo >> old_executeTool: args [
-
-	| className cls |
-	super executeTool: args.
-	className := args at: required.
-	cls := Smalltalk globals at: className asSymbol ifAbsent: [ ^ 'Class not found' ].
-self halt.
-	^ AIASourceCodeBuilder new forClass: cls.
-]

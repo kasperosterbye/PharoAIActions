@@ -56,6 +56,7 @@ ApiToolGetWeather >> executeTool: args [
 	cityNames do: [ :aCityName |
 		response << (self weatherAt: aCityName) << String lf
 	 ].
+	Transcript << '>>> ' << response contents << String lf.
 	^ response contents.
 	
 ]

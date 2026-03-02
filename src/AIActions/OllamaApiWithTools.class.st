@@ -69,7 +69,7 @@ OllamaApiWithTools >> loadResponse: aHistory [
         message := parsed at: 'message'.
         toolCalls := message at: 'tool_calls' ifAbsent: [ nil ].
         toolCalls ifNil: [
-            aHistory assistant: (message at: 'content') from: self.
+            aHistory assistant: (message at: 'content')" from: self".
             ^ self ].
         "Add assistant's tool request to history"
         self messageList add: 'assistant' -> message.
