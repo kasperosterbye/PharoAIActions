@@ -6,134 +6,113 @@ Class {
 	#tag : 'AIApiTools'
 }
 
-{ #category : 'trait tools support' }
-GeminiApiWithTools >> executeToolNamed: name withArgs: args [
-    AilienApiTool subclasses do: [ :tool | 
-        | instance |
-        instance := tool new.
-        instance name = name ifTrue: [
-            ^ instance executeTool: args ] ].
-    
-    "Returnér en Dictionary for at overholde Geminis forventning om JSON-respons"
-    ^ Dictionary newFrom: { 
-        'error' -> ('Unknown tool: ' , name).
-        'status' -> 'failed' }
+{ #category : 'ollama models' }
+GeminiApiWithTools >> aaa_znClientEntity [
+    | entity |
+    entity := super znClientEntity.
+    entity add: 'tools' -> { self toolSpecification }.
+    ^ entity
 ]
 
-{ #category : 'ollama models' }
+{ #category : 'trait tools support' }
+GeminiApiWithTools >> executeToolNamed: aName withArgs: args [
+    AilienApiTool subclasses do: [ :toolClass |
+        | instance |
+        instance := toolClass new.
+        instance name = aName ifTrue: [ ^ instance executeTool: args ] ].
+    ^ 'Unknown tool: ', aName
+]
+
+{ #category : 'accessing' }
 GeminiApiWithTools >> jsonHistory [
-    ^ messageList collect: [ :item |
-        item value isDictionary 
-            ifTrue: [ item value ] "Allerede formateret af processToolCall:"
-            ifFalse: [ 
-                | correctedRole |
-                correctedRole := item key = 'assistant' ifTrue: [ 'model' ] ifFalse: [ item key ].
-                Dictionary newFrom: {
-                    'role' -> correctedRole.
-                    'parts' -> { Dictionary newFrom: { 'text' -> item value } }
-                } ] ]
+    "Gemini kræver en flad liste af contents. Tool-interaktioner skal gemmes som 
+    henholdsvis 'model' (med functionCall) og 'functionResponse'."
+    | jsonHistory correctedRole |
+    correctedRole := { 'user'->'user'. 'assistant'->'model' } asDictionary.
+    jsonHistory := OrderedCollection new.
+    messageList do: [ :item |
+        item value isDictionary
+            ifTrue: [ jsonHistory add: item value ]
+            ifFalse: [
+                jsonHistory add: (Dictionary newFrom: {
+                    'role' -> (correctedRole at: item key).
+                    'parts' -> { { 'text' -> item value } asDictionary } }) ] ].
+    ^ jsonHistory asArray
+
+
 ]
 
 { #category : 'responses' }
 GeminiApiWithTools >> loadResponse: aHistory [
     | maxTurns |
-    maxTurns := 50.
+    maxTurns := 20.
     1 to: maxTurns do: [ :turn |
-        | jsonPrompt rawResponse parsed candidates content toolCalls |
-        Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
+        | jsonPrompt rawResponse parsed candidate content parts toolCalls |
         jsonPrompt := ZnClient new.
         self znClientBasic: jsonPrompt.
         self class znClientHeaders: jsonPrompt.
         rawResponse := jsonPrompt post; contents.
         parsed := STONJSON fromString: rawResponse.
-        (parsed includesKey: 'error') ifTrue: [ ^ self responseError: parsed hist: aHistory ].
         
-        candidates := parsed at: 'candidates'.
-        content := candidates first at: 'content'.
-        "Gemini returnerer tool_calls i 'parts' arrayet"
-        toolCalls := (content at: 'parts') select: [ :part | part includesKey: 'functionCall' ].
+        candidate := (parsed at: 'candidates') first.
+        content := candidate at: 'content'.
+        parts := content at: 'parts'.
+        
+        "Tjek for tool calls"
+        toolCalls := parts select: [ :p | p includesKey: 'functionCall' ].
+        
+        toolCalls isEmpty ifTrue: [
+            | text |
+            text := (parts detect: [ :p | p includesKey: 'text' ]) at: 'text'.
+            aHistory assistant: text.
+            ^ self ].
 
-        toolCalls isEmpty ifTrue: [ 
-				| textPart |
-    			textPart := (content at: 'parts') detect: [ :p | p includesKey: 'text' ] ifNone: [ nil ].
-    			textPart ifNotNil: [ 
-        			aHistory assistant: (textPart at: 'text') from: self.
-        			^ self ].
-    		"Håndter tomme svar her"
-		  ].
-
-        "Gemini kræver at vi gemmer modellens functionCall i historikken før vi svarer"
+        "Gem modellens tool call i historikken"
         self messageList add: 'assistant' -> content.
-
-        "Processér alle kald og tilføj dem som functionResponse"
-        toolCalls do: [ :call | 
-            self messageList add: (self processToolCall: (call at: 'functionCall')) ] ].
-    ^ aHistory assistant: ('API Error: exceed {1} tool turns' format: { maxTurns })
-]
-
-{ #category : 'trait tools support' }
-GeminiApiWithTools >> processToolCall: functionCall [
-    | result name |
-    name := functionCall at: 'name'.
-    result := self 
-        executeToolNamed: name
-        withArgs: (functionCall at: 'args' ifAbsent: [ Dictionary new ]).
-    
-    "Gemini kræver rollen 'function' og en specifik 'functionResponse' nøgle"
-    ^ 'function' -> (Dictionary newFrom: {
-        'role' -> 'function'.
-        'parts' -> { 
-            Dictionary newFrom: {
-                'functionResponse' -> (Dictionary newFrom: {
-                    'name' -> name.
+        
+        "Udfør værktøjer og tilføj svar som 'functionResponse' parts"
+        toolCalls do: [ :call |
+            | callData result |
+            callData := call at: 'functionCall'.
+            result := self executeToolNamed: (callData at: 'name') 
+                           withArgs: (callData at: 'args').
+            
+            self messageList add: 'user' -> (Dictionary newFrom: {
+                'role' -> 'user'.
+                'parts' -> { { 'functionResponse' -> (Dictionary newFrom: {
+                    'name' -> (callData at: 'name').
                     'response' -> (Dictionary newFrom: { 'content' -> result })
-                })
-            }
-        }
-    })
-]
-
-{ #category : 'trait tools support' }
-GeminiApiWithTools >> responseError: parsed hist: aHistory [
-    | error message code |
-    error := parsed at: 'error'.
-    message := error at: 'message' ifAbsent: [ 'Unknown API error' ].
-    code := error at: 'code' ifAbsent: [ 'No code provided' ].
-    
-    "Hvis fejlen indeholder status (f.eks. INVALID_ARGUMENT), inkluderer vi den"
-    (error includesKey: 'status') ifTrue: [ 
-        message := (error at: 'status') , ': ' , message ].
-
-    aHistory assistant: ('Gemini API Error {1}: {2}' format: { code. message }) from: self.
-    ^ self
+                }) } asDictionary }
+            }) ].
+    ].
+    aHistory assistant: 'Fejl: For mange tool-vendinger.'
 ]
 
 { #category : 'trait tools support' }
 GeminiApiWithTools >> toolSpecification [
-    ^ AilienApiTool subclasses collect: [ :tool |
-        | spec func params required |
-        spec := tool new evaluateTool.
-        func := spec at: 'function'.
-        params := func at: 'parameters'.
-        required := (params at: 'required') asArray.
+    ^ { 'function_declarations' -> (AilienApiTool subclasses collect: [ :toolClass |
+        | toolInstance dict func |
+        toolInstance := toolClass new.
+        dict := toolInstance evaluateTool.
+        func := dict at: 'function'.
         Dictionary newFrom: {
             'name' -> (func at: 'name').
             'description' -> (func at: 'description').
-            'parameters' -> (Dictionary newFrom: {
-                'type' -> (params at: 'type').
-                'properties' -> (params at: 'properties').
-                'required' -> required }) } ]
+            'parameters' -> (func at: 'parameters') } ]) } asDictionary
+
+
 ]
 
 { #category : 'ollama models' }
 GeminiApiWithTools >> znClientEntity [
-    | entity |
-    "Vi bygger en ny dictionary baseret på værdierne fra super"
-    entity := Dictionary newFrom: {
-        'model' -> model.
-        'contents' -> self jsonHistory.
-        'generationConfig' -> (Dictionary newFrom: { 'temperature' -> 0 }).
-        'tools' -> { Dictionary newFrom: { 'function_declarations' -> self toolSpecification } }
-    }.
-    ^ entity
+	| base |
+	base := super znClientEntity.
+	^ base union: { 
+		'tools' -> { self toolSpecification }.
+		'tool_config' -> (Dictionary newFrom: {
+			'function_calling_config' -> (Dictionary newFrom: {
+				'mode' -> 'AUTO'
+			})
+		})
+	} asDictionary
 ]

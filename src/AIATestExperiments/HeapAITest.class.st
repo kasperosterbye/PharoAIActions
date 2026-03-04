@@ -8,10 +8,6 @@ Class {
 	#package : 'AIATestExperiments'
 }
 
-{ #category : 'AI generated test' }
-HeapAITest >> API [ Error: tried more than the 50 allowed TOOLS calls
-]
-
 { #category : 'initialization' }
 HeapAITest >> setUp [
 	super setUp.
