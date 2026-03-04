@@ -53,7 +53,7 @@ GrokApiWithTools >> printOn: aStream [
 { #category : 'tools support' }
 GrokApiWithTools >> znClientEntity [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
-	^ super znClientEntity union:  {
+	^ super znClientEntity ,  {
         'tools' -> self toolSpecification.
     } .
 ]

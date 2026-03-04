@@ -71,6 +71,17 @@ AilienTool >> executeToolNamed: name withArgs: args [
     ^ 'Unknown tool: ', name
 ]
 
+{ #category : 'as yet unclassified' }
+AilienTool >> handleToolCall: toolCall [
+	self messageList add: 'assistant' -> toolCall.		
+	(toolCall at: 'tool_calls') do: [ :call | self messageList add: (self processToolCall: call) ]
+]
+
+{ #category : 'as yet unclassified' }
+AilienTool >> messageListAddResponse: response andTool: toolCall [
+	self messageList add: 'assistant' -> toolCall. 
+]
+
 { #category : 'trait tools support' }
 AilienTool >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
@@ -112,9 +123,8 @@ AilienTool >> traitLoadResponse: aHistory [
 			toolCall := self continueToolCall: response orWrite: aHistory. 
 			toolCall ifNil: [ ^ self ].
 			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			self messageList add: 'assistant' -> toolCall. 
-			"Execute each tool and add results"
-			(toolCall at: 'tool_calls') do: [ :call |
-				self messageList add: (self processToolCall: call) ] ].
+			self messageListAddResponse: response andTool: toolCall. 
+			self handleToolCall: toolCall.
+			].
 	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]

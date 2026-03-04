@@ -1,10 +1,28 @@
 Class {
 	#name : 'ClaudeApiWithTools',
 	#superclass : 'ClaudeApi',
+	#traits : 'AilienTool',
+	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
 	#tag : 'AIApiTools'
 }
+
+{ #category : 'trait tools support' }
+ClaudeApiWithTools >> continueToolCall: parsed orWrite: aHistory [
+	"Continues tool calls writes assistant content or handles api errors"
+
+	| message content |
+	(parsed includesKey: 'error') ifTrue: [ 
+		self responseError: parsed hist: aHistory.
+		^ nil ].
+	message := parsed at: 'content'.
+	content := message select: [ :block | (block at: 'type') = 'tool_use' ].
+	content isEmpty ifTrue: [
+			aHistory assistant: ((message detect: [ :b | (b at: 'type') = 'text' ]) at: 'text'). " from: self"
+			^ nil ].
+	^ message 
+]
 
 { #category : 'trait tools support' }
 ClaudeApiWithTools >> executeToolNamed: name withArgs: args [
@@ -32,12 +50,11 @@ ClaudeApiWithTools >> jsonHistory [
 ]
 
 { #category : 'responses' }
-ClaudeApiWithTools >> loadResponse: aHistory [ 
+ClaudeApiWithTools >> lll_loadResponse: aHistory [ 
     | maxTurns |
     maxTurns := 50.
     1 to: maxTurns do: [ :turn |
         | jsonPrompt rawResponse parsed contentBlocks toolCalls |
-        Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
         jsonPrompt := ZnClient new.
         self znClientBasic: jsonPrompt.
         self class znClientHeaders: jsonPrompt.
@@ -49,12 +66,27 @@ ClaudeApiWithTools >> loadResponse: aHistory [
         toolCalls isEmpty ifTrue: [
             aHistory assistant: ((contentBlocks detect: [ :b | (b at: 'type') = 'text' ]) at: 'text')" from: self".
             ^ self ].
+        Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
         
 		  self messageList add: 'assistant' -> (Dictionary newFrom: {
 			    'role' -> 'assistant'.
     			'content' -> (parsed at: 'content') }).
         toolCalls do: [ :call | self messageList add: (self processToolCall: call) ] ].
     ^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+]
+
+{ #category : 'responses' }
+ClaudeApiWithTools >> loadResponse: aHistory [
+
+	self traitLoadResponse: aHistory  
+]
+
+{ #category : 'as yet unclassified' }
+ClaudeApiWithTools >> messageListAddResponse: response andTool: toolCall [
+
+	self messageList add: 'assistant' -> (Dictionary newFrom: {
+				 ('role' -> 'assistant').
+				 ('content' -> (response at: 'content')) })
 ]
 
 { #category : 'trait tools support' }
@@ -94,7 +126,7 @@ ClaudeApiWithTools >> toolSpecification [
 
 { #category : 'accessing' }
 ClaudeApiWithTools >> znClientEntity [
-    ^ super znClientEntity union: {
+    ^ super znClientEntity , {
         'tools' -> self toolSpecification.
     }
 ]
