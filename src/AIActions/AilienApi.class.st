@@ -335,17 +335,3 @@ AilienApi >> znClientEntity [
         'temperature' -> 0.0
     }
 ]
-
-{ #category : 'accessing' }
-AilienApi >> zzz_znClientBasic: jsonPrompt [
-
-	|  entityPrompt entity|
-	jsonPrompt
-		timeout: self responseWaitingInSecs;
-		url: self apiGenerateUrl.
-	entity := self znClientEntity asDictionary .
-	entityPrompt := ZnEntity json: (STONJSON toString: entity).
-	jsonPrompt 
-		entity: entityPrompt .
-	
-]

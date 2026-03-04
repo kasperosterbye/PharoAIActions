@@ -1,12 +1,23 @@
 Class {
 	#name : 'ClaudeApiWithTools',
 	#superclass : 'ClaudeApi',
-	#traits : 'AilienTool',
-	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
 	#tag : 'AIApiTools'
 }
+
+{ #category : 'responses' }
+ClaudeApiWithTools >> callLLM [
+	| jsonPrompt rawResponse parsed |
+	jsonPrompt := ZnClient new.
+	self znClientBasic: jsonPrompt.
+	self class znClientHeaders: jsonPrompt.
+	rawResponse := jsonPrompt
+		               post;
+		               contents.
+	parsed := STONJSON fromString: rawResponse.
+	^ parsed
+]
 
 { #category : 'trait tools support' }
 ClaudeApiWithTools >> continueToolCall: parsed orWrite: aHistory [
@@ -33,6 +44,11 @@ ClaudeApiWithTools >> executeToolNamed: name withArgs: args [
             ^ instance executeTool: args
         ] ].
     ^ 'Unknown tool: ', name
+]
+
+{ #category : 'responses' }
+ClaudeApiWithTools >> handleToolCall: toolCall [
+	(toolCall at: 'tool_calls') do: [ :call | self messageList add: (self processToolCall: call) ]
 ]
 
 { #category : 'Protocol (accessing) - 11 selector(s)' }
@@ -122,6 +138,22 @@ ClaudeApiWithTools >> toolSpecification [
             'name' -> (func at: 'name').
             'description' -> (func at: 'description').
             'input_schema' -> params } ]
+]
+
+{ #category : 'responses' }
+ClaudeApiWithTools >> traitLoadResponse: aHistory [
+	| maxTurns |
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			| response toolCall |
+			response := self callLLM .
+			toolCall := self continueToolCall: response orWrite: aHistory. 
+			toolCall ifNil: [ ^ self ].
+			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
+			self messageListAddResponse: response andTool: toolCall. 
+			self handleToolCall: toolCall.
+			].
+	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
 
 { #category : 'accessing' }

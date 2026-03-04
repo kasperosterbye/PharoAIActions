@@ -24,12 +24,15 @@ The class works with AilienApiTool subclasses to provide the actual tool impleme
 Class {
 	#name : 'GrokApiWithTools',
 	#superclass : 'GrokApi',
-	#traits : 'AilienTool',
-	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
 	#tag : 'AIApiTools'
 }
+
+{ #category : 'instance creation' }
+GrokApiWithTools class >> new [
+	self halt
+]
 
 { #category : 'tools support' }
 GrokApiWithTools >> jsonHistory [

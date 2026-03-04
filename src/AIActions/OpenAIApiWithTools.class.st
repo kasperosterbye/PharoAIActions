@@ -36,12 +36,15 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'OpenAIApiWithTools',
 	#superclass : 'OpenAIApi',
-	#traits : 'AilienTool',
-	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
 	#tag : 'AIApiTools'
 }
+
+{ #category : 'instance creation' }
+OpenAIApiWithTools class >> new [
+	self halt
+]
 
 { #category : 'tools support' }
 OpenAIApiWithTools >> jsonHistory [

@@ -36,12 +36,15 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'MistralApiWithTools',
 	#superclass : 'MistralApi',
-	#traits : 'AilienTool',
-	#classTraits : 'AilienTool classTrait',
 	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
 	#tag : 'AIApiTools'
 }
+
+{ #category : 'instance creation' }
+MistralApiWithTools class >> new [
+	self halt
+]
 
 { #category : 'tools support' }
 MistralApiWithTools >> jsonHistory [
