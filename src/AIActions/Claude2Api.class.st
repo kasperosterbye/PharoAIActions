@@ -20,7 +20,6 @@ Claude2Api class >> claudeKey [
 	lastKeyNumber ifNil: [ lastKeyNumber := 0 ].
 	lastKeyNumber := lastKeyNumber + 1.
 	lastKeyNumber > 2 ifTrue: [ lastKeyNumber := 0 ].
-self halt.
 	fileName := '../../claudecode0{1}.txt' format: { lastKeyNumber }.
 	^ (FileSystem disk workingDirectory / fileName ) readStream contents trimBoth.
 ]
@@ -50,7 +49,6 @@ Claude2Api class >> znClientHeaders: jsonPrompt [
 Claude2Api >> callLLM [
 	| jsonPrompt rawResponse parsed |
 	jsonPrompt := ZnClient new.
-self halt.
 	self znClientBasic: jsonPrompt.
 	self class znClientHeaders: jsonPrompt.
 	rawResponse := jsonPrompt
@@ -74,6 +72,12 @@ Claude2Api >> continueToolCall: parsed orWrite: aHistory [
 			aHistory assistant: ((message detect: [ :b | (b at: 'type') = 'text' ]) at: 'text'). " from: self"
 			^ nil ].
 	^ message 
+]
+
+{ #category : 'adding' }
+Claude2Api >> handleToolCall: toolCall [
+    (toolCall select: [ :call | (call at: 'type') = 'tool_use' ])
+        do: [ :call | self messageList add: (self processToolCall: call) ]
 ]
 
 { #category : 'adding' }
@@ -115,7 +119,6 @@ Claude2Api >> processToolCall: call [
     result := self 
         executeToolNamed: (call at: 'name')
         withArgs: (call at: 'input').
-self halt.
     encoded := 'user' -> (Dictionary newFrom: {
         'role' -> 'user'.
         'content' -> { Dictionary newFrom: {
@@ -154,7 +157,8 @@ Claude2Api >> toolSpecification [
         Dictionary newFrom: {
             'name' -> (func at: 'name').
             'description' -> (func at: 'description').
-            'input_schema' -> params } ]
+            'input_schema' -> params } ].
+	^ all
 ]
 
 { #category : 'adding' }
@@ -163,8 +167,6 @@ Claude2Api >> traitLoadResponse: aHistory [
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
 			| response toolCall |
-			
-self halt.
 			response := self callLLM .
 			toolCall := self continueToolCall: response orWrite: aHistory. 
 			toolCall ifNil: [ ^ self ].
@@ -183,9 +185,8 @@ Claude2Api >> znClientBasic: jsonPrompt [
 		timeout: self responseWaitingInSecs;
 		url: self apiGenerateUrl.
 	entity := self znClientEntity asDictionary deepCopy .
-self halt.
 	foo := STONJSON toString: entity.
-	entityPrompt := ZnEntity json: (STONJSON toString: entity).
+	entityPrompt := ZnEntity json: foo.
 	jsonPrompt 
 		entity: entityPrompt .
 	
@@ -195,5 +196,6 @@ self halt.
 Claude2Api >> znClientEntity [
     ^ super znClientEntity , {
         'tools' -> self toolSpecification.
+        'max_tokens' -> 4096
     }
 ]
