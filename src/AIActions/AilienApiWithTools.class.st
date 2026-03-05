@@ -78,6 +78,22 @@ AilienApiWithTools >> handleToolCall: toolCall [
 ]
 
 { #category : 'adding' }
+AilienApiWithTools >> loadResponse: aHistory [
+	| maxTurns |
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			| response toolCall |
+			response := self callLLM .
+			toolCall := self continueToolCall: response orWrite: aHistory. 
+			toolCall ifNil: [ ^ self ].
+			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
+			self messageListAddResponse: response andTool: toolCall. 
+			self handleToolCall: toolCall.
+			].
+	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+]
+
+{ #category : 'adding' }
 AilienApiWithTools >> messageListAddResponse: response andTool: toolCall [
 	self messageList add: 'assistant' -> toolCall. 
 ]
@@ -114,7 +130,7 @@ AilienApiWithTools >> toolSpecification [
 ]
 
 { #category : 'adding' }
-AilienApiWithTools >> traitLoadResponse: aHistory [
+AilienApiWithTools >> xx_traitLoadResponse: aHistory [
 	| maxTurns |
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |

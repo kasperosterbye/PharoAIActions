@@ -42,14 +42,14 @@ Grok2Api >> jsonHistory [
 ]
 
 { #category : 'responses' }
-Grok2Api >> loadResponse: aHistory [
-
-	self traitLoadResponse: aHistory.
+Grok2Api >> printOn: aStream [
+	aStream << 'Grok2Api: ' << self model.
 ]
 
 { #category : 'responses' }
-Grok2Api >> printOn: aStream [
-	aStream << 'Grok2Api: ' << self model.
+Grok2Api >> xx_loadResponse: aHistory [
+
+	self traitLoadResponse: aHistory.
 ]
 
 { #category : 'responses' }

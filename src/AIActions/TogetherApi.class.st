@@ -40,7 +40,8 @@ TogetherApi class >> modelNames [
     ^ #( 	'Qwen/Qwen3-Next-80B-A3B-Instruct'
 			'ServiceNow-AI/Apriel-1.5-15b-Thinker'
 			'Qwen/Qwen3-235B-A22B-Thinking-2507'
-			'deepseek-ai/DeepSeek-V3.1').
+			'deepseek-ai/DeepSeek-V3.1'
+			'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8').
 ]
 
 { #category : 'AI models' }
@@ -68,8 +69,7 @@ TogetherApi >> buildZnClientWithHeaders: jsonPrompt [
 { #category : 'initialization' }
 TogetherApi >> initialize [
 	"Initialises TogetherApi with default model and empty history for AI interactions."
-	self error: 'Stop using this, it is of no key interest'.
-    super initialize.
+	 super initialize.
     self model: self class defaultModel.
 ]
 

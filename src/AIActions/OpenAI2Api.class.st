@@ -45,12 +45,6 @@ OpenAI2Api >> jsonHistory [
 ]
 
 { #category : 'Protocol (accessing) - 11 selector(s)' }
-OpenAI2Api >> loadResponse: aHistory [
-
-	self traitLoadResponse: aHistory.
-]
-
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
 OpenAI2Api >> printOn: aStream [
 	aStream << 'OpenAI2Api: ' << self model.
 ]

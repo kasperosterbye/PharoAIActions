@@ -55,12 +55,6 @@ Mistral2Api >> jsonHistory [
 ]
 
 { #category : 'responses' }
-Mistral2Api >> loadResponse: aHistory [
-
-	self traitLoadResponse: aHistory.
-]
-
-{ #category : 'responses' }
 Mistral2Api >> printOn: aStream [
 	aStream << 'Mistral2Api: ' << self model.
 ]
