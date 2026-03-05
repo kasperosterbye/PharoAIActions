@@ -47,9 +47,3 @@ MistralApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Authorization' put: self esug;
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
-
-{ #category : 'printing' }
-MistralApi >> printOn: aStream [
-	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
-	aStream << 'MistralApi: ' << self model.
-]

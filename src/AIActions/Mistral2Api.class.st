@@ -45,23 +45,3 @@ Mistral2Api class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Authorization' put: self esug;
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
-
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
-Mistral2Api >> jsonHistory [
-    | jsonHistory |
-    jsonHistory := OrderedCollection new.
-    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
-    ^ jsonHistory asArray
-]
-
-{ #category : 'responses' }
-Mistral2Api >> printOn: aStream [
-	aStream << 'Mistral2Api: ' << self model.
-]
-
-{ #category : 'responses' }
-Mistral2Api >> znClientEntity [
-	^ super znClientEntity ,  {
-        'tools' -> self toolSpecification.
-    } .
-]

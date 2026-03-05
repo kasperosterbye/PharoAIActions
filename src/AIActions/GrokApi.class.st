@@ -53,10 +53,3 @@ GrokApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Authorization' put: 'Bearer ' , self grokKey;
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
-
-{ #category : 'ollama models' }
-GrokApi >> printOn: aStream [
-    "Prints the model name for the GrokApi instance."
-    aStream << 'GrokApi: ' << self model.
-
-]

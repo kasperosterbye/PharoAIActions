@@ -36,9 +36,3 @@ OpenAIApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
-
-{ #category : 'printing' }
-OpenAIApi >> printOn: aStream [
-	"Method to print the model name of OpenAIApi instance."
-	aStream << 'OpenAIApi: ' << self model.
-]

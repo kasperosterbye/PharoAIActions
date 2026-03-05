@@ -67,19 +67,6 @@ Ollama2Api >> continueToolCall: parsed orWrite: aHistory [
 	^ message.
 ]
 
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
-Ollama2Api >> jsonHistory [
-    | jsonHistory |
-    jsonHistory := OrderedCollection new.
-    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
-    ^ jsonHistory asArray
-]
-
-{ #category : 'responses' }
-Ollama2Api >> printOn: aStream [
-	aStream << 'Ollama2Api: ' << self model.
-]
-
 { #category : 'adding' }
 Ollama2Api >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
@@ -91,11 +78,4 @@ Ollama2Api >> processToolCall: call [
     ^ 'tool' -> (Dictionary newFrom: {
         'tool_call_id' -> (call at: 'id').
         'content' -> result })
-]
-
-{ #category : 'responses' }
-Ollama2Api >> znClientEntity [
-	^ super znClientEntity ,  {
-        'tools' -> self toolSpecification.
-    } .
 ]

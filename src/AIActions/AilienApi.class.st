@@ -287,6 +287,11 @@ AilienApi >> model: anObject [
 	model := anObject
 ]
 
+{ #category : 'printing' }
+AilienApi >> printOn: aStream [
+	aStream << self class name asString << ': ' << self model.
+]
+
 { #category : 'accessing' }
 AilienApi >> responseOf: jsonResponse [
 	| parsed response  |

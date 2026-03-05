@@ -77,6 +77,14 @@ AilienApiWithTools >> handleToolCall: toolCall [
 	(toolCall at: 'tool_calls') do: [ :call | self messageList add: (self processToolCall: call) ]
 ]
 
+{ #category : 'Protocol (accessing) - 11 selector(s)' }
+AilienApiWithTools >> jsonHistory [
+    | jsonHistory |
+    jsonHistory := OrderedCollection new.
+    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
+    ^ jsonHistory asArray
+]
+
 { #category : 'adding' }
 AilienApiWithTools >> loadResponse: aHistory [
 	| maxTurns |
@@ -143,4 +151,11 @@ AilienApiWithTools >> xx_traitLoadResponse: aHistory [
 			self handleToolCall: toolCall.
 			].
 	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+]
+
+{ #category : 'ollama models' }
+AilienApiWithTools >> znClientEntity [
+	^ super znClientEntity ,  {
+        'tools' -> self toolSpecification.
+    } .
 ]

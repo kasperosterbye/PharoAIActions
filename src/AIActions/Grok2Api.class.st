@@ -32,29 +32,3 @@ Grok2Api class >> znClientHeaders: jsonPrompt [
 		headerAt: 'Authorization' put: 'Bearer ' , self grokKey;
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
-
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
-Grok2Api >> jsonHistory [
-    | jsonHistory |
-    jsonHistory := OrderedCollection new.
-    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
-    ^ jsonHistory asArray
-]
-
-{ #category : 'responses' }
-Grok2Api >> printOn: aStream [
-	aStream << 'Grok2Api: ' << self model.
-]
-
-{ #category : 'responses' }
-Grok2Api >> xx_loadResponse: aHistory [
-
-	self traitLoadResponse: aHistory.
-]
-
-{ #category : 'responses' }
-Grok2Api >> znClientEntity [
-	^ super znClientEntity ,  {
-        'tools' -> self toolSpecification.
-    } .
-]

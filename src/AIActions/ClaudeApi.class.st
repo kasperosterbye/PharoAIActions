@@ -89,12 +89,6 @@ ClaudeApi class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> printOn: aStream [
-	"Prints the model name of the ClaudeApi instance, showing the current AI model being used for interactions"
-	aStream << 'ClaudeApi: ' << self model.
-]
-
-{ #category : 'accessing' }
 ClaudeApi >> responseOf: jsonResponse [
 	"Returns the text content from the parsed Claude API JSON response by extracting the text field from the first content element in the response dictionary"
 	| parsed |

@@ -46,19 +46,6 @@ Claude2Api class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'adding' }
-Claude2Api >> callLLM [
-	| jsonPrompt rawResponse parsed |
-	jsonPrompt := ZnClient new.
-	self znClientBasic: jsonPrompt.
-	self class znClientHeaders: jsonPrompt.
-	rawResponse := jsonPrompt
-		               post;
-		               contents.
-	parsed := STONJSON fromString: rawResponse.
-	^ parsed
-]
-
-{ #category : 'adding' }
 Claude2Api >> continueToolCall: parsed orWrite: aHistory [
 	"Continues tool calls writes assistant content or handles api errors"
 
@@ -105,12 +92,6 @@ Claude2Api >> messageListAddResponse: response andTool: toolCall [
 	self messageList add: 'assistant' -> (Dictionary newFrom: {
 				 ('role' -> 'assistant').
 				 ('content' -> (response at: 'content')) })
-]
-
-{ #category : 'printing' }
-Claude2Api >> printOn: aStream [
-	"Prints the model name of the ClaudeApi instance, showing the current AI model being used for interactions"
-	aStream << 'Claude2Api: ' << self model.
 ]
 
 { #category : 'adding' }
@@ -175,6 +156,25 @@ Claude2Api >> traitLoadResponse: aHistory [
 			self handleToolCall: toolCall.
 			].
 	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+]
+
+{ #category : 'adding' }
+Claude2Api >> xx_callLLM [
+	| jsonPrompt rawResponse parsed |
+	jsonPrompt := ZnClient new.
+	self znClientBasic: jsonPrompt.
+	self class znClientHeaders: jsonPrompt.
+	rawResponse := jsonPrompt
+		               post;
+		               contents.
+	parsed := STONJSON fromString: rawResponse.
+	^ parsed
+]
+
+{ #category : 'adding' }
+Claude2Api >> xx_loadResponse: aHistory [
+
+	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'accessing' }

@@ -105,12 +105,6 @@ GeminiApi >> jsonHistory [
 ]
 
 { #category : 'accessing' }
-GeminiApi >> printOn: aStream [
-	"Prints the class name and current model to a stream for debugging and inspection purposes."
-	aStream << 'GeminiApi: ' << self model.
-]
-
-{ #category : 'accessing' }
 GeminiApi >> responseOf: jsonResponse [
 	"Parses Gemini API JSON response to extract assistant's text, handling errors gracefully"
 	| parsed message |

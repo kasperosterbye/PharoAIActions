@@ -35,23 +35,3 @@ OpenAI2Api class >> znClientHeaders: jsonPrompt [
 		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
-
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
-OpenAI2Api >> jsonHistory [
-    | jsonHistory |
-    jsonHistory := OrderedCollection new.
-    messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
-    ^ jsonHistory asArray
-]
-
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
-OpenAI2Api >> printOn: aStream [
-	aStream << 'OpenAI2Api: ' << self model.
-]
-
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
-OpenAI2Api >> znClientEntity [
-	^ super znClientEntity ,  {
-        'tools' -> self toolSpecification.
-    } .
-]

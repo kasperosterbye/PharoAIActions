@@ -74,12 +74,6 @@ TogetherApi >> initialize [
 ]
 
 { #category : 'ollama models' }
-TogetherApi >> printOn: aStream [
-	"Prints a representation of the Together API instance showing its model."
-    aStream << 'TogetherApi: ' << self model.
-]
-
-{ #category : 'ollama models' }
 TogetherApi >> responseOf: jsonResponse [
 	"Parses JSON response from Together API extracting assistant content handling think tags and errors"
 

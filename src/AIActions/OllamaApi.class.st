@@ -133,12 +133,6 @@ OllamaApi >> modelShortInfo [
 		'Context length' -> context_length}
 ]
 
-{ #category : 'printing' }
-OllamaApi >> printOn: string [
-	"Prints the model name of OllamaModelsApi instance"
-	string << 'OllamaApi: ' << self model.
-]
-
 { #category : 'mistral models' }
 OllamaApi >> responseOf: jsonResponse [
 	"Extracts response content from JSON API responses, handling errors and cleaning up thought process tags"
