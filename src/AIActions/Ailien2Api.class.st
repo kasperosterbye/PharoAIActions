@@ -243,67 +243,6 @@ Ailien2Api >> apiGenerateUrl [
 	^ self class apiGenerateUrl
 ]
 
-{ #category : 'adding' }
-Ailien2Api >> callLLM [
-	| jsonPrompt rawResponse parsed |
-	jsonPrompt := ZnClient new.
-	self znClientBasic: jsonPrompt.
-	self class znClientHeaders: jsonPrompt.
-	rawResponse := jsonPrompt
-		               post;
-		               contents.
-	parsed := STONJSON fromString: rawResponse.
-	^ parsed
-]
-
-{ #category : 'adding' }
-Ailien2Api >> check: llmReply [
-	"Continues tool calls writes assistant content or handles api errors"
-
-	| message content |
-	(llmReply includesKey: 'error') ifTrue: [ 
-		self responseError: llmReply . 
-		^ '*notool*'].
-	message := (llmReply at: 'choices') first at: 'message'.
-	content := message at: 'content'.
-	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
-			history assistant: content" from: self".
-			^ '*notool*'].
-	^ message.
-]
-
-{ #category : 'adding' }
-Ailien2Api >> check: llmReply ifResponse: block [
-	"Continues tool calls writes assistant content or handles api errors"
-
-	| message content |
-	(llmReply includesKey: 'error') ifTrue: [ 
-		self responseError: llmReply . 
-		block value].
-	message := (llmReply at: 'choices') first at: 'message'.
-	content := message at: 'content'.
-	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
-			history assistant: content" from: self".
-			block value ].
-	^ message.
-]
-
-{ #category : 'adding' }
-Ailien2Api >> continueToolCall: parsed orWrite: aHistory [
-	"Continues tool calls writes assistant content or handles api errors"
-
-	| message content |
-	(parsed includesKey: 'error') ifTrue: [ 
-		self responseError: parsed hist: aHistory. 
-		^ nil ].
-	message := (parsed at: 'choices') first at: 'message'.
-	content := message at: 'content'.
-	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
-			aHistory assistant: content" from: self".
-			^ nil ].
-	^ message.
-]
-
 { #category : 'responses' }
 Ailien2Api >> errorResponse: jsonResponse [
 	"Returns the error response string, either the provided error message or the default error response if none is set"
@@ -312,21 +251,10 @@ Ailien2Api >> errorResponse: jsonResponse [
 		ifFalse: [ ^ ErrorResponse ]
 ]
 
-{ #category : 'trait tools support' }
-Ailien2Api >> executeToolNamed: name withArgs: args [
-	"Executes a tool with the given name and arguments, returning the result"
-	AilienApiTool subclasses do: [ :tool | 
-		| instance |
-		instance := tool new.
-		instance name = name ifTrue:[
-			^ instance executeTool: args
-			] ].
-    ^ 'Unknown tool: ', name
-]
+{ #category : 'accessing' }
+Ailien2Api >> history [
 
-{ #category : 'adding' }
-Ailien2Api >> handleToolCall: toolCall [
-	(toolCall at: 'tool_calls') do: [ :call | self messageList add: (self processToolCall: call) ]
+	^ history
 ]
 
 { #category : 'initialization' }
@@ -351,13 +279,7 @@ Ailien2Api >> loadResponse: aHistory [
 	history := aHistory.
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
-			| llmReply toolCall |
-			llmReply := self callLLM .
-			toolCall := self check: llmReply.
-			toolCall = '*notool*' ifTrue: [^ self]. 
-			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			self messageListAddResponse: llmReply andTool: toolCall. 
-			self handleToolCall: toolCall.
+			(Ailien2InnerCall on: self turn: turn) innerCall.
 			].
 	^ history assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
@@ -372,11 +294,6 @@ Ailien2Api >> messageList [
 Ailien2Api >> messageList: anObject [
 	"Sets the message list for the API interaction, storing role-content pairs in chronological order for conversation history management"
 	messageList := anObject
-]
-
-{ #category : 'adding' }
-Ailien2Api >> messageListAddResponse: response andTool: toolCall [
-	self messageList add: 'assistant' -> toolCall. 
 ]
 
 { #category : 'accessing' }
@@ -398,29 +315,6 @@ Ailien2Api >> printOn: aStream [
 ]
 
 { #category : 'adding' }
-Ailien2Api >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
-    | func result |
-    func := call at: 'function'. 
-    result := self 
-        executeToolNamed: (func at: 'name') 
-        withArgs: (STONJSON fromString: (func at: 'arguments')).
-    ^ 'tool' -> (Dictionary newFrom: {
-        'tool_call_id' -> (call at: 'id').
-        'content' -> result })
-]
-
-{ #category : 'adding' }
-Ailien2Api >> responseError: parsed [
-	"Handles API error responses by adding the error message to the conversation history"
-
-	| error |
-	error := parsed at: 'error'.
-	history assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') "from: self".
-	^ self
-]
-
-{ #category : 'adding' }
 Ailien2Api >> responseError: parsed hist: aHistory [
 	"Handles API error responses by adding the error message to the conversation history"
 
@@ -428,16 +322,6 @@ Ailien2Api >> responseError: parsed hist: aHistory [
 	error := parsed at: 'error'.
 	aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') "from: self".
 	^ self
-]
-
-{ #category : 'accessing' }
-Ailien2Api >> responseOf: jsonResponse [
-	| parsed response  |
-	parsed := STONJSON fromString: jsonResponse.
-	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
-		on: Error 
-		do: [ response := self errorResponse: jsonResponse ].
-	^ response 
 ]
 
 { #category : 'accessing' }
@@ -460,36 +344,6 @@ Ailien2Api >> toolSpecification [
 	| all |
 	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
    ^ all 
-]
-
-{ #category : 'responses' }
-Ailien2Api >> xx_loadResponse: aHistory [
-	| maxTurns |
-	maxTurns := 50.
-	1 to: maxTurns do: [ :turn |
-			| llmReply toolCall |
-			llmReply := self callLLM .
-			toolCall := self continueToolCall: llmReply orWrite: aHistory. 
-			toolCall ifNil: [ ^ self ].
-			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			self messageListAddResponse: llmReply andTool: toolCall. 
-			self handleToolCall: toolCall.
-			].
-	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
-]
-
-{ #category : 'accessing' }
-Ailien2Api >> znClientBasic: jsonPrompt [
-
-	|  entityPrompt entity|
-	jsonPrompt
-		timeout: self responseWaitingInSecs;
-		url: self apiGenerateUrl.
-	entity := self znClientEntity deepCopy asDictionary .
-	entityPrompt := ZnEntity json: (STONJSON toString: entity).
-	jsonPrompt 
-		entity: entityPrompt .
-	
 ]
 
 { #category : 'accessing' }
