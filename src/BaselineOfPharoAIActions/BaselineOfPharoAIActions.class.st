@@ -22,7 +22,7 @@ BaselineOfPharoAIActions >> baseline: spec [
 			package: 'AIATestExperiments' 
 			with: [ spec requires: #('AIActions') ].
 		spec
-			package: 'AIAKilroy' 
+			package: 'AIAZipArchive' 
 			with: [ spec requires: #('AIActions') ].
     ]
 ]
