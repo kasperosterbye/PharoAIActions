@@ -23,6 +23,7 @@ Class {
 	#instVars : [
 		'model',
 		'messageList',
+		'history',
 		'responseWaitingInSecs'
 	],
 	#classVars : [
@@ -256,6 +257,38 @@ Ailien2Api >> callLLM [
 ]
 
 { #category : 'adding' }
+Ailien2Api >> check: llmReply [
+	"Continues tool calls writes assistant content or handles api errors"
+
+	| message content |
+	(llmReply includesKey: 'error') ifTrue: [ 
+		self responseError: llmReply . 
+		^ '*notool*'].
+	message := (llmReply at: 'choices') first at: 'message'.
+	content := message at: 'content'.
+	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
+			history assistant: content" from: self".
+			^ '*notool*'].
+	^ message.
+]
+
+{ #category : 'adding' }
+Ailien2Api >> check: llmReply ifResponse: block [
+	"Continues tool calls writes assistant content or handles api errors"
+
+	| message content |
+	(llmReply includesKey: 'error') ifTrue: [ 
+		self responseError: llmReply . 
+		block value].
+	message := (llmReply at: 'choices') first at: 'message'.
+	content := message at: 'content'.
+	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
+			history assistant: content" from: self".
+			block value ].
+	^ message.
+]
+
+{ #category : 'adding' }
 Ailien2Api >> continueToolCall: parsed orWrite: aHistory [
 	"Continues tool calls writes assistant content or handles api errors"
 
@@ -304,7 +337,7 @@ Ailien2Api >> initialize [
 	self responseWaitingInSecs: 5*60.
 ]
 
-{ #category : 'Protocol (accessing) - 11 selector(s)' }
+{ #category : 'accessing' }
 Ailien2Api >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
@@ -314,18 +347,19 @@ Ailien2Api >> jsonHistory [
 
 { #category : 'responses' }
 Ailien2Api >> loadResponse: aHistory [
-	| maxTurns |
+	| maxTurns  |
+	history := aHistory.
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
-			| response toolCall |
-			response := self callLLM .
-			toolCall := self continueToolCall: response orWrite: aHistory. 
-			toolCall ifNil: [ ^ self ].
+			| llmReply toolCall |
+			llmReply := self callLLM .
+			toolCall := self check: llmReply.
+			toolCall = '*notool*' ifTrue: [^ self]. 
 			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			self messageListAddResponse: response andTool: toolCall. 
+			self messageListAddResponse: llmReply andTool: toolCall. 
 			self handleToolCall: toolCall.
 			].
-	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+	^ history assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
 
 { #category : 'accessing' }
@@ -377,6 +411,16 @@ Ailien2Api >> processToolCall: call [
 ]
 
 { #category : 'adding' }
+Ailien2Api >> responseError: parsed [
+	"Handles API error responses by adding the error message to the conversation history"
+
+	| error |
+	error := parsed at: 'error'.
+	history assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') "from: self".
+	^ self
+]
+
+{ #category : 'adding' }
 Ailien2Api >> responseError: parsed hist: aHistory [
 	"Handles API error responses by adding the error message to the conversation history"
 
@@ -418,6 +462,22 @@ Ailien2Api >> toolSpecification [
    ^ all 
 ]
 
+{ #category : 'responses' }
+Ailien2Api >> xx_loadResponse: aHistory [
+	| maxTurns |
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			| llmReply toolCall |
+			llmReply := self callLLM .
+			toolCall := self continueToolCall: llmReply orWrite: aHistory. 
+			toolCall ifNil: [ ^ self ].
+			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
+			self messageListAddResponse: llmReply andTool: toolCall. 
+			self handleToolCall: toolCall.
+			].
+	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+]
+
 { #category : 'accessing' }
 Ailien2Api >> znClientBasic: jsonPrompt [
 
@@ -432,7 +492,7 @@ Ailien2Api >> znClientBasic: jsonPrompt [
 	
 ]
 
-{ #category : 'ollama models' }
+{ #category : 'accessing' }
 Ailien2Api >> znClientEntity [
 	"Method to create a JSON body with prompt for OpenAIApi."
     ^ {
