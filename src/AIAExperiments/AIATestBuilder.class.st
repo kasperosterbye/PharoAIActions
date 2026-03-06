@@ -1,3 +1,37 @@
+"
+# Class Comment for AIATestBuilder
+
+The `AIATestBuilder` class is designed to facilitate the automated generation of test methods for existing methods in Pharo classes using AI-driven tools. It leverages various AI models to create test cases, ensuring comprehensive test coverage and accuracy. The builder interacts with AI APIs to generate test methods, which are then compiled and checked for correctness.
+
+## Key Features
+
+- **AI-Driven Test Generation**: Utilises different AI models to generate test methods for specified methods in a class.
+- **Test Compilation and Validation**: Compiles the generated test methods and checks their execution results to determine their validity.
+- **Flexible AI Model Integration**: Supports multiple AI models, allowing for flexibility and the ability to switch between different AI providers.
+- **Comprehensive Test Reporting**: Provides detailed feedback on the test generation process, including success, failure, or error statuses.
+
+## Usage Example
+
+```smalltalk
+""Example of how to use AIATestBuilder to generate tests for a class method""
+
+| testBuilder methodToTest testResults |
+
+""Create an instance of AIATestBuilder""
+testBuilder := AIATestBuilder new.
+
+""Specify the method for which tests are to be generated""
+methodToTest := Object >> #yourMethod.
+
+""Build tests for the specified method""
+testResults := testBuilder build: methodToTest.
+
+""Inspect the test results""
+testResults inspect.
+```
+
+This example demonstrates how to create an instance of `AIATestBuilder`, specify a method for which tests are to be generated, and then inspect the results of the test generation process.
+"
 Class {
 	#name : 'AIATestBuilder',
 	#superclass : 'Object',

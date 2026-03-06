@@ -29,6 +29,7 @@ OpenAI2Api class >> openAI01 [
 
 { #category : 'accessing' }
 OpenAI2Api class >> znClientHeaders: jsonPrompt [
+	"Sets the necessary headers for the ZnClient to interact with the OpenAI API, including authorization and content type."
 	jsonPrompt
 		headerAt: 'Authorization' put: self openAI01;
 		headerAt: 'OpenAI-Organization' put: 'org-XmWYpGR0EsRqkASrs8HE3hy6';
