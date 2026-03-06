@@ -4,8 +4,8 @@ Class {
 	#instVars : [
 		'xxx'
 	],
-	#category : 'AIAKilroy-Roy',
-	#package : 'AIAKilroy',
+	#category : 'AIAZipArchive-Roy',
+	#package : 'AIAZipArchive',
 	#tag : 'Roy'
 }
 
