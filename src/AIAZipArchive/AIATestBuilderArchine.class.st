@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIATestBuilderArchine',
 	#superclass : 'AIATestBuilder',
-	#category : 'AIAExperiments-Tests',
-	#package : 'AIAExperiments',
-	#tag : 'Tests'
+	#category : 'AIAZipArchive-Tests01',
+	#package : 'AIAZipArchive',
+	#tag : 'Tests01'
 }
 
 { #category : 'instance creation' }

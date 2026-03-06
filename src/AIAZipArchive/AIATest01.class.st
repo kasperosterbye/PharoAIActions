@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIATest01',
 	#superclass : 'AIATestBuilder',
-	#category : 'AIAExperiments-Tests',
-	#package : 'AIAExperiments',
-	#tag : 'Tests'
+	#category : 'AIAZipArchive-Tests01',
+	#package : 'AIAZipArchive',
+	#tag : 'Tests01'
 }
 
 { #category : 'test builder' }

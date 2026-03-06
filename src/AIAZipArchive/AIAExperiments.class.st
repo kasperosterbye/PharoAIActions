@@ -1,8 +1,8 @@
 Class {
 	#name : 'AIAExperiments',
 	#superclass : 'Object',
-	#category : 'AIAExperiments-AlgorithmicCore',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-AlgorithmicCore',
+	#package : 'AIAZipArchive',
 	#tag : 'AlgorithmicCore'
 }
 

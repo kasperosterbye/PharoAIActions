@@ -9,8 +9,8 @@ Class {
 	#classVars : [
 		'responceDictionary'
 	],
-	#category : 'AIAExperiments-ExperimentsResearch',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-ExperimentsResearch',
+	#package : 'AIAZipArchive',
 	#tag : 'ExperimentsResearch'
 }
 

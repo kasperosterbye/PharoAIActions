@@ -9,8 +9,8 @@ Class {
 	#classVars : [
 		'Foo'
 	],
-	#category : 'AIAExperiments-ExperimentsResearch',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-ExperimentsResearch',
+	#package : 'AIAZipArchive',
 	#tag : 'ExperimentsResearch'
 }
 

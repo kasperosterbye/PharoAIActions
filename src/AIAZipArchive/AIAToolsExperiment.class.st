@@ -7,8 +7,8 @@ Class {
 	#classInstVars : [
 		'default'
 	],
-	#category : 'AIAExperiments-ExperimentsResearch',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-ExperimentsResearch',
+	#package : 'AIAZipArchive',
 	#tag : 'ExperimentsResearch'
 }
 

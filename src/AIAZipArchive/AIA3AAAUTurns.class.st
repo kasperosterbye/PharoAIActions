@@ -1,8 +1,8 @@
 Class {
 	#name : 'AIA3AAAUTurns',
 	#superclass : 'AIA1MultiLLMResponseBase',
-	#category : 'AIAExperiments-ExperimentsResearch',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-ExperimentsResearch',
+	#package : 'AIAZipArchive',
 	#tag : 'ExperimentsResearch'
 }
 
