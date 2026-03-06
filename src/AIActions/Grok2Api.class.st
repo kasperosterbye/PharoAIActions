@@ -1,6 +1,6 @@
 Class {
 	#name : 'Grok2Api',
-	#superclass : 'AilienApiWithTools',
+	#superclass : 'Ailien2Api',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
