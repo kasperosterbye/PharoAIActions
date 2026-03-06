@@ -47,9 +47,9 @@ Class {
 	#classInstVars : [
 		'lastKeyNumber'
 	],
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#category : 'AIAZipArchive-AIApiNoTools',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiNoTools'
 }
 
 { #category : 'accessing' }

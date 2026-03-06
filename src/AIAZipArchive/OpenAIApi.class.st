@@ -1,9 +1,9 @@
 Class {
 	#name : 'OpenAIApi',
 	#superclass : 'AilienApi',
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#category : 'AIAZipArchive-AIApiNoTools',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiNoTools'
 }
 
 { #category : 'accessing' }

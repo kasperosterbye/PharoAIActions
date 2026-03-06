@@ -35,7 +35,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'OCR' }
 AilienOCR >> getSignedUrl: fileId [
 	"Retrieves a signed URL for the specified file ID with a 1-hour expiry"
     | response parsed |
@@ -48,7 +48,7 @@ AilienOCR >> getSignedUrl: fileId [
     ^ parsed at: 'url'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'OCR' }
 AilienOCR >> ocrFile: fileId [
 	"Extracts text from a PDF file using the AilienOCR API, processing the file identified by fileId."
     | signedUrl response parsed |
@@ -68,7 +68,7 @@ AilienOCR >> ocrFile: fileId [
         joinUsing: String cr
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'OCR' }
 AilienOCR >> textFromPDF: aFileReference [
 	"Extracts text from a PDF file using the AilienOCR API."
     | fileId |
@@ -76,7 +76,7 @@ AilienOCR >> textFromPDF: aFileReference [
     ^ self ocrFile: fileId
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'OCR' }
 AilienOCR >> uploadFile: aFileReference [
 	"Uploads a PDF file to the AilienOCR API for OCR processing"
     | entity part response parsed |
