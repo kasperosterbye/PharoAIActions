@@ -21,8 +21,5 @@ BaselineOfPharoAIActions >> baseline: spec [
 		spec
 			package: 'AIATestExperiments' 
 			with: [ spec requires: #('AIActions') ].
-		spec
-			package: 'AIAArchive' 
-			with: [ spec requires: #('AIActions') ].
     ]
 ]
