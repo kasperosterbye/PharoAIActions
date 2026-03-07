@@ -88,8 +88,8 @@ Ailien2Api class >> info [
 
 { #category : 'private' }
 Ailien2Api class >> initialize [ 
-	modelLLM := MistralApi modelNames first.
-	Provider := MistralApi.
+	modelLLM := Mistral2Api modelNames first.
+	Provider := Mistral2Api.
 	ErrorResponse := nil.
 	
 ]
