@@ -18,7 +18,7 @@ response := api loadResponse: api messageList.
 ```
 "
 Class {
-	#name : 'AilienApi',
+	#name : 'Ailien0Api',
 	#superclass : 'Object',
 	#instVars : [
 		'model',
@@ -33,13 +33,13 @@ Class {
 	#classInstVars : [
 		'modelLLM'
 	],
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#category : 'AIAZipArchive-AIApiArhive',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiArhive'
 }
 
 { #category : 'backgrounds' }
-AilienApi class >> background01 [
+Ailien0Api class >> background01 [
 	^ '[BACKGROUND]
 I am Kasper Østerbye, a retired computer science professor, specializes in programming language design, runtime systems, and AI integration. With experience in machine code for PDP-12, Forth on PDP-10, Smalltalk, Simula, Beta, and Interlisp, he now focuses on Pharo for its tight language-runtime integration. Kasper builds the full chain from application (Pharo) to raw JSON LLM calls, experimenting with message roles, metadata, non-linear conversation graphs, parallel branches, and custom context injection to shape LLM interaction architecture.
 He views programming as cognition, exploring shared principles between runtime architecture and consciousness. His research investigates the boundaries of dialogue-based intelligence through precise, controlled prompt experiments, not for productivity but to understand and challenge intelligence structuring. Kasper interacts with the model as an "AIlien," expecting independent, non-human reasoning. He blends technical rigor with dry humor, valuing clarity, curiosity, and playful exploration of complexity.
@@ -53,7 +53,7 @@ Quite another matter - I can''t read, and need a computer to convert your answer
 ]
 
 { #category : 'AI models' }
-AilienApi class >> defaultModel [
+Ailien0Api class >> defaultModel [
 	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."
 	self = AilienApi ifTrue: [ self error: 'Requires a concrete Api' ].
 	modelLLM ifNil: [ modelLLM := self modelNames first ].
@@ -61,7 +61,7 @@ AilienApi class >> defaultModel [
 ]
 
 { #category : 'AI models' }
-AilienApi class >> defaultModel: modelNumber [
+Ailien0Api class >> defaultModel: modelNumber [
 	"Set the default AI model for the API provider."
 
 	modelLLM := self modelNames 
@@ -70,23 +70,23 @@ AilienApi class >> defaultModel: modelNumber [
 ]
 
 { #category : 'responses' }
-AilienApi class >> errorResponse [
+Ailien0Api class >> errorResponse [
 	^ ErrorResponse
 ]
 
 { #category : 'responses' }
-AilienApi class >> errorResponse: aString [
+Ailien0Api class >> errorResponse: aString [
 	ErrorResponse := aString
 ]
 
 { #category : 'accessing' }
-AilienApi class >> info [
+Ailien0Api class >> info [
 	"Returns a descriptive string combining the current AI provider name and its default model name to identify the API configuration being used"
 	^ self provider name asString, ': ', self provider defaultModel
 ]
 
 { #category : 'private' }
-AilienApi class >> initialize [ 
+Ailien0Api class >> initialize [ 
 	modelLLM := Mistral2Api modelNames first.
 	Provider := Mistral2Api.
 	ErrorResponse := nil.
@@ -94,19 +94,19 @@ AilienApi class >> initialize [
 ]
 
 { #category : 'accessing' }
-AilienApi class >> lastHistory [
+Ailien0Api class >> lastHistory [
 	^ LastHistory
 ]
 
 { #category : 'AI models' }
-AilienApi class >> modelNames [
+Ailien0Api class >> modelNames [
 	"Returns a collection of available model names for the AI provider. Each name represents a distinct AI model that can be used for generating responses. The collection is derived from the provider's model registry and is used to validate and set the default model for the API."
 	self = AilienApi ifTrue: [ ^ self provider modelNames ].
 	
 ]
 
 { #category : 'instance creation' }
-AilienApi class >> newOnModel: modelId [
+Ailien0Api class >> newOnModel: modelId [
 	self = AilienApi
 		ifTrue: [ ^ self provider newOnModel: modelId ]
 		ifFalse: [ ^ self new model: (self modelNames at: modelId) ]
@@ -114,13 +114,13 @@ AilienApi class >> newOnModel: modelId [
 ]
 
 { #category : 'AI models' }
-AilienApi class >> noOfModels [
+Ailien0Api class >> noOfModels [
 
 	^ self modelNames size
 ]
 
 { #category : 'backgrounds' }
-AilienApi class >> playground01 [
+Ailien0Api class >> playground01 [
 	^ 
 'AilienApi providerAndModels.
 AilienApi provider.
@@ -161,13 +161,13 @@ AIACommentBuilding language: ''British''.'
 ]
 
 { #category : 'provider' }
-AilienApi class >> provider [
+Ailien0Api class >> provider [
 	Provider ifNil: [ self initialize ].
 	^ Provider 
 ]
 
 { #category : 'provider' }
-AilienApi class >> provider: aProvider [
+Ailien0Api class >> provider: aProvider [
 
 	| providers |
 	providers := self providers.
@@ -181,7 +181,7 @@ AilienApi class >> provider: aProvider [
 ]
 
 { #category : 'provider' }
-AilienApi class >> providerAndModels [
+Ailien0Api class >> providerAndModels [
 	"Returns all providers with their available models"
 	| allSubclasses index models|
 	allSubclasses := OrderedCollection new.
@@ -197,7 +197,7 @@ AilienApi class >> providerAndModels [
 ]
 
 { #category : 'provider' }
-AilienApi class >> providers [
+Ailien0Api class >> providers [
 "Bertha"
 	| allSubclasses index |
 	"Foobar"
@@ -212,13 +212,13 @@ AilienApi class >> providers [
 ]
 
 { #category : 'accessing' }
-AilienApi >> apiGenerateUrl [
+Ailien0Api >> apiGenerateUrl [
 	"Returns the URL endpoint for the AI provider's API, combining base URL with model-specific path. Subclasses must implement this method to provide provider-specific API routing."
 	^ self class apiGenerateUrl
 ]
 
 { #category : 'responses' }
-AilienApi >> errorResponse: jsonResponse [
+Ailien0Api >> errorResponse: jsonResponse [
 	"Returns the error response string, either the provided error message or the default error response if none is set"
 	ErrorResponse isNil 
 		ifTrue: [ ^ 'Error bla bla: ' , jsonResponse ]
@@ -226,7 +226,7 @@ AilienApi >> errorResponse: jsonResponse [
 ]
 
 { #category : 'initialization' }
-AilienApi >> initialize [ 
+Ailien0Api >> initialize [ 
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
 	self model: self class defaultModel.
@@ -234,7 +234,7 @@ AilienApi >> initialize [
 ]
 
 { #category : 'Protocol (accessing) - 11 selector(s)' }
-AilienApi >> jsonHistory [
+Ailien0Api >> jsonHistory [
 	"Returns the conversation history as a JSON array of role-content dictionaries, preserving chronological order of system, user, and assistant messages."
 	| jsonHistory |
 	jsonHistory := OrderedCollection new.
@@ -247,7 +247,7 @@ AilienApi >> jsonHistory [
 ]
 
 { #category : 'responses' }
-AilienApi >> loadResponse: history [
+Ailien0Api >> loadResponse: history [
 	"Executes HTTP request to AI provider endpoint and processes response into conversation history with error handling"
 
 	| jsonPrompt llmCall response |
@@ -263,37 +263,37 @@ AilienApi >> loadResponse: history [
 ]
 
 { #category : 'accessing' }
-AilienApi >> messageList [
+Ailien0Api >> messageList [
 
 	^ messageList
 ]
 
 { #category : 'accessing' }
-AilienApi >> messageList: anObject [
+Ailien0Api >> messageList: anObject [
 	"Sets the message list for the API interaction, storing role-content pairs in chronological order for conversation history management"
 	messageList := anObject
 ]
 
 { #category : 'accessing' }
-AilienApi >> model [
+Ailien0Api >> model [
 	"Returns the current model name used for AI interactions. If none set, defaults to the first available model from the subclass's model list."
 
 	^ model
 ]
 
 { #category : 'accessing' }
-AilienApi >> model: anObject [
+Ailien0Api >> model: anObject [
 	"Sets the model for AI interactions. Validates input and updates instance state. Preserves existing history. Returns the model name."
 	model := anObject
 ]
 
 { #category : 'printing' }
-AilienApi >> printOn: aStream [
+Ailien0Api >> printOn: aStream [
 	aStream << self class name asString << ': ' << self model.
 ]
 
 { #category : 'accessing' }
-AilienApi >> responseOf: jsonResponse [
+Ailien0Api >> responseOf: jsonResponse [
 	| parsed response  |
 	parsed := STONJSON fromString: jsonResponse.
 	[ response := ((parsed at: 'choices') first at: 'message') at: 'content' ]
@@ -303,21 +303,21 @@ AilienApi >> responseOf: jsonResponse [
 ]
 
 { #category : 'accessing' }
-AilienApi >> responseWaitingInSecs [
+Ailien0Api >> responseWaitingInSecs [
 	"Returns the timeout duration in seconds for waiting for an AI response"
 
 	^ responseWaitingInSecs
 ]
 
 { #category : 'accessing' }
-AilienApi >> responseWaitingInSecs: anObject [
+Ailien0Api >> responseWaitingInSecs: anObject [
 	"Sets the timeout duration in seconds for waiting for an AI response"
 
 	responseWaitingInSecs := anObject
 ]
 
 { #category : 'accessing' }
-AilienApi >> znClientBasic: jsonPrompt [
+Ailien0Api >> znClientBasic: jsonPrompt [
 
 	|  entityPrompt entity|
 	jsonPrompt
@@ -331,7 +331,7 @@ AilienApi >> znClientBasic: jsonPrompt [
 ]
 
 { #category : 'ollama models' }
-AilienApi >> znClientEntity [
+Ailien0Api >> znClientEntity [
 	"Method to create a JSON body with prompt for OpenAIApi."
     ^ {
         'model' -> model.

@@ -56,7 +56,7 @@ AIACommentExperiments >> buildSamples [
 	commentSamples := OrderedCollection new.
 	self llmCommentBuilders do: [ :builder |
 		builder first defaultModel: builder second. 
-		AilienApi provider: builder first.
+		Ailien0Api provider: builder first.
 		self classCommentTypes do: [ :commentTypes | 
 			AIACommentBuilding commentType: commentTypes.
 			1 to: 3 do: [ :trialIndex |

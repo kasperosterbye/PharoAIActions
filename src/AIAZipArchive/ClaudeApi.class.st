@@ -43,13 +43,13 @@ This implementation provides a robust foundation for integrating Claude's AI cap
 "
 Class {
 	#name : 'ClaudeApi',
-	#superclass : 'AilienApi',
+	#superclass : 'Ailien0Api',
 	#classInstVars : [
 		'lastKeyNumber'
 	],
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#category : 'AIAZipArchive-AIApiArhive',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiArhive'
 }
 
 { #category : 'accessing' }

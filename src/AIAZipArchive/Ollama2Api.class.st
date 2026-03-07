@@ -1,9 +1,9 @@
 Class {
 	#name : 'Ollama2Api',
 	#superclass : 'AilienApiWithTools',
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#category : 'AIAZipArchive-AIApiArhive',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiArhive'
 }
 
 { #category : 'accessing' }

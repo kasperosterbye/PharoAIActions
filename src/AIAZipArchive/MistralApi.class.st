@@ -1,28 +1,30 @@
+"
+Data receive timed out.
+"
 Class {
-	#name : 'Mistral2Api',
-	#superclass : 'AilienApiWithTools',
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#name : 'MistralApi',
+	#superclass : 'Ailien0Api',
+	#category : 'AIAZipArchive-AIApiArhive',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiArhive'
 }
 
 { #category : 'accessing' }
-Mistral2Api class >> apiGenerateUrl [ 
-	"Returns the URL for the Mistral AI API endpoint for generating chat completions"
+MistralApi class >> apiGenerateUrl [ 
 	^ 'https://api.mistral.ai/v1/chat/completions'.
 	
 ]
 
 { #category : 'accessing' }
-Mistral2Api class >> esug [
+MistralApi class >> esug [
 	"Return the API token for Mistral, read from a maarumlam https file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
 	^ ZnClient new url: 'https://maarumlam.dk/pharoCommentsByMistral.txt'; get.
 ]
 
-{ #category : 'accessing' }
-Mistral2Api class >> modelNames [
+{ #category : 'AI models' }
+MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
@@ -30,7 +32,7 @@ Mistral2Api class >> modelNames [
 ]
 
 { #category : 'accessing' }
-Mistral2Api class >> token [
+MistralApi class >> token [
 	"Return the API token for Mistral, read from a local file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
@@ -39,7 +41,7 @@ Mistral2Api class >> token [
 ]
 
 { #category : 'accessing' }
-Mistral2Api class >> znClientHeaders: jsonPrompt [
+MistralApi class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
 		headerAt: 'Authorization' put: self esug;

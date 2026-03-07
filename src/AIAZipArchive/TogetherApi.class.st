@@ -19,10 +19,10 @@ and then add the response to the conversation history.
 "
 Class {
 	#name : 'TogetherApi',
-	#superclass : 'AilienApi',
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#superclass : 'Ailien0Api',
+	#category : 'AIAZipArchive-AIApiArhive',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiArhive'
 }
 
 { #category : 'accessing' }

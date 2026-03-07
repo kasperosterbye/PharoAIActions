@@ -15,7 +15,7 @@ AilienApiTest >> setUp [
 
 	"Put here a common initialization logic for tests"
 	
-	refAilienApi := AilienApi new.
+	refAilienApi := Ailien0Api new.
 ]
 
 { #category : 'running' }

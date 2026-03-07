@@ -1,9 +1,9 @@
 Class {
 	#name : 'AilienApiWithTools',
-	#superclass : 'AilienApi',
-	#category : 'AIActions-AIApi',
-	#package : 'AIActions',
-	#tag : 'AIApi'
+	#superclass : 'Ailien0Api',
+	#category : 'AIAZipArchive-AIApiArhive',
+	#package : 'AIAZipArchive',
+	#tag : 'AIApiArhive'
 }
 
 { #category : 'adding' }

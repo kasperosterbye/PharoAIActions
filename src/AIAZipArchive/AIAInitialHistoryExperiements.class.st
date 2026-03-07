@@ -175,7 +175,7 @@ AIAInitialHistoryExperiements >> f02_noSystemTestFor: llmModel [
 
 { #category : 'initialization' }
 AIAInitialHistoryExperiements >> initialize [ 
-	providersOfAIModels := AilienApi providers.
+	providersOfAIModels := Ailien0Api providers.
 	markDown := WriteStream on: ''
 ]
 
