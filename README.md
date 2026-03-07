@@ -12,7 +12,7 @@ To load the AIActions package in Pharo using Metacello, open a Playground and ru
 Metacello new
     githubUser: 'kasperosterbye' project: 'PharoAIActions' commitish: 'master' path: 'src';
     baseline: 'PharoAIActions';
-    load
+    load.
 ```
 
 ## A YouTube from 2025
