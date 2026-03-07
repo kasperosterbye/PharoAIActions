@@ -50,19 +50,19 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history globals' }
 AIAHistory class >> chatHistories [
 	| historyList |
 	historyList := AIAHistory histories.
 	^ historyList collect: [ :hist | hist chatHistory ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history globals' }
 AIAHistory class >> clearHistories [
 	Histories := OrderedCollection new.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history globals' }
 AIAHistory class >> dDiscussion [
 	<example>
 	| dDiscussion index |
@@ -90,7 +90,7 @@ AIAHistory class >> historyAt: id [
 	^ Histories detect: [ :hist | hist title = id ]
 ]
 
-{ #category : 'Protocol (as yet unclassified) - 7 selector(s)' }
+{ #category : 'history globals' }
 AIAHistory class >> qPrefix [
 	"Returns the qPrefix history, creating it if necessary, with system text and response type"
 	<example>
@@ -103,7 +103,7 @@ AIAHistory class >> qPrefix [
 				yourself] 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history globals' }
 AIAHistory class >> qPrefixSystemText [
 	^ 'You are a Pharo14 Smalltalk expert. Pharo14 is the last version of Pharo. In Pharo a typical class is written as: 
 	SuperclassName << #SubclassName
