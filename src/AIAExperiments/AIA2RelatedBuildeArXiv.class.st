@@ -149,7 +149,7 @@ AIA2RelatedBuildeArXiv >> response10QueryUrl [
 	| hist |
 	hist := AIAHistory new.
 	hist
-		api: (GeminiApi newOnModel: 2);
+		api: (Gemini0Api newOnModel: 2);
 		background: self myPaper;
 		user: self prompt;
 		getResponse.

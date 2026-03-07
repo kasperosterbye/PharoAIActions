@@ -15,7 +15,7 @@ GeminiApiTest >> setUp [
 
 	"Put here a common initialization logic for tests"
 	
-	refGeminiApi := GeminiApi new.
+	refGeminiApi := Gemini0Api new.
 ]
 
 { #category : 'tests' }

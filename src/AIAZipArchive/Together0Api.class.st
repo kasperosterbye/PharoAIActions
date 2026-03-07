@@ -18,7 +18,7 @@ load a response from the API,
 and then add the response to the conversation history.
 "
 Class {
-	#name : 'TogetherApi',
+	#name : 'Together0Api',
 	#superclass : 'Ailien0Api',
 	#category : 'AIAZipArchive-AIApiArhive',
 	#package : 'AIAZipArchive',
@@ -26,14 +26,14 @@ Class {
 }
 
 { #category : 'accessing' }
-TogetherApi class >> apiGenerateUrl [ 
+Together0Api class >> apiGenerateUrl [ 
 	"Returns the URL for Together API chat completions endpoint."
 	^ 'https://api.together.xyz/v1/chat/completions'.
     
 ]
 
 { #category : 'AI models' }
-TogetherApi class >> modelNames [
+Together0Api class >> modelNames [
    "Returns an array of available Together models. "
 	"Check https://api.together.ai/models (use GitHub at login) for updates."
 	"Account area: https://api.together.ai/settings/api-keys"
@@ -45,13 +45,13 @@ TogetherApi class >> modelNames [
 ]
 
 { #category : 'AI models' }
-TogetherApi class >> togetherKey [
+Together0Api class >> togetherKey [
 	"Returns the Together API key from a local file together txt"
     ^ (FileSystem disk workingDirectory / '../../together01.txt') readStream contents trimBoth.
 ]
 
 { #category : 'ollama models' }
-TogetherApi >> bodyForEntityWithPrompt [
+Together0Api >> bodyForEntityWithPrompt [
 	"Creates a json entity for the Together API request with model and conversation history."
     ^ super bodyForEntityWithPrompt addAll: {
         'temperature' -> 0.0.
@@ -59,7 +59,7 @@ TogetherApi >> bodyForEntityWithPrompt [
 ]
 
 { #category : 'accessing' }
-TogetherApi >> buildZnClientWithHeaders: jsonPrompt [
+Together0Api >> buildZnClientWithHeaders: jsonPrompt [
 
 	jsonPrompt
 		headerAt: 'Authorization' put: 'Bearer ' , self class togetherKey;
@@ -67,14 +67,14 @@ TogetherApi >> buildZnClientWithHeaders: jsonPrompt [
 ]
 
 { #category : 'initialization' }
-TogetherApi >> initialize [
+Together0Api >> initialize [
 	"Initialises TogetherApi with default model and empty history for AI interactions."
 	 super initialize.
     self model: self class defaultModel.
 ]
 
 { #category : 'ollama models' }
-TogetherApi >> responseOf: jsonResponse [
+Together0Api >> responseOf: jsonResponse [
 	"Parses JSON response from Together API extracting assistant content handling think tags and errors"
 
 	| parsed response a b endIndex |

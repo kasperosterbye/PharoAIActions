@@ -1,18 +1,18 @@
 Class {
-	#name : 'Claude3Api',
-	#superclass : 'Ailien3Api',
+	#name : 'ClaudeApi',
+	#superclass : 'AilienApi',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
-Claude3Api class >> apiGenerateUrl [ 
+ClaudeApi class >> apiGenerateUrl [ 
 	^ 'https://api.anthropic.com/v1/messages'
 ]
 
 { #category : 'AI models' }
-Claude3Api class >> claudeKey [
+ClaudeApi class >> claudeKey [
 	| fileName |
 	lastKeyNumber ifNil: [ lastKeyNumber := 0 ].
 	lastKeyNumber := lastKeyNumber + 1.
@@ -22,7 +22,7 @@ Claude3Api class >> claudeKey [
 ]
 
 { #category : 'AI models' }
-Claude3Api class >> modelNames [
+ClaudeApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
 	
@@ -35,7 +35,7 @@ Claude3Api class >> modelNames [
 ]
 
 { #category : 'AI models' }
-Claude3Api class >> znClientHeaders: jsonPrompt [
+ClaudeApi class >> znClientHeaders: jsonPrompt [
 	jsonPrompt
 		headerAt: 'x-api-key' put: self claudeKey;
 		headerAt: 'anthropic-version' put: '2023-06-01';
@@ -43,7 +43,7 @@ Claude3Api class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'adding' }
-Claude3Api >> continueToolCall: parsed orWrite: aHistory [
+ClaudeApi >> continueToolCall: parsed orWrite: aHistory [
 	"Continues tool calls writes assistant content or handles api errors"
 
 	| message content |
@@ -59,13 +59,13 @@ Claude3Api >> continueToolCall: parsed orWrite: aHistory [
 ]
 
 { #category : 'adding' }
-Claude3Api >> handleToolCall: toolCall [
+ClaudeApi >> handleToolCall: toolCall [
     (toolCall select: [ :call | (call at: 'type') = 'tool_use' ])
         do: [ :call | self messageList add: (self processToolCall: call) ]
 ]
 
 { #category : 'adding' }
-Claude3Api >> jsonHistory [
+ClaudeApi >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
     messageList do: [ :item |
@@ -79,20 +79,20 @@ Claude3Api >> jsonHistory [
 ]
 
 { #category : 'adding' }
-Claude3Api >> loadResponse: aHistory [
+ClaudeApi >> loadResponse: aHistory [
 
 	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'adding' }
-Claude3Api >> messageListAddResponse: response andTool: toolCall [
+ClaudeApi >> messageListAddResponse: response andTool: toolCall [
 	self messageList add: 'assistant' -> (Dictionary newFrom: {
 				 ('role' -> 'assistant').
 				 ('content' -> (response at: 'content')) })
 ]
 
 { #category : 'adding' }
-Claude3Api >> processToolCall: call [
+ClaudeApi >> processToolCall: call [
     | result encoded|
     result := self 
         executeToolNamed: (call at: 'name')
@@ -107,7 +107,7 @@ Claude3Api >> processToolCall: call [
 ]
 
 { #category : 'adding' }
-Claude3Api >> responseError: parsed hist: aHistory [
+ClaudeApi >> responseError: parsed hist: aHistory [
     | error |
     error := parsed at: 'error'.
     aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message')" from: self".
@@ -115,7 +115,7 @@ Claude3Api >> responseError: parsed hist: aHistory [
 ]
 
 { #category : 'accessing' }
-Claude3Api >> responseOf: jsonResponse [
+ClaudeApi >> responseOf: jsonResponse [
 	"Returns the text content from the parsed Claude API JSON response by extracting the text field from the first content element in the response dictionary"
 	| parsed |
 	parsed := STONJSON fromString: jsonResponse.
@@ -125,7 +125,7 @@ Claude3Api >> responseOf: jsonResponse [
 ]
 
 { #category : 'adding' }
-Claude3Api >> toolSpecification [
+ClaudeApi >> toolSpecification [
 	| all |
     all := AilienApiTool subclasses collect: [ :tool |
         | openAI func params |
@@ -140,7 +140,7 @@ Claude3Api >> toolSpecification [
 ]
 
 { #category : 'adding' }
-Claude3Api >> traitLoadResponse: aHistory [
+ClaudeApi >> traitLoadResponse: aHistory [
 	| maxTurns |
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
@@ -156,7 +156,7 @@ Claude3Api >> traitLoadResponse: aHistory [
 ]
 
 { #category : 'adding' }
-Claude3Api >> xx_callLLM [
+ClaudeApi >> xx_callLLM [
 	| jsonPrompt rawResponse parsed |
 	jsonPrompt := ZnClient new.
 	self znClientBasic: jsonPrompt.
@@ -169,13 +169,13 @@ Claude3Api >> xx_callLLM [
 ]
 
 { #category : 'adding' }
-Claude3Api >> xx_loadResponse: aHistory [
+ClaudeApi >> xx_loadResponse: aHistory [
 
 	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'accessing' }
-Claude3Api >> znClientBasic: jsonPrompt [
+ClaudeApi >> znClientBasic: jsonPrompt [
 
 	|  entityPrompt entity foo|
 	jsonPrompt
@@ -190,7 +190,7 @@ Claude3Api >> znClientBasic: jsonPrompt [
 ]
 
 { #category : 'adding' }
-Claude3Api >> znClientEntity [
+ClaudeApi >> znClientEntity [
     ^ super znClientEntity , {
         'tools' -> self toolSpecification.
         'max_tokens' -> 4096

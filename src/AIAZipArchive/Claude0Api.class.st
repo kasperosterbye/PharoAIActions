@@ -42,7 +42,7 @@ This implementation provides a robust foundation for integrating Claude's AI cap
 ```
 "
 Class {
-	#name : 'ClaudeApi',
+	#name : 'Claude0Api',
 	#superclass : 'Ailien0Api',
 	#classInstVars : [
 		'lastKeyNumber'
@@ -53,12 +53,12 @@ Class {
 }
 
 { #category : 'accessing' }
-ClaudeApi class >> apiGenerateUrl [ 
+Claude0Api class >> apiGenerateUrl [ 
 	^ 'https://api.anthropic.com/v1/messages'
 ]
 
 { #category : 'AI models' }
-ClaudeApi class >> claudeKey [
+Claude0Api class >> claudeKey [
 	| fileName |
 	lastKeyNumber ifNil: [ lastKeyNumber := 0 ].
 	lastKeyNumber := lastKeyNumber + 1.
@@ -68,7 +68,7 @@ ClaudeApi class >> claudeKey [
 ]
 
 { #category : 'AI models' }
-ClaudeApi class >> modelNames [
+Claude0Api class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
 	
@@ -81,7 +81,7 @@ ClaudeApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
-ClaudeApi class >> znClientHeaders: jsonPrompt [
+Claude0Api class >> znClientHeaders: jsonPrompt [
 	jsonPrompt
 		headerAt: 'x-api-key' put: self claudeKey;
 		headerAt: 'anthropic-version' put: '2023-06-01';
@@ -89,7 +89,7 @@ ClaudeApi class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> responseOf: jsonResponse [
+Claude0Api >> responseOf: jsonResponse [
 	"Returns the text content from the parsed Claude API JSON response by extracting the text field from the first content element in the response dictionary"
 	| parsed |
 	parsed := STONJSON fromString: jsonResponse.
@@ -99,7 +99,7 @@ ClaudeApi >> responseOf: jsonResponse [
 ]
 
 { #category : 'accessing' }
-ClaudeApi >> znClientEntity [
+Claude0Api >> znClientEntity [
 	"Creates a JSON request body for Claude API including system content user messages model settings and temperature parameter for message generation"
 	^ super znClientEntity union:  {
         'max_tokens' -> 4096

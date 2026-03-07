@@ -1,20 +1,20 @@
 Class {
-	#name : 'Together3Api',
-	#superclass : 'Ailien3Api',
+	#name : 'TogetherApi',
+	#superclass : 'AilienApi',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
-Together3Api class >> apiGenerateUrl [ 
+TogetherApi class >> apiGenerateUrl [ 
 	"Returns the URL for Together API chat completions endpoint."
 	^ 'https://api.together.xyz/v1/chat/completions'.
     
 ]
 
 { #category : 'accessing' }
-Together3Api class >> modelNames [
+TogetherApi class >> modelNames [
    "Returns an array of available Together models. "
 	"Check https://api.together.ai/models (use GitHub at login) for updates."
 	"Account area: https://api.together.ai/settings/api-keys"
@@ -25,13 +25,13 @@ Together3Api class >> modelNames [
 ]
 
 { #category : 'accessing' }
-Together3Api class >> togetherKey [
+TogetherApi class >> togetherKey [
 	"Returns the Together API key from a local file together txt"
     ^ (FileSystem disk workingDirectory / '../../together01.txt') readStream contents trimBoth.
 ]
 
 { #category : 'accessing' }
-Together3Api class >> znClientHeaders: jsonPrompt [
+TogetherApi class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
 		headerAt: 'Authorization' put: 'Bearer ' , self togetherKey;

@@ -292,7 +292,7 @@ REPORT_MARKDOWN_BEGIN<br>
 <br>REPORT_MARKDOWN_END'.
 	hist := AIAHistory new.
 	hist 
-		api: (OpenAIApi newOnModel: 1);
+		api: (OpenAI0Api newOnModel: 1);
 		background: 'LLM Temperature = 0.0 everywhere';
 		user: prompt;
 		getResponse.

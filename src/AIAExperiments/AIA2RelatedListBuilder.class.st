@@ -148,7 +148,7 @@ AIA2RelatedListBuilder >> old_arxiv10LLMCollect [
 	| hist |
 	hist := AIAHistory new.
 	hist
-		api: (GeminiApi newOnModel: 2);
+		api: (Gemini0Api newOnModel: 2);
 		background: AIA2MultiLLMArchive paperExperiment;
 		user: self arxiv15Related;
 		getResponse.

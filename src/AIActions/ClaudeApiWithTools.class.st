@@ -1,6 +1,6 @@
 Class {
 	#name : 'ClaudeApiWithTools',
-	#superclass : 'ClaudeApi',
+	#superclass : 'Claude0Api',
 	#category : 'AIActions-AIApiTools',
 	#package : 'AIActions',
 	#tag : 'AIApiTools'

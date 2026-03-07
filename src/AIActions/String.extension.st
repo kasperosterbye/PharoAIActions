@@ -80,15 +80,6 @@ String >> q0: systemBlock [
 ]
 
 { #category : '*AIActions' }
-String >> q2 [
-	^ (AIAHistory new
-		api: (Grok3Api newOnModel: 2);
-		user: self;
-		getResponse; 
-		response) 
-]
-
-{ #category : '*AIActions' }
 String >> q: systemBlock [
 	^ AIAHistory new
 		addPreHistory: AIAHistory qPrefix ;

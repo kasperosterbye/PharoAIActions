@@ -76,7 +76,7 @@ AIA2MultiLLMStorage class >> default [
 { #category : 'as yet unclassified' }
 AIA2MultiLLMStorage class >> full_linesToBuild [
 	"Returns a dictionary of full configuration parameters for building LLM storage"
-	^ { #providers -> {ClaudeApi. GeminiApi. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
+	^ { #providers -> {ClaudeApi. Gemini0Api. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
 		#llmNos -> { 1. 2. 3. 4 }.
 		#turnPatterns -> { #UAUAU. #UUU. #AAAU. #AAA }.
 		#responseIds -> (1 to: 7) asArray 
@@ -86,7 +86,7 @@ AIA2MultiLLMStorage class >> full_linesToBuild [
 { #category : 'as yet unclassified' }
 AIA2MultiLLMStorage class >> last_linesToBuild [
 	"Returns a dictionary of full configuration parameters for building LLM storage"
-	^ { #providers -> {ClaudeApi. GeminiApi. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
+	^ { #providers -> {ClaudeApi. Gemini0Api. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
 		#llmNos -> { 1. 3.}.
 		#turnPatterns -> { #UAUAU. #UUU. #AAAU. #AAA }.
 		#responseIds -> (1 to: 2) asArray 
@@ -96,7 +96,7 @@ AIA2MultiLLMStorage class >> last_linesToBuild [
 { #category : 'as yet unclassified' }
 AIA2MultiLLMStorage class >> linesToBuild [
 	"Returns a dictionary of full configuration parameters for building LLM storage"
-	^ { #providers -> {ClaudeApi. GeminiApi. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
+	^ { #providers -> {ClaudeApi. Gemini0Api. GrokApi. MistralApi.  OllamaApi. OpenAIApi. TogetherApi}.
 		#llmNos -> { 1. 2. 3. 4 }.
 		#turnPatterns -> { #UAUAU. #UUU. #AAA. #AAAU }.
 		#responseIds -> (1 to: 7) asArray 

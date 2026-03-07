@@ -41,7 +41,7 @@ The class maintains conversation history and handles the complete lifecycle of A
 This comment provides a comprehensive overview of the class's purpose, key features, and usage patterns while maintaining the British English style requested. The example demonstrates the complete workflow from instance creation to response retrieval, ending with an expression suitable for inspection in Pharo's Playground.
 "
 Class {
-	#name : 'OllamaApi',
+	#name : 'Ollama0Api',
 	#superclass : 'Ailien0Api',
 	#category : 'AIAZipArchive-AIApiArhive',
 	#package : 'AIAZipArchive',
@@ -49,24 +49,24 @@ Class {
 }
 
 { #category : 'accessing' }
-OllamaApi class >> apiGenerateUrl [ 
+Ollama0Api class >> apiGenerateUrl [ 
 	^ 'http://localhost:11434/api/chat'.
 	
 ]
 
 { #category : 'as yet unclassified' }
-OllamaApi class >> exampleUllama [
+Ollama0Api class >> exampleUllama [
 	"(AIAHistory new api: (OllamaApi newModel: 1)) user: 'What is your name'; getResponse ; response. "
 ]
 
 { #category : 'ollama models' }
-OllamaApi class >> modelNames [
+Ollama0Api class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :ollamaModel | ollamaModel at: 'name' ]
 ]
 
 { #category : 'AI models' }
-OllamaApi class >> models [
+Ollama0Api class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"
 	| response  |
 
@@ -75,7 +75,7 @@ OllamaApi class >> models [
 ]
 
 { #category : 'instance creation' }
-OllamaApi class >> newModel: modelNumber [
+Ollama0Api class >> newModel: modelNumber [
 	"make an instance of OllamaApi based on a specfic Ollama model installed"
 	| selectedModel |
 	selectedModel := self modelNames 
@@ -85,7 +85,7 @@ OllamaApi class >> newModel: modelNumber [
 ]
 
 { #category : 'AI models' }
-OllamaApi class >> ollamaVersion [
+Ollama0Api class >> ollamaVersion [
 	"Retrieve the Ollama version"
 	| response  |
 	
@@ -94,12 +94,12 @@ OllamaApi class >> ollamaVersion [
 ]
 
 { #category : 'accessing' }
-OllamaApi class >> znClientHeaders: foo [
+Ollama0Api class >> znClientHeaders: foo [
 	"ignore me"
 ]
 
 { #category : 'ollama models' }
-OllamaApi >> modelInformation [
+Ollama0Api >> modelInformation [
 	"Returns detailed information about the current model by querying the Ollama API and parsing the JSON response."
 	| url jsonResponse requestBody |
 	url := 'http://localhost:11434/api/show'.
@@ -116,7 +116,7 @@ OllamaApi >> modelInformation [
 ]
 
 { #category : 'ollama models' }
-OllamaApi >> modelShortInfo [	
+Ollama0Api >> modelShortInfo [	
 	"Returns a dictionary with the model's name, architecture, parameter count in billions, and context length."
 	| info architecture parameters context_length |
 	info := self modelInformation at: 'model_info'.
@@ -134,7 +134,7 @@ OllamaApi >> modelShortInfo [
 ]
 
 { #category : 'mistral models' }
-OllamaApi >> responseOf: jsonResponse [
+Ollama0Api >> responseOf: jsonResponse [
 	"Extracts response content from JSON API responses, handling errors and cleaning up thought process tags"
 
 	| parsed response a b endIndex |
@@ -153,7 +153,7 @@ OllamaApi >> responseOf: jsonResponse [
 ]
 
 { #category : 'ollama models' }
-OllamaApi >> znClientEntity [
+Ollama0Api >> znClientEntity [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	^ super znClientEntity union:  { 
 		#options -> (Dictionary newFrom: {
@@ -162,7 +162,7 @@ OllamaApi >> znClientEntity [
 ]
 
 { #category : 'ollama models' }
-OllamaApi >> zzz_bodyForEntityWithPrompt [
+Ollama0Api >> zzz_bodyForEntityWithPrompt [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	|  requestDictionary |
 	requestDictionary := super bodyForEntityWithPrompt addAll:  { 

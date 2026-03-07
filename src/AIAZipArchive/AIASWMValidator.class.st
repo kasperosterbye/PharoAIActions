@@ -17,7 +17,7 @@ Class {
 { #category : 'initialization' }
 AIASWMValidator >> initialize [ 
 	super initialize.
-	models := { OpenAIApi newOnModel: 1. ClaudeApi newOnModel: 1. GrokApi newOnModel: 2 }.
+	models := { OpenAI0Api newOnModel: 1. Claude0Api newOnModel: 1. Grok0Api newOnModel: 2 }.
 	responses := WriteStream on: ''.
 	
 ]

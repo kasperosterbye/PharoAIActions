@@ -75,8 +75,8 @@ OllamaApiExperiments >> html: html title: title do: block [
 { #category : 'initialization' }
 OllamaApiExperiments >> initializeOllamaModel [
 	"I am called at the beginning of one of the experiments"
-	models := OllamaApi modelNames "atAll: #(1 2 )".
-	ollamaModel := OllamaApi new.
+	models := Ollama0Api modelNames "atAll: #(1 2 )".
+	ollamaModel := Ollama0Api new.
 ]
 
 { #category : 'accessing' }

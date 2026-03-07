@@ -1,20 +1,20 @@
 Class {
-	#name : 'Mistral3Api',
-	#superclass : 'Ailien3Api',
+	#name : 'MistralApi',
+	#superclass : 'AilienApi',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
-Mistral3Api class >> apiGenerateUrl [ 
+MistralApi class >> apiGenerateUrl [ 
 	"Returns the URL for the Mistral AI API endpoint for generating chat completions"
 	^ 'https://api.mistral.ai/v1/chat/completions'.
 	
 ]
 
 { #category : 'accessing' }
-Mistral3Api class >> esug [
+MistralApi class >> esug [
 	"Return the API token for Mistral, read from a maarumlam https file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
@@ -22,7 +22,7 @@ Mistral3Api class >> esug [
 ]
 
 { #category : 'accessing' }
-Mistral3Api class >> modelNames [
+MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
@@ -30,7 +30,7 @@ Mistral3Api class >> modelNames [
 ]
 
 { #category : 'accessing' }
-Mistral3Api class >> token [
+MistralApi class >> token [
 	"Return the API token for Mistral, read from a local file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
@@ -39,7 +39,7 @@ Mistral3Api class >> token [
 ]
 
 { #category : 'accessing' }
-Mistral3Api class >> znClientHeaders: jsonPrompt [
+MistralApi class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
 		headerAt: 'Authorization' put: self esug;

@@ -197,8 +197,8 @@ MistralApiExperiments >> html: html title: title do: block [
 { #category : 'initialization' }
 MistralApiExperiments >> initializeMistralModel [
 	"I am called at the beginning of one of the experiments"
-	models := MistralApi modelNames "atAll: #(1 2 )".
-	mistralModel := MistralApi new.
+	models := Mistral0Api modelNames "atAll: #(1 2 )".
+	mistralModel := Mistral0Api new.
 ]
 
 { #category : 'accessing' }

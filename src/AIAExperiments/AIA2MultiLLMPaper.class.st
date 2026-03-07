@@ -84,7 +84,7 @@ AIA2MultiLLMPaper paperText
 
 { #category : 'paper build' }
 AIA2MultiLLMPaper >> apiFourLevels [
-	^ { GeminiApi newOnModel: 2.
+	^ { Gemini0Api newOnModel: 2.
 		TogetherApi newOnModel: 3.
 		ClaudeApi newOnModel: 5.
 		OpenAIApi newOnModel: 1.

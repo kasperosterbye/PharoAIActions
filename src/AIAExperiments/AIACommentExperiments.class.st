@@ -109,7 +109,7 @@ Return only one word: IDENTICAL, MINOR, or MAJOR.'.
 
 { #category : 'accessing' }
 AIACommentExperiments >> llmCommentBuilders [
-	^ { {MistralApi. 1}. {GrokApi . 2}. {GeminiApi . 2} }
+	^ { {MistralApi. 1}. {GrokApi . 2}. {Gemini0Api . 2} }
 ]
 
 { #category : 'accessing' }

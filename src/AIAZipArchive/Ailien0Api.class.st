@@ -177,7 +177,7 @@ Ailien0Api class >> provider: aProvider [
 	(aProvider isInteger and: [ aProvider > 0 and: [ aProvider < self providers size ] ]) ifTrue: [
 			Provider := providers at: aProvider.
 			^ self ].
-	Provider := MistralApi
+	Provider := Mistral0Api
 ]
 
 { #category : 'provider' }

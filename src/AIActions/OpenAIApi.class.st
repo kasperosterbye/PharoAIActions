@@ -1,19 +1,19 @@
 Class {
-	#name : 'OpenAI3Api',
-	#superclass : 'Ailien3Api',
+	#name : 'OpenAIApi',
+	#superclass : 'AilienApi',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
-OpenAI3Api class >> apiGenerateUrl [
+OpenAIApi class >> apiGenerateUrl [
 	"Method to generate the API URL for OpenAIApi."
     ^ 'https://api.openai.com/v1/chat/completions'
 ]
 
 { #category : 'accessing' }
-OpenAI3Api class >> modelNames [
+OpenAIApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://platform.openai.com/docs/models to see the list"
 	
@@ -21,14 +21,14 @@ OpenAI3Api class >> modelNames [
 ]
 
 { #category : 'accessing' }
-OpenAI3Api class >> openAI01 [
+OpenAIApi class >> openAI01 [
 	"Method to read and trim the contents of a file named Eva01.txt."
 	^ (FileSystem disk workingDirectory / '../../Eva01.txt')
 		readStream contents trimBoth.
 ]
 
 { #category : 'accessing' }
-OpenAI3Api class >> znClientHeaders: jsonPrompt [
+OpenAIApi class >> znClientHeaders: jsonPrompt [
 	"Sets the necessary headers for the ZnClient to interact with the OpenAI API, including authorization and content type."
 	jsonPrompt
 		headerAt: 'Authorization' put: self openAI01;

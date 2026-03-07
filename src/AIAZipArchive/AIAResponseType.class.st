@@ -72,7 +72,7 @@ AIAResponseType class >> responseTypes [
 AIAResponseType class >> testProviders [
 	"Returns a list of API providers for testing AI responses"
 	
-	^ { MistralApi . GrokApi. GeminiApi. OllamaApi. OpenAIApi . ClaudeApi. TogetherApi}
+	^ { Mistral0Api . Grok0Api. Gemini0Api. Ollama0Api. OpenAI0Api . Claude0Api. Together0Api}
 	"^ { ClaudeApi.}"
 	
 ]

@@ -21,10 +21,10 @@ AIA1MultiLLMPaper class >> paper [
 
 { #category : 'as yet unclassified' }
 AIA1MultiLLMPaper >> apiFourLevels [
-	^ { GeminiApi newOnModel: 2.
-		TogetherApi newOnModel: 3.
-		OpenAIApi newOnModel: 1.
-		ClaudeApi newOnModel: 5
+	^ { Gemini0Api newOnModel: 2.
+		Together0Api newOnModel: 3.
+		OpenAI0Api newOnModel: 1.
+		Claude0Api newOnModel: 5
 	 }
 ]
 

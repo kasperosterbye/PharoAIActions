@@ -41,13 +41,13 @@ AIASWMreport class >> prompts [
 { #category : 'default-settings' }
 AIASWMreport class >> testModels [
 	^ {
-		  GrokApi newOnModel: 1 "grok-code-fast-1".
-		  GrokApi newOnModel: 2 "Grok-4-fast-reasoning".
-		  MistralApi newOnModel: 1 "codestral-latest".
-		  MistralApi newOnModel: 3 "devstral-medium-2507".
-		  TogetherApi newOnModel: 3 "Qwen3-235B-A22B" .
-		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
-		  OpenAIApi newOnModel: 1 "gpt-5.1" .
+		  Grok0Api newOnModel: 1 "grok-code-fast-1".
+		  Grok0Api newOnModel: 2 "Grok-4-fast-reasoning".
+		  Mistral0Api newOnModel: 1 "codestral-latest".
+		  Mistral0Api newOnModel: 3 "devstral-medium-2507".
+		  Together0Api newOnModel: 3 "Qwen3-235B-A22B" .
+		  Together0Api newOnModel: 4 "DeepSeek-V3.1".
+		  OpenAI0Api newOnModel: 1 "gpt-5.1" .
 		  "GeminiApi newOnModel: 2 ""gemini-2.5-pro"" "}
 ]
 
@@ -68,7 +68,7 @@ AIASWMreport >> getBiblatex [
 	| bib |
 	bib := AIAHistory new.
 	bib 
-		api: (MistralApi newOnModel: 1);
+		api: (Mistral0Api newOnModel: 1);
 		addPreHistory: originalPaperHistory;
 		user: 'Please give the complete biblatex text for the background paper; just return the bibtex, no explanation.';
 	 getResponse.
@@ -102,7 +102,7 @@ AIASWMreport >> getFinalResponses [
 	"The method generates a consolidated evaluation of a paper by synthesizing responses from multiple AI models. It uses a high-level model (Claude) to combine and refine all previous evaluations into a final comprehensive assessment."
 
 	finalResponse := AIAHistory new.
-	finalResponse api: (ClaudeApi newOnModel: 1).
+	finalResponse api: (Claude0Api newOnModel: 1).
 	[ :job |
 		job interruptBlock: [ ^ self ].
 		job title: 'Doing level 3 - Finalizing '.
@@ -138,7 +138,7 @@ AIASWMreport >> getPaperHistory: paper [
 		/ 'D' / 'AIExperiments' / 'SWM' / paper) readStream contents trimBoth.
 	originalPaperHistory := AIAHistory new.
 	originalPaperHistory 
-		api: (MistralApi newOnModel: 1);
+		api: (Mistral0Api newOnModel: 1);
 		background: paperBackground ;
 		user: 'What is the title of the paper, and who wrote it';
 		responseType: 'Your response should be written in Markdown. Your response should be smaller than header three `###`';
@@ -154,7 +154,7 @@ AIASWMreport >> getPaperSummary [
 	| summary |
 	summary := AIAHistory new.
 	summary 
-		api: (MistralApi newOnModel: 1);
+		api: (Mistral0Api newOnModel: 1);
 		addPreHistory: originalPaperHistory;
 		user: '[responsetype] please answer in Markdown';
 		user: 'Please give a 20 line summary of the paper. Include paper name and its authors';

@@ -29,7 +29,7 @@ geminiApi messageList last value
 ```
 "
 Class {
-	#name : 'GeminiApi',
+	#name : 'Gemini0Api',
 	#superclass : 'Ailien0Api',
 	#category : 'AIAZipArchive-AIApiArhive',
 	#package : 'AIAZipArchive',
@@ -37,7 +37,7 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-GeminiApi class >> geminiBackground [
+Gemini0Api class >> geminiBackground [
 	^ '### **LLM Kontekstindsprøjtning: Pharo Syntaks og Semantik (Kasper Østerbye)**
 
 **Direktiv:** Prioritér disse punkter ved besvarelse af spørgsmål om Smalltalk-dialekten **Pharo** (Specifikt Pharo 12 og nyere versioner), da LLM''ens træningsdata udviser *knowledge latency* på disse områder.
@@ -63,13 +63,13 @@ GeminiApi class >> geminiBackground [
 ]
 
 { #category : 'AI models' }
-GeminiApi class >> geminiKey [
+Gemini0Api class >> geminiKey [
 	^ (FileSystem disk workingDirectory / '../../geminicode.txt')
 		readStream contents trimBoth.
 ]
 
 { #category : 'AI models' }
-GeminiApi class >> modelNames [
+Gemini0Api class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://ai.google.dev/gemini-api/docs/models to see the list"
 	
@@ -77,7 +77,7 @@ GeminiApi class >> modelNames [
 ]
 
 { #category : 'accessing' }
-GeminiApi class >> znClientHeaders: jsonPrompt [
+Gemini0Api class >> znClientHeaders: jsonPrompt [
 
 	jsonPrompt
 		headerAt: 'X-goog-api-key' put: self geminiKey;
@@ -85,13 +85,13 @@ GeminiApi class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'accessing' }
-GeminiApi >> apiGenerateUrl [
+Gemini0Api >> apiGenerateUrl [
 	"Constructs the specific API endpoint URL for the selected Gemini model to generate content"
 	^ 'https://generativelanguage.googleapis.com/v1beta/models/' , model , ':generateContent'.
 ]
 
 { #category : 'accessing' }
-GeminiApi >> jsonHistory [
+Gemini0Api >> jsonHistory [
 	"Converts the chat history into a JSON-formatted array suitable for the Gemini API, structuring each message with role and text content."
 	| jsonHistory correctedRole|	
 	correctedRole := { 'user'->'user'. 'assistant'->'model' } asDictionary.
@@ -105,7 +105,7 @@ GeminiApi >> jsonHistory [
 ]
 
 { #category : 'accessing' }
-GeminiApi >> responseOf: jsonResponse [
+Gemini0Api >> responseOf: jsonResponse [
 	"Parses Gemini API JSON response to extract assistant's text, handling errors gracefully"
 	| parsed message |
 	parsed := STONJSON fromString: jsonResponse.
@@ -117,7 +117,7 @@ GeminiApi >> responseOf: jsonResponse [
 ]
 
 { #category : 'ollama models' }
-GeminiApi >> znClientEntity [
+Gemini0Api >> znClientEntity [
 	"Constructs JSON entity for API request with chat history and generation config. Formats history as role-parts array and sets temperature to 0. Returns ZnEntity with JSON string."
 
 	^ {

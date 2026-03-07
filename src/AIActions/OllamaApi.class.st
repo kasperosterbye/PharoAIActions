@@ -1,25 +1,25 @@
 Class {
-	#name : 'Ollama3Api',
-	#superclass : 'Ailien3Api',
+	#name : 'OllamaApi',
+	#superclass : 'AilienApi',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
-Ollama3Api class >> apiGenerateUrl [ 
+OllamaApi class >> apiGenerateUrl [ 
 	^ 'http://localhost:11434/api/chat'.
 	
 ]
 
 { #category : 'accessing' }
-Ollama3Api class >> modelNames [
+OllamaApi class >> modelNames [
 	"returns an array with one item per model."
 	^ self models collect: [ :ollamaModel | ollamaModel at: 'name' ]
 ]
 
 { #category : 'accessing' }
-Ollama3Api class >> models [
+OllamaApi class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"
 	| response  |
 
@@ -28,7 +28,7 @@ Ollama3Api class >> models [
 ]
 
 { #category : 'accessing' }
-Ollama3Api class >> newModel: modelNumber [
+OllamaApi class >> newModel: modelNumber [
 	"make an instance of OllamaApi based on a specfic Ollama model installed"
 	| selectedModel |
 	selectedModel := self modelNames 
@@ -38,7 +38,7 @@ Ollama3Api class >> newModel: modelNumber [
 ]
 
 { #category : 'accessing' }
-Ollama3Api class >> ollamaVersion [
+OllamaApi class >> ollamaVersion [
 	"Retrieve the Ollama version"
 	| response  |
 	
@@ -47,12 +47,12 @@ Ollama3Api class >> ollamaVersion [
 ]
 
 { #category : 'accessing' }
-Ollama3Api class >> znClientHeaders: foo [
+OllamaApi class >> znClientHeaders: foo [
 	"ignore me"
 ]
 
 { #category : 'adding' }
-Ollama3Api >> continueToolCall: parsed orWrite: aHistory [
+OllamaApi >> continueToolCall: parsed orWrite: aHistory [
 	"Continues tool calls writes assistant content or handles api errors"
 
 	| message content |
@@ -68,7 +68,7 @@ Ollama3Api >> continueToolCall: parsed orWrite: aHistory [
 ]
 
 { #category : 'adding' }
-Ollama3Api >> processToolCall: call [
+OllamaApi >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
     | func result |
     func := call at: 'function'.
