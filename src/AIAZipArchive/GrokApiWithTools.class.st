@@ -24,8 +24,8 @@ The class works with AilienApiTool subclasses to provide the actual tool impleme
 Class {
 	#name : 'GrokApiWithTools',
 	#superclass : 'Grok0Api',
-	#category : 'AIActions-AIApiTools',
-	#package : 'AIActions',
+	#category : 'AIAZipArchive-AIApiTools',
+	#package : 'AIAZipArchive',
 	#tag : 'AIApiTools'
 }
 

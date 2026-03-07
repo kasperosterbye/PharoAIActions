@@ -1,8 +1,8 @@
 Class {
 	#name : 'ApiToolExpression',
 	#superclass : 'AilienApiTool',
-	#category : 'AIActions-AIApiTools',
-	#package : 'AIActions',
+	#category : 'AIAZipArchive-AIApiTools',
+	#package : 'AIAZipArchive',
 	#tag : 'AIApiTools'
 }
 

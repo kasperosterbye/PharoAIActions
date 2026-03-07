@@ -36,8 +36,8 @@ This class is essential for integrating AI interactions with tool execution in P
 Class {
 	#name : 'OllamaApiWithTools',
 	#superclass : 'Ollama0Api',
-	#category : 'AIActions-AIApiTools',
-	#package : 'AIActions',
+	#category : 'AIAZipArchive-AIApiTools',
+	#package : 'AIAZipArchive',
 	#tag : 'AIApiTools'
 }
 

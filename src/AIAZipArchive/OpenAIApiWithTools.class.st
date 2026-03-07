@@ -34,20 +34,20 @@ The `MistralApiWithTools` class extends the `MistralApi` class to integrate tool
 This class is essential for integrating AI interactions with tool execution in Pharo, providing a seamless and powerful user experience.
 "
 Class {
-	#name : 'MistralApiWithTools',
-	#superclass : 'Mistral0Api',
-	#category : 'AIActions-AIApiTools',
-	#package : 'AIActions',
+	#name : 'OpenAIApiWithTools',
+	#superclass : 'OpenAI0Api',
+	#category : 'AIAZipArchive-AIApiTools',
+	#package : 'AIAZipArchive',
 	#tag : 'AIApiTools'
 }
 
 { #category : 'instance creation' }
-MistralApiWithTools class >> new [
+OpenAIApiWithTools class >> new [
 	self halt
 ]
 
 { #category : 'tools support' }
-MistralApiWithTools >> jsonHistory [
+OpenAIApiWithTools >> jsonHistory [
     | jsonHistory |
     jsonHistory := OrderedCollection new.
     messageList do: [ :item | self addJsonHistory: jsonHistory for: item ].
@@ -55,19 +55,19 @@ MistralApiWithTools >> jsonHistory [
 ]
 
 { #category : 'tools support' }
-MistralApiWithTools >> loadResponse: aHistory [
+OpenAIApiWithTools >> loadResponse: aHistory [
 
 	self traitLoadResponse: aHistory  
 ]
 
 { #category : 'tools support' }
-MistralApiWithTools >> printOn: aStream [
+OpenAIApiWithTools >> printOn: aStream [
 	"Prints the MistralApi instance with its current model name for debugging and logging purposes."
-	aStream << 'MistralApiWithTools: ' << self model.
+	aStream << 'OpenAIApiWithTools: ' << self model.
 ]
 
 { #category : 'tools support' }
-MistralApiWithTools >> znClientEntity [
+OpenAIApiWithTools >> znClientEntity [
 	"Returns the body of an entity with a given prompt by sending a POST request to the Ollama API."
 	^ super znClientEntity ,  {
         'tools' -> self toolSpecification.
