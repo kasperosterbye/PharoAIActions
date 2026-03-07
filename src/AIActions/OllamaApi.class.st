@@ -43,9 +43,9 @@ This comment provides a comprehensive overview of the class's purpose, key featu
 Class {
 	#name : 'OllamaApi',
 	#superclass : 'AilienApi',
-	#category : 'AIAZipArchive-AIApiNoTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiNoTools'
+	#category : 'AIActions-AIApi',
+	#package : 'AIActions',
+	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }

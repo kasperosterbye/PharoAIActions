@@ -4,9 +4,9 @@ Data receive timed out.
 Class {
 	#name : 'MistralApi',
 	#superclass : 'AilienApi',
-	#category : 'AIAZipArchive-AIApiNoTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiNoTools'
+	#category : 'AIActions-AIApi',
+	#package : 'AIActions',
+	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }

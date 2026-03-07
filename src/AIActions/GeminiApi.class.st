@@ -31,9 +31,9 @@ geminiApi messageList last value
 Class {
 	#name : 'GeminiApi',
 	#superclass : 'AilienApi',
-	#category : 'AIAZipArchive-AIApiNoTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiNoTools'
+	#category : 'AIActions-AIApi',
+	#package : 'AIActions',
+	#tag : 'AIApi'
 }
 
 { #category : 'as yet unclassified' }

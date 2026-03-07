@@ -22,9 +22,9 @@ grok responseOf: grok lastResponse.
 Class {
 	#name : 'GrokApi',
 	#superclass : 'AilienApi',
-	#category : 'AIAZipArchive-AIApiNoTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiNoTools'
+	#category : 'AIActions-AIApi',
+	#package : 'AIActions',
+	#tag : 'AIApi'
 }
 
 { #category : 'accessing' }
