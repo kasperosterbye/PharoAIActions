@@ -1,3 +1,33 @@
+"
+# Class: OllamaApi
+
+AilienApi << #OllamaApi
+    slots: {}
+    tag: 'AIApi'
+    package: 'AIActions'
+
+## Class comment
+
+The `OllamaApi` class provides an interface to interact with the Ollama API, allowing users to generate responses from various AI models. This class extends the `AilienApi` superclass and is designed to handle specific interactions with the Ollama API, including model management, message processing, and response handling.
+
+### Usage Example
+
+```st
+""Create an instance of OllamaApi and set the model""
+ollamaApi := OllamaApi newModel: 1.
+
+""Set the message list for the API interaction""
+ollamaApi messageList: { 'user' -> 'Hello, how are you?' }.
+
+""Load the response from the API""
+ollamaApi loadResponse: 'http://localhost:11434/api/chat'.
+
+""Inspect the response""
+ollamaApi history
+```
+
+This example demonstrates how to create an instance of `OllamaApi`, set the model, and interact with the API to generate a response. The `history` method is used to inspect the conversation history after the response is loaded.
+"
 Class {
 	#name : 'OllamaApi',
 	#superclass : 'AilienApi',
@@ -8,6 +38,7 @@ Class {
 
 { #category : 'accessing' }
 OllamaApi class >> apiGenerateUrl [ 
+	"Returns the URL for the Ollama API chat endpoint"
 	^ 'http://localhost:11434/api/chat'.
 	
 ]

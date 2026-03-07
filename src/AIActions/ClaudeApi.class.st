@@ -1,6 +1,36 @@
+"
+# Class: ClaudeApi
+
+A `ClaudeApi` is a subclass of `AilienApi` designed to interact with the Anthropic's Claude AI models. It provides functionality to manage conversations, handle tool specifications, and process responses from the AI API. The class supports multiple models and includes methods for setting up API requests, managing message history, and processing responses.
+
+## Usage Example
+
+```st
+""Create an instance of ClaudeApi and set the model""
+api := ClaudeApi new.
+api model: 'claude-sonnet-4-20250514'.
+
+""Add messages to the conversation history""
+api messageList: {
+    'user' -> 'Hello, how are you?'.
+    'assistant' -> 'I am doing well, thank you! How can I assist you today?'
+}.
+
+""Generate the JSON body for the API request""
+jsonBody := api znClientEntity.
+
+""Inspect the JSON body""
+jsonBody inspect.
+```
+
+This example demonstrates how to create an instance of `ClaudeApi`, set the model, add messages to the conversation history, and generate the JSON body for the API request. The JSON body can then be inspected to verify its contents.
+"
 Class {
 	#name : 'ClaudeApi',
 	#superclass : 'AilienApi',
+	#classInstVars : [
+		'lastKeyNumber'
+	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -8,11 +38,13 @@ Class {
 
 { #category : 'accessing' }
 ClaudeApi class >> apiGenerateUrl [ 
+	"Returns the URL endpoint for generating API responses using the Claude model"
 	^ 'https://api.anthropic.com/v1/messages'
 ]
 
 { #category : 'AI models' }
 ClaudeApi class >> claudeKey [
+	"Returns the API key for the Claude model, cycling through available keys"
 	| fileName |
 	lastKeyNumber ifNil: [ lastKeyNumber := 0 ].
 	lastKeyNumber := lastKeyNumber + 1.
@@ -36,6 +68,7 @@ ClaudeApi class >> modelNames [
 
 { #category : 'AI models' }
 ClaudeApi class >> znClientHeaders: jsonPrompt [
+	"Configures and returns the headers for the HTTP client used to interact with the Claude API, including the API key and version information"
 	jsonPrompt
 		headerAt: 'x-api-key' put: self claudeKey;
 		headerAt: 'anthropic-version' put: '2023-06-01';
@@ -43,29 +76,8 @@ ClaudeApi class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'adding' }
-ClaudeApi >> continueToolCall: parsed orWrite: aHistory [
-	"Continues tool calls writes assistant content or handles api errors"
-
-	| message content |
-	(parsed includesKey: 'error') ifTrue: [ 
-		self responseError: parsed hist: aHistory.
-		^ nil ].
-	message := parsed at: 'content'.
-	content := message select: [ :block | (block at: 'type') = 'tool_use' ].
-	content isEmpty ifTrue: [
-			aHistory assistant: ((message detect: [ :b | (b at: 'type') = 'text' ]) at: 'text'). " from: self"
-			^ nil ].
-	^ message 
-]
-
-{ #category : 'adding' }
-ClaudeApi >> handleToolCall: toolCall [
-    (toolCall select: [ :call | (call at: 'type') = 'tool_use' ])
-        do: [ :call | self messageList add: (self processToolCall: call) ]
-]
-
-{ #category : 'adding' }
 ClaudeApi >> jsonHistory [
+	"Returns the JSON representation of the message history for API interaction"
     | jsonHistory |
     jsonHistory := OrderedCollection new.
     messageList do: [ :item |
@@ -80,52 +92,20 @@ ClaudeApi >> jsonHistory [
 
 { #category : 'adding' }
 ClaudeApi >> loadResponse: aHistory [
-
-	self traitLoadResponse: aHistory  
-]
-
-{ #category : 'adding' }
-ClaudeApi >> messageListAddResponse: response andTool: toolCall [
-	self messageList add: 'assistant' -> (Dictionary newFrom: {
-				 ('role' -> 'assistant').
-				 ('content' -> (response at: 'content')) })
-]
-
-{ #category : 'adding' }
-ClaudeApi >> processToolCall: call [
-    | result encoded|
-    result := self 
-        executeToolNamed: (call at: 'name')
-        withArgs: (call at: 'input').
-    encoded := 'user' -> (Dictionary newFrom: {
-        'role' -> 'user'.
-        'content' -> { Dictionary newFrom: {
-            'type' -> 'tool_result'.
-            'tool_use_id' -> (call at: 'id').
-            'content' -> result } } }).
-	^ encoded 
-]
-
-{ #category : 'adding' }
-ClaudeApi >> responseError: parsed hist: aHistory [
-    | error |
-    error := parsed at: 'error'.
-    aHistory assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message')" from: self".
-    ^ self
-]
-
-{ #category : 'accessing' }
-ClaudeApi >> responseOf: jsonResponse [
-	"Returns the text content from the parsed Claude API JSON response by extracting the text field from the first content element in the response dictionary"
-	| parsed |
-	parsed := STONJSON fromString: jsonResponse.
-	[ ^ (parsed at: 'content') first at: 'text'.]
-		on: Error
-		do: [  ^ self errorResponse: jsonResponse  ]
+	"Loads and processes the response from the AI API, updating the conversation history with the assistant's reply."
+	| maxTurns  |
+	history := aHistory.
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			(ClaudeInnerCall on: self turn: turn) innerCall.
+			].
+	^ history assistant: 
+		('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
 
 { #category : 'adding' }
 ClaudeApi >> toolSpecification [
+	"Returns a collection of tool specifications for all registered API tool subclasses"
 	| all |
     all := AilienApiTool subclasses collect: [ :tool |
         | openAI func params |
@@ -140,57 +120,8 @@ ClaudeApi >> toolSpecification [
 ]
 
 { #category : 'adding' }
-ClaudeApi >> traitLoadResponse: aHistory [
-	| maxTurns |
-	maxTurns := 50.
-	1 to: maxTurns do: [ :turn |
-			| response toolCall |
-			response := self callLLM .
-			toolCall := self continueToolCall: response orWrite: aHistory. 
-			toolCall ifNil: [ ^ self ].
-			Transcript << '## ' << self class name asString << ': ' << turn asString << String lf.
-			self messageListAddResponse: response andTool: toolCall. 
-			self handleToolCall: toolCall.
-			].
-	^ aHistory assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
-]
-
-{ #category : 'adding' }
-ClaudeApi >> xx_callLLM [
-	| jsonPrompt rawResponse parsed |
-	jsonPrompt := ZnClient new.
-	self znClientBasic: jsonPrompt.
-	self class znClientHeaders: jsonPrompt.
-	rawResponse := jsonPrompt
-		               post;
-		               contents.
-	parsed := STONJSON fromString: rawResponse.
-	^ parsed
-]
-
-{ #category : 'adding' }
-ClaudeApi >> xx_loadResponse: aHistory [
-
-	self traitLoadResponse: aHistory  
-]
-
-{ #category : 'accessing' }
-ClaudeApi >> znClientBasic: jsonPrompt [
-
-	|  entityPrompt entity foo|
-	jsonPrompt
-		timeout: self responseWaitingInSecs;
-		url: self apiGenerateUrl.
-	entity := self znClientEntity asDictionary deepCopy .
-	foo := STONJSON toString: entity.
-	entityPrompt := ZnEntity json: foo.
-	jsonPrompt 
-		entity: entityPrompt .
-	
-]
-
-{ #category : 'adding' }
 ClaudeApi >> znClientEntity [
+	"Returns the JSON body for the API request, including the message history and tool specifications"
     ^ super znClientEntity , {
         'tools' -> self toolSpecification.
         'max_tokens' -> 4096

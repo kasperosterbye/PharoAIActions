@@ -1,3 +1,33 @@
+"
+# Class: OpenAIApi
+
+A subclass of `AilienApi` designed to interact with the OpenAI API for generating chat completions. This class provides methods to configure and execute requests to the OpenAI API, manage conversation history, and handle responses.
+
+## Usage Example
+
+```st
+""Create an instance of OpenAIApi and set the model""
+openAI := OpenAIApi new.
+openAI model: 'gpt-5.1'.
+
+""Add a message to the message list""
+openAI messageList: {('user' -> 'Hello, how are you?').}.
+
+""Generate the API URL""
+url := openAI apiGenerateUrl.
+
+""Create a ZnClient entity with the JSON prompt""
+jsonPrompt := openAI znClientEntity.
+
+""Set the necessary headers for the ZnClient""
+openAI znClientHeaders: jsonPrompt.
+
+""Inspect the JSON prompt""
+jsonPrompt
+```
+
+This example demonstrates how to create an instance of `OpenAIApi`, set the model, add a message to the message list, generate the API URL, create a ZnClient entity with the JSON prompt, set the necessary headers for the ZnClient, and inspect the JSON prompt.
+"
 Class {
 	#name : 'OpenAIApi',
 	#superclass : 'AilienApi',

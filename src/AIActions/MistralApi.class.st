@@ -1,3 +1,31 @@
+"
+# Class Comment for MistralApi
+
+The `MistralApi` class provides an interface to interact with the Mistral AI API for generating chat completions. It extends the `AilienApi` class, inheriting core functionalities for managing AI interactions, including setting models, handling message lists, and managing conversation history.
+
+## Key Features
+
+- **API Endpoint Management**: Provides the specific URL for the Mistral AI API endpoint for generating chat completions.
+- **Model Handling**: Offers a predefined list of available models for use with the Mistral API.
+- **Token Management**: Reads and manages API tokens required for authenticating requests to the Mistral API.
+- **Request Handling**: Facilitates the creation and sending of JSON requests to the Mistral API, including setting appropriate headers and handling responses.
+
+## Usage Example
+
+```st
+""Create an instance of MistralApi and set the model""
+mistralApi := MistralApi new.
+mistralApi model: 'codestral-latest'.
+
+""Set the message list for the API interaction""
+mistralApi messageList: { 'role' -> 'user'. 'content' -> 'Hello, how are you?' } asDictionary.
+
+""Inspect the MistralApi instance""
+mistralApi inspect.
+```
+
+This example demonstrates how to create an instance of `MistralApi`, set the desired model, and configure the message list for an API interaction. The final expression inspects the `MistralApi` instance, allowing you to explore its state and methods interactively in the Pharo Playground.
+"
 Class {
 	#name : 'MistralApi',
 	#superclass : 'AilienApi',

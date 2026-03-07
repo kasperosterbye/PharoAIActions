@@ -1,3 +1,27 @@
+"
+# Class: TogetherApi
+
+A `TogetherApi` is a subclass of `AilienApi` designed to interact with the Together AI API. It provides methods to configure and execute chat completions using various AI models. The class handles the setup of API headers, manages conversation history, and processes responses from the Together AI service.
+
+## Usage Example
+
+```st
+""Create an instance of TogetherApi and set the model""
+api := TogetherApi new.
+api model: 'Qwen/Qwen3-Next-80B-A3B-Instruct'.
+
+""Add a message to the conversation history""
+api messageList: { 'user' -> 'Hello, how are you?' }.
+
+""Generate a response from the AI""
+response := api loadResponse.
+
+""Inspect the response""
+response inspect.
+```
+
+This example demonstrates how to create an instance of `TogetherApi`, set the desired AI model, add a message to the conversation history, and generate a response from the AI. The response is then inspected to view the details.
+"
 Class {
 	#name : 'TogetherApi',
 	#superclass : 'AilienApi',
@@ -32,6 +56,7 @@ TogetherApi class >> togetherKey [
 
 { #category : 'accessing' }
 TogetherApi class >> znClientHeaders: jsonPrompt [
+	"Sets the headers for the HTTP request to the Together API, including the authorization token and content type."
 
 	jsonPrompt
 		headerAt: 'Authorization' put: 'Bearer ' , self togetherKey;
