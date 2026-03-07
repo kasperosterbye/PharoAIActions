@@ -1,5 +1,5 @@
 Class {
-	#name : 'Ailien2InnerCall',
+	#name : 'Ailien3InnerCall',
 	#superclass : 'Object',
 	#instVars : [
 		'outer',
@@ -13,7 +13,7 @@ Class {
 }
 
 { #category : 'instance creation' }
-Ailien2InnerCall class >> on: outer turn: turn [
+Ailien3InnerCall class >> on: outer turn: turn [
 	| instance |
 	instance := self new.
 	instance outer: outer.
@@ -22,7 +22,7 @@ Ailien2InnerCall class >> on: outer turn: turn [
 ]
 
 { #category : 'adding' }
-Ailien2InnerCall >> callLLM [
+Ailien3InnerCall >> callLLM [
 	| jsonPrompt rawResponse |
 	jsonPrompt := ZnClient new.
 	self znClientBasic: jsonPrompt.
@@ -34,7 +34,7 @@ Ailien2InnerCall >> callLLM [
 ]
 
 { #category : 'checking' }
-Ailien2InnerCall >> check [
+Ailien3InnerCall >> check [
 	"Continues tool calls writes assistant content or handles api errors"
 
 	| message content |
@@ -50,7 +50,7 @@ Ailien2InnerCall >> check [
 ]
 
 { #category : 'trait tools support' }
-Ailien2InnerCall >> executeToolNamed: name withArgs: args [
+Ailien3InnerCall >> executeToolNamed: name withArgs: args [
 	"Executes a tool with the given name and arguments, returning the result"
 	AilienApiTool subclasses do: [ :tool | 
 		| instance |
@@ -62,13 +62,13 @@ Ailien2InnerCall >> executeToolNamed: name withArgs: args [
 ]
 
 { #category : 'as yet unclassified' }
-Ailien2InnerCall >> handleToolCall [
+Ailien3InnerCall >> handleToolCall [
 	(toolCall at: 'tool_calls') do: [ :call | 
 		outer messageList add: (self processToolCall: call) ]
 ]
 
 { #category : 'as yet unclassified' }
-Ailien2InnerCall >> innerCall [
+Ailien3InnerCall >> innerCall [
 
 	self callLLM.
 	toolCall := self check.
@@ -79,22 +79,22 @@ Ailien2InnerCall >> innerCall [
 ]
 
 { #category : 'as yet unclassified' }
-Ailien2InnerCall >> messageListAdd [
+Ailien3InnerCall >> messageListAdd [
 	outer messageList add: 'assistant' -> toolCall. 
 ]
 
 { #category : 'accessing' }
-Ailien2InnerCall >> outer [
+Ailien3InnerCall >> outer [
 	^ outer
 ]
 
 { #category : 'accessing' }
-Ailien2InnerCall >> outer: o [
+Ailien3InnerCall >> outer: o [
 	outer := o
 ]
 
 { #category : 'adding' }
-Ailien2InnerCall >> processToolCall: call [
+Ailien3InnerCall >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
     | func result |
     func := call at: 'function'. 
@@ -107,7 +107,7 @@ Ailien2InnerCall >> processToolCall: call [
 ]
 
 { #category : 'adding' }
-Ailien2InnerCall >> responseError [
+Ailien3InnerCall >> responseError [
 	"Handles API error responses by adding the error message to the conversation history"
 
 	| error |
@@ -117,19 +117,19 @@ Ailien2InnerCall >> responseError [
 ]
 
 { #category : 'accessing' }
-Ailien2InnerCall >> turn [
+Ailien3InnerCall >> turn [
 
 	^ turn
 ]
 
 { #category : 'accessing' }
-Ailien2InnerCall >> turn: anObject [
+Ailien3InnerCall >> turn: anObject [
 
 	turn := anObject
 ]
 
 { #category : 'accessing' }
-Ailien2InnerCall >> znClientBasic: jsonPrompt [
+Ailien3InnerCall >> znClientBasic: jsonPrompt [
 
 	|  entityPrompt entity|
 	jsonPrompt

@@ -1,6 +1,6 @@
 Class {
 	#name : 'Grok3Api',
-	#superclass : 'Ailien2Api',
+	#superclass : 'Ailien3Api',
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'

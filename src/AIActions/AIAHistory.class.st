@@ -149,7 +149,7 @@ AIAHistory >> addPreHistory: pre [
 { #category : 'accessing' }
 AIAHistory >> api [
 	"Returns the API instance, creating a new AilienApi provider if none exists"
-	api ifNil: [ ^ AilienApi provider new ].
+	api ifNil: [ ^ Ailien3Api provider new ].
 	^ api
 ]
 
