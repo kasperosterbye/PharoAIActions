@@ -260,7 +260,9 @@ AilienApi >> loadResponse: aHistory [
 	history := aHistory.
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
-			(AilienInnerCall on: self turn: turn) innerCall.
+			| inner |
+			inner := (AilienInnerCall on: self turn: turn).
+			inner innerCall.
 			].
 	^ history assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]

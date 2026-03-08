@@ -1,9 +1,9 @@
 Class {
 	#name : 'ApiToolGitHub',
 	#superclass : 'AilienApiTool',
-	#category : 'AIAZipArchive-AIApiTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiTools'
+	#category : 'AIActions-AIApiTool',
+	#package : 'AIActions',
+	#tag : 'AIApiTool'
 }
 
 { #category : 'initialization' }

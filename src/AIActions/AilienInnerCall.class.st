@@ -77,7 +77,7 @@ AilienInnerCall >> check [
 		self responseError. 
 		^ '*notool*'].
 	message := (llmReply at: 'choices') first at: 'message'.
-	content := message at: 'content'.
+	content := message at: 'content' ifAbsent: [ nil ].
 	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
 			outer history assistant: content" from: self".
 			^ '*notool*'].

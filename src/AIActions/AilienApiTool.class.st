@@ -46,9 +46,9 @@ Class {
 		'name',
 		'required'
 	],
-	#category : 'AIAZipArchive-AIApiTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiTools'
+	#category : 'AIActions-AIApiTool',
+	#package : 'AIActions',
+	#tag : 'AIApiTool'
 }
 
 { #category : 'as yet unclassified' }

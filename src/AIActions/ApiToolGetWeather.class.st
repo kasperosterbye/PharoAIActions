@@ -4,9 +4,9 @@ The class `ApiToolGetWeather` is designed to fetch the current weather for a spe
 Class {
 	#name : 'ApiToolGetWeather',
 	#superclass : 'AilienApiTool',
-	#category : 'AIAZipArchive-AIApiTools',
-	#package : 'AIAZipArchive',
-	#tag : 'AIApiTools'
+	#category : 'AIActions-AIApiTool',
+	#package : 'AIActions',
+	#tag : 'AIApiTool'
 }
 
 { #category : 'as yet unclassified' }
