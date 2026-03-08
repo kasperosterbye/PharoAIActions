@@ -109,7 +109,7 @@ AilienInnerCall >> innerCall [
 
 	self callLLM.
 	toolCall := self check.
-	toolCall = '*notool*' ifTrue: [ ^ self ].
+	toolCall = '*notool*' ifTrue: [ ^ '*notool*' ].
 	Transcript << '## ' << outer class name asString << ': ' << turn asString << String lf.
 	self messageListAdd.
 	self handleToolCall
