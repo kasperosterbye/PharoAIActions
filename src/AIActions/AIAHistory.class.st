@@ -286,8 +286,6 @@ AIAHistory >> includeInHistories [
 		Histories removeAt: firstNoTitle.
 		 ].
 	
-    SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new.
-	
 ]
 
 { #category : 'initialization' }
@@ -313,8 +311,9 @@ AIAHistory >> messages [
 
 { #category : 'adding' }
 AIAHistory >> messagesAdd: keyValue [
-	messages add: keyValue.
-	SystemAnnouncer uniqueInstance announce: AIAReplyChanged new.
+    messages add: keyValue.
+    keyValue key = 'assistant' ifTrue: [
+        SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new ].
 ]
 
 { #category : 'printing' }
@@ -334,6 +333,7 @@ AIAHistory >> printPrompt [
 
 { #category : 'accessing' }
 AIAHistory >> response [
+
 	(messages last key = 'assistant')
 		ifTrue: [ ^ messages last value ]
 		ifFalse: [ ^ nil ]

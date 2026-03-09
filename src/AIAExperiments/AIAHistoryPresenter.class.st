@@ -46,6 +46,11 @@ AIAHistoryPresenter class >> open [
 	^ self new open
 ]
 
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> assocString: assoc [
+	^ assoc key, String lf, assoc value
+]
+
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
     | left right both |
@@ -79,38 +84,34 @@ AIAHistoryPresenter >> getMessageList [
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> historyChangeAction [
     historyList whenSelectionChangedDo: [ :selection |
-        | selected |
+        | selected msgs |
         selected := selection selectedItem.
         selected ifNotNil: [ 
-            messageList items: selected messages.
-            messageItem1 text: ''.
-				messageItem2 text: '' ] ].
+            msgs := selected messages.
+            messageList items: msgs.
+            messageItem1 text: msgs first key, String lf, msgs first value.
+            messageItem2 text: msgs second key, String lf, msgs second value ] ].
 ]
 
 { #category : 'initialization' }
 AIAHistoryPresenter >> initializePresenters [
     super initializePresenters.
-
-    historyList := self newList.
-	 messageList   := self newList.
+    historyList   := self newList.
+    messageList   := self newList.
     messageItem1  := self newText.
-    messageItem2 := self newText.
-
+    messageItem2  := self newText.
     historyList items: self getHistoryList.
-	 messageList items: self getMessageList.
-	
-	self historyChangeAction.
-	self promptChangeAction.
-	
-SystemAnnouncer uniqueInstance
-    when: AIAHistoriesChanged
-    do: [ self refreshHistoryList ]
-    for: self.
-
-SystemAnnouncer uniqueInstance
-    when: AIAReplyChanged 
-    do: [ self refreshMessageList ]
-    for: self.
+    messageList items: self getMessageList.
+    self historyChangeAction.
+    self promptChangeAction.
+    SystemAnnouncer uniqueInstance
+        when: AIAHistoriesChanged
+        do: [ self refreshHistoryList ]
+        for: self.
+    SystemAnnouncer uniqueInstance
+        when: AIAReplyChanged
+        do: [ self refreshMessageList ]
+        for: self.
 ]
 
 { #category : 'initialization' }
@@ -134,10 +135,16 @@ AIAHistoryPresenter >> promptChangeAction [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> refreshHistoryList [
-    historyList items: self getHistoryList.
+    | items |
+    items := self getHistoryList.
+    historyList items: items.
+    items ifNotEmpty: [ 
+        historyList selectIndex: items size ].
 ]
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> refreshMessageList [
-    messageList items: self getMessageList.
+    | selected |
+    selected := historyList selection selectedItem.
+    selected ifNotNil: [ messageList items: selected messages ].
 ]
