@@ -87,6 +87,7 @@ OllamaApi >> continueToolCall: parsed orWrite: aHistory [
 	"Continues tool calls writes assistant content or handles api errors"
 
 	| message content |
+self halt.
 	(parsed includesKey: 'error') ifTrue: [ 
 		self responseError: parsed hist: aHistory. 
 		^ nil ].
@@ -98,15 +99,15 @@ OllamaApi >> continueToolCall: parsed orWrite: aHistory [
 	^ message.
 ]
 
-{ #category : 'adding' }
-OllamaApi >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
-    | func result |
-    func := call at: 'function'.
-    result := self 
-        executeToolNamed: (func at: 'name') 
-        withArgs: (func at: 'arguments').
-    ^ 'tool' -> (Dictionary newFrom: {
-        'tool_call_id' -> (call at: 'id').
-        'content' -> result })
+{ #category : 'responses' }
+OllamaApi >> loadResponse: aHistory [
+	"Loads and processes the response from the AI API, updating the conversation history with the assistant's reply."
+	| maxTurns  |
+	history := aHistory.
+	maxTurns := 50.
+	1 to: maxTurns do: [ :turn |
+			(OllamaInnerCall on: self turn: turn) innerCall.
+			].
+	^ history assistant: 
+		('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
