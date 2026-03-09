@@ -30,32 +30,40 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'historyList',
-		'promptList',
-		'promptText',
-		'responseText'
+		'messageList',
+		'messageItem1',
+		'messageItem2'
 	],
 	#category : 'AIAExperiments-UIPresenters',
 	#package : 'AIAExperiments',
 	#tag : 'UIPresenters'
 }
 
-{ #category : 'initialization' }
+{ #category : 'examples' }
+AIAHistoryPresenter class >> open [
+	<example>
+	
+	^ self new open
+]
+
+{ #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
-    | left right |
+    | left right both |
     left := SpPanedLayout newVertical
         add: historyList;
-        add: promptList;
+        add: messageList;
         yourself.
 
     right := SpPanedLayout newVertical
-        add: responseText;
-        add: promptText;
+        add: messageItem1;
+        add: messageItem2;
         yourself.
 
-    ^ SpPanedLayout newHorizontal
+    both :=  SpPanedLayout newHorizontal
         add: left;
         add: right;
-        yourself
+        yourself.
+	^ both
 ]
 
 { #category : 'as yet unclassified' }
@@ -64,28 +72,72 @@ AIAHistoryPresenter >> getHistoryList [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> getPromptList [
-	
-    ^ #('Session 1' 'Session 2' 'Session 3')
+AIAHistoryPresenter >> getMessageList [
+    ^ #()
 ]
 
-{ #category : 'nil' }
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> historyChangeAction [
+    historyList whenSelectionChangedDo: [ :selection |
+        | selected |
+        selected := selection selectedItem.
+        selected ifNotNil: [ 
+            messageList items: selected messages.
+            messageItem1 text: ''.
+				messageItem2 text: '' ] ].
+]
+
+{ #category : 'initialization' }
 AIAHistoryPresenter >> initializePresenters [
     super initializePresenters.
 
     historyList := self newList.
-	 promptList   := SpListPresenter new.
-    responseText  := SpTextPresenter new.
-    promptText := SpTextPresenter new.
+	 messageList   := self newList.
+    messageItem1  := self newText.
+    messageItem2 := self newText.
 
-
-    "Fyld history-listen via din egen metode"
     historyList items: self getHistoryList.
-	 promptList items: self getPromptList.
+	 messageList items: self getMessageList.
+	
+	self historyChangeAction.
+	self promptChangeAction.
+	
+SystemAnnouncer uniqueInstance
+    when: AIAHistoriesChanged
+    do: [ self refreshHistoryList ]
+    for: self.
+
+SystemAnnouncer uniqueInstance
+    when: AIAReplyChanged 
+    do: [ self refreshMessageList ]
+    for: self.
 ]
 
 { #category : 'initialization' }
 AIAHistoryPresenter >> initializeWindow: aWindow [
     super initializeWindow: aWindow.
-    aWindow title: 'AIA History'
+    aWindow title: 'AIA History'.
+    aWindow whenClosedDo: [
+        SystemAnnouncer uniqueInstance unsubscribe: self ].
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> promptChangeAction [
+    messageList whenSelectionChangedDo: [ :selection |
+        | selected newReply1Text |
+        selected := selection selectedItem.
+        selected ifNotNil: [
+				newReply1Text := selected key, String lf, selected value.
+				messageItem2 text: messageItem1 text.
+            messageItem1 text: newReply1Text ] ].
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> refreshHistoryList [
+    historyList items: self getHistoryList.
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> refreshMessageList [
+    messageList items: self getMessageList.
 ]

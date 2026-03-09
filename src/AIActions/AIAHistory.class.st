@@ -82,12 +82,20 @@ AIAHistory class >> dDiscussion [
 
 { #category : 'initialization' }
 AIAHistory class >> histories [
+	Histories ifNil: [ Histories := OrderedCollection new ].
 	^ Histories
 ]
 
 { #category : 'initialization' }
 AIAHistory class >> historyAt: id [
 	^ Histories detect: [ :hist | hist title = id ]
+]
+
+{ #category : 'examples' }
+AIAHistory class >> open [
+	<example>
+	
+	^ AIAHistoryPresenter open.
 ]
 
 { #category : 'history globals' }
@@ -177,7 +185,7 @@ AIAHistory >> apiMessageList [
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
 	"Adds an assistant message to the messages collection after sanitising the input string."
-	messages add: 'assistant' -> (self sanitizedResonse: aString)
+	self messagesAdd: 'assistant' -> (self sanitizedResonse: aString)
 ]
 
 { #category : 'accessing' }
@@ -219,7 +227,7 @@ AIAHistory >> firstRoles [
 	^ firstRoles
 ]
 
-{ #category : 'Protocol (accessing) - 17 selector(s)' }
+{ #category : 'accessing' }
 AIAHistory >> getMessages [
 	| ailienMessageList |
 	ailienMessageList := messages collect: [ :element |
@@ -259,7 +267,7 @@ AIAHistory >> getResponse [
 	] asJob run.
 ]
 
-{ #category : 'Protocol (adding) - 1 selector(s)' }
+{ #category : 'accessing' }
 AIAHistory >> includeInHistories [
 	"Adds the current history instance to the shared Histories collection and manages its size by removing the oldest untitled instance if the maximum number of untitled instances is exceeded."
 	| firstNoTitle noOfNoTitle maxNoTitles |
@@ -267,7 +275,7 @@ AIAHistory >> includeInHistories [
 	Histories add: self.
 	firstNoTitle := 0.
 	noOfNoTitle := 0.
-	maxNoTitles := 25.
+	maxNoTitles := 20.
 	1 to: Histories size do: [ :index |
 		(Histories at: index) title ifNil: [ 
 			firstNoTitle > 0 ifFalse: [ firstNoTitle := index ].
@@ -276,7 +284,9 @@ AIAHistory >> includeInHistories [
 		 ].
 	noOfNoTitle > maxNoTitles ifTrue: [ 
 		Histories removeAt: firstNoTitle.
-		 ]
+		 ].
+	
+    SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new.
 	
 ]
 
@@ -299,6 +309,12 @@ AIAHistory >> lastRoles [
 { #category : 'accessing' }
 AIAHistory >> messages [
 	^ messages 
+]
+
+{ #category : 'adding' }
+AIAHistory >> messagesAdd: keyValue [
+	messages add: keyValue.
+	SystemAnnouncer uniqueInstance announce: AIAReplyChanged new.
 ]
 
 { #category : 'printing' }
@@ -413,5 +429,5 @@ AIAHistory >> title: anObject [
 
 { #category : 'accessing' }
 AIAHistory >> user: aString [
-	messages add: 'user' -> aString
+	self messagesAdd: 'user' -> aString
 ]
