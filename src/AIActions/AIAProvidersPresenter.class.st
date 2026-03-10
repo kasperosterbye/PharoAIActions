@@ -64,18 +64,23 @@ AIAProvidersPresenter >> initializePresenters [
 	providers := self newTreeTable.
 	providers
 		addColumn: (SpCompositeTableColumn new
-			title: 'Providers';
-			addColumn: ((SpImageTableColumn 
-				evaluated: [ :aClass | self iconNamed: aClass systemIconName ])
-				width: 20;
-				yourself);
-			addColumn: (SpStringTableColumn evaluated: [ :item | 
-   					 item isString 
-						ifTrue: [ item ] 
-						ifFalse: [ item name ] ]);
-			yourself);
+				 title: 'Providers';
+				 addColumn: ((SpImageTableColumn evaluated: [ :item |
+								   self iconNamed: (item isString
+											    ifTrue: [ #processBrowser ]
+											    ifFalse: [ item systemIconName ]) ])
+						  width: 20;
+						  yourself);
+				 addColumn: (SpStringTableColumn evaluated: [ :item |
+							  item isString
+								  ifTrue: [ item ]
+								  ifFalse: [ item name ] ]);
+				 yourself);
 		roots: AilienApi subclasses;
-		children: [ :provider | [ provider modelNames ] on: Error do: [ #() ]  ];
+		children: [ :provider |
+				[ provider modelNames ]
+					on: Error
+					do: [ #(  ) ] ];
 		beResizable;
 		activateOnDoubleClick;
 		whenActivatedDo: [ :selection | self doubleClick: selection ]
@@ -86,7 +91,7 @@ AIAProvidersPresenter >> initializeWindow: aWindow [
 	"Initialises the window for the AIAProvidersPresenter class."
     super initializeWindow: aWindow.
 	 window := aWindow.
-    window title: 'LLM Model: ', AilienApi info.
+    window title: AilienApi info.
 ]
 
 { #category : 'event handling' }
@@ -103,7 +108,7 @@ AIAProvidersPresenter >> providerFor: modelName [
 { #category : 'initialization' }
 AIAProvidersPresenter >> setWindowTitle [
 	"Sets the window title to the current LLM model information"
-	window title: 'LLM Model: ', AilienApi info.
+	window title: 'LLM: ', AilienApi info.
 ]
 
 { #category : 'accessing' }
