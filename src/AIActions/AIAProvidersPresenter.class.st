@@ -108,7 +108,7 @@ AIAProvidersPresenter >> providerFor: modelName [
 { #category : 'initialization' }
 AIAProvidersPresenter >> setWindowTitle [
 	"Sets the window title to the current LLM model information"
-	window title: 'LLM: ', AilienApi info.
+	window title: AilienApi info.
 ]
 
 { #category : 'accessing' }
