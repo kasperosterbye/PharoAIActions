@@ -103,5 +103,14 @@ AIAProvidersPresenter >> providerFor: modelName [
 { #category : 'initialization' }
 AIAProvidersPresenter >> setWindowTitle [
 	"Sets the window title to the current LLM model information"
-	window title: 'LLM Model: ', AilienApi info 
+	window title: 'LLM Model: ', AilienApi info.
+]
+
+{ #category : 'accessing' }
+AIAProvidersPresenter >> window [
+	"Returns the window associated with the presenter, ensuring it is unclosable"
+	| windowResult |
+	windowResult := super window.
+	window window makeUnclosable.
+	^ windowResult
 ]
