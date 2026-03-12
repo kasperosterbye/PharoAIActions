@@ -8,18 +8,17 @@ Class {
 
 { #category : 'accessing' }
 AIAClassComment >> aiaComment: aClass [
+	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 
-	history
+	history 
 		background: (AIASourceCodeBuilder new forClass: aClass);
-		user: 'This is a Pharo question. Please write an EXPERT-LEVEL '
-			, 'class comment for ', aClass asString, '.';
-		user: 'Assume the reader already understands Pharo, collections, '
-			, 'and common design patterns.';
-		user: 'Use Markdown. Emphasise design intent, invariants, '
-			, 'extension points, and known trade-offs. Include a brief '
-			, 'usage example only if it clarifies a subtle point.';
-		responseType: 'Return ONLY the class comment text in Markdown.';
-		responseType: 'Please write the response in ', AIACommentBuilding language.
+		background: 'When giving an example using the definition of a class, use: ' , 
+			String cr, ShiftClassBuilder comment;
+		user: 'This is a Pharo question. Can your give a class comment for ' , aClass asString;
+		user: 'Use Markdown format in your response, and include a usage example suitable for the Playground. ';
+		user: 'Prefer code that ends with an expression to be inspected using command-I. ';
+		user: 'Return only the class comment (Markdown).';
+		user: 'Please write the response in ' , AIACommentBuilding language.
 	history getResponse
 ]
 

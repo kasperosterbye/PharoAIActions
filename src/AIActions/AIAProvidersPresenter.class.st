@@ -1,16 +1,36 @@
 "
 # Class Comment for AIAProvidersPresenter
 
-The `AIAProvidersPresenter` class is responsible for presenting and managing a list of AI providers and their associated models. It allows users to browse and select different AI models for use within the application. The presenter provides a tree table view of the available providers and their models, and handles user interactions such as double-clicking to select a model or browse a provider's class.
+The `AIAProvidersPresenter` class is a presenter designed to manage and display AI providers and their associated models within a Pharo application. It extends `SpPresenter` and is part of the `AIActions` package, tagged with 'AIApi'.
+
+## Design Intent
+
+The primary intent of `AIAProvidersPresenter` is to provide a user interface for browsing and selecting AI providers and their models. It allows users to view a hierarchical list of providers and their models, select a default model for a provider, and refresh the list of providers. The presenter ensures that the window is unclosable to maintain a consistent user experience.
+
+## Invariants
+
+- The `providers` instance variable is a `SpTreeTablePresenter` that displays the hierarchical list of AI providers and their models.
+- The `window` instance variable is a `SpWindowPresenter` that manages the presenter's window.
+- The window title is always set to the current LLM model information.
+
+## Extension Points
+
+- The `doubleClick:` method can be extended to handle additional actions when a user double-clicks on an item in the providers tree table.
+- The `providerFor:` method can be extended to include additional logic for finding the provider associated with a given model name.
+- The `refreshProviders` method can be extended to include additional logic for refreshing the list of providers.
+
+## Known Trade-offs
+
+- The `doubleClick:` method assumes that the selected item is either a class or a model name. If the selected item is neither, the method will not perform any action.
+- The `providerFor:` method uses a dictionary to map model names to providers. This approach may not be efficient for a large number of providers and models.
 
 ## Usage Example
 
-```st
-""Open the AIAProvidersPresenter to manage and select AI models.""
+```smalltalk
 AIAProvidersPresenter open
 ```
 
-This example opens the presenter window, allowing users to interact with the available AI providers and models. Users can double-click on a model to select it as the default, or double-click on a provider to browse its class definition.
+This example opens the `AIAProvidersPresenter` window, allowing the user to browse and select AI providers and their models.
 "
 Class {
 	#name : 'AIAProvidersPresenter',
@@ -33,17 +53,29 @@ AIAProvidersPresenter class >> open [
 
 { #category : 'layout' }
 AIAProvidersPresenter >> defaultLayout [
-	"Returns the default layout for the presenter, which is a box layout with the providers tree table and a label."
+	"Configures the layout of the presenter with a tree table and buttons for browsing and refreshing providers"
 
 	^ SpBoxLayout newTopToBottom
-		add: providers ;
-		add: 'Double click to browse or select' expand: false;
-		yourself
+		  add: providers;
+		  add: (SpBoxLayout newLeftToRight
+				   add: (self newButton
+						    label: 'Double click to browse or select';
+						    yourself);
+				   addLast: (self newButton
+						    label: 'Refresh';
+						    icon: (self iconNamed: #glamorousRefresh);
+						    action: [ self refreshProviders ];
+						    yourself)
+				   expand: false;
+				   yourself)
+		  expand: false;
+		  yourself
 ]
 
 { #category : 'event handling' }
 AIAProvidersPresenter >> doubleClick: selection [
-	"Handles double-click events on the providers tree table. If the selected item is a class, it browses the class. Otherwise, it sets the default model for the selected provider and updates the window title."
+	"Handles double-click events on the providers tree table. If the selected item is a class, it browses the class. If the selected item is a model name, it sets the default model for the provider and updates the window title. If the selected item is neither, it refreshes the list of providers."
+
 	| item |
 	item := selection selectedItem.
 	item isClass 
@@ -51,15 +83,17 @@ AIAProvidersPresenter >> doubleClick: selection [
 		ifFalse: [
 			| provider llmModelNumber |
 			provider :=  self providerFor:item.
-			llmModelNumber := provider modelNames indexOf: item.
-			provider defaultModel: llmModelNumber.
-			AilienApi provider: provider.
-			self setWindowTitle  ]
+			provider ifNotNil:[
+				llmModelNumber := provider modelNames indexOf: item.
+				provider defaultModel: llmModelNumber.
+				AilienApi provider: provider.
+				self setWindowTitle]
+			ifNil: [ self refreshProviders ]  ]
 ]
 
 { #category : 'layout' }
 AIAProvidersPresenter >> initializePresenters [
-	"Initialises the presenters for the AIAProvidersPresenter class."
+	"Initializes the presenters for the AIAProvidersPresenter class"
 
 	providers := self newTreeTable.
 	providers
@@ -88,7 +122,7 @@ AIAProvidersPresenter >> initializePresenters [
 
 { #category : 'initialization' }
 AIAProvidersPresenter >> initializeWindow: aWindow [
-	"Initialises the window for the AIAProvidersPresenter class."
+	"Initialises the window for the presenter and sets the window title to the current LLM model information"
     super initializeWindow: aWindow.
 	 window := aWindow.
     window title: AilienApi info.
@@ -96,13 +130,19 @@ AIAProvidersPresenter >> initializeWindow: aWindow [
 
 { #category : 'event handling' }
 AIAProvidersPresenter >> providerFor: modelName [
-	"Returns the provider associated with the given model name."
-    | dict |
-    dict := Dictionary new.
-    AilienApi providers do: [ :provider |
-			provider modelNames do: [ :name | 
-				dict at: name put: provider ] ].
-    ^ dict at: modelName 
+	"Returns the provider associated with the given model name, or nil if no such provider exists"
+
+	| dict |
+	dict := Dictionary new.
+	AilienApi providers do: [ :provider | 
+		provider modelNames do: [ :name | dict at: name put: provider ] ].
+	^ [dict at: modelName] on: Error do: [ nil ]
+]
+
+{ #category : 'layout' }
+AIAProvidersPresenter >> refreshProviders [
+	"Refreshes the list of AI providers and their models in the tree table"
+    providers roots: AilienApi subclasses
 ]
 
 { #category : 'initialization' }

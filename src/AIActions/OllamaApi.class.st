@@ -54,8 +54,10 @@ OllamaApi class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"
 	| response  |
 
-	response := ZnClient new get: 'http://localhost:11434/api/tags'.
-	^ (STONJSON fromString: response) at: 'models'  .
+	[response := ZnClient new get: 'http://localhost:11434/api/tags'.
+	^ (STONJSON fromString: response) at: 'models' ]
+	on: Error
+	do: [ ^ #() ] .
 ]
 
 { #category : 'accessing' }

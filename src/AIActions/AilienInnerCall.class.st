@@ -106,11 +106,12 @@ AilienInnerCall >> handleToolCall [
 { #category : 'as yet unclassified' }
 AilienInnerCall >> innerCall [
 	"Initiates the language model call, checks for tool calls, and processes them or handles the response"
-
+	|  llmName  |
 	self callLLM.
 	toolCall := self check.
 	toolCall = '*notool*' ifTrue: [ ^ '*notool*' ].
-	Transcript << '## ' << outer class name asString << ': ' << turn asString << String lf.
+	llmName := outer class name asString , ' @ ', outer class defaultModel .
+	Transcript << '## ' << llmName << '. Tool call: ' << turn asString << String lf.
 	self messageListAdd.
 	self handleToolCall
 ]
