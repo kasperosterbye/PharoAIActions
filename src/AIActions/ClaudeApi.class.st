@@ -101,7 +101,7 @@ ClaudeApi >> loadResponse: aHistory [
 			inner := (ClaudeInnerCall on: self turn: turn) innerCall.
 			inner = '*notool*' ifTrue: [ ^ self ].
 			].
-	^ history assistant: 
+	history assistant: 
 		('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
 
