@@ -97,7 +97,9 @@ ClaudeApi >> loadResponse: aHistory [
 	history := aHistory.
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
-			(ClaudeInnerCall on: self turn: turn) innerCall.
+			| inner |
+			inner := (ClaudeInnerCall on: self turn: turn) innerCall.
+			inner = '*notool*' ifTrue: [ ^ self ].
 			].
 	^ history assistant: 
 		('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
