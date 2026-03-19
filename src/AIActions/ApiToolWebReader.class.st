@@ -45,7 +45,6 @@ ApiToolWebReader >> evaluateTool: descs [
 
 { #category : 'Protocol (as yet unclassified) - 4 selector(s)' }
 ApiToolWebReader >> executeTool: args [
-	"Fetches the current weather for a city in any country"
 
 	|  response websites  |
 	 

@@ -54,6 +54,16 @@ String >> maxFirst: index [
 ]
 
 { #category : '*AIActions' }
+String >> p [
+	| resp |
+	resp := (AIAHistory dDiscussion 
+		user: self;
+		getResponse;
+		response ).
+	^ resp.
+]
+
+{ #category : '*AIActions' }
 String >> q [
 	^ AIAHistory new
 		addPreHistory: AIAHistory qPrefix ;
