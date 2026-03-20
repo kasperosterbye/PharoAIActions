@@ -51,6 +51,22 @@ Class {
 	#tag : 'AIApiTool'
 }
 
+{ #category : 'access' }
+AilienApiTool class >> toolList [
+	"Returns a list of API tool classes used for various functionalities"
+
+	| list |
+	"list := self subclasses."
+	list := {
+		        ApiToolClassInfo.
+		        ApiToolExpression.
+		        ApiToolGetWeather.
+		        ApiToolGitHub.
+		        ApiToolTextFromImage.
+		        ApiToolWebReader }.
+	^ list
+]
+
 { #category : 'as yet unclassified' }
 AilienApiTool >> evaluateTool: descs [
 	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."

@@ -325,7 +325,7 @@ AilienApi >> responseWaitingInSecs: anObject [
 AilienApi >> toolSpecification [
 	"Returns a collection of tool specifications for all registered API tool subclasses"
 	| all |
-	all := AilienApiTool subclasses collect: [ :tool |  tool new evaluateTool ].
+	all := AilienApiTool toolList collect: [ :tool |  tool new evaluateTool ].
    ^ all 
 ]
 
