@@ -66,6 +66,11 @@ AIATeacup >> getClassesOfPackage: aPackage [
 	^ allPackageNames 
 ]
 
+{ #category : 'as yet unclassified' }
+AIATeacup >> getOverview [
+	^ self getClassCode: 'AIATeacup'
+]
+
 { #category : 'initialization' }
 AIATeacup >> initialize [
 	"Kilroy came by here"
@@ -75,6 +80,7 @@ AIATeacup >> initialize [
 { #category : 'private' }
 AIATeacup >> setIndex [
 	teapot 
+		GET: '/' -> self getOverview ;
 		GET: '/packages' -> self getAllPackages ;
 		GET: '/packageClasses/<packageName>' -> [ :ref | 
 				self getClassesOfPackage: (ref at: #packageName) ];		
