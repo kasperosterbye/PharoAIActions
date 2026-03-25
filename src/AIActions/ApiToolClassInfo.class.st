@@ -22,7 +22,7 @@ ApiToolClassInfo >> executeTool: args [
 	super executeTool: args.
 	className := args at: required.
 	cls := Smalltalk globals at: className asSymbol ifAbsent: [ ^ 'Class not found' ].
-	^ AIASourceCodeBuilder new forClass: cls.
+	^ AIASourceCode new forClass: cls.
 ]
 
 { #category : 'initialization' }

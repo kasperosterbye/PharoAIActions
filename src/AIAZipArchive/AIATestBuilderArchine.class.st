@@ -9,14 +9,14 @@ Class {
 { #category : 'instance creation' }
 AIATestBuilderArchine >> xxx_backgroundGenerator [
 	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."
-	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	chatBuilder background: (AIASourceCode new forClass: sourceMethod methodClass class).
 ]
 
 { #category : 'instance creation' }
 AIATestBuilderArchine >> xxx_buildTestChat [
 	"Builds the chat context for AI test generation, combining system details, method info, and prompts to guide AI in creating accurate test cases."
 
-	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	chatBuilder background: (AIASourceCode new forClass: sourceMethod methodClass class).
 	self historyBuilder.
 	chatBuilder user: self promptGenerator.
 ]
@@ -115,5 +115,5 @@ AIATestBuilderArchine >> xxx_systemGenerator [
 	chatBuilder system: 
 		'All background code and documentation is written in Markdown.
 		This includes Pharo packages, classes, and methods.', String cr, 
-	(AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	(AIASourceCode new forClass: sourceMethod methodClass class).
 ]

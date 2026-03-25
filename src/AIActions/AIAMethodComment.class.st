@@ -49,7 +49,7 @@ AIAMethodComment class >> for: method [
 
 { #category : 'internals' }
 AIAMethodComment >> aiaBlackComment: aCompiledMethod [
-	self system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	self system: (AIASourceCode new forMethod: aCompiledMethod ).
 	self user: 'This is a Pharo question. Can your give a method comment for ' , 
 		aCompiledMethod name, 
 			'. Your response should be 140 chacters, and only letters.', 
@@ -61,8 +61,8 @@ AIAMethodComment >> aiaBlackComment: aCompiledMethod [
 { #category : 'internals' }
 AIAMethodComment >> aiaComment: aCompiledMethod [
 	history 
-		background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);
-		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
+		background: (AIASourceCode new forClass: aCompiledMethod methodClass);
+		background: (AIASourceCode new forMethod: aCompiledMethod );
 		user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name;
 	 
 		responseType: 'The answer must only be the comment.';
@@ -77,8 +77,8 @@ AIAMethodComment >> aiaComment: aCompiledMethod [
 { #category : 'internals' }
 AIAMethodComment >> aiaRegularComment: aCompiledMethod [
 	history 
-		background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);
-		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
+		background: (AIASourceCode new forClass: aCompiledMethod methodClass);
+		background: (AIASourceCode new forMethod: aCompiledMethod );
 		user: 'This is a Pharo question. Give a comment for method ' , aCompiledMethod name;
 	 
 		responseType: 'The answer must only be the comment.';
@@ -94,7 +94,7 @@ AIAMethodComment >> aiaRegularComment: aCompiledMethod [
 AIAMethodComment >> aiaTestComment: aCompiledMethod [
 	history 
 		"background: (AIASourceCodeBuilder new forClass: aCompiledMethod methodClass);"
-		background: (AIASourceCodeBuilder new forMethod: aCompiledMethod );
+		background: (AIASourceCode new forMethod: aCompiledMethod );
 		user: 'This is a Pharo question. Give a test code for method ' , aCompiledMethod name;
 		user: 'Describe an implementation strategy for this method.'.
 	history getResponse.

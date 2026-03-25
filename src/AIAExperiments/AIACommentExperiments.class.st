@@ -97,7 +97,7 @@ Return only one word: IDENTICAL, MINOR, or MAJOR.'.
 	hist := AIAHistory new.
 	hist
 		api: (OpenAIApi newOnModel: 1);
-		background: (AIASourceCodeBuilder new forClass: AIASWMreport);
+		background: (AIASourceCode new forClass: AIASWMreport);
 		user: 'Comment 1: ', String lf, trails first, String lf;
 		user: 'Comment 2: ', String lf, trails second, String lf;
 		user: 'Comment 3: ', String lf, trails third, String lf;
@@ -124,7 +124,7 @@ AIACommentExperiments >> old_compareComments: trails [
 	hist := AIAHistory new.
 	hist
 		api: (OpenAIApi newOnModel: 1);
-		background: (AIASourceCodeBuilder new forClass: AIASWMreport);
+		background: (AIASourceCode new forClass: AIASWMreport);
 		user: 'Comment 1: ', String lf, trails first, String lf;
 		user: 'Comment 2: ', String lf, trails second, String lf;
 		user: 'Comment 3: ', String lf, trails third, String lf;

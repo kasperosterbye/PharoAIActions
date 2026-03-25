@@ -31,7 +31,7 @@ AIAMethodCommentExperiment >> getComment_B: aCompiledMethod [
 		aCompiledMethod name, 
 			'. Your response should be 60 chacters, and only letters'.
 	mistral := MistralApi new.
-	mistral system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	mistral system: (AIASourceCode new forMethod: aCompiledMethod ).
 	response := mistral getResponseForPrompt: prompt.
 	^ {'B'. response. prompt. mistral system }
 ]
@@ -46,7 +46,7 @@ AIAMethodCommentExperiment >> getComment_C: aCompiledMethod [
 		aCompiledMethod name, 
 			'. Your response should be 60 chacters, and only letters'.
 	mistral := MistralApi new.
-	mistral system: (self commentSourceFor: compiledMethod), String cr, (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	mistral system: (self commentSourceFor: compiledMethod), String cr, (AIASourceCode new forMethod: aCompiledMethod ).
 	response := mistral getResponseForPrompt: prompt.
 	^ {'C'. response. prompt. mistral system }
 ]
@@ -76,7 +76,7 @@ AIAMethodCommentExperiment >> getComment_E: aCompiledMethod [
 		(self commentSourceFor: compiledMethod), 
 			'. Your response should be 60 chacters, and only letters'.
 	mistral := MistralApi new.
-	mistral system: (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	mistral system: (AIASourceCode new forMethod: aCompiledMethod ).
 	response := mistral getResponseForPrompt: prompt.
 	^ {'E'. response. prompt. mistral system }
 ]
@@ -91,7 +91,7 @@ AIAMethodCommentExperiment >> getComment_F: aCompiledMethod [
 		(self commentSourceFor: compiledMethod), 
 			'. Your response should be 60 chacters, and only letters'.
 	mistral := MistralApi new.
-	mistral system: (self commentSourceFor: compiledMethod), String cr, (AIASourceCodeBuilder new forMethod: aCompiledMethod ).
+	mistral system: (self commentSourceFor: compiledMethod), String cr, (AIASourceCode new forMethod: aCompiledMethod ).
 	response := mistral getResponseForPrompt: prompt.
 	^ {'F'. response. prompt. mistral system }
 ]

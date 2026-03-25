@@ -48,7 +48,7 @@ AIASlotComment class >> for: aClass [
 	"Generates comments for instance variables of a class, using AI."
 	|  response comments slotsCollection|
 	classSlotCommentDictionary ifNil: [ self initialize ].
-	response := (self promptFor: aClass) q: [ AIASourceCodeBuilder new forClass: aClass ].
+	response := (self promptFor: aClass) q: [ AIASourceCode new forClass: aClass ].
 	response := response lines.
 	comments := OrderedCollection new.
 	response do: [ :resp |

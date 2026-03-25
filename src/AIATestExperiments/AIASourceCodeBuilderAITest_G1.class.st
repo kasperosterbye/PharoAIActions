@@ -11,7 +11,7 @@ Class {
 { #category : 'initialization' }
 AIASourceCodeBuilderAITest_G1 >> setUp [
 	super setUp.
-	refAIASourceCodeBuilder := AIASourceCodeBuilder new.
+	refAIASourceCodeBuilder := AIASourceCode new.
 ]
 
 { #category : 'AI generated test' }
@@ -99,7 +99,7 @@ AIASourceCodeBuilderAITest_G1 >> testForMethod [
 	"Test the forMethod: method by passing a method that has callers in the same package."
 
 	| aMethod result |
-	aMethod := AIASourceCodeBuilder >> #forMethod:.
+	aMethod := AIASourceCode >> #forMethod:.
 	result := refAIASourceCodeBuilder forMethod: aMethod.
 	self assert: result isNotNil
 ]
@@ -133,7 +133,7 @@ AIASourceCodeBuilderAITest_G1 >> testForTagsLike [
 	"Test the forTagsLike: method by passing AIASourceCodeBuilder and verifying the result is a string containing source code for classes with the same package tag."
 
 	| result |
-	result := refAIASourceCodeBuilder forTagsLike: AIASourceCodeBuilder.
+	result := refAIASourceCodeBuilder forTagsLike: AIASourceCode.
 	self assert: result isString.
 	self assert: (result includesSubstring: '## Class: AIASourceCodeBuilder class').
 ]
@@ -162,7 +162,7 @@ AIASourceCodeBuilderAITest_G1 >> testInitialize [
 AIASourceCodeBuilderAITest_G1 >> testMethodNameAndCommentForIn [
 	"Test the methodNameAndCommentFor:in: method with a method that has no comment"
 	| method stream expected |
-	method := AIASourceCodeBuilder >> #methodNameAndCommentFor:in:.
+	method := AIASourceCode >> #methodNameAndCommentFor:in:.
 	stream := WriteStream on: String new.
 	refAIASourceCodeBuilder methodNameAndCommentFor: method in: stream.
 	expected := 'Method: AIASourceCodeBuilder>>#methodNameAndCommentFor:in:' , String cr , String cr.

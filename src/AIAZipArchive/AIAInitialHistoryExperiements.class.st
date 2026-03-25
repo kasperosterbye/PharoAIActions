@@ -294,7 +294,7 @@ AIAInitialHistoryExperiements >> userBackgroundGivingTestFor: llmModel [
 	aaa := AIACommentBuilding ailienApi new.
 	aaa user: 'Give short answers. If you are not 100 percent sure, just say "I do not know"'.
 	aaa assistant: 'Will follow those instructions'.
-	aaa user: (AIASourceCodeBuilder new forClass: AIATestBuilder).
+	aaa user: (AIASourceCode new forClass: AIATestBuilder).
 	aaa assistant: 'Ahh, Pharo code for the class AIATestBuilder, written in MarkDown style'.
 	aaa user: 'What is the instance specific instance variable of AIATestBuilder.'.
 	aaa getResponse.

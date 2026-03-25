@@ -11,7 +11,7 @@ AIAClassComment >> aiaComment: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 
 	history 
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		background: 'When giving an example using the definition of a class, use: ' , 
 			String cr, ShiftClassBuilder comment;
 		user: 'This is a Pharo question. Can your give a class comment for ' , aClass asString;
@@ -25,7 +25,7 @@ AIAClassComment >> aiaComment: aClass [
 { #category : 'accessing' }
 AIAClassComment >> aiaCommentBasic: aClass [
 	history
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		user: 'This is a Pharo question. Please give a short, basic class comment for ', aClass asString;
 		user: 'The reader is a programmer who is a Pharo/Smalltalk expert';
 		user: 'Response must be short, focus on purpose, no focus on implementation, no focus on varables';
@@ -36,7 +36,7 @@ AIAClassComment >> aiaCommentBasic: aClass [
 { #category : 'Protocol (as yet unclassified) - 1 selector(s)' }
 AIAClassComment >> aiaCommentBeginner: aClass [ 
 	history
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		user: 'This is a Pharo question. Can your give a class comment for ' , 
 			aClass asString, 
 			'. Just return the Class comment, no prior explanation response. ',
@@ -50,7 +50,7 @@ AIAClassComment >> aiaCommentDefault: aClass [
 	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
 
 	history 
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		background: 'When giving an example using the definition of a class, use: ' , 
 			String cr, ShiftClassBuilder comment;
 		user: 'This is a Pharo question. Can your give a class comment for ' , aClass asString;
@@ -64,7 +64,7 @@ AIAClassComment >> aiaCommentDefault: aClass [
 { #category : 'accessing' }
 AIAClassComment >> aiaCommentDetailed: aClass [
 	history
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		user: 'This is a Pharo question. Please write a DETAILED, '
 			, 'expert‑level class comment for ', aClass asString, '.';
 		user: 'Use Markdown. Include: (1) purpose and role in the system, '
@@ -82,7 +82,7 @@ AIAClassComment >> aiaCommentDetailed: aClass [
 AIAClassComment >> aiaCommentExpert: aClass [
 
 	history
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		user: 'This is a Pharo question. Please write an EXPERT-LEVEL '
 			, 'class comment for ', aClass asString, '.';
 		user: 'Assume the reader already understands Pharo, collections, '
@@ -98,7 +98,7 @@ AIAClassComment >> aiaCommentExpert: aClass [
 { #category : 'Protocol (accessing) - 10 selector(s)' }
 AIAClassComment >> aiaCommentLLM: aClass [
 	history
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		user: 'This is a Pharo question. Please give a class comment for ', aClass asString;
 		user: 'Return ONLY a compact machine-readable summary in plain text with these keys: purpose, inputs, outputs, collaborators, side_effects, invariants, extension_points, example_calls. No headings, no narrative, no Markdown.';
 		user: 'Use one line per key. Format EXACTLY: key = value. No colons. No bullet points. No extra keys.'.
@@ -111,7 +111,7 @@ AIAClassComment >> aiaCommentTestGuide: aClass [
 	style as #aiaComment:."
 
 	history
-		background: (AIASourceCodeBuilder new forClass: aClass);
+		background: (AIASourceCode new forClass: aClass);
 		user: 'This is a Pharo question. Please write a TEST-GUIDE style '
 			, 'class comment for ', aClass asString, '.';
 		user: 'The audience is someone writing unit tests for this class.';

@@ -15,7 +15,7 @@ AIASourceCodeBuilderTest >> setUp [
 
 	"Put here a common initialization logic for tests"
 	
-	builder := AIASourceCodeBuilder new
+	builder := AIASourceCode new
 ]
 
 { #category : 'tests' }
@@ -154,7 +154,7 @@ AIASourceCodeBuilderTest >> testResponse [
 { #category : 'tests' }
 AIASourceCodeBuilderTest >> testSystemForMethodUsedIn [
 	| res |
-	builder systemForMethod: (AIASourceCodeBuilder >> #forMethod:) 
+	builder systemForMethod: (AIASourceCode >> #forMethod:) 
 			  usedIn: { AIAMethodComment >> #aiaComment:  }.
 	res := builder response contents.
 	self assert: res isNotEmpty.
@@ -165,7 +165,7 @@ AIASourceCodeBuilderTest >> testSystemForMethodUsedIn [
 { #category : 'tests' }
 AIASourceCodeBuilderTest >> testclassHeaderForSuperOn [
 	|method stream  string |
-	method := AIASourceCodeBuilder >> #methodNameAndCommentFor:in:.
+	method := AIASourceCode >> #methodNameAndCommentFor:in:.
 	stream := WriteStream on: ''.
 	builder methodNameAndCommentFor: method in: stream.
 	string := stream contents.
@@ -178,7 +178,7 @@ AIASourceCodeBuilderTest >> testclassHeaderForSuperOn [
 { #category : 'tests' }
 AIASourceCodeBuilderTest >> testmethodNameAndCommentForIn [
 	|method stream  string |
-	method := AIASourceCodeBuilder >> #methodNameAndCommentFor:in:.
+	method := AIASourceCode >> #methodNameAndCommentFor:in:.
 	stream := WriteStream on: ''.
 	builder methodNameAndCommentFor: method in: stream.
 	string := stream contents.

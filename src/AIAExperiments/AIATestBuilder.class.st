@@ -131,7 +131,7 @@ AIATestBuilder >> compileAndChechBuildedTest [
 { #category : 'instance creation' }
 AIATestBuilder >> generateTest [
 	
-	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	chatBuilder background: (AIASourceCode new forClass: sourceMethod methodClass class).
 	self historyBuilder.
 	chatBuilder user: self promptGenerator.
 	
@@ -144,7 +144,7 @@ AIATestBuilder >> generateTest [
 { #category : 'instance creation' }
 AIATestBuilder >> generateTest10 [
 	
-	chatBuilder background: (AIASourceCodeBuilder new forClass: sourceMethod methodClass class).
+	chatBuilder background: (AIASourceCode new forClass: sourceMethod methodClass class).
 	self historyBuilder.
 	chatBuilder user: self promptGenerator.
 	

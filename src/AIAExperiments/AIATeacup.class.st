@@ -55,7 +55,7 @@ AIATeacup >> getClassCode: className [
 	| aClass |
 	aClass := Smalltalk at: className asSymbol 
 		ifAbsent: [ ^ 'Class ', className, ' does not exist' ].
-	^ AIASourceCodeBuilder new forClass: aClass.
+	^ AIASourceCode new forClass: aClass.
 ]
 
 { #category : 'private' }

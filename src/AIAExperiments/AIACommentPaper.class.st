@@ -101,10 +101,10 @@ AIACommentPaper >> appendixBuilder [
 		<< '### On '<< Date today asString << String lf << String lf
 		<< '$$$$$comment$$$$$' << String lf << String lf
 		<< '[SOURCECODE]' << String lf
-		<< (AIASourceCodeBuilder new forTagsLike: AIAHistory ) 
+		<< (AIASourceCode new forTagsLike: AIAHistory ) 
 		<< String lf << '[END-OF-SOURCECODE]' << String lf
 		<< '[COMMENTBUILDERCODE]' << String lf
-		<< (AIASourceCodeBuilder new forTagsLike: AIASourceCodeBuilder ) 
+		<< (AIASourceCode new forTagsLike: AIASourceCode ) 
 		<< String lf << '[END-OF-COMMENTBUILDERCODE]' << String lf.
 	appendix := appendixBuilder contents.
 ]
@@ -141,10 +141,10 @@ AIACommentPaper >> getAppendix [
 		<< '### On '<< Date today asString << String lf << String lf
 		<< '$$$$$comment$$$$$' << String lf << String lf
 		<< '[SOURCECODE]' << String lf
-		<< (AIASourceCodeBuilder new forTagsLike: AIAHistory ) 
+		<< (AIASourceCode new forTagsLike: AIAHistory ) 
 		<< String lf << '[END-OF-SOURCECODE]' << String lf
 		<< '[COMMENTBUILDERCODE]' << String lf
-		<< (AIASourceCodeBuilder new forTagsLike: AIASourceCodeBuilder ) 
+		<< (AIASourceCode new forTagsLike: AIASourceCode ) 
 		<< String lf << '[END-OF-COMMENTBUILDERCODE]' << String lf.
 	appendix := appendixBuilder contents.
 	comment := self rebuildOverview.

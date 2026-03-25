@@ -1,5 +1,23 @@
+"
+# Class Comment for AIASourceCode
+
+The `AIASourceCode` class is designed to generate formatted source code descriptions for Pharo Smalltalk packages, classes, and methods. It accumulates these descriptions in a `WriteStream` and provides methods to process various elements of the source code, including packages, classes, methods, and tags. The class ensures that processed classes are tracked to avoid duplicates and provides detailed documentation for each element, including class headers, instance variables, methods, and superclass hierarchies.
+
+## Usage Example
+
+```st
+""Create an instance of AIASourceCode and generate documentation for the 'Kernel' package.""
+sourceCodeBuilder := AIASourceCode new.
+sourceCodeBuilder for: #('Kernel').
+
+""Inspect the generated documentation.""
+sourceCodeBuilder response contents inspect.
+```
+
+This example demonstrates how to use the `AIASourceCode` class to generate and inspect formatted source code descriptions for a specified package. The `for:` method processes the package and its contents, while the `response contents` method provides access to the generated documentation.
+"
 Class {
-	#name : 'AIASourceCodeBuilder',
+	#name : 'AIASourceCode',
 	#superclass : 'Object',
 	#instVars : [
 		'response',
@@ -11,8 +29,38 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
+{ #category : 'instance creation' }
+AIASourceCode class >> for: packages [
+	^ self new for: packages
+]
+
+{ #category : 'helpers' }
+AIASourceCode class >> forClass: aClass [
+	^ self new forClass: aClass
+]
+
+{ #category : 'instance creation' }
+AIASourceCode class >> forClasses: aClassList [
+	^ self new forClasses: aClassList
+]
+
+{ #category : 'instance creation' }
+AIASourceCode class >> forMethod: aMethod [
+	^ self new forMethod: aMethod
+]
+
+{ #category : 'instance creation' }
+AIASourceCode class >> forTagsLike: aClass [
+	^ self new forTagsLike: aClass
+]
+
+{ #category : 'instance creation' }
+AIASourceCode class >> forWildcard: wild [
+	^ self new forWildcard: wild
+]
+
 { #category : 'internal' }
-AIASourceCodeBuilder >> classHeaderFor: aClass [
+AIASourceCode >> classHeaderFor: aClass [
 	"Generates formatted class header for aClass including name definition and instance variables. Appends to response stream. Handles both regular and meta classes. Includes class comment if available."
 	| className classDefinition instansVariable classComment|
 	className := aClass name asString.
@@ -31,7 +79,7 @@ AIASourceCodeBuilder >> classHeaderFor: aClass [
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
+AIASourceCode >> classHeaderFor: current super: aClass on: superComment [
 	"Generates formatted superclass header for a class including its name definition and instance variables. Appends to provided stream. Handles both regular and meta classes. Includes class comment if available."
 
 	| className currentName classDefinition meta metaClassDefinition |
@@ -56,7 +104,7 @@ AIASourceCodeBuilder >> classHeaderFor: current super: aClass on: superComment [
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> classesInPackage: aPackage [
+AIASourceCode >> classesInPackage: aPackage [
 	"Generates formatted documentation for all classes in a package, including their definitions, instance variables, and methods, appending to the response stream."
 
 	| aClassCollection |
@@ -65,7 +113,7 @@ AIASourceCodeBuilder >> classesInPackage: aPackage [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> for: packages [
+AIASourceCode >> for: packages [
 	"Generates formatted source code descriptions for a list of packages, including their classes, methods, and meta-class details, appending to the response stream."
 
 	|  selectedPackage |
@@ -79,7 +127,7 @@ AIASourceCodeBuilder >> for: packages [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> forClass: aClass [
+AIASourceCode >> forClass: aClass [
 
 	| metaClass |
 	sourcePackage := aClass package name asString.
@@ -99,7 +147,7 @@ AIASourceCodeBuilder >> forClass: aClass [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> forClasses: aClassList [
+AIASourceCode >> forClasses: aClassList [
 	"Generates formatted source code descriptions for a list of classes, including their definitions, instance variables, methods, and meta-class details."
 	
 	aClassList do: [ :aClass | self forClass: aClass ].
@@ -107,7 +155,7 @@ AIASourceCodeBuilder >> forClasses: aClassList [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> forMethod: aMethod [
+AIASourceCode >> forMethod: aMethod [
 	"Generates formatted source code descriptions for a method and its callers within the same package. Includes method name, class, and source code. Used for documentation and analysis."
 
 	|  callers callersInMyPackage methodPackage |
@@ -124,7 +172,7 @@ AIASourceCodeBuilder >> forMethod: aMethod [
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> forSuperClassesOf: aClass [
+AIASourceCode >> forSuperClassesOf: aClass [
 	"Generates formatted superclass hierarchy for aClass, including methods and meta-class details, appending to response stream. Recursively processes superclasses until Object."
 	| superComment superClass |
 	(self stopNow: aClass) ifTrue: [ ^ '' ].
@@ -142,7 +190,7 @@ AIASourceCodeBuilder >> forSuperClassesOf: aClass [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> forTag: tagName in: package [
+AIASourceCode >> forTag: tagName in: package [
 	
 	| potentialClasses classSet |
 	potentialClasses := (PackageOrganizer default packageNamed: package) classes asArray.
@@ -152,14 +200,14 @@ AIASourceCodeBuilder >> forTag: tagName in: package [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> forTagsLike: aClass [
+AIASourceCode >> forTagsLike: aClass [
 	
 	self forTag: aClass packageTag name in: aClass package name.
 	^ response contents
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> forWildcard: wild [
+AIASourceCode >> forWildcard: wild [
 	"Generates formatted source code descriptions for packages matching a wildcard pattern, including all classes, methods, and meta-class details, appending to the response stream."
 
 	| packageNames  |
@@ -172,14 +220,14 @@ AIASourceCodeBuilder >> forWildcard: wild [
 ]
 
 { #category : 'initialization' }
-AIASourceCodeBuilder >> initialize [
+AIASourceCode >> initialize [
 	"Initialises a new instance of AIASourceCodeBuilder with an empty WriteStream for accumulating generated source code descriptions."
 	response := WriteStream on: ''.
 	classList := Set new.
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> instanceVariablesFor: aClass [
+AIASourceCode >> instanceVariablesFor: aClass [
 	"Adds instance variables of aClass to response, formatted as a list."
 	response  << '### Instance variables for ' << aClass name asString << ': '.
 	aClass instVarNames  collect: [:each | 
@@ -188,7 +236,7 @@ AIASourceCodeBuilder >> instanceVariablesFor: aClass [
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> methodNameAndCommentFor: method in: superComment [
+AIASourceCode >> methodNameAndCommentFor: method in: superComment [
 
 
 	superComment << 'Method: ' << method name << String cr.
@@ -198,7 +246,7 @@ AIASourceCodeBuilder >> methodNameAndCommentFor: method in: superComment [
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> methodsFor: aClass [
+AIASourceCode >> methodsFor: aClass [
 	"Add all methods grouped by protocol, including full source code"
 	response << '### Methods for ' << aClass name asString << ':' << String cr.
 	aClass protocolNames asSortedCollection do: [:protocol |
@@ -211,24 +259,25 @@ AIASourceCodeBuilder >> methodsFor: aClass [
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> response [
+AIASourceCode >> response [
 	"Returns the WriteStream used to accumulate generated source code descriptions. Initialised in initialize."
+	self halt.
 	^ response 
 ]
 
 { #category : 'accessing' }
-AIASourceCodeBuilder >> response: anObject [
+AIASourceCode >> response: anObject [
 
 	response := anObject
 ]
 
-{ #category : 'as yet unclassified' }
-AIASourceCodeBuilder >> stopNow: aClass [
+{ #category : 'internal' }
+AIASourceCode >> stopNow: aClass [
 	^ sourcePackage ~= aClass package name asString.
 ]
 
 { #category : 'internal' }
-AIASourceCodeBuilder >> systemForMethod: aMethod usedIn: callersInMyPackage [
+AIASourceCode >> systemForMethod: aMethod usedIn: callersInMyPackage [
 	"Generates formatted source code description for a method and its callers within the same package. Includes method name, class, and source code. Used for documentation and analysis."
 	| className methodName|
 	className := aMethod methodClass name asString.
