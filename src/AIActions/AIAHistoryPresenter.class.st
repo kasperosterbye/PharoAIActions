@@ -34,8 +34,8 @@ Class {
 		'messageItem1',
 		'messageItem2'
 	],
-	#category : 'AIAExperiments-UIPresenters',
-	#package : 'AIAExperiments',
+	#category : 'AIActions-UIPresenters',
+	#package : 'AIActions',
 	#tag : 'UIPresenters'
 }
 

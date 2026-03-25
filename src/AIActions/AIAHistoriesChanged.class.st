@@ -1,7 +1,7 @@
 Class {
 	#name : 'AIAHistoriesChanged',
 	#superclass : 'Announcement',
-	#category : 'AIAExperiments-UIPresenters',
-	#package : 'AIAExperiments',
+	#category : 'AIActions-UIPresenters',
+	#package : 'AIActions',
 	#tag : 'UIPresenters'
 }
