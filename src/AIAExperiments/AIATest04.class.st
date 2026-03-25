@@ -1,6 +1,3 @@
-"
-This is Test04, not 05
-"
 Class {
 	#name : 'AIATest04',
 	#superclass : 'AIATestBuilder',
