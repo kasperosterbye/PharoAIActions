@@ -14,6 +14,52 @@ Class {
 
 { #category : 'accessing' }
 AIAPackageComment >> aiaComment: aPackageName [
+
+	(aPackageName beginsWith: 'BaselineOf')
+		ifTrue: [ ^ self baselineComment: aPackageName ]
+		ifFalse: [ ^ self packageComment: aPackageName ]
+]
+
+{ #category : 'accessing' }
+AIAPackageComment >> aiaCommentMany: aPackageNames [
+	"The method sets a package comment using Mistral API."
+	self system:  (AIASourceCode new for: aPackageNames).
+	self user: 'This is a Pharo question. 
+		Please write a single package comment that covers the
+		purpose and relationship between the following packages: {#' ,
+		('. #' join: aPackageNames), 
+		'}. Start with the most package without experiements and without tests. 
+		Keep the response within two pages. Please use markdown format and respond in ', 
+	AIACommentBuilding language.
+	self getResponse.
+	^ self
+]
+
+{ #category : 'accessing' }
+AIAPackageComment >> baselineComment: aPackageName [
+	| baselinePackage packages|
+	baselinePackage := PackageOrganizer default packages 
+		detect: [ :package | package name asString = aPackageName ] .
+	packages := baselinePackage allPackageNames.
+	
+	self halt.
+]
+
+{ #category : 'as yet unclassified' }
+AIAPackageComment >> joe: aPackageName [
+	(aPackageName beginsWith: 'BaselineOf')
+		ifTrue: [  ].
+		
+	(aPackageName endsWith: '-Tests')
+		ifFalse: [
+				self system: (AIASourceCode new for: {
+							 aPackageName.
+							 (aPackageName , '-Tests') }) ]
+		ifTrue: [ self system: (AIASourceCode new for: { aPackageName }) ].
+]
+
+{ #category : 'accessing' }
+AIAPackageComment >> old_aiaComment: aPackageName [
 	"The method aiaComment: generates a package comment for a given package name using AI. It checks if the package is a test package and adjusts the source code accordingly."
 
 	(aPackageName endsWith: '-Tests')
@@ -30,18 +76,20 @@ AIAPackageComment >> aiaComment: aPackageName [
 ]
 
 { #category : 'accessing' }
-AIAPackageComment >> aiaCommentMany: aPackageNames [
-	"The method sets a package comment using Mistral API."
-	self system:  (AIASourceCode new for: aPackageNames).
-	self user: 'This is a Pharo question. 
-		Please write a single package comment that covers the
-		purpose and relationship between the following packages: {#' ,
-		('. #' join: aPackageNames), 
-		'}. Start with the most package without experiements and without tests. 
-		Keep the response within two pages. Please use markdown format and respond in ', 
-	AIACommentBuilding language.
-	self getResponse.
-	^ self
+AIAPackageComment >> packageComment: aPackageName [
+	"The method aiaComment: generates a package comment for a given package name using AI. It checks if the package is a test package and adjusts the source code accordingly."
+
+	(aPackageName endsWith: '-Tests')
+		ifFalse: [
+				self system: (AIASourceCode new for: {
+							 aPackageName.
+							 (aPackageName , '-Tests') }) ]
+		ifTrue: [ self system: (AIASourceCode new for: { aPackageName }) ].
+	self
+		user: 'This is a Pharo question. Can your give a package comment for ' , aPackageName;
+		user: '. It can be up to 1 page. Please respond in markdown. Please response in ' , 
+			AIACommentBuilding language.
+	self getResponse
 ]
 
 { #category : 'accessing' }

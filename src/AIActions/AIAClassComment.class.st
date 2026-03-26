@@ -6,20 +6,16 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
+{ #category : 'as yet unclassified' }
+AIAClassComment >> aiaClassComment: aClass [
+	^ self aiaCommentDefault: aClass 
+]
+
 { #category : 'accessing' }
 AIAClassComment >> aiaComment: aClass [
-	"Generates a comment for a class using AI, formatted in Markdown, with a usage example for the Playground."
-
-	history 
-		background: (AIASourceCode new forClass: aClass);
-		background: 'When giving an example using the definition of a class, use: ' , 
-			String cr, ShiftClassBuilder comment;
-		user: 'This is a Pharo question. Can your give a class comment for ' , aClass asString;
-		user: 'Use Markdown format in your response, and include a usage example suitable for the Playground. ';
-		user: 'Prefer code that ends with an expression to be inspected using command-I. ';
-		user: 'Return only the class comment (Markdown).';
-		user: 'Please write the response in ' , AIACommentBuilding language.
-	history getResponse
+	aClass superclass = BaselineOf
+		ifTrue: [ ^ self baselineComment: aClass ]
+		ifFalse: [ ^ self aiaClassComment: aClass ]
 ]
 
 { #category : 'accessing' }
@@ -132,6 +128,27 @@ AIAClassComment >> aiaMetaComment: aClass [
 	typeName := AIACommentBuilding commentType.
 	selector := ('aiaComment' , typeName , ':') asSymbol.
 	self perform: selector with: aClass
+]
+
+{ #category : 'baselines' }
+AIAClassComment >> baselineComment: aBaselineClass [
+
+	| packageNames packages |
+	packageNames := aBaselineClass allPackageNames.
+	packages := PackageOrganizer default packages 
+		select: [ :package | packageNames includes: package name asString ].
+	history user: 'The baseline of ', aBaselineClass asString , ' has ', 
+		packages size asString ,' packages'.
+	packages do: [ :package |
+		package packageComment lines size > 1 ifTrue: [ 
+			history user: ('Package ', package name, String lf), package packageComment.
+		] ].
+	history user: 'Please give a concise description of the purpose of this project and its packages. 
+State the overall project name. 
+Identify which package is the core/key package. 
+Skip test packages in your description. 
+Do not show code examples.'.
+	history getResponse.
 ]
 
 { #category : 'accessing' }
