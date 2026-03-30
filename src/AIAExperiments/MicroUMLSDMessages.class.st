@@ -1,6 +1,3 @@
-"
-Kilroy forgot to comment
-"
 Class {
 	#name : 'MicroUMLSDMessages',
 	#superclass : 'Object',
@@ -18,7 +15,7 @@ Class {
 
 { #category : 'accessing' }
 MicroUMLSDMessages class >> bottomMargin [
-    ^ 40
+    ^ 15
 ]
 
 { #category : 'accessing' }
@@ -28,7 +25,7 @@ MicroUMLSDMessages class >> messageGap [
 
 { #category : 'accessing' }
 MicroUMLSDMessages class >> topMargin [
-    ^ 60
+    ^ 15
 
 ]
 
@@ -46,18 +43,30 @@ MicroUMLSDMessages >> description: anObject [
 
 { #category : 'drawing' }
 MicroUMLSDMessages >> draw [
-    | line label cp|
-    messageType = #call ifTrue: [ cp := { fromActor x @ y. (toActor x - 5) @ y } ].
-    messageType = #return ifTrue: [ cp := { fromActor x @ y. (toActor x + 5) @ y } ].
+    | line label|
     line := RSPolyline new
-        controlPoints: cp;
         color: Color black;
         markerEnd: (RSShapeFactory arrow size: 10) asMarker;
         yourself.
+	 messageType = #call ifTrue: [ self drawCall: line ].
+    messageType = #return ifTrue: [ self drawReturn: line ].
+	
     label := RSLabel new
         text: description;
         translateTo: (fromActor x + toActor x / 2) @ (y - 15).
     ^ Array with: line with: label
+]
+
+{ #category : 'drawing' }
+MicroUMLSDMessages >> drawCall: line [
+    line controlPoints: { fromActor x @ y. (toActor x - 5) @ y }
+]
+
+{ #category : 'drawing' }
+MicroUMLSDMessages >> drawReturn: line [
+    line 
+		controlPoints: { fromActor x @ y. (toActor x + 5) @ y };
+		dashArray: #(5 5)
 ]
 
 { #category : 'accessing' }
