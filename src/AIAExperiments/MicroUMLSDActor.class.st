@@ -118,13 +118,6 @@ MicroUMLSDActor >> width [
 ]
 
 { #category : 'accessing' }
-MicroUMLSDActor >> width: anObject [
-	"Sets the width of the actor and calculates it based on the label text"
-
-	width := anObject
-]
-
-{ #category : 'accessing' }
 MicroUMLSDActor >> x [
 	"Returns the x-coordinate of the actor"
 

@@ -85,6 +85,7 @@ MicroUMLSDMessages >> draw [
         yourself.
 	 messageType = #call ifTrue: [ self drawCall: line ].
     messageType = #return ifTrue: [ self drawReturn: line ].
+    messageType = #internal ifTrue: [ self drawInternal: line ].
 	
     label := RSLabel new
         text: description;
@@ -94,16 +95,30 @@ MicroUMLSDMessages >> draw [
 
 { #category : 'drawing' }
 MicroUMLSDMessages >> drawCall: line [
-	"Draws a call message line from the sender to the receiver"
-    line controlPoints: { fromActor x @ y. (toActor x - 5) @ y }
+    | offset |
+    offset := (fromActor x > toActor x) ifTrue: [ 5 ] ifFalse: [ -5 ].
+    line controlPoints: { fromActor x @ y. (toActor x + offset) @ y }
+]
+
+{ #category : 'drawing' }
+MicroUMLSDMessages >> drawInternal: line [
+    | x |
+    x := fromActor x.
+    line controlPoints: { 
+        x @ y. 
+        (x + 25) @ y. 
+        (x + 25) @ (y + 15). 
+        (x + 5) @ (y + 15) 
+    }
 ]
 
 { #category : 'drawing' }
 MicroUMLSDMessages >> drawReturn: line [
-	"Draws a return message line with dashed style from the receiver to the sender"
+    | offset |
+    offset := (fromActor x > toActor x) ifTrue: [ 5 ] ifFalse: [ -5 ].
     line 
-		controlPoints: { fromActor x @ y. (toActor x + 5) @ y };
-		dashArray: #(5 5)
+        controlPoints: { fromActor x @ y. (toActor x + offset) @ y };
+        dashArray: #(5 5)
 ]
 
 { #category : 'accessing' }

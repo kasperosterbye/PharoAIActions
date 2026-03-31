@@ -70,12 +70,22 @@ MicroUMLSequenceDiagram class >> diagram02 [
 	| sd |
 	sd := self new.
 	sd addActor: 'Playground'.
-	sd addActor: 'Login System'.
 	sd addActor: 'Database'.
+	sd addActor: 'Login System'.
 	sd addMessage: 'call ' from: 'Playground' to: 'Login System'.
+	sd addInternal: 'Kilroy ' for: 'Database'.
 	sd addMessage: 'verify ' from: 'Login System' to: 'Database'.
 	sd addReturn: '' from: 'Database' to: 'Playground'.
 	sd build
+]
+
+{ #category : 'instance creation' }
+MicroUMLSequenceDiagram class >> from: ast [
+	| instanse |
+	instanse := self new.
+	instanse actors: ast actors .
+	instanse messages: ast messages.
+	instanse build.
 ]
 
 { #category : 'accessing' }
@@ -112,9 +122,14 @@ MicroUMLSequenceDiagram >> addActor: aString [
 	actor := MicroUMLSDActor new.
 	actor
 		name: aString;
-		index: actors size.
+		index: actors size + 1.
 	actors add: actor.
 	^ actor
+]
+
+{ #category : 'construction' }
+MicroUMLSequenceDiagram >> addInternal: aDescription for: actorName [
+	^ self add: #internal name: aDescription from: actorName to: actorName
 ]
 
 { #category : 'construction' }
@@ -134,7 +149,8 @@ MicroUMLSequenceDiagram >> build [
 	"Constructs and displays the sequence diagram on a canvas"
 
 	canvas := RSCanvas new.
-	self computeActorPositions;
+	self 
+		computeActorPositions;
 		computeMessagePositions;
 		drawActors;
 		drawLifelines;

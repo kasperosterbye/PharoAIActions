@@ -17,9 +17,21 @@ MicroUMLSDAstBuilder class >> , aString [
     ^ self new , aString
 ]
 
+{ #category : 'examples' }
+MicroUMLSDAstBuilder class >> example [
+	"MicroUMLSDAstBuilder
+    , 'Playground'
+    , 'Login System'
+    , 'Database'
+    & 'Playground' -> 'Login System' => 'call'
+    & 'Login System' -> 'Database' => 'verify'
+    & 'Database' -> 'Playground' --> ''"
+]
+
 { #category : 'logical operations' }
 MicroUMLSDAstBuilder >> & from [
-    messageFrom := from .
+    messageFrom := from.
+    messageTo := nil.
     ^ self
 ]
 
@@ -37,8 +49,8 @@ MicroUMLSDAstBuilder >> , aString [
 MicroUMLSDAstBuilder >> --> aString [
 	messages add: (MicroUMLSDMessages new
 			 description: aString;
-			 fromActor: messageFrom;
-			 toActor: messageTo;
+			 fromActor: (actors at: messageFrom);
+			 toActor: (actors at: messageTo );
 			 messageType: #return;
 			 yourself).
 	^ self
@@ -52,18 +64,31 @@ MicroUMLSDAstBuilder >> -> to [
 
 { #category : 'UML - class separators' }
 MicroUMLSDAstBuilder >> => aString [
+	| messageType |
+	messageType := #call.
+	messageTo ifNil: [ messageType := #internal. messageTo := messageFrom ].
    messages add: (MicroUMLSDMessages new
 			 description: aString;
-			 fromActor: messageFrom;
-			 toActor: messageTo;
-			 messageType: #call;
+			 fromActor: (actors at: messageFrom);
+			 toActor: (actors at: messageTo );
+			 messageType: messageType;
 			 yourself).
     ^ self
 
+]
+
+{ #category : 'accessing' }
+MicroUMLSDAstBuilder >> actors [
+	^ actors values
 ]
 
 { #category : 'initialization' }
 MicroUMLSDAstBuilder >> initialize [ 
 	actors := OrderedDictionary new.
 	messages := OrderedCollection new
+]
+
+{ #category : 'accessing' }
+MicroUMLSDAstBuilder >> messages [
+	^ messages 
 ]
