@@ -47,6 +47,14 @@ MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
 ]
 
 { #category : 'experiments' }
+MicroUMLSDForCode >> checkActorName: addition [
+
+	| x |
+	x := (Smalltalk classNamed: addition) package name.
+	^ x = packageName or: [ x = 'UndefinedObject' ]
+]
+
+{ #category : 'experiments' }
 MicroUMLSDForCode >> connectMessages: traces [
 	| connections index line pName trace|
 	connections := OrderedCollection new.
