@@ -89,9 +89,13 @@ MicroUMLSDAstBuilder >> , aString [
 { #category : 'UML - class separators' }
 MicroUMLSDAstBuilder >> --> aString [
 	"Adds a return message to the sequence diagram"
+	| messageType |
+	messageType := #call.
+	messageTo ifNil: [ messageType := #internal. messageTo := messageFrom ].
+   
 	messages add: (MicroUMLSDMessages new
 			 description: aString;
-			 fromActor: (actors at: messageFrom);
+			 fromActor: (actors at: messageFrom );
 			 toActor: (actors at: messageTo );
 			 messageType: #return;
 			 yourself).
@@ -115,7 +119,7 @@ MicroUMLSDAstBuilder >> => aString [
 			 description: aString;
 			 fromActor: (actors at: messageFrom);
 			 toActor: (actors at: messageTo );
-			 messageType: messageType;
+			 messageType: messageType ;
 			 yourself).
     ^ self
 ]
