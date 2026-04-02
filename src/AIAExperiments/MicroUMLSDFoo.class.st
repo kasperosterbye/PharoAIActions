@@ -20,7 +20,8 @@ MicroUMLSDFoo >> astFromTrace: aTrace [
 
 	builder & aTrace first first -> aTrace first second => aTrace first third.
 	2 to: aTrace size - 1 do: [ :index |
-	(aTrace at: index) first ~= 'UndefinedObject' ifTrue: [ self message: (aTrace at: index) on: builder ] ].
+		(aTrace at: index) first ~= 'UndefinedObject' ifTrue: [ 
+			self message: (aTrace at: index) on: builder ] ].
 
 	builder & aTrace last second -> aTrace last first --> ''.
 	MicroUMLSequenceDiagram from: builder
@@ -29,11 +30,11 @@ MicroUMLSDFoo >> astFromTrace: aTrace [
 { #category : 'experiments' }
 MicroUMLSDFoo >> buildActorName: name on: actors [
 
-	| pName |
-	pName := (Smalltalk classNamed: name) package name.
-	pName = packageName or: [ pName = 'UndefinedObject' ].
-	((pName = packageName) or: [ pName = 'UndefinedObject' ])
-				ifTrue: [actors add: name ]
+	name = 'UndefinedObject' 
+		ifTrue: [ (actors includes: name) ifFalse: [ actors add: name ] ]
+		ifFalse: [
+			(Smalltalk classNamed: name) package name = packageName ifTrue: [
+				(actors includes: name) ifFalse: [ actors add: name ] ]]
 ]
 
 { #category : 'experiments' }
@@ -42,9 +43,9 @@ MicroUMLSDFoo >> buildActorsOf: aTrace on: aBuilder [
 	| actors |
 	actors := OrderedCollection new.
 	aTrace do: [ :each |
-			self buildActorsOf: each first on: actors.
-			self buildActorsOf: each second on: actors ].
-	actors do: [ :actor | aBuilder , actor second ]
+			self buildActorName: each first on: actors.
+			self buildActorName: each second on: actors ].
+	actors do: [ :actor | aBuilder , actor ]
 ]
 
 { #category : 'experiments' }
@@ -61,11 +62,11 @@ MicroUMLSDFoo >> fooMessages: traces [
 	foo := OrderedCollection new.
 	foo add: traces first.
 	index := 2.
-	[ index < traces size ] whileTrue: [ 
+	[ index < traces size ] whileTrue: [
 		line := (traces at: index ).
 		pName := (Smalltalk classNamed: line second) package name.
 		(pName = packageName )
-			ifTrue: [ foo add: line. index := index + 1 ]
+			ifTrue: [ foo add: line ]
 			ifFalse: [ 
 				trace := line.
 				index := index + 1.
@@ -75,10 +76,12 @@ MicroUMLSDFoo >> fooMessages: traces [
 					pName = packageName 
 					 ] 
 				] whileFalse: [ 
-					index := index + 1 ].
+					index := index + 1.
+					index >= traces size ifTrue: [ ^ foo ] ].
 				trace at: 3 put: ( (trace at: 3),' ... ', (line at: 3) ).
-				foo add: {trace first. line second. trace third. line fourth.}
-			]
+				foo add: {trace first. line second. trace third. line fourth.}.
+			].
+			index := index + 1.
 	 ].
 	^ foo
 ]
@@ -114,16 +117,18 @@ MicroUMLSDFoo >> reduceDuplicateTraces: trace [
 
 { #category : 'removing' }
 MicroUMLSDFoo >> removeNonPackageTraces: traces [
-| reducedTraces |
+
+	| reducedTraces |
 	reducedTraces := OrderedCollection new.
-	traces do: [ :trace |
-		| pName1 pName2 |
-		pName1 := (Smalltalk classNamed: trace first) package name.
-		pName2 := (Smalltalk classNamed: trace second) package name.
-		(pName1 = packageName or: [ pName2 = packageName ])
-			ifTrue: [reducedTraces add: trace ]
-			ifFalse: [ self halt. ] ].
-	^ reducedTraces 
+	reducedTraces add: traces first.
+	(traces copyFrom: 2 to: traces size - 1) do: [ :trace |
+			(Smalltalk classNamed: trace first) package name = packageName
+				ifTrue: [ reducedTraces add: trace ]
+				ifFalse: [ ] ].
+	(traces last first = 'UndefinedObject' or: [ (Smalltalk classNamed: traces last first) package name = packageName ])
+		ifTrue: [
+			reducedTraces add: traces last].
+	^ reducedTraces
 ]
 
 { #category : 'experiments' }
@@ -142,7 +147,7 @@ MicroUMLSDFoo >> types: aBlock inPackage: pName [
 			next := {from name. to name. sel. isReturn }.
 			traces add: next ]].
 	traces := self reduceDuplicateTraces: traces.
-	"trace := self removeNonPackageTraces: trace."
 	traces := self fooMessages: traces.
+	traces := self removeNonPackageTraces: traces.
 	^ self astFromTrace: traces
 ]
