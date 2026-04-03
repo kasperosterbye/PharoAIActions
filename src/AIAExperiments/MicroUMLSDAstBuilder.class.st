@@ -1,40 +1,31 @@
 "
 # Class Comment for MicroUMLSDAstBuilder
 
-The `MicroUMLSDAstBuilder` class is designed to facilitate the creation and manipulation of sequence diagrams in a fluid and expressive manner. It provides a builder pattern for constructing sequence diagrams by allowing the addition of actors and messages in a concise syntax.
+The `MicroUMLSDAstBuilder` class is responsible for constructing abstract syntax trees (ASTs) for sequence diagrams in the MicroUML framework. It provides a fluid syntax for defining actors and messages within a sequence diagram, allowing for a concise and readable representation of interactions between actors.
 
 ## Key Features
 
-- **Fluid Syntax**: Allows the creation of sequence diagrams using a fluid syntax, making the code more readable and expressive.
-- **Actor Management**: Supports the addition of actors to the sequence diagram and manages their relationships.
+- **Fluid Syntax**: Allows for the creation of sequence diagrams using a fluid syntax, making the code more readable and maintainable.
+- **Actor Management**: Supports the addition of actors to the sequence diagram and manages their interactions.
 - **Message Handling**: Facilitates the addition of messages between actors, including call and return messages.
-- **Initialization**: Provides methods to initialize the builder with empty collections for actors and messages.
+- **Building and Initialization**: Provides methods for building the sequence diagram from the constructed AST and initializing the builder with empty collections for actors and messages.
 
 ## Usage Example
 
 ```st
-MicroUMLSDAstBuilder new
+(MicroUMLSDAstBuilder
     , 'Playground'
     , 'Login System'
     , 'Database'
     & 'Playground' -> 'Login System' => 'call'
     & 'Login System' -> 'Database' => 'verify'
-    & 'Database' -> 'Playground' --> ''
+    & 'Database' -> 'Playground' --> '')
+    build
 ```
 
-This example demonstrates how to create a sequence diagram with three actors (`Playground`, `Login System`, and `Database`) and define the messages exchanged between them. The `&` operator is used to set the source actor, the `->` operator is used to set the target actor, and the `=>` and `-->` operators are used to add call and return messages, respectively.
+This example demonstrates how to create a sequence diagram with three actors: `Playground`, `Login System`, and `Database`. Messages are defined between these actors, including a call from `Playground` to `Login System`, a verification call from `Login System` to `Database`, and a return message from `Database` to `Playground`.
 
-## Design Decisions
-
-- **Fluid Syntax**: The class is designed to support a fluid syntax for scripting, making it suitable for interactive use in the Playground.
-- **Builder Pattern**: The class follows the builder pattern, providing methods to build and install the sequence diagram.
-- **Extensibility**: The class can be extended by using different builder enhancers to customise the building process.
-
-## Future Considerations
-
-- **API Alignment**: There is a need to revisit and align the APIs with the class default values to reduce the number of conversions required.
-- **Builder Revisit**: The necessity of fluid class builders should be revisited to ensure they meet the evolving requirements of the system.
-
+The `build` method is used to construct the sequence diagram from the defined actors and messages, returning the constructed diagram for further inspection or use.
 "
 Class {
 	#name : 'MicroUMLSDAstBuilder',
@@ -58,13 +49,16 @@ MicroUMLSDAstBuilder class >> , aString [
 
 { #category : 'examples' }
 MicroUMLSDAstBuilder class >> example [
-	"MicroUMLSDAstBuilder
+	"Example demonstrating the creation and linking of UML elements"
+
+	(MicroUMLSDAstBuilder
     , 'Playground'
     , 'Login System'
     , 'Database'
     & 'Playground' -> 'Login System' => 'call'
     & 'Login System' -> 'Database' => 'verify'
-    & 'Database' -> 'Playground' --> ''"
+    & 'Database' -> 'Playground' --> '')
+	build
 ]
 
 { #category : 'logical operations' }
@@ -128,6 +122,11 @@ MicroUMLSDAstBuilder >> => aString [
 MicroUMLSDAstBuilder >> actors [
 	"Returns the collection of actors in the sequence diagram"
 	^ actors values
+]
+
+{ #category : 'building' }
+MicroUMLSDAstBuilder >> build [
+	MicroUMLSequenceDiagram from: self
 ]
 
 { #category : 'initialization' }

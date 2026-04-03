@@ -1,3 +1,46 @@
+"
+# Class Comment for MicroUMLSDForCode
+
+The `MicroUMLSDForCode` class is designed to construct abstract syntax trees (ASTs) from traces of method calls, specifically focusing on method calls within a specified package. This is particularly useful for generating sequence diagrams that illustrate the interactions between classes and methods within a given package.
+
+## Key Features
+
+- **AST Construction**: Constructs an abstract syntax tree from method call traces.
+- **Package Filtering**: Filters method calls to include only those within a specified package.
+- **Actor Management**: Manages actors (classes) involved in the method calls.
+- **Message Handling**: Handles messages between actors, including return messages.
+- **Trace Reduction**: Reduces duplicate traces to ensure each trace is unique.
+- **Package Testing**: Tests if a package or class matches the specified package name criteria.
+
+## Usage Example
+
+Here is an example of how to use the `MicroUMLSDForCode` class to generate a sequence diagram from a block of code:
+
+```st
+| builder ast |
+builder := MicroUMLSDForCode new.
+ast := builder types: [
+    | point |
+    point := Point new.
+    point x: 10.
+    point y: 20.
+    point x + point y
+] inPackage: 'Kernel'.
+ast inspect
+```
+
+In this example, the `types:inPackage:` method is used to construct an AST from a block of code, focusing on method calls within the 'Kernel' package. The resulting AST is then inspected to visualise the sequence diagram.
+
+## Design Decisions
+
+- **Scripting**: The code snippet should be usable for scripting (interactively).
+- **Class Builder**: The code snippet must return a class builder.
+- **Installation**: A class builder should offer methods to build and install the class.
+- **Slot Management**: Manages class side slots and traits by converting all class information into an expected format.
+- **API Alignment**: Future revisions should align APIs with class default values to reduce conversions.
+
+This class is part of the 'AIAExperiments' package and is tagged with 'MicroUML'.
+"
 Class {
 	#name : 'MicroUMLSDForCode',
 	#superclass : 'Object',
@@ -11,6 +54,7 @@ Class {
 
 { #category : 'experiments' }
 MicroUMLSDForCode >> astFromTrace: aTrace [
+	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
 	builder := MicroUMLSDAstBuilder new.
@@ -27,6 +71,7 @@ MicroUMLSDForCode >> astFromTrace: aTrace [
 
 { #category : 'experiments' }
 MicroUMLSDForCode >> buildActorName: name on: actors [
+	"Builds an actor name from the given name and adds it to the actors collection if it is not already present and meets the package criteria."
 
 	name = 'UndefinedObject' 
 		ifTrue: [ (actors includes: name) ifFalse: [ actors add: name ] ]
@@ -37,6 +82,7 @@ MicroUMLSDForCode >> buildActorName: name on: actors [
 
 { #category : 'experiments' }
 MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
+	"Builds actors from a trace of method calls and adds them to the builder."
 
 	| actors |
 	actors := OrderedCollection new.
@@ -48,6 +94,7 @@ MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
 
 { #category : 'experiments' }
 MicroUMLSDForCode >> connectMessages: traces [
+	"Connects messages in a trace by linking them based on package criteria"
 	| connections index line pName trace|
 	connections := OrderedCollection new.
 	connections add: traces first.
@@ -78,6 +125,7 @@ MicroUMLSDForCode >> connectMessages: traces [
 
 { #category : 'experiments' }
 MicroUMLSDForCode >> message: each on: builder [
+	"Constructs a message in the builder based on the given trace entry, considering package criteria"
 
 	((Smalltalk classNamed: each first) package name = packageName )
 		ifFalse: [ ^ self ].
@@ -94,6 +142,7 @@ MicroUMLSDForCode >> message: each on: builder [
 
 { #category : 'removing' }
 MicroUMLSDForCode >> reduceDuplicateTraces: trace [
+	"Removes duplicate traces from a collection, ensuring each trace is unique."
 	| reducedTraces |
 	reducedTraces := OrderedCollection new.
 	reducedTraces add: trace first.
@@ -107,6 +156,7 @@ MicroUMLSDForCode >> reduceDuplicateTraces: trace [
 
 { #category : 'removing' }
 MicroUMLSDForCode >> removeNonPackageTraces: traces [
+	"Removes traces not belonging to the specified package"
 
 	| reducedTraces |
 	reducedTraces := OrderedCollection new.
@@ -123,6 +173,7 @@ MicroUMLSDForCode >> removeNonPackageTraces: traces [
 
 { #category : 'tests' }
 MicroUMLSDForCode >> testClassPackage: package [
+	"Determines if a package matches the specified package name criteria."
 	package = 'UndefinedObject' 
 		ifTrue: [ ^ true ].
 	packageName isString 
@@ -136,6 +187,7 @@ MicroUMLSDForCode >> testClassPackage: package [
 
 { #category : 'tests' }
 MicroUMLSDForCode >> testPackage: packOrClass [
+	"Determines if a package or class matches the specified package name criteria."
 	| package |
 	package := packOrClass isString 
 		ifTrue: [ packOrClass ] 
@@ -153,6 +205,7 @@ MicroUMLSDForCode >> testPackage: packOrClass [
 
 { #category : 'experiments' }
 MicroUMLSDForCode >> types: aBlock inPackage: pName [
+	"Constructs an abstract syntax tree from a block of code, focusing on method calls within a specified package."
 
 	| traces |
 	packageName := pName.

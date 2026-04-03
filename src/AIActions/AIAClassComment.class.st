@@ -6,7 +6,7 @@ Class {
 	#tag : 'CommentBuilder'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAClassComment >> aiaClassComment: aClass [
 	^ self aiaCommentDefault: aClass 
 ]
@@ -29,7 +29,7 @@ AIAClassComment >> aiaCommentBasic: aClass [
 	history getResponse
 ]
 
-{ #category : 'Protocol (as yet unclassified) - 1 selector(s)' }
+{ #category : 'accessing' }
 AIAClassComment >> aiaCommentBeginner: aClass [ 
 	history
 		background: (AIASourceCode new forClass: aClass);
@@ -91,7 +91,7 @@ AIAClassComment >> aiaCommentExpert: aClass [
 	history getResponse
 ]
 
-{ #category : 'Protocol (accessing) - 10 selector(s)' }
+{ #category : 'accessing' }
 AIAClassComment >> aiaCommentLLM: aClass [
 	history
 		background: (AIASourceCode new forClass: aClass);
