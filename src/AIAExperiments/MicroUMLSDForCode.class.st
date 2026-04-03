@@ -52,6 +52,12 @@ Class {
 	#tag : 'MicroUML'
 }
 
+{ #category : 'examples' }
+MicroUMLSDForCode class >> example1 [
+	<example>
+	MicroUMLSDForCode new types: [ MicroUMLSDFoo1 fibbe: 7  ] inPackage: {'AIAExperiments'}.
+]
+
 { #category : 'experiments' }
 MicroUMLSDForCode >> astFromTrace: aTrace [
 	"Constructs an abstract syntax tree from a trace of method calls."
