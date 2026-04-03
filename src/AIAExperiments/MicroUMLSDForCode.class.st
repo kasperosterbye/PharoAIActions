@@ -99,14 +99,6 @@ MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> checkActorName: addition [
-
-	| x |
-	x := (Smalltalk classNamed: addition) package name.
-	^ x = packageName or: [ x = 'UndefinedObject' ]
-]
-
-{ #category : 'experiments' }
 MicroUMLSDForCode >> connectMessages: traces [
 	"Connects messages in a trace by linking them based on package criteria"
 	| connections index line pName trace|
@@ -152,6 +144,61 @@ MicroUMLSDForCode >> message: each on: builder [
 				each last
 					ifFalse: [ builder & each first -> each second => each third ]
 					ifTrue: [ builder & each second -> each first --> '' ] ]
+]
+
+{ #category : 'experiments' }
+MicroUMLSDForCode >> new_connectMessages: traces [
+	| connections i current next |
+	connections := OrderedCollection with: traces first.
+	i := 2.
+	[ i < traces size ] whileTrue: [
+		current := traces at: i.
+		((Smalltalk classNamed: current second) package name = packageName)
+			ifTrue: [ connections add: current ]
+			ifFalse: [ 
+				"Lookahead: Bridge directly to the next call if it exists"
+				i + 1 < traces size ifTrue: [ 
+					next := traces at: i + 1.
+					connections add: { 
+						current first. 
+						next second. 
+						(current third, ' ... ', next third). 
+						next fourth }.
+					self halt.
+					i := i + 1 "Skip the bridged message" ]
+				ifFalse: [ ^ connections ] ].
+		i := i + 1 ].
+	^ connections
+]
+
+{ #category : 'experiments' }
+MicroUMLSDForCode >> old_connectMessages: traces [
+	| connections index line pName trace|
+	connections := OrderedCollection new.
+	connections add: traces first.
+	index := 2.
+	[ index < traces size ] whileTrue: [
+		line := (traces at: index ).
+		pName := (Smalltalk classNamed: line second) package name.
+		(pName = packageName )
+			ifTrue: [ connections add: line ]
+			ifFalse: [ 
+				trace := line.
+				index := index + 1.
+				[ index < traces size and: [ 
+					line := (traces at: index ).
+					pName := (Smalltalk classNamed: line second) package name.
+					pName = packageName 
+					 ] 
+				] whileFalse: [ 
+					index := index + 1.
+					index >= traces size ifTrue: [ ^ connections ] ].
+				trace at: 3 put: ( (trace at: 3),' ... ', (line at: 3) ).
+				connections add: {trace first. line second. trace third. line fourth.}.
+			].
+			index := index + 1.
+	 ].
+	^ connections
 ]
 
 { #category : 'removing' }
