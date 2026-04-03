@@ -42,7 +42,7 @@ In this example, the `types:inPackage:` method is used to construct an AST from 
 This class is part of the 'AIAExperiments' package and is tagged with 'MicroUML'.
 "
 Class {
-	#name : 'MicroUMLSDForCode',
+	#name : 'MicroUMLSDForCode2',
 	#superclass : 'Object',
 	#instVars : [
 		'packageName'
@@ -53,25 +53,30 @@ Class {
 }
 
 { #category : 'examples' }
-MicroUMLSDForCode class >> example1 [
+MicroUMLSDForCode2 class >> example1 [
 	<example>
-	self  new types: [ MicroUMLSDFoo1 fibbe: 7  ] inPackage: 'AIAExperiments'.
+	self new types: [ MicroUMLSDFoo1 fibbe: 7  ] inPackage: 'AIAExperiments'.
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode class >> example2 [
+MicroUMLSDForCode2 class >> example2 [
 	<example>
-	self  new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
+	self new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode class >> example3 [
+MicroUMLSDForCode2 class >> example3 [
 	<example>
-	self  new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
+	self new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
+]
+
+{ #category : 'as yet unclassified' }
+MicroUMLSDForCode2 class >> on: block inPackage: pack [
+	self new types: block inPackage: pack
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> astFromTrace: aTrace [
+MicroUMLSDForCode2 >> astFromTrace: aTrace [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
@@ -88,7 +93,7 @@ MicroUMLSDForCode >> astFromTrace: aTrace [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> buildActorName: name on: actors [
+MicroUMLSDForCode2 >> buildActorName: name on: actors [
 	"Builds an actor name from the given name and adds it to the actors collection if it is not already present and meets the package criteria."
 
 	name = 'UndefinedObject' 
@@ -99,7 +104,7 @@ MicroUMLSDForCode >> buildActorName: name on: actors [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
+MicroUMLSDForCode2 >> buildActorsOf: aTrace on: aBuilder [
 	"Builds actors from a trace of method calls and adds them to the builder."
 
 	| actors |
@@ -111,13 +116,13 @@ MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> checkUndefinedObjectOrPackage: item [
-	^item = 'UndefinedObject' or: [ (Smalltalk classNamed: item) package name = packageName ]
+MicroUMLSDForCode2 >> checkUndefinedObjectOrPackage: item [
+	^(Smalltalk classNamed: item) package name = packageName 
 
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> connectMessages: traces [
+MicroUMLSDForCode2 >> connectMessages: traces [
 	"Connects messages in a trace by linking them based on package criteria"
 	| connections index line pName trace|
 	connections := OrderedCollection new.
@@ -148,7 +153,7 @@ MicroUMLSDForCode >> connectMessages: traces [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> message: each on: builder [
+MicroUMLSDForCode2 >> message: each on: builder [
 	"Constructs a message in the builder based on the given trace entry, considering package criteria"
 
 	((Smalltalk classNamed: each first) package name = packageName )
@@ -165,7 +170,7 @@ MicroUMLSDForCode >> message: each on: builder [
 ]
 
 { #category : 'removing' }
-MicroUMLSDForCode >> old_removeNonPackageTraces: traces [
+MicroUMLSDForCode2 >> old_removeNonPackageTraces: traces [
 	"Removes traces not belonging to the specified package"
 
 	| reducedTraces |
@@ -182,13 +187,12 @@ MicroUMLSDForCode >> old_removeNonPackageTraces: traces [
 ]
 
 { #category : 'removing' }
-MicroUMLSDForCode >> reduceDuplicateTraces: trace [
+MicroUMLSDForCode2 >> reduceDuplicateTraces: trace [
 	"Removes duplicate traces from a collection, ensuring each trace is unique."
 	| reducedTraces |
-	reducedTraces := OrderedCollection new.
-	reducedTraces add: trace first.
+	reducedTraces := OrderedCollection newFrom: {trace first}.
 	2 to: trace size do: [ :index |
-		((trace at: index ) ~= reducedTraces last) ifTrue: [ 
+		(trace at: index ) ~= reducedTraces last ifTrue: [ 
 			reducedTraces add: (trace at: index)
 			 ]
 		 ].
@@ -196,20 +200,19 @@ MicroUMLSDForCode >> reduceDuplicateTraces: trace [
 ]
 
 { #category : 'removing' }
-MicroUMLSDForCode >> removeNonPackageTraces: traces [
+MicroUMLSDForCode2 >> removeNonPackageTraces: traces [
 	"Removes traces not belonging to the specified package"
 
 	| reducedTraces |
 	reducedTraces := OrderedCollection new.
 	traces do: [ :trace |
-			(( self checkUndefinedObjectOrPackage: trace first) 
-				and: [ self checkUndefinedObjectOrPackage: trace second ])
+			(self checkUndefinedObjectOrPackage: trace second)
 				ifTrue: [ reducedTraces add: trace ]].
 	^ reducedTraces
 ]
 
 { #category : 'tests' }
-MicroUMLSDForCode >> testClassPackage: package [
+MicroUMLSDForCode2 >> testClassPackage: package [
 	"Determines if a package matches the specified package name criteria."
 	package = 'UndefinedObject' 
 		ifTrue: [ ^ true ].
@@ -223,7 +226,7 @@ MicroUMLSDForCode >> testClassPackage: package [
 ]
 
 { #category : 'tests' }
-MicroUMLSDForCode >> testPackage: packOrClass [
+MicroUMLSDForCode2 >> testPackage: packOrClass [
 	"Determines if a package or class matches the specified package name criteria."
 	| package |
 	package := packOrClass isString 
@@ -241,26 +244,28 @@ MicroUMLSDForCode >> testPackage: packOrClass [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> types: aBlock inPackage: pName [
+MicroUMLSDForCode2 >> types: aBlock inPackage: pName [
 	"Constructs an abstract syntax tree from a block of code, focusing on method calls within a specified package."
 
 	| traces |
 	packageName := pName.
 	traces := OrderedCollection new.
-	thisContext sender runSimulated: aBlock contextAtEachStep: [ :current |
+	thisContext  sender runSimulated: [aBlock value]  contextAtEachStep: [ :current |
 			| from to sel isReturn next |
+			self halt.
 			from := current sender methodClass.
 			to := current method methodClass.
 			sel := current selector.
 			isReturn := (InstructionStream on: current method pc: current pc) willReturn.
 			"((from package name = packageName) or: [ to package name = packageName ]) ifTrue:["
 			((self testClassPackage: from package name ) 
-				or: [ self testClassPackage: to package name]) 
+				and: [ self testClassPackage: to package name]) 
 				ifTrue:[
 					next := {from name. to name. sel. isReturn }.
 					traces add: next ]].
 	traces := self reduceDuplicateTraces: traces.
-	traces := self connectMessages: traces.
-	traces := self removeNonPackageTraces: traces.
+	"traces := self connectMessages: traces."
+	"traces := self removeNonPackageTraces: traces."
+self halt.
 	^ self astFromTrace: traces
 ]
