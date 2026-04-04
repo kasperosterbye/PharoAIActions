@@ -279,20 +279,20 @@ MicroUMLSDForCode2 >> types: aBlock inPackage: pName [
 	currentList := OrderedCollection new.
 	thisContext  runSimulated: aBlock  contextAtEachStep: [ :current |
 			| from to sel isReturn next |
-			currentList add: current.
-			"current contextClass package name = 'AIAExperiments' ifTrue: [self halt]."
 			from := current sender methodClass.
 			to := current method methodClass.
-			sel := current selector.
+			sel := current selector. 
 			isReturn := (InstructionStream on: current method pc: current pc) willReturn.
+			currentList add: {isReturn. current }.
+			currentList size >= 35 ifTrue: [ self halt ].
 			"((from package name = packageName) or: [ to package name = packageName ]) ifTrue:["
 			((self testClassPackage: from package name ) 
 				and: [ self testClassPackage: to package name]) 
 				ifTrue:[
 					next := {from name. to name. sel. isReturn }.
 					traces add: next ]].
-	traces := self reduceDuplicateTraces: traces.
-	"traces := self connectMessages: traces."
+	"traces := self reduceDuplicateTraces: traces.
+	traces := self connectMessages: traces."
 	"traces := self removeNonPackageTraces: traces."
 	self halt.
 	^ self astFromTrace: traces
