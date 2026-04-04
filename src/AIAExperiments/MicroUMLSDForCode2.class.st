@@ -186,6 +186,32 @@ MicroUMLSDForCode2 >> old_removeNonPackageTraces: traces [
 	^ reducedTraces
 ]
 
+{ #category : 'experiments' }
+MicroUMLSDForCode2 >> old_types: aBlock inPackage: pName [
+	"Constructs an abstract syntax tree from a block of code, focusing on method calls within a specified package."
+
+	| traces |
+	packageName := pName.
+	traces := OrderedCollection new.
+	thisContext  runSimulated: [aBlock value]  contextAtEachStep: [ :current |
+			| from to sel isReturn next |
+			self halt.
+			from := current sender methodClass.
+			to := current method methodClass.
+			sel := current selector.
+			isReturn := (InstructionStream on: current method pc: current pc) willReturn.
+			"((from package name = packageName) or: [ to package name = packageName ]) ifTrue:["
+			((self testClassPackage: from package name ) 
+				and: [ self testClassPackage: to package name]) 
+				ifTrue:[
+					next := {from name. to name. sel. isReturn }.
+					traces add: next ]].
+	traces := self reduceDuplicateTraces: traces.
+	"traces := self connectMessages: traces."
+	"traces := self removeNonPackageTraces: traces."
+	^ self astFromTrace: traces
+]
+
 { #category : 'removing' }
 MicroUMLSDForCode2 >> reduceDuplicateTraces: trace [
 	"Removes duplicate traces from a collection, ensuring each trace is unique."
@@ -247,12 +273,14 @@ MicroUMLSDForCode2 >> testPackage: packOrClass [
 MicroUMLSDForCode2 >> types: aBlock inPackage: pName [
 	"Constructs an abstract syntax tree from a block of code, focusing on method calls within a specified package."
 
-	| traces |
+	| traces currentList|
 	packageName := pName.
 	traces := OrderedCollection new.
-	thisContext  sender runSimulated: [aBlock value]  contextAtEachStep: [ :current |
+	currentList := OrderedCollection new.
+	thisContext  runSimulated: aBlock  contextAtEachStep: [ :current |
 			| from to sel isReturn next |
-			self halt.
+			currentList add: current.
+			"current contextClass package name = 'AIAExperiments' ifTrue: [self halt]."
 			from := current sender methodClass.
 			to := current method methodClass.
 			sel := current selector.
@@ -266,6 +294,6 @@ MicroUMLSDForCode2 >> types: aBlock inPackage: pName [
 	traces := self reduceDuplicateTraces: traces.
 	"traces := self connectMessages: traces."
 	"traces := self removeNonPackageTraces: traces."
-self halt.
+	self halt.
 	^ self astFromTrace: traces
 ]
