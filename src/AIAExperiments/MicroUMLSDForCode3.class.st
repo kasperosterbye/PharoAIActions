@@ -190,20 +190,12 @@ MicroUMLSDForCode3 >> message: each on: builder [
 
 { #category : 'experiments' }
 MicroUMLSDForCode3 >> types: aBlock inPackage: pName [
-	|  currentList x senders methods receivers isReturns|			
+	|  currentList x |			
 	packageName := pName.
 	currentList := OrderedCollection new.
-	senders := OrderedCollection new.
-	methods := OrderedCollection new.
-	receivers := OrderedCollection new.
-	isReturns := OrderedCollection new.
 	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
 			"currentList add: {current isReturn. current copy}."
 			currentList add: current copy.
-			senders add: current sender copy.
-			methods add: current method copy.
-			receivers add: current receiver copy.
-			isReturns add: current isReturn 
 			].
 	x := self astFromCurrentList: currentList.
 	^ self astFromTrace: x.

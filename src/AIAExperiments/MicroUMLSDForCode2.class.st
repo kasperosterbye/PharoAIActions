@@ -153,25 +153,29 @@ MicroUMLSDForCode2 >> message: each on: builder [
 
 { #category : 'experiments' }
 MicroUMLSDForCode2 >> types: aBlock inPackage: pName [
-	| traces currentList from method receiver isReturn next |			
+	"Constructs an abstract syntax tree from a block of code, focusing on method calls within a specified package."
+
+	| traces currentList|
 	packageName := pName.
 	traces := OrderedCollection new.
 	currentList := OrderedCollection new.
-	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
-			from := current sender.
-			method := current method.
-			receiver := current receiver.
+	thisContext  runSimulated: aBlock  contextAtEachStep: [ :current |
+			| from to sel isReturn next |
+			from := current sender methodClass.
+			to := current method methodClass.
+			sel := current selector. 
 			isReturn := (InstructionStream on: current method pc: current pc) willReturn.
-			"currentList add: {isReturn. current}."
-			currentList add: current.
-			"currentList size = 52 ifTrue: [ self halt ]."
-			"([method methodClass package name ] onErrorDo: ['*']) = packageName"
-			(self checkCurrent: { from. receiver. method })
-				ifTrue: [
-						next := { from methodClass name. receiver class name. method selector . isReturn }.
-						(self checkAdd: next to: traces)
-							ifTrue: [ traces add: next. "self halt." ].
-						from := method].
-			].
+			currentList add: {isReturn. current }.
+			currentList size >= 35 ifTrue: [ self halt ].
+			"((from package name = packageName) or: [ to package name = packageName ]) ifTrue:["
+			((self testClassPackage: from package name ) 
+				and: [ self testClassPackage: to package name]) 
+				ifTrue:[
+					next := {from name. to name. sel. isReturn }.
+					traces add: next ]].
+	"traces := self reduceDuplicateTraces: traces.
+	traces := self connectMessages: traces."
+	"traces := self removeNonPackageTraces: traces."
+	self halt.
 	^ self astFromTrace: traces
 ]
