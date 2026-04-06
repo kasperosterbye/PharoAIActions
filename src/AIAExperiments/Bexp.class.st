@@ -1,17 +1,19 @@
 Class {
-	#name : 'MicroUMLSDFoo2',
+	#name : 'Bexp',
 	#superclass : 'Object',
 	#instVars : [
-		'tally'
+		'aaa',
+		'bbb'
 	],
 	#category : 'AIAExperiments-MicroUML',
 	#package : 'AIAExperiments',
 	#tag : 'MicroUML'
 }
 
-{ #category : 'experiments' }
-MicroUMLSDFoo2 class >> fabbe: a [
-	| ccc |
-	ccc := 12345 + a.
-	^ ccc
+{ #category : 'accessing' }
+Bexp >> first: arg [
+| temp |
+temp := arg * 2.
+thisContext copy inspect.
+^ temp
 ]

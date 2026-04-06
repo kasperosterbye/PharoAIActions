@@ -149,6 +149,12 @@ MicroUMLSDMessages >> messageType: anObject [
 	messageType := anObject
 ]
 
+{ #category : 'printing' }
+MicroUMLSDMessages >> printOn: stream [
+	stream << '[ ' << fromActor printString << ' -> ' << toActor printString << ' ' << description 
+		<< ' (' << messageType << ') ]'
+]
+
 { #category : 'accessing' }
 MicroUMLSDMessages >> toActor [
 	"Returns the actor to which the message is sent"

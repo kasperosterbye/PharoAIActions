@@ -42,7 +42,7 @@ In this example, the `types:inPackage:` method is used to construct an AST from 
 This class is part of the 'AIAExperiments' package and is tagged with 'MicroUML'.
 "
 Class {
-	#name : 'MicroUMLSDForCode2',
+	#name : 'MicroUMLSDForCode3',
 	#superclass : 'Object',
 	#instVars : [
 		'packageName'
@@ -53,47 +53,72 @@ Class {
 }
 
 { #category : 'examples' }
-MicroUMLSDForCode2 class >> example1 [
+MicroUMLSDForCode3 class >> example1 [
 	<example>
-	self new types: [ Exp1 fibbe: 7. 2 timesRepeat: [ Exp2 new exp2Method1: 17]  ] inPackage: 'AIAExperiments'.
+	self new types: [ Exp1 exp1Method1: 7. 2 timesRepeat: [ Exp2 new exp2Method1: 17]  ] inPackage: 'AIAExperiments'.
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode2 class >> example2 [
+MicroUMLSDForCode3 class >> example2 [
 	<example>
 	self new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode2 class >> example3 [
+MicroUMLSDForCode3 class >> example3 [
 	<example>
 	self new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
 ]
 
+{ #category : 'testing' }
+MicroUMLSDForCode3 class >> isReturn: current [
+	^ (InstructionStream on: current method pc: current pc) willReturn
+]
+
 { #category : 'as yet unclassified' }
-MicroUMLSDForCode2 class >> on: block inPackage: pack [
+MicroUMLSDForCode3 class >> on: block inPackage: pack [
 	self new types: block inPackage: pack
 ]
 
+{ #category : 'as yet unclassified' }
+MicroUMLSDForCode3 >> astFromCurrentList: currentList [
+	| traces experiments next i |
+	traces := OrderedCollection new.
+	experiments := OrderedCollection new.
+	i := 1.
+	currentList do: [ :current |
+		(self checkCurrent: current )
+			ifTrue: [ 
+				next := { current sender methodClass name. current method methodClass name. 
+							 current method selector . current isReturn}  .
+				(self checkAdd: next to: traces)
+							ifTrue: [ 
+								traces add: next. "self halt." 
+								experiments add: (next , { current method selector, ' # ', i asString } )]
+				 ].
+			i := i + 1.
+		 ].
+	^ traces 
+]
+
 { #category : 'experiments' }
-MicroUMLSDForCode2 >> astFromTrace: aTrace [
+MicroUMLSDForCode3 >> astFromTrace: traces [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
 	builder := MicroUMLSDAstBuilder new.
-	self buildActorsOf: aTrace on: builder.
+	self buildActorsOf: traces on: builder.
 
-	builder & aTrace first first -> aTrace first second => aTrace first third.
-	2 to: aTrace size - 1 do: [ :index |
-		(aTrace at: index) first ~= 'UndefinedObject' ifTrue: [ 
-			self message: (aTrace at: index) on: builder ] ].
+	"builder & aTrace first first -> aTrace first second => aTrace first third."
+	traces  do: [ :trace |
+			self message: trace on: builder ].
 
-	builder & aTrace last second -> aTrace last first --> ''.
+	"builder & aTrace last second -> aTrace last first --> '***'."
 	MicroUMLSequenceDiagram from: builder
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode2 >> buildActorName: name on: actors [
+MicroUMLSDForCode3 >> buildActorName: name on: actors [
 	"Builds an actor name from the given name and adds it to the actors collection if it is not already present and meets the package criteria."
 
 	name = 'UndefinedObject' 
@@ -104,7 +129,7 @@ MicroUMLSDForCode2 >> buildActorName: name on: actors [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode2 >> buildActorsOf: aTrace on: aBuilder [
+MicroUMLSDForCode3 >> buildActorsOf: aTrace on: aBuilder [
 	"Builds actors from a trace of method calls and adds them to the builder."
 
 	| actors |
@@ -116,62 +141,70 @@ MicroUMLSDForCode2 >> buildActorsOf: aTrace on: aBuilder [
 ]
 
 { #category : 'as yet unclassified' }
-MicroUMLSDForCode2 >> checkAdd: next to: traces [
-	traces reverseDo: [ :trac |  
+MicroUMLSDForCode3 >> checkAdd: next to: traces [
+	traces reverseDo: [ :trac |
 		next allButLast = trac allButLast
-			ifTrue: [ ^ next last ~= trac last ].
+			ifTrue: [ ^ next fourth ~= trac fourth ].
 	 ].
 	^true
 ]
 
 { #category : 'as yet unclassified' }
-MicroUMLSDForCode2 >> checkCurrent: three [
-	"{ from. receiver. method }"
-	^ [(([three third  methodClass package name ] onErrorDo: ['*']) = packageName)
-	and: [ 
-		(([three first  methodClass package name ] onErrorDo: ['*']) = packageName)
-		or: [ (([three second  methodClass package name ] onErrorDo: ['*']) = packageName) ]
-		 ]] onErrorDo: [ false ]
+MicroUMLSDForCode3 >> checkCurrent: current [
+	"{ from. method class. method selector }"
+
+	| sender receiver method res |
+	sender := current sender.
+	receiver := current method.
+	method := current method.
+	res := [
+		       ([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName and: [
+				       ([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
+					       ([ receiver methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ] ] 
+				onErrorDo: [ false ].
+	^ res
+]
+
+{ #category : 'testing' }
+MicroUMLSDForCode3 >> isReturn: current [
+	^ (InstructionStream on: current method pc: current pc) willReturn
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode2 >> message: each on: builder [
+MicroUMLSDForCode3 >> message: each on: builder [
 	"Constructs a message in the builder based on the given trace entry, considering package criteria"
 
-	((Smalltalk classNamed: each first) package name = packageName )
-		ifFalse: [ ^ self ].
+	"((Smalltalk classNamed: each first) package name = packageName )
+		ifFalse: [ ^ self ]."
+	
 	each first = each second
 		ifTrue: [
 				each last
 					ifFalse: [ builder & each first => each third ]
-					ifTrue: [ builder & each first --> '' ] ]
+					ifTrue: [ builder & each first --> each third ] ]
 		ifFalse: [
 				each last
 					ifFalse: [ builder & each first -> each second => each third ]
-					ifTrue: [ builder & each second -> each first --> '' ] ]
+					ifTrue: [ builder & each second -> each first --> each third ] ].
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode2 >> types: aBlock inPackage: pName [
-	| traces currentList from method receiver isReturn next |			
+MicroUMLSDForCode3 >> types: aBlock inPackage: pName [
+	|  currentList x senders methods receivers isReturns|			
 	packageName := pName.
-	traces := OrderedCollection new.
 	currentList := OrderedCollection new.
+	senders := OrderedCollection new.
+	methods := OrderedCollection new.
+	receivers := OrderedCollection new.
+	isReturns := OrderedCollection new.
 	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
-			from := current sender.
-			method := current method.
-			receiver := current receiver.
-			isReturn := (InstructionStream on: current method pc: current pc) willReturn.
-			"currentList add: {isReturn. current}."
-			currentList add: current.
-			"currentList size = 52 ifTrue: [ self halt ]."
-			"([method methodClass package name ] onErrorDo: ['*']) = packageName"
-			(self checkCurrent: { from. receiver. method })
-				ifTrue: [
-						next := { from methodClass name. receiver class name. method selector . isReturn }.
-						(self checkAdd: next to: traces)
-							ifTrue: [ traces add: next. "self halt." ].
-						from := method].
+			"currentList add: {current isReturn. current copy}."
+			currentList add: current copy.
+			senders add: current sender copy.
+			methods add: current method copy.
+			receivers add: current receiver copy.
+			isReturns add: current isReturn 
 			].
-	^ self astFromTrace: traces
+	x := self astFromCurrentList: currentList.
+	^ self astFromTrace: x.
 ]

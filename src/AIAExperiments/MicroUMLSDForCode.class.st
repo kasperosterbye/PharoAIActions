@@ -55,7 +55,7 @@ Class {
 { #category : 'examples' }
 MicroUMLSDForCode class >> example1 [
 	<example>
-	self  new types: [ MicroUMLSDFoo1 fibbe: 7  ] inPackage: 'AIAExperiments'.
+	self  new types: [ Exp1 fibbe: 7  ] inPackage: 'AIAExperiments'.
 ]
 
 { #category : 'examples' }

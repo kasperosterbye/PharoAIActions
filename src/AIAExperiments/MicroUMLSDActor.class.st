@@ -110,6 +110,11 @@ MicroUMLSDActor >> name: anObject [
 	name := anObject
 ]
 
+{ #category : 'printing' }
+MicroUMLSDActor >> printOn: stream [
+	stream << name
+]
+
 { #category : 'accessing' }
 MicroUMLSDActor >> width [
 	"Sets the width of the actor and calculates it based on the label text"

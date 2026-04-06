@@ -85,9 +85,9 @@ MicroUMLSDAstBuilder >> --> aString [
 	"Adds a return message to the sequence diagram"
 	| messageType from to |
 	messageType := #return.
-	from := actors at: messageFrom ifAbsent: [ actors values first].
-	to := actors at: messageTo ifAbsent: [ actors values first ].
-	from = to ifTrue: [ messageType := #internal ].
+	from := actors at: messageFrom.
+	to := actors at: messageTo ifAbsent: [ from ].
+	from = to ifTrue: [ ^ self ].
 	messages add: (MicroUMLSDMessages new
 			 description: aString;
 			 fromActor: from;
@@ -109,8 +109,8 @@ MicroUMLSDAstBuilder >> => aString [
 	"Adds a message to the sequence diagram"
 	| messageType from to|
 	messageType := #call.
-	from := actors at: messageFrom ifAbsent: [ actors values first].
-	to := actors at: messageTo ifAbsent: [ actors values first ].
+	from := actors at: messageFrom.
+	to := actors at: messageTo ifAbsent: [ from ].
 	from = to ifTrue: [ messageType := #internal ].
 	
    messages add: (MicroUMLSDMessages new

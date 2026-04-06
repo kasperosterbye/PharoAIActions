@@ -235,6 +235,5 @@ MicroUMLSequenceDiagram >> messages [
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> messages: anObject [
-
 	messages := anObject
 ]
