@@ -1,46 +1,3 @@
-"
-# Class Comment for MicroUMLSDForCode
-
-The `MicroUMLSDForCode` class is designed to construct abstract syntax trees (ASTs) from traces of method calls, specifically focusing on method calls within a specified package. This is particularly useful for generating sequence diagrams that illustrate the interactions between classes and methods within a given package.
-
-## Key Features
-
-- **AST Construction**: Constructs an abstract syntax tree from method call traces.
-- **Package Filtering**: Filters method calls to include only those within a specified package.
-- **Actor Management**: Manages actors (classes) involved in the method calls.
-- **Message Handling**: Handles messages between actors, including return messages.
-- **Trace Reduction**: Reduces duplicate traces to ensure each trace is unique.
-- **Package Testing**: Tests if a package or class matches the specified package name criteria.
-
-## Usage Example
-
-Here is an example of how to use the `MicroUMLSDForCode` class to generate a sequence diagram from a block of code:
-
-```st
-| builder ast |
-builder := MicroUMLSDForCode new.
-ast := builder types: [
-    | point |
-    point := Point new.
-    point x: 10.
-    point y: 20.
-    point x + point y
-] inPackage: 'Kernel'.
-ast inspect
-```
-
-In this example, the `types:inPackage:` method is used to construct an AST from a block of code, focusing on method calls within the 'Kernel' package. The resulting AST is then inspected to visualise the sequence diagram.
-
-## Design Decisions
-
-- **Scripting**: The code snippet should be usable for scripting (interactively).
-- **Class Builder**: The code snippet must return a class builder.
-- **Installation**: A class builder should offer methods to build and install the class.
-- **Slot Management**: Manages class side slots and traits by converting all class information into an expected format.
-- **API Alignment**: Future revisions should align APIs with class default values to reduce conversions.
-
-This class is part of the 'AIAExperiments' package and is tagged with 'MicroUML'.
-"
 Class {
 	#name : 'MicroUMLSDForCode4',
 	#superclass : 'Object',
@@ -70,6 +27,12 @@ MicroUMLSDForCode4 class >> example3 [
 	self new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
 ]
 
+{ #category : 'examples' }
+MicroUMLSDForCode4 class >> example4 [
+	<example>
+	self new types: [ Exp3 new exp3Method2 ] inPackage: 'AIActions'
+]
+
 { #category : 'as yet unclassified' }
 MicroUMLSDForCode4 class >> on: block inPackage: pack [
 	self new types: block inPackage: pack
@@ -82,11 +45,11 @@ MicroUMLSDForCode4 >> ast10CurrentList: currentList [
 	experiments := OrderedCollection new.
 	i := 1.
 	currentList do: [ :current |
-		(self checkCurrent: current )
+		(self ast12Current: current )
 			ifTrue: [ 
 				next := { current sender methodClass name. current method methodClass name. 
 							 current method selector . current isReturn}  .
-				(self checkAdd: next to: traces)
+				(self ast15Add: next to: traces)
 							ifTrue: [ 
 								traces add: next. "self halt." 
 								experiments add: (next , { current method selector, ' # ', i asString } )]
@@ -97,23 +60,46 @@ MicroUMLSDForCode4 >> ast10CurrentList: currentList [
 ]
 
 { #category : 'internals' }
+MicroUMLSDForCode4 >> ast12Current: current [
+	| sender  method res |
+	sender := current sender.
+	method := current method.
+	res := [
+		       ([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName" and: [
+				       ([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
+					       ([ receiver methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ]" ] 
+				onErrorDo: [ false ].
+	^ true
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast15Add: next to: traces [
+	"Determines whether a trace entry should be added by checking it is not a duplicate with the same return flag"
+	traces reverseDo: [ :trac |
+		next allButLast = trac allButLast
+			ifTrue: [ ^ next fourth ~= trac fourth ].
+	 ].
+	^true
+]
+
+{ #category : 'internals' }
 MicroUMLSDForCode4 >> ast20Trace: traces [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
 	builder := MicroUMLSDAstBuilder new.
-	self buildActorsOf: traces on: builder.
+	self ast23ActorsOf: traces on: builder.
 
 	"builder & aTrace first first -> aTrace first second => aTrace first third."
 	traces  do: [ :trace |
-			self message: trace on: builder ].
+			self ast26Message: trace on: builder ].
 
 	"builder & aTrace last second -> aTrace last first --> '***'."
 	MicroUMLSequenceDiagram from: builder
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> buildActorsOf: aTrace on: aBuilder [
+MicroUMLSDForCode4 >> ast23ActorsOf: aTrace on: aBuilder [
 	"Builds actors from a trace of method calls and adds them to the builder."
 
 	| actors |
@@ -125,32 +111,7 @@ MicroUMLSDForCode4 >> buildActorsOf: aTrace on: aBuilder [
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> checkAdd: next to: traces [
-	traces reverseDo: [ :trac |
-		next allButLast = trac allButLast
-			ifTrue: [ ^ next fourth ~= trac fourth ].
-	 ].
-	^true
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> checkCurrent: current [
-	"{ from. method class. method selector }"
-
-	| sender receiver method res |
-	sender := current sender.
-	receiver := current method.
-	method := current method.
-	res := [
-		       ([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName and: [
-				       ([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
-					       ([ receiver methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ] ] 
-				onErrorDo: [ false ].
-	^ res
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> message: each on: builder [
+MicroUMLSDForCode4 >> ast26Message: each on: builder [
 	"Constructs a message in the builder based on the given trace entry, considering package criteria"
 
 	"((Smalltalk classNamed: each first) package name = packageName )
@@ -167,15 +128,36 @@ MicroUMLSDForCode4 >> message: each on: builder [
 					ifTrue: [ builder & each second -> each first --> each third ] ].
 ]
 
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> old_ast10CurrentList: currentList [
+	| traces experiments next i |
+	traces := OrderedCollection new.
+	experiments := OrderedCollection new.
+	i := 1.
+	currentList do: [ :current |
+		(self ast12Current: current )
+			ifTrue: [ 
+				next := { current sender methodClass name. current method methodClass name. 
+							 current method selector . current isReturn}  .
+				(self ast15Add: next to: traces)
+							ifTrue: [ 
+								traces add: next. "self halt." 
+								experiments add: (next , { current method selector, ' # ', i asString } )]
+				 ].
+			i := i + 1.
+		 ].
+	^ traces 
+]
+
 { #category : 'external' }
 MicroUMLSDForCode4 >> types: aBlock inPackage: pName [
-	|  currentList x |			
+	|  currentList traces |			
 	packageName := pName.
 	currentList := OrderedCollection new.
 	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
 			"currentList add: {current isReturn. current copy}."
 			currentList add: current copy.
 			].
-	x := self ast10CurrentList: currentList.
-	^ self ast20Trace: x.
+	traces := self ast10CurrentList: currentList.
+	^ self ast20Trace: traces.
 ]
