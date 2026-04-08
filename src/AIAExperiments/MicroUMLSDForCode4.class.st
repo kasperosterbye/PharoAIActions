@@ -42,7 +42,7 @@ In this example, the `types:inPackage:` method is used to construct an AST from 
 This class is part of the 'AIAExperiments' package and is tagged with 'MicroUML'.
 "
 Class {
-	#name : 'MicroUMLSDForCode3',
+	#name : 'MicroUMLSDForCode4',
 	#superclass : 'Object',
 	#instVars : [
 		'packageName'
@@ -53,30 +53,30 @@ Class {
 }
 
 { #category : 'examples' }
-MicroUMLSDForCode3 class >> example1 [
+MicroUMLSDForCode4 class >> example1 [
 	<example>
 	self new types: [ Exp1 exp1Method1: 7. 2 timesRepeat: [ Exp2 new exp2Method1: 17]  ] inPackage: 'AIAExperiments'.
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode3 class >> example2 [
+MicroUMLSDForCode4 class >> example2 [
 	<example>
 	self new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode3 class >> example3 [
+MicroUMLSDForCode4 class >> example3 [
 	<example>
 	self new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
 ]
 
 { #category : 'as yet unclassified' }
-MicroUMLSDForCode3 class >> on: block inPackage: pack [
+MicroUMLSDForCode4 class >> on: block inPackage: pack [
 	self new types: block inPackage: pack
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> astFromCurrentList: currentList [
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast10CurrentList: currentList [
 	| traces experiments next i |
 	traces := OrderedCollection new.
 	experiments := OrderedCollection new.
@@ -96,8 +96,8 @@ MicroUMLSDForCode3 >> astFromCurrentList: currentList [
 	^ traces 
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> astFromTrace: traces [
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast20Trace: traces [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
@@ -112,8 +112,43 @@ MicroUMLSDForCode3 >> astFromTrace: traces [
 	MicroUMLSequenceDiagram from: builder
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> buildActorsOf: aTrace on: aBuilder [
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast50CurrentList: currentList [
+
+	| traces  next message |
+	traces := OrderedCollection new.
+	currentList do: [ :current |
+			message := current method selector, 
+				' pc: ', current pc asString ,
+				' s: ', current stackPtr asString,
+				' c/n: ', (current closure ifNotNil: [ '[...]' ] ifNil: [ 'nil' ]).
+			next := {
+				        current sender methodClass name.
+				        current method methodClass name.
+				        message.
+				        current isReturn }.
+			traces add: next. "self halt." ].
+	^ traces
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast60RawTrace: traces [
+	"Constructs an abstract syntax tree from a trace of method calls."
+
+	| builder |
+	builder := MicroUMLSDAstBuilder new.
+	self buildActorsOf: traces on: builder.
+
+	"builder & aTrace first first -> aTrace first second => aTrace first third."
+	traces  do: [ :trace |
+			self message: trace on: builder ].
+
+	"builder & aTrace last second -> aTrace last first --> '***'."
+	MicroUMLSequenceDiagram from: builder
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> buildActorsOf: aTrace on: aBuilder [
 	"Builds actors from a trace of method calls and adds them to the builder."
 
 	| actors |
@@ -124,8 +159,8 @@ MicroUMLSDForCode3 >> buildActorsOf: aTrace on: aBuilder [
 	actors do: [ :actor | aBuilder , actor ].
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> checkAdd: next to: traces [
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> checkAdd: next to: traces [
 	traces reverseDo: [ :trac |
 		next allButLast = trac allButLast
 			ifTrue: [ ^ next fourth ~= trac fourth ].
@@ -133,8 +168,8 @@ MicroUMLSDForCode3 >> checkAdd: next to: traces [
 	^true
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> checkCurrent: current [
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> checkCurrent: current [
 	"{ from. method class. method selector }"
 
 	| sender receiver method res |
@@ -149,8 +184,8 @@ MicroUMLSDForCode3 >> checkCurrent: current [
 	^ res
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> message: each on: builder [
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> message: each on: builder [
 	"Constructs a message in the builder based on the given trace entry, considering package criteria"
 
 	"((Smalltalk classNamed: each first) package name = packageName )
@@ -167,8 +202,20 @@ MicroUMLSDForCode3 >> message: each on: builder [
 					ifTrue: [ builder & each second -> each first --> each third ] ].
 ]
 
-{ #category : 'experiments' }
-MicroUMLSDForCode3 >> types: aBlock inPackage: pName [
+{ #category : 'external' }
+MicroUMLSDForCode4 >> rawTypes: aBlock inPackage: pName [
+	|  currentList x |			
+	packageName := pName.
+	currentList := OrderedCollection new.
+	thisContext runSimulated: aBlock contextAtEachStep: [ :current |
+			currentList add: current copy.
+			].
+	x := self ast50CurrentList: currentList.
+	^ self ast60RawTrace: x.
+]
+
+{ #category : 'external' }
+MicroUMLSDForCode4 >> types: aBlock inPackage: pName [
 	|  currentList x |			
 	packageName := pName.
 	currentList := OrderedCollection new.
@@ -176,6 +223,7 @@ MicroUMLSDForCode3 >> types: aBlock inPackage: pName [
 			"currentList add: {current isReturn. current copy}."
 			currentList add: current copy.
 			].
-	x := self astFromCurrentList: currentList.
-	^ self astFromTrace: x.
+self halt.
+	x := self ast10CurrentList: currentList.
+	^ self ast20Trace: x.
 ]
