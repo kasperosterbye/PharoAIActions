@@ -186,11 +186,11 @@ Contexts form a linked list via their `sender` field, constituting the **call st
 
 | Variable | Description |
 |---|---|
-| `sender` | The `Context` that sent the message which created this context (i.e. the caller). "nil" for the bottom of the stack. |
-| `pc` | The **programme counter** — an integer index into the method''s bytecodes indicating the next instruction to execute. "nil" when the context is dead (terminated). |
+| `sender` | The `Context` that sent the message which created this context (i.e. the caller). `nil` for the bottom of the stack. |
+| `pc` | The **programme counter** — an integer index into the method''s bytecodes indicating the next instruction to execute. `nil` when the context is dead (terminated). |
 | `stackp` | The **stack pointer** — an integer indicating the current top of the operand stack within this context''s indexed variables. |
 | `method` | The `CompiledMethod` or `CompiledBlock` being executed. |
-| `closureOrNil` | If this context is executing a block, holds the `BlockClosure`; otherwise "nil". |
+| `closureOrNil` | If this context is executing a block, holds the `BlockClosure`; otherwise `nil`. |
 | `receiver` | The object that received the message (i.e. `self` within the executing method). |
 
 ## Key Responsibilities
