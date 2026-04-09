@@ -40,10 +40,8 @@ MicroUMLSDForCode4 class >> on: block inPackage: pack [
 
 { #category : 'internals' }
 MicroUMLSDForCode4 >> ast10CurrentList: currentList [
-	| traces experiments next i |
+	| traces next |
 	traces := OrderedCollection new.
-	experiments := OrderedCollection new.
-	i := 1.
 	currentList do: [ :current |
 		(self ast12Current: current )
 			ifTrue: [ 
@@ -51,10 +49,8 @@ MicroUMLSDForCode4 >> ast10CurrentList: currentList [
 							 current method selector . current isReturn}  .
 				(self ast15Add: next to: traces)
 							ifTrue: [ 
-								traces add: next. "self halt." 
-								experiments add: (next , { current method selector, ' # ', i asString } )]
+								traces add: next. "self halt." ]
 				 ].
-			i := i + 1.
 		 ].
 	^ traces 
 ]
@@ -64,12 +60,12 @@ MicroUMLSDForCode4 >> ast12Current: current [
 	| sender  method res |
 	sender := current sender.
 	method := current method.
-	res := [
+	res := [ 
 		       ([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName" and: [
 				       ([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
 					       ([ receiver methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ]" ] 
 				onErrorDo: [ false ].
-	^ true
+	^ res
 ]
 
 { #category : 'internals' }
@@ -87,15 +83,19 @@ MicroUMLSDForCode4 >> ast20Trace: traces [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
-	builder := MicroUMLSDAstBuilder new.
-	self ast23ActorsOf: traces on: builder.
-
-	"builder & aTrace first first -> aTrace first second => aTrace first third."
-	traces  do: [ :trace |
-			self ast26Message: trace on: builder ].
-
-	"builder & aTrace last second -> aTrace last first --> '***'."
-	MicroUMLSequenceDiagram from: builder
+	traces 
+		ifNotEmpty: [
+			builder := MicroUMLSDAstBuilder new.
+			self ast23ActorsOf: traces on: builder.
+			traces  do: [ :trace |
+				self ast26Message: trace on: builder ].
+			MicroUMLSequenceDiagram from: builder ]
+		ifEmpty: [ 
+			RSCanvas new
+				add: (RSLabel new text: 'Empty Sequence Diagram');
+				open
+			
+			 ]	
 ]
 
 { #category : 'internals' }

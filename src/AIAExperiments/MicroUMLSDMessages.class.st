@@ -114,6 +114,7 @@ MicroUMLSDMessages >> drawInternal: line [
 
 { #category : 'as yet unclassified' }
 MicroUMLSDMessages >> drawLabel: aString at: aPoint [
+	"Draws a label at the given point splitting multiline text into separate positioned labels"
     | lines lineHeight lineAll|
     lines := aString lines.
     lines size <= 1 ifTrue: [
