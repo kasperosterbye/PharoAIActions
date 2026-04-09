@@ -8,7 +8,7 @@ Class {
 
 { #category : 'accessing' }
 AIAClassComment >> aiaClassComment: aClass [
-	^ self aiaCommentDefault: aClass 
+	^ self aiaCommentDetailed: aClass 
 ]
 
 { #category : 'accessing' }
