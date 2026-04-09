@@ -56,7 +56,7 @@ MicroUMLSDAstBuilder class >> example [
     , 'Login System'
     , 'Database'
     & 'Playground' -> 'Login System' => 'call'
-    & 'Login System' -> 'Database' => 'verify'
+    & 'Login System' -> 'Database' => ('verify', String lf, 'Now',String lf , 'yes!')
     & 'Database' -> 'Playground' --> '')
 	build
 ]

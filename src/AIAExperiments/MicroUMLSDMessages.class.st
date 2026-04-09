@@ -78,7 +78,7 @@ MicroUMLSDMessages >> description: anObject [
 { #category : 'drawing' }
 MicroUMLSDMessages >> draw [
 	"Draws a message line and label based on the message type and description"
-    | line label|
+    | line labels|
     line := RSPolyline new
         color: Color black;
         markerEnd: (RSShapeFactory arrow size: 10) asMarker;
@@ -87,10 +87,10 @@ MicroUMLSDMessages >> draw [
     messageType = #return ifTrue: [ self drawReturn: line ].
     messageType = #internal ifTrue: [ self drawInternal: line ].
 	
-    label := RSLabel new
-        text: description;
-        translateTo: (fromActor x + toActor x / 2) @ (y - 15).
-    ^ Array with: line with: label
+    labels := self 
+				drawLabel: description 
+				at: (fromActor x + toActor x / 2) @ (y - 10).
+    ^ { line } , labels
 ]
 
 { #category : 'drawing' }
@@ -110,6 +110,22 @@ MicroUMLSDMessages >> drawInternal: line [
         (x + 25) @ (y + 15). 
         (x + 5) @ (y + 15) 
     }
+]
+
+{ #category : 'as yet unclassified' }
+MicroUMLSDMessages >> drawLabel: aString at: aPoint [
+    | lines lineHeight lineAll|
+    lines := aString lines.
+    lines size <= 1 ifTrue: [
+        ^ {RSLabel new text: aString; translateTo: aPoint; yourself}  ].
+    
+    lineHeight := 18.
+    lineAll := lines collectWithIndex: [ :line :i |
+        RSLabel new
+            text: line;
+            translateTo: aPoint x @ (aPoint y + ((i - 1) * lineHeight));
+            yourself ].
+	^ lineAll 
 ]
 
 { #category : 'drawing' }
