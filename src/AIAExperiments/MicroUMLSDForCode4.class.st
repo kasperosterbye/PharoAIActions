@@ -33,6 +33,12 @@ MicroUMLSDForCode4 class >> example4 [
 	self new types: [ Exp3 new exp3Method2 ] inPackage: 'AIActions'
 ]
 
+{ #category : 'examples' }
+MicroUMLSDForCode4 class >> example5 [
+	<example>
+	self new rawTypes: [ 'abcd' last] inPackage: ''
+]
+
 { #category : 'as yet unclassified' }
 MicroUMLSDForCode4 class >> on: block inPackage: pack [
 	self new types: block inPackage: pack
@@ -40,16 +46,17 @@ MicroUMLSDForCode4 class >> on: block inPackage: pack [
 
 { #category : 'internals' }
 MicroUMLSDForCode4 >> ast10CurrentList: currentList [
+	"Processes a list of current contexts to generate a trace of method calls, filtering based on package criteria."
 	| traces next |
 	traces := OrderedCollection new.
 	currentList do: [ :current |
 		(self ast12Current: current )
 			ifTrue: [ 
-				next := { current sender methodClass name. current method methodClass name. 
+				next := { current sender methodClass. current method methodClass . 
 							 current method selector . current isReturn}  .
 				(self ast15Add: next to: traces)
 							ifTrue: [ 
-								traces add: next. "self halt." ]
+								traces add: next. ]
 				 ].
 		 ].
 	^ traces 
@@ -57,14 +64,14 @@ MicroUMLSDForCode4 >> ast10CurrentList: currentList [
 
 { #category : 'internals' }
 MicroUMLSDForCode4 >> ast12Current: current [
+	"Checks if the current method or its sender is in the specified package."
 	| sender  method res |
 	sender := current sender.
 	method := current method.
 	res := [ 
-		       ([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName" and: [
-				       ([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
-					       ([ receiver methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ]" ] 
-				onErrorDo: [ false ].
+		    	([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
+				([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ] 
+			onErrorDo: [ false ] .
 	^ res
 ]
 
@@ -88,7 +95,7 @@ MicroUMLSDForCode4 >> ast20Trace: traces [
 			builder := MicroUMLSDAstBuilder new.
 			self ast23ActorsOf: traces on: builder.
 			traces  do: [ :trace |
-				self ast26Message: trace on: builder ].
+				self ast26Message: trace on: builder  ].
 			MicroUMLSequenceDiagram from: builder ]
 		ifEmpty: [ 
 			RSCanvas new
@@ -104,151 +111,57 @@ MicroUMLSDForCode4 >> ast23ActorsOf: aTrace on: aBuilder [
 
 	| actors |
 	actors := OrderedCollection new.
+	aBuilder , 'O'.
 	aTrace do: [ :each |
-			(actors includes: each first) ifFalse: [ actors add: each first ].
-			(actors includes: each second) ifFalse: [ actors add: each second ]].
+			self ast24Add: each first to: actors.
+			self ast24Add: each second to: actors].
 	actors do: [ :actor | aBuilder , actor ].
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast24Add: element to: actors [
+	
+	((actors includes: element) not and: [ element package name = packageName ])
+		ifTrue: [ actors add: element name ]
 ]
 
 { #category : 'internals' }
 MicroUMLSDForCode4 >> ast26Message: each on: builder [
 	"Constructs a message in the builder based on the given trace entry, considering package criteria"
+	| firstPackage secondPackage |
+	firstPackage := each first package name.
+	secondPackage := each second package name.
+	((firstPackage ~= packageName ) or: [ secondPackage ~= packageName  ])
+		ifTrue: [ self ast27Message: each on: builder ]
+		ifFalse: [  self ast28Message: each on: builder ]
+]
 
-	"((Smalltalk classNamed: each first) package name = packageName )
-		ifFalse: [ ^ self ]."
-	
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast27Message: each on: builder [
+	| firstPackage secondPackage |
+	firstPackage := each first package name.
+	secondPackage := each second package name.
+	firstPackage ~= packageName 
+		ifTrue: [ 
+			each last
+					ifFalse: [ builder & 'O' -> each second name => each third. ]
+					ifTrue: [ builder & each second name -> 'O' --> each third ]].
+	"secondPackage ~= packageName 
+		ifTrue: [ builder & each first name => each third. ^ self]."
+
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast28Message: each on: builder [
 	each first = each second
 		ifTrue: [
 				each last
-					ifFalse: [ builder & each first => each third ]
-					ifTrue: [ builder & each first --> each third ] ]
+					ifFalse: [ builder & each first name => each third ]
+					ifTrue: [ builder & each first name --> each third ] ]
 		ifFalse: [
 				each last
-					ifFalse: [ builder & each first -> each second => each third ]
-					ifTrue: [ builder & each second -> each first --> each third ] ].
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> ast50CurrentList: currentList [
-
-	| traces  next message |
-	traces := OrderedCollection new.
-	currentList do: [ :current |
-			message := current method selector, 
-				' pc: ', current pc asString ,
-				' s: ', current stackPtr asString,
-				' c/n: ', (current closure ifNotNil: [ '[...]' ] ifNil: [ 'nil' ]).
-			next := {
-				        current sender methodClass name.
-				        current method methodClass name.
-				        message.
-				        current isReturn }.
-			traces add: next. "self halt." ].
-	^ traces
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> ast60RawTrace: traces [
-	"Constructs an abstract syntax tree from a trace of method calls."
-
-	| builder |
-	builder := MicroUMLSDAstBuilder new.
-	self buildActorsOf: traces on: builder.
-
-	"builder & aTrace first first -> aTrace first second => aTrace first third."
-	traces  do: [ :trace |
-			self message: trace on: builder ].
-
-	"builder & aTrace last second -> aTrace last first --> '***'."
-	MicroUMLSequenceDiagram from: builder
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> buildActorsOf: aTrace on: aBuilder [
-	"Builds actors from a trace of method calls and adds them to the builder."
-
-	| actors |
-	actors := OrderedCollection new.
-	aTrace do: [ :each |
-			(actors includes: each first) ifFalse: [ actors add: each first ].
-			(actors includes: each second) ifFalse: [ actors add: each second ]].
-	actors do: [ :actor | aBuilder , actor ].
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> checkAdd: next to: traces [
-	traces reverseDo: [ :trac |
-		next allButLast = trac allButLast
-			ifTrue: [ ^ next fourth ~= trac fourth ].
-	 ].
-	^true
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> checkCurrent: current [
-	"{ from. method class. method selector }"
-
-	| sender receiver method res |
-	sender := current sender.
-	receiver := current method.
-	method := current method.
-	res := [
-		       ([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName and: [
-				       ([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
-					       ([ receiver methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ] ] 
-				onErrorDo: [ false ].
-	^ res
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> message: each on: builder [
-	"Constructs a message in the builder based on the given trace entry, considering package criteria"
-
-	"((Smalltalk classNamed: each first) package name = packageName )
-		ifFalse: [ ^ self ]."
-	
-	each first = each second
-		ifTrue: [
-				each last
-					ifFalse: [ builder & each first => each third ]
-					ifTrue: [ builder & each first --> each third ] ]
-		ifFalse: [
-				each last
-					ifFalse: [ builder & each first -> each second => each third ]
-					ifTrue: [ builder & each second -> each first --> each third ] ].
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> old_ast10CurrentList: currentList [
-	| traces experiments next i |
-	traces := OrderedCollection new.
-	experiments := OrderedCollection new.
-	i := 1.
-	currentList do: [ :current |
-		(self ast12Current: current )
-			ifTrue: [ 
-				next := { current sender methodClass name. current method methodClass name. 
-							 current method selector . current isReturn}  .
-				(self ast15Add: next to: traces)
-							ifTrue: [ 
-								traces add: next. "self halt." 
-								experiments add: (next , { current method selector, ' # ', i asString } )]
-				 ].
-			i := i + 1.
-		 ].
-	^ traces 
-]
-
-{ #category : 'external' }
-MicroUMLSDForCode4 >> rawTypes: aBlock inPackage: pName [
-	|  currentList x |			
-	packageName := pName.
-	currentList := OrderedCollection new.
-	thisContext runSimulated: aBlock contextAtEachStep: [ :current |
-			currentList add: current copy.
-			].
-	x := self ast50CurrentList: currentList.
-	^ self ast60RawTrace: x.
+					ifFalse: [ builder & each first name -> each second name => each third ]
+					ifTrue: [ builder & each second name -> each first name --> each third ] ].
 ]
 
 { #category : 'external' }
@@ -257,7 +170,6 @@ MicroUMLSDForCode4 >> types: aBlock inPackage: pName [
 	packageName := pName.
 	currentList := OrderedCollection new.
 	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
-			"currentList add: {current isReturn. current copy}."
 			currentList add: current copy.
 			].
 	traces := self ast10CurrentList: currentList.

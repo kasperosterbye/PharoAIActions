@@ -81,7 +81,7 @@ MicroUMLSDMessages >> draw [
     | line labels|
     line := RSPolyline new
         color: Color black;
-        markerEnd: (RSShapeFactory arrow size: 10) asMarker;
+        markerEnd: (RSShapeFactory arrow size: 10; color: Color black) asMarker;
         yourself.
 	 messageType = #call ifTrue: [ self drawCall: line ].
     messageType = #return ifTrue: [ self drawReturn: line ].

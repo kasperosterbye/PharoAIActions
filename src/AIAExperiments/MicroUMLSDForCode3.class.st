@@ -155,7 +155,6 @@ MicroUMLSDForCode3 >> message: each on: builder [
 
 	"((Smalltalk classNamed: each first) package name = packageName )
 		ifFalse: [ ^ self ]."
-	
 	each first = each second
 		ifTrue: [
 				each last

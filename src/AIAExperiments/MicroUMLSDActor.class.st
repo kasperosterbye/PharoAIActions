@@ -106,7 +106,6 @@ MicroUMLSDActor >> name [
 { #category : 'accessing' }
 MicroUMLSDActor >> name: anObject [
 	"Sets the name of the actor and calculates its width based on the label text"
-
 	name := anObject
 ]
 
