@@ -2,7 +2,10 @@ Class {
 	#name : 'MicroUMLSDForCode4',
 	#superclass : 'Object',
 	#instVars : [
-		'packageName'
+		'packageName',
+		'actions',
+		'messages',
+		'astBuilder'
 	],
 	#category : 'AIAExperiments-MicroUML',
 	#package : 'AIAExperiments',
@@ -47,23 +50,20 @@ MicroUMLSDForCode4 class >> on: block inPackage: pack [
 { #category : 'internals' }
 MicroUMLSDForCode4 >> ast10CurrentList: currentList [
 	"Processes a list of current contexts to generate a trace of method calls, filtering based on package criteria."
-	| traces next |
-	traces := OrderedCollection new.
+	|  next |
+	messages := OrderedCollection new.
 	currentList do: [ :current |
-		(self ast12Current: current )
+		(self ast12CheckCurrent: current )
 			ifTrue: [ 
 				next := { current sender methodClass. current method methodClass . 
 							 current method selector . current isReturn}  .
-				(self ast15Add: next to: traces)
-							ifTrue: [ 
-								traces add: next. ]
+				(self ast15AddTest: next ) ifTrue: [ messages add: next. ]
 				 ].
 		 ].
-	^ traces 
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast12Current: current [
+MicroUMLSDForCode4 >> ast12CheckCurrent: current [
 	"Checks if the current method or its sender is in the specified package."
 	| sender  method res |
 	sender := current sender.
@@ -76,9 +76,9 @@ MicroUMLSDForCode4 >> ast12Current: current [
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast15Add: next to: traces [
+MicroUMLSDForCode4 >> ast15AddTest: next [ 
 	"Determines whether a trace entry should be added by checking it is not a duplicate with the same return flag"
-	traces reverseDo: [ :trac |
+	messages reverseDo: [ :trac |
 		next allButLast = trac allButLast
 			ifTrue: [ ^ next fourth ~= trac fourth ].
 	 ].
@@ -86,17 +86,11 @@ MicroUMLSDForCode4 >> ast15Add: next to: traces [
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast20Trace: traces [
+MicroUMLSDForCode4 >> ast20Messages [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
-	| builder |
-	traces 
-		ifNotEmpty: [
-			builder := MicroUMLSDAstBuilder new.
-			self ast23ActorsOf: traces on: builder.
-			traces  do: [ :trace |
-				self ast26Message: trace on: builder  ].
-			MicroUMLSequenceDiagram from: builder ]
+	messages 
+		ifNotEmpty: [ self ast30Actions]
 		ifEmpty: [ 
 			RSCanvas new
 				add: (RSLabel new text: 'Empty Sequence Diagram');
@@ -106,23 +100,23 @@ MicroUMLSDForCode4 >> ast20Trace: traces [
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast23ActorsOf: aTrace on: aBuilder [
-	"Builds actors from a trace of method calls and adds them to the builder."
+MicroUMLSDForCode4 >> ast20Trace [
+	"Constructs an abstract syntax tree from a trace of method calls."
 
-	| actors |
-	actors := OrderedCollection new.
-	aBuilder , 'O'.
-	aTrace do: [ :each |
-			self ast24Add: each first to: actors.
-			self ast24Add: each second to: actors].
-	actors do: [ :actor | aBuilder , actor ].
-]
-
-{ #category : 'internals' }
-MicroUMLSDForCode4 >> ast24Add: element to: actors [
-	
-	((actors includes: element) not and: [ element package name = packageName ])
-		ifTrue: [ actors add: element name ]
+	| builder |
+	self halt.
+	messages 
+		ifNotEmpty: [
+			builder := MicroUMLSDAstBuilder new.
+			messages  do: [ :message |
+				self ast30Actions: message  ].
+			MicroUMLSequenceDiagram from: builder ]
+		ifEmpty: [ 
+			RSCanvas new
+				add: (RSLabel new text: 'Empty Sequence Diagram');
+				open
+			
+			 ]	
 ]
 
 { #category : 'internals' }
@@ -164,14 +158,105 @@ MicroUMLSDForCode4 >> ast28Message: each on: builder [
 					ifTrue: [ builder & each second name -> each first name --> each third ] ].
 ]
 
+{ #category : 'as yet unclassified' }
+MicroUMLSDForCode4 >> ast30Actions [
+	| allActions |
+	allActions := OrderedDictionary new.
+	messages do: [ :message |
+		allActions add: message first name -> message first name
+		].
+	actions := allActions 
+]
+
+{ #category : 'as yet unclassified' }
+MicroUMLSDForCode4 >> ast40Build [
+	"set the actions based on messages,
+	then 
+	1) build the actions
+	2) buld the messages"
+	astBuilder := MicroUMLSDAstBuilder new.
+	self ast43BuildActors.
+	self halt.
+	MicroUMLSequenceDiagram from: 'builder'.
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> ast43ActorsOf: aTrace [ 
+	"Builds actors from a trace of method calls and adds them to the builder."
+
+	| actors |
+	actors := OrderedCollection new.
+	astBuilder , 'O'.
+	aTrace do: [ :each |
+			self xxx_ast24Add: each first to: actors.
+			self xxx_ast24Add: each second to: actors].
+	actors do: [ :actor | astBuilder , actor ].
+]
+
+{ #category : 'as yet unclassified' }
+MicroUMLSDForCode4 >> ast43BuildActors [
+	actions do: [ :actor | astBuilder , actor ].
+]
+
 { #category : 'external' }
 MicroUMLSDForCode4 >> types: aBlock inPackage: pName [
-	|  currentList traces |			
+	|  currentList  |			
 	packageName := pName.
 	currentList := OrderedCollection new.
 	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
 			currentList add: current copy.
 			].
-	traces := self ast10CurrentList: currentList.
-	^ self ast20Trace: traces.
+	self ast10CurrentList: currentList.
+	self ast20Messages.
+	self ast40Build.
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> xxx_ast15Add: next to: traces [
+	"Determines whether a trace entry should be added by checking it is not a duplicate with the same return flag"
+	traces reverseDo: [ :trac |
+		next allButLast = trac allButLast
+			ifTrue: [ ^ next fourth ~= trac fourth ].
+	 ].
+	^true
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> xxx_ast20Messages: traces [
+	"Constructs an abstract syntax tree from a trace of method calls."
+
+	| builder |
+	traces 
+		ifNotEmpty: [
+			builder := MicroUMLSDAstBuilder new.
+			"self ast23ActorsOf: traces on: builder."
+			traces  do: [ :trace |
+				self ast26Message: trace on: builder  ].
+			MicroUMLSequenceDiagram from: builder ]
+		ifEmpty: [ 
+			RSCanvas new
+				add: (RSLabel new text: 'Empty Sequence Diagram');
+				open
+			
+			 ]	
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> xxx_ast23ActorsOf: aTrace on: aBuilder [
+	"Builds actors from a trace of method calls and adds them to the builder."
+
+	| actors |
+	actors := OrderedCollection new.
+	aBuilder , 'O'.
+	aTrace do: [ :each |
+			self xxx_ast24Add: each first to: actors.
+			self xxx_ast24Add: each second to: actors].
+	actors do: [ :actor | aBuilder , actor ].
+]
+
+{ #category : 'internals' }
+MicroUMLSDForCode4 >> xxx_ast24Add: element to: actors [
+	
+	((actors includes: element) not and: [ element package name = packageName ])
+		ifTrue: [ actors add: element name ]
 ]
