@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'aaa1'
 	],
-	#category : 'AIAExperiments-MicroUML',
+	#category : 'AIAExperiments-MicroURLMisc',
 	#package : 'AIAExperiments',
-	#tag : 'MicroUML'
+	#tag : 'MicroURLMisc'
 }
 
 { #category : 'experiments' }

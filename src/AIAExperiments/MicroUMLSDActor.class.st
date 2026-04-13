@@ -111,7 +111,7 @@ MicroUMLSDActor >> name: anObject [
 
 { #category : 'printing' }
 MicroUMLSDActor >> printOn: stream [
-	stream << name
+	stream << 'Actor: ' << name asString
 ]
 
 { #category : 'accessing' }

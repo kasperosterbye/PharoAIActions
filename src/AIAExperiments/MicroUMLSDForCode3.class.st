@@ -47,9 +47,9 @@ Class {
 	#instVars : [
 		'packageName'
 	],
-	#category : 'AIAExperiments-MicroUML',
+	#category : 'AIAExperiments-MicroURLMisc',
 	#package : 'AIAExperiments',
-	#tag : 'MicroUML'
+	#tag : 'MicroURLMisc'
 }
 
 { #category : 'examples' }

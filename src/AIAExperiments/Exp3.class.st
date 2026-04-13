@@ -1,9 +1,9 @@
 Class {
 	#name : 'Exp3',
 	#superclass : 'Object',
-	#category : 'AIAExperiments-MicroUML',
+	#category : 'AIAExperiments-MicroURLMisc',
 	#package : 'AIAExperiments',
-	#tag : 'MicroUML'
+	#tag : 'MicroURLMisc'
 }
 
 { #category : 'as yet unclassified' }
