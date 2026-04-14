@@ -34,7 +34,8 @@ Class {
 		'actors',
 		'messages',
 		'messageFrom',
-		'messageTo'
+		'messageTo',
+		'lastMethod'
 	],
 	#category : 'AIAExperiments-MicroUML',
 	#package : 'AIAExperiments',
@@ -111,13 +112,16 @@ MicroUMLSDAstBuilder >> => aString [
 	messageType := #call.
 	from := actors at: messageFrom.
 	to := actors at: messageTo ifAbsent: [ from ].
-	from = to ifTrue: [ messageType := #internal ].
-	
+	from = to ifTrue: [ 
+		aString first = $Ø
+			ifTrue: [ messageType := #clickAction ]
+			ifFalse: [ messageType := #internal] ].
    messages add: (MicroUMLSDMessages new
 			 description: aString;
 			 fromActor: from;
 			 toActor: to;
 			 messageType: messageType ;
+			 lastMethod: lastMethod;
 			 yourself).
     ^ self
 ]
@@ -138,6 +142,11 @@ MicroUMLSDAstBuilder >> initialize [
 	"Initialises the builder with empty collections for actors and messages"
 	actors := OrderedDictionary new.
 	messages := OrderedCollection new
+]
+
+{ #category : 'accessing' }
+MicroUMLSDAstBuilder >> lastMethod: meth [
+	lastMethod := meth
 ]
 
 { #category : 'accessing' }

@@ -36,7 +36,8 @@ Class {
 		'fromActor',
 		'toActor',
 		'y',
-		'messageType'
+		'messageType',
+		'lastMethod'
 	],
 	#category : 'AIAExperiments-MicroUML',
 	#package : 'AIAExperiments',
@@ -78,7 +79,11 @@ MicroUMLSDMessages >> description: anObject [
 { #category : 'drawing' }
 MicroUMLSDMessages >> draw [
 	"Draws a message line and label based on the message type and description"
-    | line labels|
+    | line label|
+    label := self 
+				drawLabel: description 
+				at: (fromActor x + toActor x / 2) @ (y - 10).
+				
     line := RSPolyline new
         color: Color black;
         markerEnd: (RSShapeFactory arrow size: 10; color: Color black) asMarker;
@@ -86,11 +91,9 @@ MicroUMLSDMessages >> draw [
 	 messageType = #call ifTrue: [ self drawCall: line ].
     messageType = #return ifTrue: [ self drawReturn: line ].
     messageType = #internal ifTrue: [ self drawInternal: line ].
-	
-    labels := self 
-				drawLabel: description 
-				at: (fromActor x + toActor x / 2) @ (y - 10).
-    ^ { line } , labels
+    messageType = #clickAction ifTrue: [ self drawInternal: line clickActionl: label ].
+
+    ^ { line } , label
 ]
 
 { #category : 'drawing' }
@@ -113,19 +116,38 @@ MicroUMLSDMessages >> drawInternal: line [
 ]
 
 { #category : 'as yet unclassified' }
+MicroUMLSDMessages >> drawInternal: line clickActionl: label [
+	| context theMethod theArgs thePackage |
+	context := lastMethod second at: lastMethod first.
+	theMethod := context method.
+	theArgs := (1 to: context size) collect: [ :x | context at: x ].
+	thePackage := theMethod class packageName.
+	
+	self drawInternal: line.
+	label first 
+		when: RSMouseClick 
+		do: [ :evt | 
+			self halt.
+			MicroUMLSDForCode4 new types: [ theMethod valueWithArguments: theArgs ] inPackage: thePackage
+			 ] 
+		for: self
+]
+
+{ #category : 'as yet unclassified' }
 MicroUMLSDMessages >> drawLabel: aString at: aPoint [
 	"Draws a label at the given point splitting multiline text into separate positioned labels"
     | lines lineHeight lineAll|
     lines := aString lines.
-    lines size <= 1 ifTrue: [
-        ^ {RSLabel new text: aString; translateTo: aPoint; yourself}  ].
-    
+    lines size <= 1 
+		ifTrue: [
+        lineAll :=  {RSLabel new text: aString; translateTo: aPoint; yourself}  ]
+    	ifFalse: [
     lineHeight := 18.
     lineAll := lines collectWithIndex: [ :line :i |
         RSLabel new
             text: line;
             translateTo: aPoint x @ (aPoint y + ((i - 1) * lineHeight));
-            yourself ].
+            yourself ]].
 	^ lineAll 
 ]
 
@@ -150,6 +172,11 @@ MicroUMLSDMessages >> fromActor: anObject [
 	"Sets the actor from which the message is sent"
 
 	fromActor := anObject
+]
+
+{ #category : 'accessing' }
+MicroUMLSDMessages >> lastMethod: meth [
+	lastMethod := meth
 ]
 
 { #category : 'accessing' }

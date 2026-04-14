@@ -3,9 +3,11 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'packageName',
+		'contextList',
 		'actions',
 		'messages',
-		'astBuilder'
+		'astBuilder',
+		'lastMethod'
 	],
 	#category : 'AIAExperiments-MicroUML',
 	#package : 'AIAExperiments',
@@ -15,76 +17,71 @@ Class {
 { #category : 'examples' }
 MicroUMLSDForCode4 class >> example1 [
 	<example>
-	self new types: [ Exp1 exp1Method1: 7. 2 timesRepeat: [ Exp2 new exp2Method1: 17]  ] inPackage: 'AIAExperiments'.
+	self new forCode: [ Exp1 exp1Method1: 7. 2 timesRepeat: [ Exp2 new exp2Method1: 17]  ] inPackage: 'AIAExperiments'.
+]
+
+{ #category : 'examples' }
+MicroUMLSDForCode4 class >> example1_1 [
+	<example>
+	self new forCode: [ Exp1 exp1Method1: 3. Exp1 exp1Method1: 7. Exp2 new exp2Method1: 21   ] inPackage: 'AIAExperiments'.
 ]
 
 { #category : 'examples' }
 MicroUMLSDForCode4 class >> example2 [
 	<example>
-	self new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
+	self new forCode: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
 ]
 
 { #category : 'examples' }
 MicroUMLSDForCode4 class >> example3 [
 	<example>
-	self new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
+	self new forCode: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
 ]
 
 { #category : 'examples' }
 MicroUMLSDForCode4 class >> example4 [
 	<example>
-	self new types: [ Exp3 new exp3Method2 ] inPackage: 'AIActions'
-]
-
-{ #category : 'as yet unclassified' }
-MicroUMLSDForCode4 class >> on: block inPackage: pack [
-self halt. 
-	self new types: block inPackage: pack
+	self new forCode: [ Exp3 new exp3Method2 ] inPackage: 'AIActions'
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast10CurrentList: currentList [
-	|  next |
-	actions := OrderedDictionary new.
-	messages := OrderedCollection new.
-	currentList do: [ :current |
-		(self ast12CheckCurrent: current )
+MicroUMLSDForCode4 >> ast10BuildMessageList [
+	| messageCandidate |
+	contextList doWithIndex: [ :context :index | 
+		(self ast12CheckPackageContext: context )
 			ifTrue: [ 
-				next := { current sender methodClass. current method methodClass . 
-							 current method selector . current isReturn}  .
-				(self ast15AddTest: next ) ifTrue: [ messages add: next. ]
+				messageCandidate := { context sender methodClass. context method methodClass . 
+							 context method selector . context isReturn. {index. contextList }}  .
+				(self ast15AddCheck: messageCandidate ) ifTrue: [ messages add: messageCandidate ]
 				 ].
 		 ].
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast12CheckCurrent: current [
-	| sender  method res |
-	sender := current sender.
-	method := current method.
-	res := [ 
-		    	([ sender methodClass package name ] onErrorDo: [ '*' ]) = packageName or: [
-				([ method methodClass package name ] onErrorDo: [ '*' ]) = packageName ] ] 
-			onErrorDo: [ false ] .
-	^ res
+MicroUMLSDForCode4 >> ast12CheckPackageContext: context [
+	| boolean |
+	boolean :=
+		    	(context sender methodClass package name ) = packageName or: [
+				(context method methodClass package name ) = packageName ].
+	^ boolean
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast15AddTest: next [ 
+MicroUMLSDForCode4 >> ast15AddCheck: messageCandidate [ 
 	messages reverseDo: [ :trac |
-		next allButLast = trac allButLast
-			ifTrue: [ ^ next fourth ~= trac fourth ].
+		(messageCandidate first: 3) = (trac first: 3)
+			ifTrue: [ ^ messageCandidate fourth ~= trac fourth ].
 	 ].
 	^true
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast20Messages [
+MicroUMLSDForCode4 >> ast20ActionsFromMessages [
 	| me |
 	me := self class name.
 	messages := messages select: [ :m | m first name ~= me and: [ m second name ~= me ] ].
 	messages do: [ :message |
-		 message first package name = packageName  ifTrue: [ 
+		message first package name = packageName  ifTrue: [ 
 			actions at: message first name asString put: message first ].
 		message second package name = packageName ifTrue: [ 
 			actions at: message second name asString put: message second ] ].
@@ -101,7 +98,7 @@ MicroUMLSDForCode4 >> ast40Build [
 
 { #category : 'internals' }
 MicroUMLSDForCode4 >> ast43BuildActors [
-	astBuilder , 'O'. "Omverdenen"
+	astBuilder , 'O'.
 	actions do: [ :actorClass | 
 		astBuilder , actorClass name asString ].
 ]
@@ -114,45 +111,63 @@ MicroUMLSDForCode4 >> ast46BuildMessages [
 			firstPackage := message first package name.
 			secondPackage := message second package name.
 			(firstPackage ~= packageName or: [ secondPackage ~= packageName ])
-				ifTrue: [ self ast47Message: message ]
-				ifFalse: [ self ast48Message: message ] ]
+				ifTrue: [ self ast47BuildPackageMessage: message ]
+				ifFalse: [ self ast48BuildExternalMessage: message ] ]
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast47Message: each [
-	| firstPackage secondPackage |
-	firstPackage := each first package name.
-	secondPackage := each second package name.
-	firstPackage ~= packageName 
+MicroUMLSDForCode4 >> ast47BuildPackageMessage: message [
+	| ignoreList|
+	ignoreList := { 'new'. 'new:' } asSet.
+	message first package name ~= packageName 
 		ifTrue: [ 
-			each last
-					ifFalse: [ astBuilder & 'O' -> each second name => each third. ]
-					ifTrue: [ astBuilder & each second name -> 'O' --> each third ]].
+			message fourth
+					ifFalse: [ astBuilder & 'O' -> message second name => message third. ]
+					ifTrue: [ astBuilder & message second name -> 'O' --> message third ]]
+		ifFalse: [ 
+			(ignoreList includes: message third) ifFalse: [
+				message fourth ifFalse: [
+					astBuilder lastMethod: message fifth.
+					astBuilder & message first name => ('Ø ', message third)] ]]
 
 ]
 
 { #category : 'internals' }
-MicroUMLSDForCode4 >> ast48Message: each [
-	each first = each second
+MicroUMLSDForCode4 >> ast48BuildExternalMessage: message [
+	message first = message second
 		ifTrue: [
-				each last
-					ifFalse: [ astBuilder & each first name => each third ]
-					ifTrue: [ astBuilder & each first name --> each third ] ]
+				message fourth
+					ifFalse: [ astBuilder & message first name => message third ]
+					ifTrue: [ astBuilder & message first name --> message third ] ]
 		ifFalse: [
-				each last
-					ifFalse: [ astBuilder & each first name -> each second name => each third ]
-					ifTrue: [ astBuilder & each second name -> each first name --> each third ] ].
+				message fourth
+					ifFalse: [ astBuilder & message first name -> message second name => message third ]
+					ifTrue: [ astBuilder & message second name -> message first name --> message third ] ].
 ]
 
 { #category : 'external' }
-MicroUMLSDForCode4 >> types: aBlock inPackage: pName [
-	|  currentList  |			
+MicroUMLSDForCode4 >> forCode: aBlock inPackage: pName [
 	packageName := pName.
-	currentList := OrderedCollection new.
-	thisContext runSimulated: aBlock  contextAtEachStep: [ :current |
-			currentList add: current copy.
+	thisContext runSimulated: aBlock  contextAtEachStep: [ :context |
+			contextList add: context copy.
 			].
-	self ast10CurrentList: currentList.
-	self ast20Messages.
+	self ast10BuildMessageList.
+	self ast20ActionsFromMessages.
 	self ast40Build.
+]
+
+{ #category : 'external' }
+MicroUMLSDForCode4 >> forContext: aContextList inPackage: pName [
+    packageName := pName.
+    contextList := aContextList.
+    self ast10BuildMessageList.
+    self ast20ActionsFromMessages.
+    self ast40Build.
+]
+
+{ #category : 'initialization' }
+MicroUMLSDForCode4 >> initialize [ 
+	contextList := OrderedCollection new.
+	actions := OrderedDictionary new.
+	messages := OrderedCollection new.
 ]

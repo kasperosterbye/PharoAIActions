@@ -7,8 +7,8 @@ Class {
 }
 
 { #category : 'as yet unclassified' }
-Exp3 >> exp3Method1: a [
-	^ 12345 + a.
+Exp3 >> exp3Method1: foo [
+	^ Exp4 new exp4method2: foo + 25.
 ]
 
 { #category : 'as yet unclassified' }

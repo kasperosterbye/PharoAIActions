@@ -11,6 +11,6 @@ Exp4 >> exp4method1 [
 ]
 
 { #category : 'as yet unclassified' }
-Exp4 >> exp4method2: x [
-	^ x + self exp4method1 
+Exp4 >> exp4method2: aaa [
+	^ aaa + 10000
 ]
