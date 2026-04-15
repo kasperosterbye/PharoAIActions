@@ -41,7 +41,8 @@ Class {
 		'messages',
 		'actorGap',
 		'lifelineHeight',
-		'canvas'
+		'canvas',
+		'uiTitle'
 	],
 	#category : 'AIAExperiments-MicroUML',
 	#package : 'AIAExperiments',
@@ -85,7 +86,7 @@ MicroUMLSequenceDiagram class >> from: ast [
 	instanse := self new.
 	instanse actors: ast actors .
 	instanse messages: ast messages.
-	instanse build.
+	^ instanse
 ]
 
 { #category : 'as yet unclassified' }
@@ -237,7 +238,7 @@ MicroUMLSequenceDiagram >> build [
 		drawLifelines;
 		drawMessages.
 	canvas @ RSCanvasController.
-	canvas open
+	canvas openWithTitle: self uiTitle
 ]
 
 { #category : 'roassal' }
@@ -317,4 +318,15 @@ MicroUMLSequenceDiagram >> messages [
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> messages: anObject [
 	messages := anObject
+]
+
+{ #category : 'accessing' }
+MicroUMLSequenceDiagram >> uiTitle [
+	uiTitle ifNil: [ ^ 'Sequence Diagram' ].
+	^ uiTitle
+]
+
+{ #category : 'accessing' }
+MicroUMLSequenceDiagram >> uiTitle: title [
+	uiTitle := title.
 ]

@@ -35,6 +35,7 @@ Class {
 		'description',
 		'fromActor',
 		'toActor',
+		'clickAction',
 		'y',
 		'messageType',
 		'lastMethod'
@@ -63,6 +64,16 @@ MicroUMLSDMessages class >> topMargin [
 ]
 
 { #category : 'accessing' }
+MicroUMLSDMessages >> clickAction [
+	^ clickAction
+]
+
+{ #category : 'accessing' }
+MicroUMLSDMessages >> clickAction: act [
+	clickAction := act
+]
+
+{ #category : 'accessing' }
 MicroUMLSDMessages >> description [
 	"Returns the description of the message"
 
@@ -79,21 +90,24 @@ MicroUMLSDMessages >> description: anObject [
 { #category : 'drawing' }
 MicroUMLSDMessages >> draw [
 	"Draws a message line and label based on the message type and description"
-    | line label|
-    label := self 
-				drawLabel: description 
-				at: (fromActor x + toActor x / 2) @ (y - 10).
-				
-    line := RSPolyline new
-        color: Color black;
-        markerEnd: (RSShapeFactory arrow size: 10; color: Color black) asMarker;
-        yourself.
-	 messageType = #call ifTrue: [ self drawCall: line ].
-    messageType = #return ifTrue: [ self drawReturn: line ].
-    messageType = #internal ifTrue: [ self drawInternal: line ].
-    messageType = #clickAction ifTrue: [ self drawInternal: line clickActionl: label ].
 
-    ^ { line } , label
+	| line label |
+	label := self drawLabel: description at: fromActor x + toActor x / 2 @ (y - 10).
+	clickAction ifNotNil: [
+			label first color: Color red.
+			label first italic.
+			label first when: RSMouseClick do: [ :evt | clickAction value ] for: self ].
+	line := RSPolyline new
+		        color: Color black;
+		        markerEnd: (RSShapeFactory arrow
+				         size: 10;
+				         color: Color black) asMarker;
+		        yourself.
+	messageType = #call ifTrue: [ self drawCall: line ].
+	messageType = #return ifTrue: [ self drawReturn: line ].
+	messageType = #internal ifTrue: [ self drawInternal: line ].
+
+	^ { line } , label
 ]
 
 { #category : 'drawing' }
@@ -170,7 +184,6 @@ MicroUMLSDMessages >> fromActor [
 { #category : 'accessing' }
 MicroUMLSDMessages >> fromActor: anObject [
 	"Sets the actor from which the message is sent"
-
 	fromActor := anObject
 ]
 
@@ -195,8 +208,8 @@ MicroUMLSDMessages >> messageType: anObject [
 
 { #category : 'printing' }
 MicroUMLSDMessages >> printOn: stream [
-	stream << '[ ' << fromActor printString << ' -> ' << toActor printString << ' ' << description 
-		<< ' (' << messageType << ') ]'
+	stream << '[ ' << fromActor name << ' -> ' << toActor name << ' ' << description asString
+		<< ' (' << messageType asString << ') ]'
 ]
 
 { #category : 'accessing' }

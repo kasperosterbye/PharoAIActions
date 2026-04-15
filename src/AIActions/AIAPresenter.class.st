@@ -54,6 +54,20 @@ Class {
 }
 
 { #category : 'instance creation' }
+AIAPresenter class >> onComment: aComment [
+	| comment |
+	comment := aComment.
+	comment ifEmpty: [ comment := 'No comment described' ].
+	commentPresenter ifNotNil: [ commentPresenter delete].
+	commentPresenter := self basicNew.
+	commentPresenter
+		commentName: ((comment lines first takeFirst: 20), '...');
+		initialize;
+		text: (Microdown asRichText: comment);
+		open 
+]
+
+{ #category : 'instance creation' }
 AIAPresenter class >> onText: aString [
 	commentPresenter ifNotNil: [ commentPresenter delete].
 	commentPresenter := self basicNew.

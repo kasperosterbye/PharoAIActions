@@ -42,7 +42,7 @@ In this example, the `types:inPackage:` method is used to construct an AST from 
 This class is part of the 'AIAExperiments' package and is tagged with 'MicroUML'.
 "
 Class {
-	#name : 'MicroUMLSDForCode',
+	#name : 'MicroUMLSDForCode0',
 	#superclass : 'Object',
 	#instVars : [
 		'packageName'
@@ -53,25 +53,25 @@ Class {
 }
 
 { #category : 'examples' }
-MicroUMLSDForCode class >> example1 [
+MicroUMLSDForCode0 class >> example1 [
 	<example>
 	self  new types: [ Exp1 fibbe: 7  ] inPackage: 'AIAExperiments'.
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode class >> example2 [
+MicroUMLSDForCode0 class >> example2 [
 	<example>
 	self  new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'
 ]
 
 { #category : 'examples' }
-MicroUMLSDForCode class >> example3 [
+MicroUMLSDForCode0 class >> example3 [
 	<example>
 	self  new types: [ AIASourceCode forClass: MicroUMLSDForCode  ] inPackage: 'AIActions'
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> astFromTrace: aTrace [
+MicroUMLSDForCode0 >> astFromTrace: aTrace [
 	"Constructs an abstract syntax tree from a trace of method calls."
 
 	| builder |
@@ -88,7 +88,7 @@ MicroUMLSDForCode >> astFromTrace: aTrace [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> buildActorName: name on: actors [
+MicroUMLSDForCode0 >> buildActorName: name on: actors [
 	"Builds an actor name from the given name and adds it to the actors collection if it is not already present and meets the package criteria."
 
 	name = 'UndefinedObject' 
@@ -99,7 +99,7 @@ MicroUMLSDForCode >> buildActorName: name on: actors [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
+MicroUMLSDForCode0 >> buildActorsOf: aTrace on: aBuilder [
 	"Builds actors from a trace of method calls and adds them to the builder."
 
 	| actors |
@@ -111,13 +111,13 @@ MicroUMLSDForCode >> buildActorsOf: aTrace on: aBuilder [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> checkUndefinedObjectOrPackage: item [
+MicroUMLSDForCode0 >> checkUndefinedObjectOrPackage: item [
 	^item = 'UndefinedObject' or: [ (Smalltalk classNamed: item) package name = packageName ]
 
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> connectMessages: traces [
+MicroUMLSDForCode0 >> connectMessages: traces [
 	"Connects messages in a trace by linking them based on package criteria"
 	| connections index line pName trace|
 	connections := OrderedCollection new.
@@ -148,7 +148,7 @@ MicroUMLSDForCode >> connectMessages: traces [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> message: each on: builder [
+MicroUMLSDForCode0 >> message: each on: builder [
 	"Constructs a message in the builder based on the given trace entry, considering package criteria"
 
 	((Smalltalk classNamed: each first) package name = packageName )
@@ -165,7 +165,7 @@ MicroUMLSDForCode >> message: each on: builder [
 ]
 
 { #category : 'removing' }
-MicroUMLSDForCode >> old_removeNonPackageTraces: traces [
+MicroUMLSDForCode0 >> old_removeNonPackageTraces: traces [
 	"Removes traces not belonging to the specified package"
 
 	| reducedTraces |
@@ -182,7 +182,7 @@ MicroUMLSDForCode >> old_removeNonPackageTraces: traces [
 ]
 
 { #category : 'removing' }
-MicroUMLSDForCode >> reduceDuplicateTraces: trace [
+MicroUMLSDForCode0 >> reduceDuplicateTraces: trace [
 	"Removes duplicate traces from a collection, ensuring each trace is unique."
 	| reducedTraces |
 	reducedTraces := OrderedCollection new.
@@ -196,7 +196,7 @@ MicroUMLSDForCode >> reduceDuplicateTraces: trace [
 ]
 
 { #category : 'removing' }
-MicroUMLSDForCode >> removeNonPackageTraces: traces [
+MicroUMLSDForCode0 >> removeNonPackageTraces: traces [
 	"Removes traces not belonging to the specified package"
 
 	| reducedTraces |
@@ -209,7 +209,7 @@ MicroUMLSDForCode >> removeNonPackageTraces: traces [
 ]
 
 { #category : 'tests' }
-MicroUMLSDForCode >> testClassPackage: package [
+MicroUMLSDForCode0 >> testClassPackage: package [
 	"Determines if a package matches the specified package name criteria."
 	package = 'UndefinedObject' 
 		ifTrue: [ ^ true ].
@@ -223,7 +223,7 @@ MicroUMLSDForCode >> testClassPackage: package [
 ]
 
 { #category : 'tests' }
-MicroUMLSDForCode >> testPackage: packOrClass [
+MicroUMLSDForCode0 >> testPackage: packOrClass [
 	"Determines if a package or class matches the specified package name criteria."
 	| package |
 	package := packOrClass isString 
@@ -241,7 +241,7 @@ MicroUMLSDForCode >> testPackage: packOrClass [
 ]
 
 { #category : 'experiments' }
-MicroUMLSDForCode >> types: aBlock inPackage: pName [
+MicroUMLSDForCode0 >> types: aBlock inPackage: pName [
 	"Constructs an abstract syntax tree from a block of code, focusing on method calls within a specified package."
 
 	| traces |

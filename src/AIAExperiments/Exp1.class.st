@@ -1,3 +1,6 @@
+"
+Joe
+"
 Class {
 	#name : 'Exp1',
 	#superclass : 'Object',

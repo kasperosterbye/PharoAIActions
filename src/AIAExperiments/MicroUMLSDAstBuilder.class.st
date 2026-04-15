@@ -33,8 +33,7 @@ Class {
 	#instVars : [
 		'actors',
 		'messages',
-		'messageFrom',
-		'messageTo',
+		'actorOrMessage',
 		'lastMethod'
 	],
 	#category : 'AIAExperiments-MicroUML',
@@ -44,102 +43,122 @@ Class {
 
 { #category : 'UML - class separators' }
 MicroUMLSDAstBuilder class >> , aString [
-	"Creates a new instance of MicroUMLSDAstBuilder and concatenates it with a string"
     ^ self new , aString
 ]
 
 { #category : 'examples' }
-MicroUMLSDAstBuilder class >> example [
+MicroUMLSDAstBuilder class >> example1 [
 	"Example demonstrating the creation and linking of UML elements"
 
 	(MicroUMLSDAstBuilder
     , 'Playground'
-    , 'Login System'
+    , 'Login System' @ [ Transcript << 'Was here' << String lf ]
     , 'Database'
     & 'Playground' -> 'Login System' => 'call'
-    & 'Login System' -> 'Database' => ('verify', String lf, 'Now')
+    & 'Login System' -> 'Database' => ('verify', String lf, 'Now') 
+			@ [  Transcript << 'Kilroy' << String lf  ]
+    & 'Database' -> 'Playground' --> '')
+	build
+]
+
+{ #category : 'examples' }
+MicroUMLSDAstBuilder class >> example2 [
+	"Example demonstrating the creation and linking of UML elements"
+
+	(MicroUMLSDAstBuilder
+    , 'Playground'
+    , 'Login System' @ [ Transcript << 'Was here' << String lf ]
+    , 'Database'
+    & 'Playground' -> 'Login System' => 'call'
+	 & 'Login System' => 'self call'
+    & 'Login System' -> 'Database' => ('verify', String lf, 'Now') 
+			@ [  Transcript << 'Kilroy' << String lf  ]
     & 'Database' -> 'Playground' --> '')
 	build
 ]
 
 { #category : 'logical operations' }
 MicroUMLSDAstBuilder >> & from [
-	"Sets the source actor for the next message in the sequence diagram."
-    messageFrom := from.
-    messageTo := nil.
-    ^ self
+	messages add: (MicroUMLSDMessages new
+		fromActor: (actors at: from);
+		toActor: nil).
+	actorOrMessage := messages last.
+	^ self
 ]
 
 { #category : 'UML - class separators' }
 MicroUMLSDAstBuilder >> , aString [
-	"Adds a new actor to the sequence diagram."
-	 messages ifNotEmpty: [ ^ self error: 'No new usage of `,` after an `&`' ].
-	 (actors includesKey: aString) ifTrue: [ ^ self ].
-    actors 
-        add: aString -> (MicroUMLSDActor new name: aString; index: actors size + 1 ).
-   
-    ^ self
+
+	messages ifNotEmpty: [ ^ self error: 'No new usage of `,` after an `&`' ].
+	(actors includesKey: aString) ifTrue: [ ^ self ].
+	actors add: aString -> (MicroUMLSDActor new
+			 name: aString;
+			 index: actors size + 1).
+	actorOrMessage := actors values at: actors size.
+	^ self
 ]
 
 { #category : 'UML - class separators' }
 MicroUMLSDAstBuilder >> --> aString [
-	"Adds a return message to the sequence diagram"
-	| messageType from to |
+
+	| message messageType |
+	message := messages last.
 	messageType := #return.
-	from := actors at: messageFrom.
-	to := actors at: messageTo ifAbsent: [ from ].
-	from = to ifTrue: [ ^ self ].
-	messages add: (MicroUMLSDMessages new
+	message toActor ifNil: [ message toActor: message fromActor].
+
+	message
 			 description: aString;
-			 fromActor: from;
-			 toActor: to;
 			 messageType: messageType;
-			 yourself).
+			 yourself.
 	^ self
 ]
 
 { #category : 'logical operations' }
 MicroUMLSDAstBuilder >> -> to [
-	"Sets the target actor for the next message in the sequence diagram"
-    messageTo := to .
+
+    messages last toActor: (actors at: to) .
     ^ self
 ]
 
 { #category : 'UML - class separators' }
 MicroUMLSDAstBuilder >> => aString [
-	"Adds a message to the sequence diagram"
-	| messageType from to|
+
+	| message messageType |
+	message := messages last.
 	messageType := #call.
-	from := actors at: messageFrom.
-	to := actors at: messageTo ifAbsent: [ from ].
-	from = to ifTrue: [ 
-		aString first = $Ø
-			ifTrue: [ messageType := #clickAction ]
-			ifFalse: [ messageType := #internal] ].
-   messages add: (MicroUMLSDMessages new
+	message toActor ifNil: [ 
+		message toActor: message fromActor.
+		messageType := #internal ].
+   message
 			 description: aString;
-			 fromActor: from;
-			 toActor: to;
 			 messageType: messageType ;
 			 lastMethod: lastMethod;
-			 yourself).
+			 yourself.
     ^ self
+]
+
+{ #category : 'UML - class separators' }
+MicroUMLSDAstBuilder >> @ aBlock [
+	
+	actorOrMessage clickAction: aBlock.
+	
+	^ self
 ]
 
 { #category : 'accessing' }
 MicroUMLSDAstBuilder >> actors [
-	"Returns the collection of actors in the sequence diagram"
+
 	^ actors values
 ]
 
 { #category : 'building' }
 MicroUMLSDAstBuilder >> build [
-	MicroUMLSequenceDiagram from: self
+	(MicroUMLSequenceDiagram from: self) build
 ]
 
 { #category : 'initialization' }
 MicroUMLSDAstBuilder >> initialize [ 
-	"Initialises the builder with empty collections for actors and messages"
+
 	actors := OrderedDictionary new.
 	messages := OrderedCollection new
 ]
@@ -151,6 +170,6 @@ MicroUMLSDAstBuilder >> lastMethod: meth [
 
 { #category : 'accessing' }
 MicroUMLSDAstBuilder >> messages [
-	"Returns the collection of messages in the sequence diagram"
+
 	^ messages 
 ]

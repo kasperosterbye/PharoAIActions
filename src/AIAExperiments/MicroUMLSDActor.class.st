@@ -39,6 +39,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'name',
+		'clickAction',
 		'width',
 		'x',
 		'index'
@@ -66,20 +67,34 @@ MicroUMLSDActor class >> boxPadding [
     ^ 10 
 ]
 
+{ #category : 'accessing' }
+MicroUMLSDActor >> clickAction [
+	^ clickAction
+]
+
+{ #category : 'accessing' }
+MicroUMLSDActor >> clickAction: action [
+	clickAction := action
+]
+
 { #category : 'drawing' }
 MicroUMLSDActor >> draw [
 	"Draws an actor element with a box and label, positioned at the specified x-coordinate."
-    | actorElement |
-    actorElement := RSComposite new.
-    actorElement shapes: {
-        (RSBox new
-            width: self width;
-            height: self class boxHeight;
-            color: Color veryLightGray;
-            borderColor: Color veryDarkGray).
-        (RSLabel new text: name) }.
-    actorElement translateTo: x @ 0.
-    ^ actorElement
+	| actorElement box label |
+	box := RSBox new
+		       width: self width;
+		       height: self class boxHeight;
+		       color: Color veryLightGray;
+		       borderColor: Color veryDarkGray.
+	label := RSLabel new text: name.
+	clickAction ifNotNil: [
+		label color: Color red.
+		label italic.
+		label when: RSMouseClick do: [ :evt | clickAction value ] for: self ].
+	actorElement := RSComposite new.
+	actorElement shapes: { box. label }.
+	actorElement translateTo: x @ 0.
+	^ actorElement
 ]
 
 { #category : 'accessing' }
