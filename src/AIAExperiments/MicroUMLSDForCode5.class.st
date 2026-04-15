@@ -100,7 +100,7 @@ MicroUMLSDForCode5 >> ast40Build [
 
 { #category : 'internals' }
 MicroUMLSDForCode5 >> ast43BuildActors [
-	astBuilder , 'O' .
+	packageName ~= '' ifTrue: [	astBuilder , 'O' ].
 	actions do: [ :actorClass | 
 		astBuilder , actorClass name asString @ [ AIAPresenter onComment: actorClass comment]].
 ]
@@ -152,6 +152,11 @@ MicroUMLSDForCode5 >> classNameCheck: aClass [
 ]
 
 { #category : 'external' }
+MicroUMLSDForCode5 >> forCode: aBlock [
+	self forCode: aBlock inPackage: ''
+]
+
+{ #category : 'external' }
 MicroUMLSDForCode5 >> forCode: aBlock inPackage: pName [
 	packageName := pName.
 	thisContext runSimulated: aBlock  contextAtEachStep: [ :context |
@@ -162,7 +167,7 @@ MicroUMLSDForCode5 >> forCode: aBlock inPackage: pName [
 	self ast40Build.
 ]
 
-{ #category : 'external' }
+{ #category : 'internals' }
 MicroUMLSDForCode5 >> forContext: aContextList inPackage: pName [
     packageName := pName.
     contextList := aContextList.
@@ -178,38 +183,14 @@ MicroUMLSDForCode5 >> initialize [
 	messages := OrderedCollection new.
 ]
 
-{ #category : 'internals' }
-MicroUMLSDForCode5 >> old_ast47BuildPackageMessage: message [
-	| ignoreList|
-	ignoreList := { 'new'. 'new:' } asSet.
-	(self classNameCheck: message first)
-		ifTrue: [ 
-			(ignoreList includes: message third) ifFalse: [
-				message fourth ifFalse: [
-					astBuilder lastMethod: message fifth.
-					astBuilder & message first name => message third 
-						@ [ | idx cList subList |
-    idx := message fifth first.
-    cList := message fifth second.
-    subList := cList copyFrom: idx to: cList size.
-    MicroUMLSDForCode5 new 
-        forContext: subList 
-        inPackage: message second package name ]] ]]
-		ifFalse: [ 
-			message fourth
-					ifFalse: [ astBuilder & 'O' -> message second name => message third. ]
-					ifTrue: [ astBuilder & message second name -> 'O' --> message third ]]
-		
-
-]
-
 { #category : 'inline' }
-MicroUMLSDForCode5 >> umlSPFor: message [ 
-| idx cList subList |
-    idx := message fifth first.
-    cList := message fifth second.
-    subList := cList copyFrom: idx to: cList size.
-    self class new 
-        forContext: subList 
-        inPackage: message second package name 
+MicroUMLSDForCode5 >> umlSPFor: message [
+
+	| idx cList subList |
+	idx := message fifth first.
+	cList := message fifth second.
+	subList := cList copyFrom: idx to: cList size.
+	self class new 
+		forContext: subList 
+		inPackage: message second package name
 ]

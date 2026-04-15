@@ -69,17 +69,19 @@ MicroUMLSDActor class >> boxPadding [
 
 { #category : 'accessing' }
 MicroUMLSDActor >> clickAction [
+	"Returns the click action associated with the actor"
 	^ clickAction
 ]
 
 { #category : 'accessing' }
 MicroUMLSDActor >> clickAction: action [
+	"Sets the click action associated with the actor"
 	clickAction := action
 ]
 
 { #category : 'drawing' }
 MicroUMLSDActor >> draw [
-	"Draws an actor element with a box and label, positioned at the specified x-coordinate."
+	"Draws an actor element with a box and label, positioned at the specified x-coordinate"
 	| actorElement box label |
 	box := RSBox new
 		       width: self width;
@@ -126,6 +128,7 @@ MicroUMLSDActor >> name: anObject [
 
 { #category : 'printing' }
 MicroUMLSDActor >> printOn: stream [
+	"Prints the actor's name in the format 'Actor: name'"
 	stream << 'Actor: ' << name asString
 ]
 

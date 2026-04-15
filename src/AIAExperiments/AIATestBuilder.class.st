@@ -49,13 +49,12 @@ Class {
 { #category : 'as yet unclassified' }
 AIATestBuilder class >> aiBuildList [
 	^ {
-		ClaudeApiWithTools newOnModel: 1.
-		GrokApiWithTools newOnModel: 2.
-		GrokApiWithTools newOnModel: 3."
-		OpenAIApiWithTools newOnModel: 3. "
-		OpenAIApiWithTools newOnModel: 1. 
+		ClaudeApi newOnModel: 1.
+		GrokApi newOnModel: 2.
+		GrokApi newOnModel: 3.
+		OpenAIApi newOnModel: 1. 
 		
-		 }
+	}
 ]
 
 { #category : 'instance creation' }

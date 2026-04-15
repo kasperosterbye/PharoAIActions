@@ -1,15 +1,25 @@
 "
 # Class Comment for MicroUMLSequenceDiagram
 
-The `MicroUMLSequenceDiagram` class is designed to create and display sequence diagrams in Pharo. Sequence diagrams are a type of UML diagram that illustrate how processes operate in terms of a sequence of messages exchanged between objects over time.
+## Purpose and Role in the System
 
-## Key Features
+The `MicroUMLSequenceDiagram` class is designed to create and display sequence diagrams in Pharo. Sequence diagrams are a type of UML diagram that illustrate how processes operate in terms of a sequence of messages exchanged between objects over time. This class provides a lightweight and interactive way to visualise the interactions between actors in a system, making it easier to understand the flow of messages and the sequence of operations.
 
-- **Actor Management**: Add actors to the diagram with the `addActor:` method.
-- **Message Management**: Add messages between actors using `addMessage:from:to:` and `addReturn:from:to:`.
-- **Visualisation**: Construct and display the sequence diagram on a canvas using the `build` method.
+## Main Collaborators or Dependencies
 
-## Usage Example
+The `MicroUMLSequenceDiagram` class collaborates with several other classes to achieve its functionality:
+
+- **MicroUMLSDMessages**: This class is responsible for managing the messages exchanged between actors. It holds the description, sender, receiver, and type of each message.
+- **MicroUMLSDActor**: This class represents the actors in the sequence diagram. It holds the name and position of each actor.
+- **RSCanvas**: This class is part of the Roassal visualization engine and is used to draw the sequence diagram on a canvas.
+
+## Important Invariants or Design Constraints
+
+- The class is designed to be used interactively in the Pharo Playground.
+- The `build` method returns a class builder that does not install the class but can be used to inspect the diagram.
+- The `install` method is used to install the class in the system.
+
+## Illustrative Usage Examples
 
 Here is an example of how to create and display a sequence diagram in the Pharo Playground:
 
@@ -25,11 +35,22 @@ sd build.
 
 This example creates a sequence diagram with two actors, 'Client' and 'Server', and a message exchange between them. The `build` method constructs and displays the diagram on a canvas.
 
-## Design Decisions
+Another example with three actors and two message exchanges:
 
-- The class is designed to be used interactively in the Pharo Playground.
-- The `build` method returns a class builder that does not install the class but can be used to inspect the diagram.
-- The `install` method is used to install the class in the system.
+```st
+| sd |
+sd := MicroUMLSequenceDiagram new.
+sd addActor: 'Playground'.
+sd addActor: 'Database'.
+sd addActor: 'Login System'.
+sd addMessage: 'call' from: 'Playground' to: 'Login System'.
+sd addInternal: 'Kilroy' for: 'Database'.
+sd addMessage: 'verify' from: 'Login System' to: 'Database'.
+sd addReturn: '' from: 'Database' to: 'Playground'.
+sd build.
+```
+
+This example demonstrates the flexibility of the `MicroUMLSequenceDiagram` class in handling more complex scenarios with multiple actors and internal messages.
 
 By following these guidelines, you can create and visualise sequence diagrams effectively using the `MicroUMLSequenceDiagram` class.
 "
@@ -172,12 +193,14 @@ steps
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> actors [
+	"Returns the collection of actors in the sequence diagram"
 
 	^ actors
 ]
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> actors: anObject [
+	"Sets the collection of actors in the sequence diagram"
 
 	actors := anObject
 ]
@@ -211,6 +234,7 @@ MicroUMLSequenceDiagram >> addActor: aString [
 
 { #category : 'construction' }
 MicroUMLSequenceDiagram >> addInternal: aDescription for: actorName [
+	"Adds an internal message for a specified actor in the sequence diagram"
 	^ self add: #internal name: aDescription from: actorName to: actorName
 ]
 
@@ -311,22 +335,26 @@ MicroUMLSequenceDiagram >> lifelineHeight [
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> messages [
+	"Returns the collection of messages exchanged between actors in the sequence diagram"
 
 	^ messages
 ]
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> messages: anObject [
+	"Sets the collection of messages exchanged between actors in the sequence diagram"
 	messages := anObject
 ]
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> uiTitle [
+	"Returns the title of the sequence diagram, defaulting to 'Sequence Diagram' if not set"
 	uiTitle ifNil: [ ^ 'Sequence Diagram' ].
 	^ uiTitle
 ]
 
 { #category : 'accessing' }
 MicroUMLSequenceDiagram >> uiTitle: title [
+	"Sets the title of the sequence diagram"
 	uiTitle := title.
 ]

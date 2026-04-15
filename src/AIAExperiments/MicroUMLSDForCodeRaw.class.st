@@ -1,3 +1,40 @@
+"
+# Class Comment for MicroUMLSDForCodeRaw
+
+## Purpose and Role in the System
+
+`MicroUMLSDForCodeRaw` is a specialized class designed to capture and process raw traces of method calls within a Pharo Smalltalk environment. Its primary purpose is to generate sequence diagrams from the execution traces of Smalltalk code. This is particularly useful for understanding the dynamic behaviour of code, identifying performance bottlenecks, and visualising the flow of method invocations.
+
+## Main Collaborators or Dependencies
+
+The class collaborates closely with `MicroUMLSDAstBuilder`, which is responsible for constructing the abstract syntax tree (AST) from the raw traces. Additionally, it interacts with `MicroUMLSequenceDiagram` to generate the sequence diagrams from the AST. The class also relies on the Pharo Smalltalk runtime to capture the execution context and method calls.
+
+## Important Invariants or Design Constraints
+
+1. **Package Context**: The class operates within a specific package context, as defined by the `packageName` instance variable. This ensures that only method calls within the specified package are considered, which helps in focusing the analysis on relevant code.
+2. **Trace Integrity**: The class maintains the integrity of the execution traces by ensuring that each method call is accurately recorded with its sender, receiver, and method details. This is crucial for generating accurate sequence diagrams.
+3. **Error Handling**: The class includes error handling mechanisms to manage situations where method or class information might not be available, ensuring robustness in various execution contexts.
+
+## Illustrative Usage Examples
+
+### Example 1: Basic Method Call Tracing
+
+```smalltalk
+self new types: [ Exp1 exp1Method1: 7. 2 timesRepeat: [ Exp2 new exp2Method1: 17] ] inPackage: 'AIAExperiments'.
+```
+
+This example demonstrates how to trace a series of method calls within the `AIAExperiments` package. The class captures the execution of `exp1Method1` and the repeated invocation of `exp2Method1`, generating a sequence diagram that visualises the method call flow.
+
+### Example 2: Analysing Microdown Code
+
+```smalltalk
+self new types: [ Microdown asRichText: '## Joe' ] inPackage: 'Microdown'.
+```
+
+In this example, the class is used to trace the execution of Microdown code, specifically the conversion of a Markdown string to rich text. This helps in understanding the internal workings of the Microdown library and identifying any potential performance issues.
+
+By providing these detailed examples, users can better understand how to utilise `MicroUMLSDForCodeRaw` to analyse and visualise the dynamic behaviour of their Smalltalk code.
+"
 Class {
 	#name : 'MicroUMLSDForCodeRaw',
 	#superclass : 'Object',
