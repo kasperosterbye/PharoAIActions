@@ -16,27 +16,39 @@ MicroUMLSDActorAITest >> setUp [
 
 { #category : 'AI generated test' }
 MicroUMLSDActorAITest >> testClickAction [
-	"Test that clickAction: method properly sets the click action instance variable"
+	"Test that clickAction returns the click action associated with the actor"
+	| expectedAction |
+	
+	"Test with nil clickAction (default state)"
+	self assert: (refMicroUMLSDActor clickAction isNil).
+	
+	"Test with a specific click action"
+	expectedAction := 'testClickAction'.
+	refMicroUMLSDActor instVarNamed: #clickAction put: expectedAction.
+	self assert: (refMicroUMLSDActor clickAction = expectedAction).
+	
+	"Test with a different click action"
+	expectedAction := [:actor | actor name].
+	refMicroUMLSDActor instVarNamed: #clickAction put: expectedAction.
+	self assert: (refMicroUMLSDActor clickAction = expectedAction)
+]
+
+{ #category : 'AI generated test' }
+MicroUMLSDActorAITest >> testClickActionArg [
+	"Test that clickAction: sets the click action associated with the actor"
 	| testAction |
 	
+	"Initialize test data"
 	testAction := 'test click action'.
 	
-	"Initially clickAction should be nil"
+	"Verify initial state - clickAction should be nil"
 	self assert: (refMicroUMLSDActor instVarNamed: #clickAction) isNil.
 	
-	"Set the click action"
+	"Execute the method under test"
 	refMicroUMLSDActor clickAction: testAction.
 	
-	"Verify the click action was set correctly"
-	self assert: (refMicroUMLSDActor instVarNamed: #clickAction) equals: testAction.
-	
-	"Test with a different action"
-	refMicroUMLSDActor clickAction: 'another action'.
-	self assert: (refMicroUMLSDActor instVarNamed: #clickAction) equals: 'another action'.
-	
-	"Test with nil"
-	refMicroUMLSDActor clickAction: nil.
-	self assert: (refMicroUMLSDActor instVarNamed: #clickAction) isNil
+	"Verify the clickAction was set correctly"
+	self assert: (refMicroUMLSDActor instVarNamed: #clickAction) equals: testAction
 ]
 
 { #category : 'AI generated test' }

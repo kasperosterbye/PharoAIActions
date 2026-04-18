@@ -35,6 +35,18 @@ Class {
 	#tag : 'AIApi'
 }
 
+{ #category : 'as yet unclassified' }
+AilienOCR class >> pdf: aFileName [
+    | folder fileReference text outputReference |
+    folder := '/Users/kasper/downloads' asFileReference.
+    fileReference := folder / aFileName.
+    text := self new textFromPDF: fileReference.
+    outputReference := folder / (aFileName copyReplaceAll: '.pdf' with: '.txt').
+    outputReference writeStreamDo: [ :stream |
+        stream nextPutAll: text ].
+    ^ text
+]
+
 { #category : 'OCR' }
 AilienOCR >> getSignedUrl: fileId [
 	"Retrieves a signed URL for the specified file ID with a 1-hour expiry"

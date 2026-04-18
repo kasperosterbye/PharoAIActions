@@ -244,7 +244,7 @@ AIATestBuilder >> testMethodName [
 	"The testMethodName method constructs a test method name by capitalizing the source method's keywords and prefixing with 'test'. It ensures proper naming conventions for AI-generated test methods."
 	| name testName|
 	name := (sourceMethod selector asString keywords 
-		collect: [:kw | (kw copyReplaceAll: ':' with: '') capitalized]) 
+		collect: [:kw | (kw copyReplaceAll: ':' with: 'Arg') capitalized]) 
 		joinUsing: ''.
 	testName := 'test', name.
 	^ testName
