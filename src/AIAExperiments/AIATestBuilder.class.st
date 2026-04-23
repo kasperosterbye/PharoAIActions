@@ -49,7 +49,7 @@ Class {
 { #category : 'as yet unclassified' }
 AIATestBuilder class >> aiBuildList [
 	^ {
-		ClaudeApi newOnModel: 1.
+		ClaudeApi newOnModel: 4.
 		GrokApi newOnModel: 2.
 		GrokApi newOnModel: 3.
 		OpenAIApi newOnModel: 1. 

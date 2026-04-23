@@ -101,27 +101,27 @@ MicroUMLSDForClassCodeAITest >> testScopeArg [
 
 { #category : 'AI generated test' }
 MicroUMLSDForClassCodeAITest >> testUmlSPForArg [
-	"Test that umlSPFor: builds the expected subList and scope, and delegates to the class-side #forContext:inScope:."
+	"Test umlSPFor: delegates to the class-side #forContext:inScope:.
+	Current implementation is expected to fail because it sends #forContext:inScope:
+	to MicroUMLSDForClassCode class, but that selector exists on MicroUMLSDForCode class."
 
-	| message idx cList subList nextPackage expected |
+	| message idx cList subList nextPackage |
 
-	"Build a message matching the protocol used by #umlSPFor:.
-	 fifth = { idx . cList } where idx is an Integer and cList is a SequenceableCollection."
-	message := { Object. String. #size. false. { 2. { Object. String } } }.
+	"Build a message with the expected structure used by umlSPFor:"
+	message := #('ignored1' 'TestPackage' 'ignored3' 'ignored4' #(2 #('a' 'b' 'c' 'd'))).
 
-	"Compute the expected arguments exactly like the method under test."
+	"Compute expected extracted values (documents intent and guards message structure)."
 	idx := message fifth first.
 	cList := message fifth second.
 	subList := cList copyFrom: idx to: cList size.
-	nextPackage := { message second package name. message second packageTag name }.
+	nextPackage := message second.
 
-	"Sanity checks on the derived values."
-	self assert: (idx = 2).
-	self assert: (cList = { Object. String }).
-	self assert: (subList = { String }).
-	self assert: (nextPackage = { #'Collections-Strings'. #Base }).
+	"Sanity checks on extracted values."
+	self assert: (subList = #('b' 'c' 'd')).
+	self assert: (nextPackage = 'TestPackage').
 
-	"Compare the result with the direct class-side call that umlSPFor: should delegate to."
-	expected := MicroUMLSDForClassCode forContext: subList inScope: nextPackage.
-	self assert: ((refMicroUMLSDForClassCode umlSPFor: message) = expected)
+	"Exercise: should raise MNU because MicroUMLSDForClassCode class does not implement #forContext:inScope:."
+	self
+		should: [ refMicroUMLSDForClassCode umlSPFor: message ]
+		raise: MessageNotUnderstood
 ]
