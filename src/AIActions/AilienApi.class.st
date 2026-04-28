@@ -336,7 +336,6 @@ AilienApi >> znClientEntity [
         'model' -> model.
         'messages' -> self jsonHistory .
         'stream' -> false.
-        'temperature' -> 0.0.
         'tools' -> self toolSpecification.
     }
 ]

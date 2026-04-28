@@ -46,14 +46,13 @@ Class {
 	#tag : 'TestBuiler'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 AIATestBuilder class >> aiBuildList [
 	^ {
-		GeminiApi newOnModel: 1
-		"ClaudeApi newOnModel: 1.
 		GrokApi newOnModel: 2.
+		ClaudeApi newOnModel: 4.
 		GrokApi newOnModel: 3.
-		OpenAIApi newOnModel: 1." 
+		OpenAIApi newOnModel: 3.
 		
 	}
 ]
@@ -61,9 +60,11 @@ AIATestBuilder class >> aiBuildList [
 { #category : 'instance creation' }
 AIATestBuilder class >> buildAll: aClass [
 	"Builds test methods for all methods in a class using Mistral AI"
-	| testResults |
+	| testResults sortedMethods |
 	testResults := OrderedDictionary new.
-	aClass methodDict values do: [ :method | | testBuilder |
+	sortedMethods := MicroUMLSDMessages methodDict values 
+		sort: [ :a :b | a selector < b selector ].
+	sortedMethods do: [ :method | | testBuilder |
 		testBuilder:= self new.
 		testBuilder build: method.
 		testResults at: method selector put: testBuilder testColor 
@@ -118,12 +119,15 @@ AIATestBuilder >> checkBuildedTest: testMethodRef [
 
 { #category : 'compiling' }
 AIATestBuilder >> compileAndChechBuildedTest [
-	| testMethodName testMethodRef|
-	testMethodName := self getOrBuildTestClass 
+	
+	[ | testMethodName testMethodRef|
+		testMethodName := self getOrBuildTestClass 
 					compile: testMethod classified: 'AI generated test'. 
 					
-	testMethodRef := self getOrBuildTestClass selector: testMethodName asSymbol.
-	self checkBuildedTest: testMethodRef.
+		testMethodRef := self getOrBuildTestClass selector: testMethodName asSymbol.
+		self checkBuildedTest: testMethodRef]
+	on: Error
+	do: [ testColor := Color red ].
 	
 	^ self chatHistory
 ]
