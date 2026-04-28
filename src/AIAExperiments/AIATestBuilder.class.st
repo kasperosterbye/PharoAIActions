@@ -62,7 +62,7 @@ AIATestBuilder class >> buildAll: aClass [
 	"Builds test methods for all methods in a class using Mistral AI"
 	| testResults sortedMethods |
 	testResults := OrderedDictionary new.
-	sortedMethods := MicroUMLSDMessages methodDict values 
+	sortedMethods := aClass methodDict values 
 		sort: [ :a :b | a selector < b selector ].
 	sortedMethods do: [ :method | | testBuilder |
 		testBuilder:= self new.
