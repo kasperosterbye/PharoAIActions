@@ -149,9 +149,12 @@ AIASourceCode >> forClass: aClass [
 { #category : 'accessing' }
 AIASourceCode >> forClasses: aClassList [
 	"Generates formatted source code descriptions for a list of classes, including their definitions, instance variables, methods, and meta-class details."
-	
-	aClassList do: [ :aClass | self forClass: aClass ].
-	^ response contents 
+
+	(aClassList isString
+		 ifTrue: [ Smalltalk globals allClasses select: [ :c | aClassList match: c name asString ] ]
+		 ifFalse: [ aClassList ]) 
+		do: [ :aClass | self forClass: aClass ].
+	^ response contents
 ]
 
 { #category : 'accessing' }
