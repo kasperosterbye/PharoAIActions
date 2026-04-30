@@ -1,28 +1,3 @@
-"
-# Class Comment for AIAGitHub
-
-The `AIAGitHub` class provides an interface to interact with GitHub repositories, specifically for fetching and processing issues and comments. It supports pagination for large result sets and includes methods for extracting key information from GitHub API responses.
-
-## Key Features
-
-- **Issue Management**: Fetch open issues from a specified repository, including pagination support.
-- **Comment Processing**: Retrieve and format comments associated with specific issues.
-- **Repository Configuration**: Set and retrieve the target GitHub repository.
-
-## Usage Example
-
-```st
-""Create an instance and fetch open issues from the Microdown repository""
-github := AIAGitHub new.
-github repository: 'pillar-markup/Microdown'.
-github fetchOpenIssues.
-
-""Inspect the first issue's details""
-github llmOpenIssue: (github openIssues first at: 'number').
-```
-
-This class is designed for interactive use in the Pharo Playground, with methods returning collections or objects suitable for inspection.
-"
 Class {
 	#name : 'AIAGitHub',
 	#superclass : 'Object',

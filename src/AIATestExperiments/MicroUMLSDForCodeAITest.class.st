@@ -4,8 +4,9 @@ Class {
 	#instVars : [
 		'refMicroUMLSDForCode'
 	],
-	#category : 'AIATestExperiments',
-	#package : 'AIATestExperiments'
+	#category : 'AIATestExperiments-MicroUMLTests',
+	#package : 'AIATestExperiments',
+	#tag : 'MicroUMLTests'
 }
 
 { #category : 'initialization' }

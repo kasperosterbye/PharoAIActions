@@ -81,6 +81,7 @@ AIATeacup >> initialize [
 AIATeacup >> setIndex [
 	teapot 
 		GET: '/' -> self getOverview ;
+		GET: '/robots' -> [ 'User-agent: Allow: ' ];
 		GET: '/packages' -> self getAllPackages ;
 		GET: '/packageClasses/<packageName>' -> [ :ref | 
 				self getClassesOfPackage: (ref at: #packageName) ];		

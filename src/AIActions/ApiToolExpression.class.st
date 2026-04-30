@@ -22,6 +22,27 @@ ApiToolExpression >> executeTool: args [
 	| expr result |
 	super executeTool: args.
 	expr := args at: required.
+	[ result := (OpalCompiler new evaluate: expr) printString]
+		on: Error
+		do: [ :ex | result := 'Error: ' , ex messageText ].
+	
+	Transcript << '>>> ' << result << String lf.
+	^ result 
+]
+
+{ #category : 'initialization' }
+ApiToolExpression >> initialize [
+	name := 'executePharoExpression'.
+	required := 'expression'
+]
+
+{ #category : 'as yet unclassified' }
+ApiToolExpression >> old_executeTool: args [
+	"Evaluates the provided Pharo expression and returns its string representation handling any errors"
+
+	| expr result |
+	super executeTool: args.
+	expr := args at: required.
 	[  result := (expr includesSubstring: 'compile:') 
 			ifTrue: [  'Sorry, I will not compile and make new methods' ]
 			ifFalse: [(OpalCompiler new evaluate: expr) printString].
@@ -31,10 +52,4 @@ ApiToolExpression >> executeTool: args [
 	
 		Transcript << '>>> ' << result << String lf.
 		^ result 
-]
-
-{ #category : 'initialization' }
-ApiToolExpression >> initialize [
-	name := 'executePharoExpression'.
-	required := 'expression'
 ]

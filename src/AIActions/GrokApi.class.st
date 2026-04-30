@@ -87,7 +87,7 @@ GrokApi class >> grokKey [
 GrokApi class >> modelNames [
    "Returns an array of available Grok models. Check https://docs.x.ai/ for updates."
 	"https://console.x.ai/team/5e551e89-6f2d-49bc-88ba-edd9b27ae732/models/grok-code-fast-1"
-    ^ #('grok-code-fast-1' 'grok-4-1-fast-reasoning' 'grok-4-1-fast-non-reasoning' 'grok-3-mini').
+    ^ #('grok-code-fast-1' 'grok-4-1-fast-reasoning' 'grok-4-1-fast-non-reasoning' 'grok-4.20-reasoning').
 ]
 
 { #category : 'accessing' }

@@ -50,8 +50,8 @@ Class {
 AIATestBuilder class >> aiBuildList [
 	^ {
 		GrokApi newOnModel: 2.
+		GrokApi newOnModel: 4.
 		ClaudeApi newOnModel: 4.
-		GrokApi newOnModel: 3.
 		OpenAIApi newOnModel: 3.
 		
 	}

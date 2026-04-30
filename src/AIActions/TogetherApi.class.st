@@ -42,10 +42,12 @@ TogetherApi class >> modelNames [
    "Returns an array of available Together models. "
 	"Check https://api.together.ai/models (use GitHub at login) for updates."
 	"Account area: https://api.together.ai/settings/api-keys"
-    ^ #( 	'Qwen/Qwen3-Next-80B-A3B-Instruct'
-			'Qwen/Qwen3-235B-A22B-Thinking-2507'
+    ^ #( 	'Qwen/Qwen3-Coder-Next-FP8'
+			'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8'
 			'deepseek-ai/DeepSeek-V3.1'
-			'meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8').
+			'deepseek-ai/DeepSeek-V4-Pro'
+			'openai/gpt-oss-120b'
+			'meta-llama/Llama-3.3-70B-Instruct-Turbo' ).
 ]
 
 { #category : 'accessing' }
