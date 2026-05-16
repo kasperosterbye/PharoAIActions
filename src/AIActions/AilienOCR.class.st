@@ -80,6 +80,26 @@ AilienOCR >> ocrFile: fileId [
         joinUsing: String cr
 ]
 
+{ #category : 'as yet unclassified' }
+AilienOCR >> speakText: aString [
+    | response parsed audioData tempFile |
+    response := ZnClient new
+        url: 'https://api.mistral.ai/v1/audio/speech';
+        headerAt: 'Authorization' put: MistralApi esug;
+        entity: (ZnEntity json: (STONJSON toString: (Dictionary newFrom: {
+            'model' -> 'voxtral-mini-tts-2603'. 
+            'input' -> aString.
+            'voice_id' -> 'gb_jane_sarcasm'.
+            'response_format' -> 'mp3' })));
+        post;
+        contents.
+    parsed := STONJSON fromString: response.
+    audioData := ZnBase64Encoder new decode: (parsed at: 'audio_data').
+    tempFile := '/Users/kasper/downloads' asFileReference / 'ailient-speech.mp3'.
+    tempFile binaryWriteStreamDo: [ :s | s nextPutAll: audioData asByteArray ].
+    LibC system: 'afplay -r 1.7 ', tempFile fullName
+]
+
 { #category : 'OCR' }
 AilienOCR >> textFromPDF: aFileReference [
 	"Extracts text from a PDF file using the AilienOCR API."
@@ -110,4 +130,15 @@ AilienOCR >> uploadFile: aFileReference [
         contents.
     parsed := STONJSON fromString: response.
     ^ parsed at: 'id'
+]
+
+{ #category : 'as yet unclassified' }
+AilienOCR >> voices [
+    | response |
+    response := ZnClient new
+        url: 'https://api.mistral.ai/v1/audio/voices';
+        headerAt: 'Authorization' put: MistralApi esug;
+        get;
+        contents.
+    ^ (STONJSON fromString: response) at: 'items'
 ]

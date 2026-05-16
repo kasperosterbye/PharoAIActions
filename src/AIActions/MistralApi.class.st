@@ -46,7 +46,7 @@ MistralApi class >> esug [
 	"Return the API token for Mistral, read from a maarumlam https file.
 	The file should contain only the Bearer token string (no quotes or extra lines).
 	Used to authenticate API requests."
-	^ ZnClient new url: 'https://maarumlam.dk/pharoCommentsByMistral.txt'; get.
+	^ ZnClient new url: 'https://maarumlam.dk/kasper/pharoCommentsByMistral.txt'; get.
 ]
 
 { #category : 'accessing' }

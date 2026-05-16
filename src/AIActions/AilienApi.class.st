@@ -1,3 +1,48 @@
+"
+# Class Comment for AilienApi
+
+## Purpose and Role in the System
+
+The `AilienApi` class serves as an abstract base class for interacting with various AI providers' APIs. It manages the configuration and interaction with AI models, handling the setup of API endpoints, message history, and response processing. The class is designed to be extended by specific API provider subclasses, each of which implements the provider-specific details.
+
+## Main Collaborators or Dependencies
+
+- **Subclasses**: Specific API provider classes (e.g., `OpenAIApi`, `GrokApi`, `ClaudeApi`) that extend `AilienApi` to provide provider-specific implementations.
+- **AilienApiTool**: A class that provides tool specifications for the AI interactions.
+- **AilienInnerCall**: A class that handles inner calls to the AI API, managing tool calls and responses.
+
+## Important Invariants or Design Constraints
+
+1. **Model Validation**: The class ensures that the model used for AI interactions is validated against the available models provided by the specific API provider.
+2. **Message History Management**: The class maintains a history of messages exchanged with the AI, ensuring that the conversation context is preserved.
+3. **Error Handling**: The class provides mechanisms for handling API errors and responses, ensuring that errors are properly logged and communicated.
+
+## Illustrative Usage Examples
+
+### Example 1: Setting Up an API Provider
+
+```smalltalk
+AilienApi provider: OpenAIApi.
+AilienApi defaultModel: 1.
+```
+
+This example sets the default provider to `OpenAIApi` and configures the default model to the first available model in the provider's model list.
+
+### Example 2: Creating a New Instance with a Specific Model
+
+```smalltalk
+| api |
+api := AilienApi newOnModel: 2.
+api messageList: #('user' -> 'Hello, how are you?').
+api apiGenerateUrl.
+```
+
+This example creates a new instance of `AilienApi` configured to use the second available model. It sets a message list and generates the API URL for the interaction.
+
+## Summary
+
+The `AilienApi` class is a crucial component in the system for managing interactions with various AI providers. It abstracts the common functionalities required for API interactions, allowing specific providers to implement their unique details. The class ensures robust handling of model configurations, message histories, and error responses, providing a solid foundation for building AI-driven applications.
+"
 Class {
 	#name : 'AilienApi',
 	#superclass : 'Object',
