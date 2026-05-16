@@ -1,45 +1,46 @@
 Class {
-	#name : 'AIANovelExtractor',
+	#name : 'AIAYouTube',
 	#superclass : 'Object',
+	#instVars : [
+		'title'
+	],
 	#category : 'AIAExperiments-Novels',
 	#package : 'AIAExperiments',
 	#tag : 'Novels'
 }
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor class >> getNovel: videoId [
-    ^ self new getNovel: videoId
+AIAYouTube class >> getNovel: youtube [
+	"https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s"
+	| youtubeID |
+	youtubeID := youtube.
+	(youtubeID first: 'https:' size) = 'https:'
+		ifTrue: [ | vPos |
+			vPos := (youtube indexOfSubCollection: 'v=' startingAt: 1) + 2.
+			youtubeID := youtube copyFrom: vPos to: vPos + 10.
+			].
+    ^ self new getNovel: youtubeID
 ]
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor >> getNovel: videoId [
+AIAYouTube >> getNovel: videoId [
     | novel |
-    (File named: (self vttPathFor: videoId)) exists
-        ifFalse: [ self ytdlp: videoId ].
+    self ytdlp: videoId.
     novel := self parseVtt: videoId.
     (File named: (self novelPathFor: videoId)) writeStream 
         nextPutAll: novel;
         close.
+	 (File named: (self vttPathFor: videoId)) delete.
     ^ novel
 ]
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor >> novelPathFor: videoId [
+AIAYouTube >> novelPathFor: videoId [
     ^ '/Users/kasper/Downloads/NV_' , videoId , '.txt'
 ]
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor >> old_videoIdsForChannel: channelHandle [
-    | result |
-    result := ReadWriteStream on: String new.
-    LibC runCommand: 'yt-dlp --flat-playlist --print id "https://www.youtube.com/@' , 
-			channelHandle , '" > /tmp/yt_ids.txt'.
-    ^ (File named: '/tmp/yt_ids.txt') readStream contents asString lines 
-        reject: [ :line | line trimSeparators isEmpty ]
-]
-
-{ #category : 'as yet unclassified' }
-AIANovelExtractor >> parseVtt: videoId [
+AIAYouTube >> parseVtt: videoId [
     | lines result |
     lines := OrderedCollection 
 		newFromArray: 
@@ -55,7 +56,7 @@ AIANovelExtractor >> parseVtt: videoId [
 ]
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor >> videoIdsForChannel: channelHandle [
+AIAYouTube >> videoIdsForChannel: channelHandle [
     | lineNumbers lines |
 	 lineNumbers := -1.
     LibC runCommand: 'yt-dlp --flat-playlist --playlist-end ', lineNumbers asString ,' --print "%(title)s$%(duration)s$%(id)s" "https://www.youtube.com/@' , channelHandle , '" > /tmp/yt_ids.txt'.
@@ -65,13 +66,23 @@ AIANovelExtractor >> videoIdsForChannel: channelHandle [
 ]
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor >> vttPathFor: videoId [
+AIAYouTube >> vttPathFor: videoId [
     ^ '/Users/kasper/Downloads/YT_' , videoId , '.en.vtt'
 ]
 
 { #category : 'as yet unclassified' }
-AIANovelExtractor >> ytdlp: videoId [
+AIAYouTube >> ytdlp: videoId [
     | command |
     command := 'yt-dlp --write-auto-sub --skip-download --sub-lang en -o "/Users/kasper/Downloads/YT_%(id)s.%(ext)s" "https://www.youtube.com/watch?v=' , videoId , '"'.
     LibC runCommand: command
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTube >> ytdlpMeta: videoId [
+    | raw |
+    LibC runCommand: 'yt-dlp --skip-download --print "%(title)s$%(description)s" "https://www.youtube.com/watch?v=' , videoId , '" > /Users/kasper/Downloads/yt_meta.txt'.
+    raw := (File named: '/Users/kasper/Downloads/yt_meta.txt') readStream contents asString.
+    raw := raw select: [ :char | char asciiValue < 128 ].
+	 raw := raw splitOn: $$.
+	 ^ { 'title' -> raw first. 'description' -> raw second } asDictionary 
 ]
