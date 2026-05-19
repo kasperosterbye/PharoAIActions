@@ -126,6 +126,6 @@ ClaudeApi >> znClientEntity [
 	"Returns the JSON body for the API request, including the message history and tool specifications"
     ^ super znClientEntity , {
         'tools' -> self toolSpecification.
-        'max_tokens' -> 4096
+        'max_tokens' -> 32000
     }
 ]

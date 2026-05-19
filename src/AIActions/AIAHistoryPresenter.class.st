@@ -85,6 +85,7 @@ AIAHistoryPresenter >> getMessageList [
 AIAHistoryPresenter >> historyChangeAction [
     historyList whenSelectionChangedDo: [ :selection |
         | selected msgs |
+	self halt.
         selected := selection selectedItem.
         selected ifNotNil: [ 
             msgs := selected messages.

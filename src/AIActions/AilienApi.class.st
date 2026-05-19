@@ -288,7 +288,7 @@ AilienApi >> initialize [
 	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
 	super initialize.
 	self model: self class defaultModel.
-	self responseWaitingInSecs: 5*60.
+	self responseWaitingInSecs: 20*60.
 ]
 
 { #category : 'accessing' }

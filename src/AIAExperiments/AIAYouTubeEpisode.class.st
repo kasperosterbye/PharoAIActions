@@ -94,7 +94,7 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 	"Returns the transcript of a YouTube video, processing the VTT file to extract and clean the text."
 
 	| lines result |
-	[
+	[ self halt.
 		lines := OrderedCollection 
 			newFromArray: (File named: (self episodeVttPath: episodeId)) readStream contents asString lines.
 		lines removeFirst: 3.
@@ -105,7 +105,7 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 		1 to: lines size do: [ :line | result << ((lines at: line) copyWithRegex: '<[^>]*>' matchesReplacedWith: '') << ' ' ].
 		^ result contents copyReplaceAll: '. ' with: '.' , String cr ]
 		on: Error
-		do: [ ^ 'The id: ' , episodeId , ' could not be read' ]
+		do: [ ^ 'The id: ' , episodeId , ' could not be read' ", String lf, result contents "]
 ]
 
 { #category : 'episode' }
@@ -113,6 +113,11 @@ AIAYouTubeEpisode >> episodeVttPath: episodeId [
 	"Returns the file path for the VTT subtitle file of a YouTube video."
     ^ '/Users/kasper/Downloads/YT_' , episodeId , '.en.vtt'
 
+]
+
+{ #category : 'initialization' }
+AIAYouTubeEpisode >> initialize [
+	channel := ''.
 ]
 
 { #category : 'episode' }

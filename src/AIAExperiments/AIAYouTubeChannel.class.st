@@ -79,7 +79,8 @@ AIAYouTubeChannel class >> novelChannels [
         #GalaxyChroniclesX. 
         #EpicSpaceChronicles. 
         #hyf_chronicles_prime.
-        #HFYZenith. #TheHYFUnleashed. 
+        #HFYZenith. 
+		  #TheHYFUnleashed. 
         #'EarthbornLegends-y8o'. 
         #'Sci-Fi-Vault' }
 
