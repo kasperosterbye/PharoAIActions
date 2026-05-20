@@ -25,6 +25,17 @@ AIAYouTubeUI >> channelChangeAction [
 		| selected |
 		selected := selection selectedItem.
 		selected ifNotNil: [ self showChannel: selected ] ].
+	channelList whenActivatedDo: [ :selection |
+		| selected |
+		selected := selection selectedItem.
+		selected ifNotNil: [
+			[
+				self window title: 'Updating: ' , selected.
+				AIAYouTubeChannel new channelUpdate: selected.
+				self window title: 'YouTube Browser'.
+				self showChannel: selected ]
+					forkAt: Processor userBackgroundPriority
+					named: 'YouTube update: ' , selected ] ].
 ]
 
 { #category : 'initialization' }
@@ -55,12 +66,11 @@ AIAYouTubeUI >> defaultLayout [
 
 { #category : 'initialization' }
 AIAYouTubeUI >> descriptionFor: aChannelHandle [
-	"Read description.txt for the channel, or report not loaded."
 	| path file |
 	path := AIAYouTubeChannel new channelDirectory: aChannelHandle , '/description.txt'.
 	file := File named: path.
 	^ file exists
-		ifTrue: [ file readStream contents asString ]
+		ifTrue: [ file readStream contents utf8Decoded ]
 		ifFalse: [ 'Not loaded yet' ]
 ]
 
@@ -72,6 +82,23 @@ AIAYouTubeUI >> episodeChangeAction [
 		selected ifNotNil: [ self showEpisode: selected ] ].
 	episodeList display: [ :episodeId |
 		self episodeTitleFor: episodeId forChannel: channelList selectedItem ].
+	episodeList whenActivatedDo: [ :selection |
+		| selected url |
+		selected := selection selectedItem.
+		selected ifNotNil: [
+			url := 'https://www.youtube.com/watch?v=' , selected.
+			LibC runCommand: 'open -a Safari "' , url , '"' ] ].
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> episodeDateFor: anEpisodeId forChannel: aChannelHandle [
+	| path file lines |
+	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
+	file := File named: path.
+	file exists ifFalse: [ ^ '00000000' ].
+	lines := file readStream contents asString lines.
+	lines size < 5 ifTrue: [ ^ '00000000' ].
+	^ lines at: 5
 ]
 
 { #category : 'initialization' }
@@ -86,13 +113,12 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 
 { #category : 'initialization' }
 AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
-	"Parse the meta file and return title, formatted date, and first paragraph."
 	| path file lines title date desc details |
 	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
 		'/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ 'Not loaded yet' ].
-	lines := file readStream contents asString lines.
+	lines := file readStream contents utf8Decoded lines.
 	lines size < 5 ifTrue: [ ^ 'Meta incomplete' ].
 	title := '# ', lines first.
 	date  := '> ', (self formatDate: lines fifth).
@@ -101,39 +127,50 @@ AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
 	^ details
 ]
 
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> episodeTextAction [
+	episodeDetail whenSubmitDo: [ :a | 
+		AIAPresenter onText: ('What is the essence of the descrition I gave you. Please let your response be at most 10 line'
+		q0: [ a ])]
+]
+
 { #category : 'initialization' }
 AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
-	"Parse the meta file and return title, formatted date, and first paragraph."
-	| text file lines|
+	| text file lines |
 	text := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
 		'/' , anEpisodeId , '.txt'.
 	file := File named: text.
-	file exists ifFalse: [ ^ 'Not loaded yet' ].
-	lines := file readStream contents asString.
-	^ String lf, String lf, '## Episode contents', String lf, lines
+	file exists ifFalse: [ ^ '' ].
+	lines := file readStream contents utf8Decoded.
+	^ String lf, String lf, '## Episode contents', String lf, '```text', String lf, lines, String lf, '```'
 ]
 
 { #category : 'as yet unclassified' }
 AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
-	| path file lines |
+	| path file lines date title |
 	aChannelHandle ifNil: [ ^ anEpisodeId ].
-	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle), '/' , anEpisodeId , '_meta.txt'.
+	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ anEpisodeId ].
-	lines := file readStream contents asString lines.
-	lines isEmpty ifTrue: [ ^ anEpisodeId ].
-	^ lines first.
+	lines := file readStream contents utf8Decoded lines.
+	lines size < 5 ifTrue: [ ^ anEpisodeId ].
+	date := self formatDate: (lines at: 5).
+	title := lines first.
+	^ date , ' ' , title
 ]
 
 { #category : 'as yet unclassified' }
 AIAYouTubeUI >> episodesFor: aChannelHandle [
-	| dir |
+	| dir entries |
 	aChannelHandle ifNil: [ ^ #() ].
 	dir := FileLocator root / 'Users' / 'kasper' / 'D' / 'YouTube' / aChannelHandle.
 	dir exists ifFalse: [ ^ #() ].
-	^ (dir entries
+	entries := (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])
-		collect: [ :entry | entry basename copyFrom: 1 to: entry basename size - '_meta.txt' size ]
+		collect: [ :entry | entry basename copyFrom: 1 to: entry basename size - '_meta.txt' size ].
+	^ entries sort: [ :a :b |
+		(self episodeDateFor: a forChannel: aChannelHandle) >
+		(self episodeDateFor: b forChannel: aChannelHandle) ]
 ]
 
 { #category : 'initialization' }
@@ -157,6 +194,7 @@ AIAYouTubeUI >> initializePresenters [
 	self channelTypeChangeAction.
 	self channelChangeAction.
 	self episodeChangeAction.
+	self episodeTextAction.
 ]
 
 { #category : 'initialization' }
@@ -164,27 +202,6 @@ AIAYouTubeUI >> initializeWindow: aWindowPresenter [
 	"Set the window title."
 	super initializeWindow: aWindowPresenter.
 	aWindowPresenter title: 'YouTube Browser'.
-]
-
-{ #category : 'initialization' }
-AIAYouTubeUI >> old_defaultLayout [
-	| leftPanel centerPanel rightPanel |
-	leftPanel := SpPanedLayout newVertical
-		add: channelTypeList;
-		add: channelList;
-		yourself.
-	rightPanel := SpPanedLayout newVertical
-		add: descriptionText;
-		add: episodeDetail;
-		yourself.
-	centerPanel := SpPanedLayout newHorizontal
-		add: episodeList;
-		add: rightPanel;
-		yourself.
-	^ SpPanedLayout newHorizontal
-		add: leftPanel;
-		add: centerPanel;
-		yourself.
 ]
 
 { #category : 'initialization' }

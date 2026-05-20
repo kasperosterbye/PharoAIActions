@@ -169,3 +169,33 @@ AIAYouTubeChannel >> channelEpisodeIds: channelHandle count: count [
 	result := (File named: '/tmp/yt_ids.txt') readStream contents asString lines.
 	^ {channelHandle. result}
 ]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeChannel >> channelEpisodesOnDisk: channelHandle [
+	"Return a collection of episode IDs already downloaded for this channel."
+	| dir |
+	channelHandle ifNil: [ ^ #() ].
+	dir := FileLocator root / 'Users' / 'kasper' / 'D' / 'YouTube' / channelHandle.
+	dir exists ifFalse: [ ^ #() ].
+	^ (dir entries
+		select: [ :entry | entry basename endsWith: '_meta.txt' ])
+		collect: [ :entry | entry basename copyFrom: 1 to: entry basename size - '_meta.txt' size ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeChannel >> channelUpdate: channelHandle [
+	"Fetch recent episode IDs from YouTube and download those not already on disk."
+	
+	| result youtubeIds localIds newIds episode |
+	self channelBuildInFileSystem: channelHandle.
+	result := self channelEpisodeIds: channelHandle count: 10.
+	youtubeIds := result second reject: [ :id | id trim isEmpty ].
+	localIds := self channelEpisodesOnDisk: channelHandle.
+	newIds := youtubeIds reject: [ :id | localIds includes: id ].
+	newIds isEmpty ifTrue: [ ^ self ].
+	episode := AIAYouTubeEpisode new.
+	episode channel: channelHandle.
+	newIds do: [ :id |
+		episode episodeFetch: id.
+		episode episodeMeta: id ].
+]

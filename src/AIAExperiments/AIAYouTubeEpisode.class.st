@@ -39,6 +39,11 @@ AIAYouTubeEpisode >> buildEpisodes: handler videoIDs: videoIDs [
 		 ]
 ]
 
+{ #category : 'as yet unclassified' }
+AIAYouTubeEpisode >> channel: handler [
+	channel := handler.
+]
+
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodeDownloadVtt: episodeId [
 	"Downloads the VTT subtitle file for a YouTube video using yt-dlp."
@@ -94,9 +99,8 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 	"Returns the transcript of a YouTube video, processing the VTT file to extract and clean the text."
 
 	| lines result |
-	[ self halt.
-		lines := OrderedCollection 
-			newFromArray: (File named: (self episodeVttPath: episodeId)) readStream contents asString lines.
+	[
+		lines := OrderedCollection newFromArray: (File named: (self episodeVttPath: episodeId)) readStream contents asString lines.
 		lines removeFirst: 3.
 		lines removeAllSuchThat: [ :line | line isEmpty or: [ line = ' ' ] ].
 		lines removeAllSuchThat: [ :line | (line includes: $<) not ].
@@ -105,7 +109,7 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 		1 to: lines size do: [ :line | result << ((lines at: line) copyWithRegex: '<[^>]*>' matchesReplacedWith: '') << ' ' ].
 		^ result contents copyReplaceAll: '. ' with: '.' , String cr ]
 		on: Error
-		do: [ ^ 'The id: ' , episodeId , ' could not be read' ", String lf, result contents "]
+		do: [ ^ 'The id: ' , episodeId , ' could not be read' ", String lf, result contents " ]
 ]
 
 { #category : 'episode' }
