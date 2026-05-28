@@ -65,6 +65,7 @@ AIAYouTubeChannel class >> channels [
 		'Subscription' -> self subscriptionChannels . 
 		'Novel' -> self novelChannels . 
 		'Smalltalk' -> self smalltalkChannels . 
+		'@esugboard' -> self esugboardPlaylists.
 		'Misc' -> { 'Misc' } } asOrderedCollection 
 
 ]
@@ -85,6 +86,37 @@ AIAYouTubeChannel class >> episodeFetch: youtube [
 { #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> episodeUpdateLimit [
 	^ 25 asString
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeChannel class >> esugboardPlaylists [
+	"yt-dlp --flat-playlist --print ""%(id)s %(title)s"" ""https://www.youtube.com/@esugboard/playlists"" "
+	| lists |
+	lists := 'ESUG 2025$PLJ5nSnWzQXi94CahnvTIO0F69oOdGJ3Xb
+ESUG 2024: Show Us Your Project$PLJ5nSnWzQXi89jwnBCmGPh9xG6shuvuwb
+ESUG 2024$PLJ5nSnWzQXi-uyYOZIVgXg1up_bclQc7e
+ESUG 2023$PLJ5nSnWzQXi8-w5MAt_Rf-OjNDtBME7nK
+ESUG 20222 - ShowUsYourProject$PLJ5nSnWzQXi-QLQViXAR41B0KdsSb4-nq
+ESUG 2022$PLJ5nSnWzQXi_7LGwiSa-8VwYXELwFQLBt
+ESUG 2018$PLJ5nSnWzQXi9RhA8zyKw_qelUpVVlumV9
+ESUG 2019$PLJ5nSnWzQXi8DPNpy1jCkjE4yE0WUtDP2
+ESUG 2017$PLJ5nSnWzQXi_THfKwhzxFwbXy00YTi0uv
+IWST16$PLJ5nSnWzQXi-hDyGVkyohvKqAgGxQyloy
+ESUG 2016$PLJ5nSnWzQXi8pkvGyi1ZniLcAu_J8OFRs
+ESUG 2015$PLJ5nSnWzQXi9rnk77bTf-juPt5I6-ered
+IWST 2014$PLJ5nSnWzQXi-xeYIVRM2kxPbdCtccmNcj
+ESUG 2014$PLJ5nSnWzQXi_6yyRLsMMBqG8YlwfhvB0X
+ESUG 2013$PLJ5nSnWzQXi_K_cQxWOLadk3TQTsS4Rys
+Smalltalk Misc$PL53E5DACB81D86034
+ESUG 2009$PL74E35D8EC7E756AE
+ESUG 2010$PL431285A978F581BB
+ESUG 2008$PL4A297B9019B3884D
+Deep into Smalltalk$PL843D1D545F9F52B6
+ESUG 2011$PL813665D04A2E4C0A
+Favorites$FLO-vBhaKVZf0al-ISMMPvRw
+IWST2011$PLBFA36B5236B77AD7' lines.
+	^ lists collect: [ :l | (l splitOn: $$) first ]
+	
 ]
 
 { #category : 'as yet unclassified' }
@@ -156,12 +188,11 @@ AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 
 	| path command raw |
 	path := (self channelDirectory: channelHandle) , '/description.txt'.
-	(File named: path) exists ifTrue: [ ^ self ].
+	"(File named: path) exists ifTrue: [ ^ self ]."
 	command := 'yt-dlp -I 0 --print "playlist:description" "https://www.youtube.com/@' , 
 		channelHandle , '" > /tmp/yt_channel.txt'.
 	LibC runCommand: command.
 	raw := (File named: '/tmp/yt_channel.txt') readStream contents asString.
-	self halt.
 	raw := raw select: [ :char | char asciiValue < 128 ].
 	(File named: path) writeStream
 		<< '### @' << channelHandle  << String lf << raw;
