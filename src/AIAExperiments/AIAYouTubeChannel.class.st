@@ -59,6 +59,17 @@ AIAYouTubeChannel class >> channelDictionary [
 ]
 
 { #category : 'as yet unclassified' }
+AIAYouTubeChannel class >> channels [
+	"Returns an array of YouTube channel names for novel content"
+    ^ { 
+		'Subscription' -> self subscriptionChannels . 
+		'Novel' -> self novelChannels . 
+		'Smalltalk' -> self smalltalkChannels . 
+		'Misc' -> { 'Misc' } } asOrderedCollection 
+
+]
+
+{ #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> episodeFetch: youtube [
     "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
     | episodeId |
@@ -87,14 +98,28 @@ AIAYouTubeChannel class >> novelChannels [
 ]
 
 { #category : 'as yet unclassified' }
+AIAYouTubeChannel class >> smalltalkChannels [
+	"Returns an array of YouTube channel names for novel content"
+    ^ {
+		#'Pharo-projectOrg'.
+		#esugboard. 
+		#UKSTUG.
+		#inrialearninglab.
+		#CincomSmalltalk.
+		#gtoolkit }
+
+]
+
+{ #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> subscriptionChannels [
 	"Returns an array of YouTube channel names for subscription"
-    ^ { #TLDRnewsEU. 
+    ^ { #HouseofEl.
+		  #'dw_podcasts'.
         #TwoBitDaVinci. 
         #JustHaveaThink. 
         #SabineHossenfelder. 
-        #UKSTUG. 
-        #ZirothTech. 
+        #UKSTUG.
+		  #esugboard.
         #UndecidedTechnology. 
         #parthknowsai. 
         #PracticalEngineeringChannel. 
@@ -108,7 +133,7 @@ AIAYouTubeChannel >> buildChannel: channelHandle [
 	[
 		| episodes |
 		self channelBuildInFileSystem: channelHandle.
-		episodes := self channelEpisodeIds: channelHandle count: 10.
+		episodes := self channelEpisodeIds: channelHandle count: 20.
 		AIAYouTubeEpisode new buildEpisodes: episodes first videoIDs: episodes second ] fork
 ]
 
@@ -125,7 +150,7 @@ AIAYouTubeChannel >> channelDirectory: channelHandle [
 	^ self class channelDictionary , channelHandle
 ]
 
-{ #category : 'channel' }
+{ #category : 'yt-dlp' }
 AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 	"Ensures the channel description file exists, creating it if necessary."
 
@@ -158,7 +183,7 @@ AIAYouTubeChannel >> channelEpisodeIds: channelHandle [
 
 ]
 
-{ #category : 'channel' }
+{ #category : 'yt-dlp' }
 AIAYouTubeChannel >> channelEpisodeIds: channelHandle count: count [
 	"Returns a collection of episode IDs for a specified YouTube channel, limited to a specified count."
 	| yt  result |
@@ -188,7 +213,7 @@ AIAYouTubeChannel >> channelUpdate: channelHandle [
 	
 	| result youtubeIds localIds newIds episode |
 	self channelBuildInFileSystem: channelHandle.
-	result := self channelEpisodeIds: channelHandle count: 10.
+	result := self channelEpisodeIds: channelHandle count: 20.
 	youtubeIds := result second reject: [ :id | id trim isEmpty ].
 	localIds := self channelEpisodesOnDisk: channelHandle.
 	newIds := youtubeIds reject: [ :id | localIds includes: id ].

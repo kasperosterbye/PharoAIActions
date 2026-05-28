@@ -16,6 +16,8 @@ Class {
 { #category : 'instance creation' }
 AIAYouTubeUI class >> open [
 	"Open the YouTube browser UI."
+	
+	<example>
 	^ self new open
 ]
 
@@ -48,16 +50,19 @@ AIAYouTubeUI >> channelTypeChangeAction [
 
 { #category : 'initialization' }
 AIAYouTubeUI >> defaultLayout [
-	| leftPanel1 leftPanel2 leftPanel  |
-	leftPanel1 := SpPanedLayout newHorizontal 
-		add: channelTypeList;
-		add: channelList;
+	| topPanel leftPanel |
+	topPanel := SpPanedLayout newVertical
+		add: (SpPanedLayout newHorizontal
+			add: channelTypeList;
+			add: channelList;
+			yourself);
+		add: descriptionText;
+		positionOfSlider: 200;
 		yourself.
-	leftPanel2 := SpPanedLayout newVertical
-		add: descriptionText ;
+	leftPanel := SpPanedLayout newVertical
+		add: topPanel;
 		add: episodeList;
 		yourself.
-	leftPanel := SpPanedLayout newVertical add: leftPanel1 ; add: leftPanel2; yourself.
 	^ SpPanedLayout newHorizontal
 		add: leftPanel;
 		add: episodeDetail;
@@ -78,8 +83,8 @@ AIAYouTubeUI >> descriptionFor: aChannelHandle [
 AIAYouTubeUI >> episodeChangeAction [
 	episodeList whenSelectionChangedDo: [ :selection |
 		| selected |
-		selected := selection selectedItem.
-		selected ifNotNil: [ self showEpisode: selected ] ].
+		selected := selection selectedItems.
+		selected ifNotNil: [ self showEpisodes: selected ] ].
 	episodeList display: [ :episodeId |
 		self episodeTitleFor: episodeId forChannel: channelList selectedItem ].
 	episodeList whenActivatedDo: [ :selection |
@@ -108,7 +113,7 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 	details := 
 		(self episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle),
 		(self episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle).
-	^ Microdown asRichText: details
+	^ "Microdown asRichText:" details
 ]
 
 { #category : 'initialization' }
@@ -120,7 +125,8 @@ AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
 	file exists ifFalse: [ ^ 'Not loaded yet' ].
 	lines := file readStream contents utf8Decoded lines.
 	lines size < 5 ifTrue: [ ^ 'Meta incomplete' ].
-	title := '# ', lines first.
+	title := '# Channel: ', aChannelHandle, String lf.
+	title := title, '## Episode: ', lines first.
 	date  := '> ', (self formatDate: lines fifth).
 	desc := ' ', lines sixth.
 	details := title , String lf , date , String lf , String lf , desc.
@@ -130,7 +136,7 @@ AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
 { #category : 'as yet unclassified' }
 AIAYouTubeUI >> episodeTextAction [
 	episodeDetail whenSubmitDo: [ :a | 
-		AIAPresenter onText: ('What is the essence of the descrition I gave you. Please let your response be at most 10 line'
+		AIAPresenter onText: ('What is the essence of the descrition I gave you. Please let your response be at most 10 line. Start the title with the Cannel name and Episode Name'
 		q0: [ a ])]
 ]
 
@@ -142,7 +148,7 @@ AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 	file := File named: text.
 	file exists ifFalse: [ ^ '' ].
 	lines := file readStream contents utf8Decoded.
-	^ String lf, String lf, '## Episode contents', String lf, '```text', String lf, lines, String lf, '```'
+	^ String lf, String lf, '### Episode contents', String lf, '```text', String lf, lines, String lf, '```'
 ]
 
 { #category : 'as yet unclassified' }
@@ -188,9 +194,10 @@ AIAYouTubeUI >> initializePresenters [
 	channelTypeList := self newList.
 	channelList := self newList.
 	episodeList := self newList.
+	episodeList beMultipleSelection.
 	descriptionText := self newText.
 	episodeDetail := self newText.
-	channelTypeList items: #( 'Subscription' 'Novel' ) asOrderedCollection .
+	channelTypeList items: AIAYouTubeChannel channels asOrderedDictionary keys.
 	self channelTypeChangeAction.
 	self channelChangeAction.
 	self episodeChangeAction.
@@ -216,9 +223,7 @@ AIAYouTubeUI >> showChannel: aChannelHandle [
 AIAYouTubeUI >> showChannelsForType: aTypeString [
 	| channels |
 	aTypeString ifNil: [ ^ self ].
-	channels := aTypeString = 'Subscription'
-		ifTrue: [ AIAYouTubeChannel subscriptionChannels ]
-		ifFalse: [ AIAYouTubeChannel novelChannels ].
+	channels := AIAYouTubeChannel channels asDictionary at: aTypeString .
 	channelList items: channels.
 	descriptionText text: ''.
 	episodeList items: #().
@@ -229,4 +234,15 @@ AIAYouTubeUI >> showChannelsForType: aTypeString [
 AIAYouTubeUI >> showEpisode: anEpisodeId [
 	anEpisodeId ifNil: [ ^ self ].
 	episodeDetail text: (self episodeDetailFor: anEpisodeId forChannel: channelList selectedItem).
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> showEpisodes: anEpisodeIdCollection [
+	| combined |
+	combined := anEpisodeIdCollection 
+		inject: '' 
+		into: [ :acc :id |
+			acc , String lf, String lf,
+			(self episodeDetailFor: id forChannel: channelList selectedItem) , String lf ].
+	episodeDetail text: (Microdown asRichText: combined).
 ]
