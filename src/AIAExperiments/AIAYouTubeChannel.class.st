@@ -83,6 +83,11 @@ AIAYouTubeChannel class >> episodeFetch: youtube [
 ]
 
 { #category : 'as yet unclassified' }
+AIAYouTubeChannel class >> episodeUpdateLimit [
+	^ 25 asString
+]
+
+{ #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> novelChannels [
 	"Returns an array of YouTube channel names for novel content"
     ^ { #DarkspaceAudio. 
@@ -127,14 +132,9 @@ AIAYouTubeChannel class >> subscriptionChannels [
         #SeethePattern }
 ]
 
-{ #category : 'channel' }
-AIAYouTubeChannel >> buildChannel: channelHandle [
-
-	[
-		| episodes |
-		self channelBuildInFileSystem: channelHandle.
-		episodes := self channelEpisodeIds: channelHandle count: 20.
-		AIAYouTubeEpisode new buildEpisodes: episodes first videoIDs: episodes second ] fork
+{ #category : 'as yet unclassified' }
+AIAYouTubeChannel class >> transcriptLanguages [ 
+	^ { 'en'. 'fr'. 'es'. 'pt' }
 ]
 
 { #category : 'channel' }
@@ -161,6 +161,7 @@ AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 		channelHandle , '" > /tmp/yt_channel.txt'.
 	LibC runCommand: command.
 	raw := (File named: '/tmp/yt_channel.txt') readStream contents asString.
+	self halt.
 	raw := raw select: [ :char | char asciiValue < 128 ].
 	(File named: path) writeStream
 		<< '### @' << channelHandle  << String lf << raw;
@@ -176,11 +177,15 @@ AIAYouTubeChannel >> channelEnsureDirectory: channelHandle [
 		LibC runCommand: 'mkdir -p "' , dir , '"' ]
 ]
 
-{ #category : 'channel' }
+{ #category : 'yt-dlp' }
 AIAYouTubeChannel >> channelEpisodeIds: channelHandle [
-	"Returns a collection of episode IDs for a specified YouTube channel."
-    ^ self channelEpisodeIds: channelHandle count: 10
-
+	"Returns a collection of episode IDs for a specified YouTube channel, limited to a specified count."
+	| yt  result |
+	yt := 'yt-dlp --flat-playlist --playlist-end ', AIAYouTubeChannel episodeUpdateLimit,
+      ' --print "%(id)s" "https://www.youtube.com/@', channelHandle, '/videos" > /tmp/yt_ids.txt'.
+	LibC runCommand: yt.
+	result := (File named: '/tmp/yt_ids.txt') readStream contents asString lines.
+	^ {channelHandle. result}
 ]
 
 { #category : 'yt-dlp' }
@@ -189,31 +194,30 @@ AIAYouTubeChannel >> channelEpisodeIds: channelHandle count: count [
 	| yt  result |
 	yt := 'yt-dlp --flat-playlist --playlist-end ', count asString,
       ' --print "%(id)s" "https://www.youtube.com/@', channelHandle, '/videos" > /tmp/yt_ids.txt'.
-	Transcript << 'YT: ' << yt << String lf.
 	LibC runCommand: yt.
 	result := (File named: '/tmp/yt_ids.txt') readStream contents asString lines.
 	^ {channelHandle. result}
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'channel' }
 AIAYouTubeChannel >> channelEpisodesOnDisk: channelHandle [
 	"Return a collection of episode IDs already downloaded for this channel."
 	| dir |
 	channelHandle ifNil: [ ^ #() ].
-	dir := FileLocator root / 'Users' / 'kasper' / 'D' / 'YouTube' / channelHandle.
+	dir := FileReference / (self channelDirectory: channelHandle).
 	dir exists ifFalse: [ ^ #() ].
 	^ (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])
 		collect: [ :entry | entry basename copyFrom: 1 to: entry basename size - '_meta.txt' size ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'channel' }
 AIAYouTubeChannel >> channelUpdate: channelHandle [
 	"Fetch recent episode IDs from YouTube and download those not already on disk."
 	
 	| result youtubeIds localIds newIds episode |
 	self channelBuildInFileSystem: channelHandle.
-	result := self channelEpisodeIds: channelHandle count: 20.
+	result := self channelEpisodeIds: channelHandle.
 	youtubeIds := result second reject: [ :id | id trim isEmpty ].
 	localIds := self channelEpisodesOnDisk: channelHandle.
 	newIds := youtubeIds reject: [ :id | localIds includes: id ].

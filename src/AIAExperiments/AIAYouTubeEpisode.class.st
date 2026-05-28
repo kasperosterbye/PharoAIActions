@@ -1,57 +1,162 @@
 "
-# Class Comment for AIAYouTubeEpisode
+# AIAYouTubeEpisode
 
-## Purpose and Role in the System
+`AIAYouTubeEpisode` represents the workflow for fetching, normalising, and storing transcript and metadata files for a single YouTube episode/video.
 
-The `AIAYouTubeEpisode` class is designed to facilitate the fetching, processing, and storage of YouTube video transcripts and metadata. It serves as a bridge between YouTube content and local storage, enabling users to download subtitles, extract transcripts, and manage video metadata efficiently. This class is particularly useful for applications that require automated processing of YouTube video content, such as transcript analysis, content summarisation, or archival purposes.
+The class is intended to be used as part of a YouTube ingestion pipeline where a channel has already been identified and local storage conventions are managed elsewhere. An instance is configured with a channel name, then asked to fetch a transcript or metadata for a YouTube video id. The class delegates the actual download work to `yt-dlp`, reads the resulting subtitle file from disk, converts the VTT subtitle content into plain transcript text, and writes the final result into the configured channel directory.
 
-## Main Collaborators or Dependencies
+## Purpose and role in the system
 
-The `AIAYouTubeEpisode` class collaborates with external tools and libraries to achieve its functionality:
+The main responsibility of `AIAYouTubeEpisode` is to turn a YouTube video id into local artefacts:
 
-1. **yt-dlp**: A command-line program used to download video subtitles and metadata from YouTube. The class utilises `yt-dlp` to fetch subtitles in VTT format and extract metadata.
-2. **LibC**: A library used to execute shell commands from within Pharo. The class uses `LibC` to run `yt-dlp` commands and manage file operations.
-3. **File System**: The class interacts with the local file system to store and retrieve downloaded subtitles, transcripts, and metadata.
+- a cleaned plain-text transcript file, named after the episode id;
+- optionally, a metadata file containing selected fields from `yt-dlp`;
+- temporary VTT subtitle files, which are downloaded and then removed after successful transcript extraction.
 
-## Important Invariants or Design Constraints
+This class is useful when YouTube videos are treated as source material for later processing, such as:
 
-1. **File Paths**: The class relies on predefined file paths for storing and retrieving subtitles, transcripts, and metadata. These paths are hardcoded and must be accessible and writable by the application.
-2. **Subtitle Language**: The class is specifically designed to download English subtitles (`--sub-lang en`). If subtitles in other languages are required, the class would need to be modified.
-3. **Error Handling**: The class includes basic error handling to manage cases where the subtitle file cannot be read or processed. However, more robust error handling mechanisms could be implemented for production use.
+- semantic indexing;
+- summarisation;
+- large language model prompting;
+- archival of talks, interviews, podcasts, lectures, or narrated material;
+- building a local corpus of channel episodes.
 
-## Illustrative Usage Examples
+`AIAYouTubeEpisode` does not model the full YouTube domain. It is deliberately procedural and file-oriented: given a channel and an episode id, it attempts to obtain subtitles, clean them, and persist the result. Higher-level concerns such as discovering videos, maintaining channel catalogues, scheduling downloads, or analysing transcripts are expected to live elsewhere.
 
-### Example 1: Fetching and Processing a YouTube Video Transcript
+## Main collaborators and dependencies
+
+### `AIAYouTubeChannel`
+
+`AIAYouTubeEpisode` relies on `AIAYouTubeChannel` for channel-wide configuration:
+
+- `AIAYouTubeChannel channelDictionary` supplies the base directory in which downloaded artefacts are stored.
+- `AIAYouTubeChannel transcriptLanguages` supplies the ordered list of subtitle languages to try when fetching transcripts.
+
+The order of `transcriptLanguages` is significant. `episodeFetch:` tries each language in sequence and returns as soon as one language produces a readable transcript.
+
+### `yt-dlp`
+
+The class shells out to `yt-dlp` to communicate with YouTube.
+
+For transcript fetching, it uses `yt-dlp` with:
+
+- `--write-auto-sub`;
+- `--skip-download`;
+- `--sub-lang <language>`;
+- an output template based on the YouTube video id.
+
+For metadata fetching, it uses `yt-dlp --print` to extract selected fields and redirect them into a metadata text file.
+
+Because `yt-dlp` is an external executable, it must be installed and available on the operating system path used by the Pharo image.
+
+### `LibC`
+
+Shell commands are executed through `LibC runCommand:`. The class assumes that command-line execution is permitted in the host environment and that the Pharo image has suitable access to the filesystem and the `yt-dlp` executable.
+
+### Filesystem
+
+The class is tightly coupled to the local filesystem. It reads, writes, and deletes files using the paths derived from `AIAYouTubeChannel channelDictionary`, the current `channel`, the episode id, and the current subtitle `language`.
+
+The expected output files are:
+
+- `<channel-directory>/<episodeId>.txt` for the cleaned transcript;
+- `<channel-directory>/<episodeId>_meta.txt` for metadata;
+- `<base-directory>/<episodeId>.<language>.vtt` as the temporary VTT subtitle file.
+
+## Important invariants and design constraints
+
+### The `channel` must be set before fetching or writing episode files
+
+An instance should be configured with `channel:` before calling methods that write channel-specific files. The channel is used to construct the transcript and metadata destination directory.
+
+If `channel` is left as its default empty string, generated paths may point at the base channel dictionary rather than a specific channel subdirectory.
+
+### The `language` slot is transient workflow state
+
+The `language` instance variable is set internally while `episodeFetch:` iterates over `AIAYouTubeChannel transcriptLanguages`.
+
+It determines the VTT filename expected by `episodeTranscript:` and `episodeVttPath:`. It should be treated as internal state of the fetching process rather than as a stable public property of the episode.
+
+### Episode ids are expected to be YouTube video ids
+
+Most instance-side methods expect a plain YouTube video id such as `jrP7buPo2yA`, not a full YouTube URL.
+
+The class-side `episodeFetch:` method contains convenience logic for extracting the `v=` parameter from a YouTube URL, but the instance protocol is primarily id-based.
+
+### The class assumes a particular VTT shape
+
+`episodeTranscript:` performs a simple transformation over the downloaded VTT file:
+
+- it removes the first three lines;
+- it removes empty or blank lines;
+- it keeps only lines containing markup;
+- it removes alignment metadata lines;
+- it strips HTML/XML-like tags;
+- it inserts line breaks after sentence-ending full stops.
+
+This works for the VTT structure produced by `yt-dlp` for many YouTube subtitles, especially auto-generated subtitles, but it is not a general-purpose VTT parser. If YouTube changes its subtitle format, or if manually authored subtitles differ significantly, the extraction may need to be revised.
+
+### Failure is represented as transcript text
+
+When transcript extraction fails, the class returns and writes a string beginning with:
+
+`***YouTubeEpisode Error***`
+
+This means callers should check for this prefix if they need to distinguish a successful transcript from an error report. The current design favours leaving a diagnostic artefact on disk over raising an exception to the caller.
+
+### Temporary VTT files are deleted only after successful extraction
+
+When `episodeFetch:` successfully extracts a transcript, it deletes the downloaded VTT file. If all language attempts fail, temporary VTT files may remain, depending on where the failure occurred.
+
+### Directories are assumed to exist
+
+The class writes to paths derived from the channel dictionary and channel name. It does not create missing directories. The caller or channel-management layer should ensure that the target directory structure exists and is writable.
+
+### Shell command construction assumes trusted inputs
+
+The command strings are built by concatenating the episode id, language, and paths into shell commands. These values should therefore be treated as trusted or sanitised before use. In particular, arbitrary user-supplied strings should not be passed directly as episode ids or channel names in a security-sensitive environment.
+
+## Illustrative usage examples
+
+### Fetch and store the transcript for a known video id
 
 ```smalltalk
-| episode |
+| episode transcript |
 episode := AIAYouTubeEpisode new.
-episode channel: 'exampleChannel'.
-episode episodeFetch: 'jrP7buPo2yA'.
+episode channel: 'Computerphile'.
+
+transcript := episode episodeFetch: 'jrP7buPo2yA'.
 ```
 
-This example demonstrates how to create an instance of `AIAYouTubeEpisode`, set the channel name, and fetch the transcript for a YouTube video with the specified episode ID. The transcript is downloaded, processed, and saved to the local file system.
+This attempts to download subtitles for the video id `jrP7buPo2yA`, trying the languages configured by `AIAYouTubeChannel transcriptLanguages` in order. The first successfully extracted transcript is written to the channel directory as:
 
-### Example 2: Fetching Metadata for a YouTube Video
+```text
+<channelDictionary>/Computerphile/jrP7buPo2yA.txt
+```
+
+The returned value is the transcript text, or an error string beginning with `***YouTubeEpisode Error***` if no configured language could be read.
+
+### Fetch transcript and metadata for an episode
 
 ```smalltalk
 | episode |
 episode := AIAYouTubeEpisode new.
-episode channel: 'exampleChannel'.
+episode channel: 'Computerphile'.
+
+episode episodeFetch: 'jrP7buPo2yA'.
 episode episodeMeta: 'jrP7buPo2yA'.
 ```
 
-This example shows how to fetch and save metadata for a YouTube video. The metadata includes details such as the video title, uploader ID, duration, upload date, and description. The metadata is saved to a file in the specified directory.
+This stores both the cleaned transcript and a metadata file for the same YouTube video. The metadata file contains selected fields printed by `yt-dlp`, including the title, uploader id, video id, duration, upload date, and description.
 
-## Conclusion
-
-The `AIAYouTubeEpisode` class provides a robust and efficient way to manage YouTube video content within a Pharo application. By leveraging external tools like `yt-dlp` and interacting with the local file system, it enables users to download, process, and store video transcripts and metadata seamlessly. The class is particularly useful for applications that require automated processing of YouTube content, such as transcript analysis, content summarisation, or archival purposes.
+Use this pattern when building a local archive where each episode should have both human-readable transcript content and basic descriptive metadata available for later indexing or analysis.
 "
 Class {
 	#name : 'AIAYouTubeEpisode',
 	#superclass : 'Object',
 	#instVars : [
-		'channel'
+		'channel',
+		'language'
 	],
 	#category : 'AIAExperiments-Novels',
 	#package : 'AIAExperiments',
@@ -61,6 +166,7 @@ Class {
 { #category : 'as yet unclassified' }
 AIAYouTubeEpisode class >> channelDictionary [
 	"Returns the directory path for storing YouTube channel data"
+	self error.
     ^ '/Users/kasper/D/YouTube/'
 ]
 
@@ -88,17 +194,6 @@ AIAYouTubeEpisode class >> episodeId: youtube [
 ]
 
 { #category : 'episode' }
-AIAYouTubeEpisode >> buildEpisodes: handler videoIDs: videoIDs [
-
-	channel := handler.
-	videoIDs do: [ :id |
-		Transcript << channel << ' : ' << id << String lf.
-		self episodeFetch: id.
-		self episodeMeta: id.
-		 ]
-]
-
-{ #category : 'episode' }
 AIAYouTubeEpisode >> channel: handler [
 	channel := handler.
 ]
@@ -107,34 +202,90 @@ AIAYouTubeEpisode >> channel: handler [
 AIAYouTubeEpisode >> episodeDownloadVtt: episodeId [
 	"Downloads the VTT subtitle file for a YouTube video using yt-dlp."
     | command |
-    command := 'yt-dlp --write-auto-sub --skip-download --sub-lang en -o "/Users/kasper/Downloads/YT_%(id)s.%(ext)s" "https://www.youtube.com/watch?v=' , episodeId , '"'.
-    LibC runCommand: command
+    command := 'yt-dlp --write-auto-sub --skip-download --sub-lang ', language,  
+		' -o "', AIAYouTubeChannel channelDictionary,  
+		'%(id)s.%(ext)s" "https://www.youtube.com/watch?v=' , episodeId , '"'.
+    LibC runCommand: command.
 
 ]
 
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodeFetch: episodeId [
 	"Fetches and processes the transcript for a YouTube video using its episode ID."
+
+	| transcript |
+	(self episodeHasAutoCaptions: episodeId )
+		ifTrue: [
+	AIAYouTubeChannel transcriptLanguages
+		detect: [ :lang |
+				language := lang.
+				self episodeDownloadVtt: episodeId.
+				transcript := self episodeTranscript: episodeId.
+				(transcript beginsWith: '***YouTubeEpisode Error***') not ]
+		ifNone: [ ].
+	(File named: (self episodeVttPath: episodeId)) delete]
+		ifFalse: [ transcript := 'There is no transcript text available' ].
+	(File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
+		nextPutAll: transcript;
+		close
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeFetch_new: episodeId [
+    "Fetches and processes the transcript for a YouTube video using its episode ID."
     | transcript |
-    self episodeDownloadVtt: episodeId.
-    transcript := self episodeTranscript: episodeId.
-    (File named: (self episodePath: episodeId), episodeId, '.txt') writeStream 
-        nextPutAll: transcript;
-        close.
+    AIAYouTubeChannel transcriptLanguages
+        detect: [ :lang |
+            language := lang.
+            self episodeDownloadVtt: episodeId.
+            transcript := self episodeTranscript: episodeId.
+            (transcript beginsWith: '***YouTubeEpisode Error***') not ]
+        ifNone: [ ].
     (File named: (self episodeVttPath: episodeId)) delete.
-    ^ transcript
+    (File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
+                nextPutAll: transcript;
+                close.
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeFetch_old: episodeId [
+    "Fetches and processes the transcript for a YouTube video using its episode ID."
+    | transcript |
+    AIAYouTubeChannel transcriptLanguages do: [ :lang |
+		language := lang.
+        self episodeDownloadVtt: episodeId.
+        transcript := self episodeTranscript: episodeId.
+        (transcript beginsWith: '***YouTubeEpisode Error***') ifFalse: [
+            (File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
+                nextPutAll: transcript;
+                close.
+            (File named: (self episodeVttPath: episodeId)) delete.
+            ^ transcript ] ].
+	 (File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
+                nextPutAll: transcript;
+                close.
+    ^ transcript 
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeEpisode >> episodeHasAutoCaptions: episodeId [
+    | command result |
+    command := 'yt-dlp --list-subs "https://www.youtube.com/watch?v=' , episodeId , '" > /tmp/yt_subs.txt'.
+    LibC runCommand: command.
+    result := (File named: '/tmp/yt_subs.txt') readStream contents asString.
+    ^ (result includesSubstring: 'has no automatic captions') not
 ]
 
 { #category : 'yt-dlp' }
 AIAYouTubeEpisode >> episodeMeta: episodeId [
-	"Returns metadata for a YouTube video using its episode ID."
+	"Fetches video metadata using yt dlp and saves it to a file for the specified episode"
 
 	| items command  |
 	items := String lf join: { '%(title)s'. '%(uploader_id)s'. '%(id)s'. 
 		'%(duration)s'. '%(upload_date)s'. '%(description)s' }.
 	command := 'yt-dlp --skip-download --print "' , items , 
 		'" "https://www.youtube.com/watch?v=' , episodeId, 
-		'" > ', self episodePath, episodeId asString,  '_meta.txt'.
+		'" > ', self episodePath , episodeId asString,  '_meta.txt'.
 	LibC runCommand: command.
 	
 ]
@@ -142,14 +293,14 @@ AIAYouTubeEpisode >> episodeMeta: episodeId [
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodePath [
 	"Returns the file path for the specified episode ID."
-    ^ '/Users/kasper/D/YouTube/', channel, '/'
+    ^ AIAYouTubeChannel channelDictionary , channel, '/'
 
 ]
 
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodePath: episodeId [
 	"Returns the file path for the specified episode ID."
-    ^ '/Users/kasper/D/YouTube/', channel, '/'
+    ^ AIAYouTubeChannel channelDictionary , channel, '/'
 
 ]
 
@@ -158,7 +309,7 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 	"Returns the transcript of a YouTube video, processing the VTT file to extract and clean the text."
 
 	| lines result |
-	[
+	[ 
 		lines := OrderedCollection newFromArray: (File named: (self episodeVttPath: episodeId)) readStream contents asString lines.
 		lines removeFirst: 3.
 		lines removeAllSuchThat: [ :line | line isEmpty or: [ line = ' ' ] ].
@@ -168,13 +319,13 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 		1 to: lines size do: [ :line | result << ((lines at: line) copyWithRegex: '<[^>]*>' matchesReplacedWith: '') << ' ' ].
 		^ result contents copyReplaceAll: '. ' with: '.' , String cr ]
 		on: Error
-		do: [ ^ 'The id: ' , episodeId , ' could not be read' ", String lf, result contents " ]
+		do: [ ^ '***YouTubeEpisode Error*** The id: ' , episodeId , ' could not be read' ]
 ]
 
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodeVttPath: episodeId [
 	"Returns the file path for the VTT subtitle file of a YouTube video."
-    ^ '/Users/kasper/Downloads/YT_' , episodeId , '.en.vtt'
+    ^ AIAYouTubeChannel channelDictionary , episodeId , '.', language , '.vtt'
 
 ]
 
