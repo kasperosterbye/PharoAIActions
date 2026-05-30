@@ -1,3 +1,55 @@
+"
+# Class Comment for AIASWMreport
+
+## Purpose and Role in the System
+
+The `AIASWMreport` class is designed to facilitate the automated evaluation and synthesis of scientific papers using multiple AI models. Its primary role is to generate comprehensive, multi-perspective analyses of research papers by leveraging various AI models to provide strengths, weaknesses, and missing areas. This class is particularly useful in academic and research settings where there is a need for objective, data-driven evaluations of scientific literature.
+
+## Main Collaborators or Dependencies
+
+The `AIASWMreport` class collaborates with several other classes and external APIs:
+
+- **AIAHistory**: This class is used to manage the interaction history with AI models, storing prompts, responses, and other relevant information.
+- **AI Models**: The class interacts with various AI models such as `Grok0Api`, `Mistral0Api`, `Together0Api`, and `OpenAI0Api` to generate evaluations of the papers.
+- **FileSystem**: The class reads paper content from files stored in the file system.
+- **AIAPresenter**: This class is used to present the generated Markdown reports.
+
+## Important Invariants or Design Constraints
+
+1. **Model Configuration**: The class must be initialized with a collection of AI models configured for testing. These models should be capable of generating coherent and relevant evaluations of scientific papers.
+2. **Paper Content**: The class requires the content of the paper to be provided in a readable format. This content is used as the basis for generating evaluations.
+3. **Response Synthesis**: The class must be able to synthesize responses from multiple AI models into a cohesive and comprehensive report. This involves combining individual evaluations into a unified analysis.
+
+## Illustrative Usage Examples
+
+### Example 1: Generating a Comprehensive Report
+
+```smalltalk
+| report paper |
+paper := 'Paper1.txt'.
+report := AIASWMreport new.
+report forPaper: paper.
+```
+
+In this example, the `AIASWMreport` instance is used to generate a comprehensive report for the specified paper. The `forPaper:` method orchestrates the entire evaluation process, including generating initial evaluations, refining responses, and synthesizing the final report.
+
+### Example 2: Initializing the Class with Custom Models
+
+```smalltalk
+| report models |
+models := {
+    Grok0Api newOnModel: 1.
+    Mistral0Api newOnModel: 1.
+    Together0Api newOnModel: 3.
+}.
+report := AIASWMreport new.
+report models: models.
+```
+
+In this example, the `AIASWMreport` class is initialized with a custom collection of AI models. This allows for flexibility in configuring the models used for generating evaluations, enabling the use of specific models tailored to particular requirements.
+
+By following these guidelines and examples, users can effectively utilize the `AIASWMreport` class to generate comprehensive, multi-perspective analyses of scientific papers.
+"
 Class {
 	#name : 'AIASWMreport',
 	#superclass : 'Object',
@@ -16,6 +68,17 @@ Class {
 	#package : 'AIAZipArchive',
 	#tag : 'ExperimentsResearch'
 }
+
+{ #category : 'as yet unclassified' }
+AIASWMreport class >> finalApi [
+	^ ClaudeApi newOnModel: 4
+	"^ MistralApi newOnModel: 1"
+]
+
+{ #category : 'as yet unclassified' }
+AIASWMreport class >> includeAll [
+	^ false
+]
 
 { #category : 'initialization' }
 AIASWMreport class >> initializeRTResults [
@@ -41,14 +104,25 @@ AIASWMreport class >> prompts [
 { #category : 'default-settings' }
 AIASWMreport class >> testModels [
 	^ {
-		  Grok0Api newOnModel: 1 "grok-code-fast-1".
-		  Grok0Api newOnModel: 2 "Grok-4-fast-reasoning".
-		  Mistral0Api newOnModel: 1 "codestral-latest".
-		  Mistral0Api newOnModel: 3 "devstral-medium-2507".
-		  Together0Api newOnModel: 3 "Qwen3-235B-A22B" .
-		  Together0Api newOnModel: 4 "DeepSeek-V3.1".
-		  OpenAI0Api newOnModel: 1 "gpt-5.1" .
-		  "GeminiApi newOnModel: 2 ""gemini-2.5-pro"" "}
+		  GrokApi newOnModel: 2 "grok-code-fast-1".
+		  TogetherApi newOnModel: 2 "Qwen3-235B-A22B" .
+		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
+		  OpenAIApi newOnModel: 3 "gpt-5.1" }
+]
+
+{ #category : 'default-settings' }
+AIASWMreport class >> testModelsAll [
+	^ {
+		  GrokApi newOnModel: 2 "grok-code-fast-1".
+		  TogetherApi newOnModel: 2 "Qwen3-235B-A22B" .
+		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
+		  OpenAIApi newOnModel: 3 "gpt-5.1" }
+]
+
+{ #category : 'default-settings' }
+AIASWMreport class >> testModelsOne [
+	^ {
+		  MistralApi newOnModel: 1 "codestral-latest".}
 ]
 
 { #category : 'markdown' }
@@ -68,7 +142,7 @@ AIASWMreport >> getBiblatex [
 	| bib |
 	bib := AIAHistory new.
 	bib 
-		api: (Mistral0Api newOnModel: 1);
+		api: (MistralApi newOnModel: 1);
 		addPreHistory: originalPaperHistory;
 		user: 'Please give the complete biblatex text for the background paper; just return the bibtex, no explanation.';
 	 getResponse.
@@ -102,7 +176,7 @@ AIASWMreport >> getFinalResponses [
 	"The method generates a consolidated evaluation of a paper by synthesizing responses from multiple AI models. It uses a high-level model (Claude) to combine and refine all previous evaluations into a final comprehensive assessment."
 
 	finalResponse := AIAHistory new.
-	finalResponse api: (Claude0Api newOnModel: 1).
+	finalResponse api: self class finalApi.
 	[ :job |
 		job interruptBlock: [ ^ self ].
 		job title: 'Doing level 3 - Finalizing '.
@@ -135,12 +209,12 @@ AIASWMreport >> getPaperHistory: paper [
 	"Method reads paper content, creates history object with Mistral API, and extracts title and authors in Markdown format"
 	| paperBackground |
 	paperBackground := (FileSystem disk root / 'Users' / 'kasper' 
-		/ 'D' / 'AIExperiments' / 'SWM' / paper) readStream contents trimBoth.
+		/ 'D' / 'AI-Experiments' / 'SWM' / paper) readStream contents trimBoth.
 	originalPaperHistory := AIAHistory new.
 	originalPaperHistory 
-		api: (Mistral0Api newOnModel: 1);
+		api: (MistralApi newOnModel: 1);
 		background: paperBackground ;
-		user: 'What is the title of the paper, and who wrote it';
+		user: 'What is the title of the paper, and who wrote it.';
 		responseType: 'Your response should be written in Markdown. Your response should be smaller than header three `###`';
 		getResponse.
 	^ originalPaperHistory 
@@ -154,7 +228,7 @@ AIASWMreport >> getPaperSummary [
 	| summary |
 	summary := AIAHistory new.
 	summary 
-		api: (Mistral0Api newOnModel: 1);
+		api: (MistralApi newOnModel: 1);
 		addPreHistory: originalPaperHistory;
 		user: '[responsetype] please answer in Markdown';
 		user: 'Please give a 20 line summary of the paper. Include paper name and its authors';
@@ -234,13 +308,14 @@ AIASWMreport >> markdownReport [
 
 		MarkDown := WriteStream on: ''.
 		MarkDown << '# Paper judgement ' << Date today asString << String cr << String cr << title << String cr << String cr << overview
-		<< String cr << String cr << '```' << String cr << bib << String cr << '```' << String cr << String cr
+		<< String cr << String cr << '```text' << String cr << bib << String cr << '```' << String cr << String cr
 		<< '### Best, weak, and missing summary' << String cr << String cr << finalResponse messages last value << String cr
 		<< String cr.
-		markdownJob title: 'Building Level 1'.
-		MarkDown << self markdownResposeHistories.
-		markdownJob title: 'Building Level 2'.
-		MarkDown << self markdownRefinedResponses ] asJob run.
+		self class includeAll ifTrue: [
+			markdownJob title: 'Building Level 1'.
+			MarkDown << self markdownResposeHistories.
+			markdownJob title: 'Building Level 2'.
+			MarkDown << self markdownRefinedResponses ]] asJob run.
 	AIAPresenter onText: MarkDown contents.
 	^ MarkDown contents
 ]
@@ -263,11 +338,4 @@ single-perspective analyses.' << String cr << String cr.
 		
 		 ].
 	^ MarkDown contents
-]
-
-{ #category : 'markdown' }
-AIASWMreport >> modelsList [
-	"The method retrieves the list of AI models configured for testing in the AIASWMreport class."
-self error. "DELETE ME if not used..."
-	^ self class testModels
 ]
