@@ -19,8 +19,8 @@ Class {
 
 { #category : 'as yet unclassified' }
 AIASWMreport class >> finalApi [
-	^ ClaudeApi newOnModel: 4
-	"^ MistralApi newOnModel: 1"
+	"^ ClaudeApi newOnModel: 4"
+	^ MistralApi newOnModel: 1
 ]
 
 { #category : 'as yet unclassified' }
@@ -32,6 +32,11 @@ AIASWMreport class >> includeAll [
 AIASWMreport class >> initializeRTResults [
 	"Initializes the RTResults collection for storing response data"
 	<example>
+]
+
+{ #category : 'default-settings' }
+AIASWMreport class >> last [
+	AIAPresenter onText: MarkDown contents
 ]
 
 { #category : 'default-settings' }
@@ -52,10 +57,7 @@ AIASWMreport class >> prompts [
 { #category : 'default-settings' }
 AIASWMreport class >> testModels [
 	^ {
-		  GrokApi newOnModel: 2 "grok-code-fast-1".
-		  TogetherApi newOnModel: 2 "Qwen3-235B-A22B" .
-		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
-		  OpenAIApi newOnModel: 3 "gpt-5.1" }
+		  MistralApi newOnModel: 1 "codestral-latest".}
 ]
 
 { #category : 'default-settings' }
@@ -75,13 +77,16 @@ AIASWMreport class >> testModelsOne [
 
 { #category : 'markdown' }
 AIASWMreport >> forPaper: paper [
-	"This method generates a comprehensive AI-based report for a given paper by orchestrating a multi-stage evaluation process."
-	self 
-		getPaperHistory: paper;
-		getEvaluations;
-		getRefinedResponses;
-		getFinalResponses.
-	^ self markdownReport 
+    "This method generates a comprehensive AI-based report for a given paper by orchestrating a multi-stage evaluation process."
+    | md |
+    self 
+        getPaperHistory: paper;
+        getEvaluations;
+        getRefinedResponses;
+        getFinalResponses.
+    md := self markdownReport.
+   ( self mdFileFor: paper) writeStreamDo: [ :s | s nextPutAll: md ].
+	^ md
 ]
 
 { #category : 'SWM builder' }
@@ -286,4 +291,11 @@ single-perspective analyses.' << String cr << String cr.
 		
 		 ].
 	^ MarkDown contents
+]
+
+{ #category : 'as yet unclassified' }
+AIASWMreport >> mdFileFor: paper [
+    ^ FileSystem disk root / 'Users' / 'kasper' 
+        / 'D' / 'AI-Experiments' / 'SWM' 
+        / (paper copyReplaceAll: '.txt' with: '.md')
 ]
