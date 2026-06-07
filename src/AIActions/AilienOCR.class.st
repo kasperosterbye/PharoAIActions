@@ -38,7 +38,8 @@ Class {
 { #category : 'as yet unclassified' }
 AilienOCR class >> pdf: aFileName [
     | folder fileReference text outputReference |
-    folder := '/Users/kasper/downloads' asFileReference.
+    "folder := '/Users/kasper/downloads' asFileReference."
+	 folder := '/Users/kasper/D/AI-Experiments/SWM/' asFileReference.
     fileReference := folder / aFileName.
     text := self new textFromPDF: fileReference.
     outputReference := folder / (aFileName copyReplaceAll: '.pdf' with: '.txt').

@@ -15,7 +15,7 @@ AIABookForAI class >> getDigest [
 ]
 
 { #category : 'as yet unclassified' }
-AIABookForAI class >> q: question [
+AIABookForAI class >> qqq: question [
 	| initialReply firstLine index book background responce |
 	initialReply := question , '. Please mention the chapter number you find best to answer this prompt. If the background does not have detailed answer, please say: "it is a cool book, but X is not there"' 
 		q0: [ self getDigest. ].
