@@ -151,6 +151,7 @@ AIAYouTubeChannel class >> smalltalkChannels [
 AIAYouTubeChannel class >> subscriptionChannels [
 	"Returns an array of YouTube channel names for subscription"
     ^ { #HouseofEl.
+		  #'HouseofEl-AI'.
 		  #'dw_podcasts'.
         #TwoBitDaVinci. 
         #JustHaveaThink. 

@@ -57,14 +57,17 @@ AIASWMreport class >> prompts [
 { #category : 'default-settings' }
 AIASWMreport class >> testModels [
 	^ {
-		  MistralApi newOnModel: 1 "codestral-latest".}
+		  GrokApi newOnModel: 2 "grok-code-fast-1".
+		  GeminiApi newOnModel: 1 "" .
+		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
+		  OpenAIApi newOnModel: 3 "gpt-5.1" }
 ]
 
 { #category : 'default-settings' }
 AIASWMreport class >> testModelsAll [
 	^ {
 		  GrokApi newOnModel: 2 "grok-code-fast-1".
-		  TogetherApi newOnModel: 2 "Qwen3-235B-A22B" .
+		  GeminiApi newOnModel: 1 "" .
 		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
 		  OpenAIApi newOnModel: 3 "gpt-5.1" }
 ]
