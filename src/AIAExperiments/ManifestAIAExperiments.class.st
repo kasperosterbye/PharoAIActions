@@ -22,3 +22,10 @@ ManifestAIAExperiments class >> ruleStringConcatenationRuleV1FalsePositive [
 	<ignoreForCoverage>
 	^ #(#(#(#RGPackageDefinition #(#AIAExperiments)) #'2026-04-01T09:44:17.15332+02:00') )
 ]
+
+{ #category : 'code-critics' }
+ManifestAIAExperiments class >> ruleUncommonMessageSendRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGClassDefinition #(#AIATeacup)) #'2026-06-15T13:36:15.19578+02:00') )
+]

@@ -79,12 +79,13 @@ AIATeacup class >> teapotDocumentation [
 AIATeacup >> doExpression: expr [
 	| result |
 	
-	Transcript show: 'Bar called with argument: ', expr, String lf.
+	Transcript << '>>> doExpression: called with argument: ' << expr << String lf.
+	result := ''.
 	[ result := (OpalCompiler new evaluate: expr) printString]
 		on: Error
 		do: [ :ex | result := 'Error: ' , ex messageText ].
 	
-	Transcript << '>>> ' << result << String lf.
+	Transcript << '<<< ' << result << String lf.
 	^ result 
 	
 
@@ -94,7 +95,7 @@ AIATeacup >> doExpression: expr [
 { #category : 'private' }
 AIATeacup >> getAllPackages [
 	| allPackageNames |
-	Transcript show: '/packages called',String lf.
+	Transcript << '/packages called'  << String lf.
 	allPackageNames := PackageOrganizer default packages 
 		collect: [ :package | package name asString] .
 	^ allPackageNames 
@@ -103,7 +104,7 @@ AIATeacup >> getAllPackages [
 { #category : 'private' }
 AIATeacup >> getClassCode: className [
 	| aClass |
-	Transcript show: '/classSource called, with argument ', className,String lf.
+	Transcript << '/classSource called, with argument ' << className << String lf.
 	aClass := Smalltalk at: className asSymbol 
 		ifAbsent: [ ^ 'Class ', className, ' does not exist' ].
 	^ AIASourceCode new forClass: aClass.
@@ -113,7 +114,7 @@ AIATeacup >> getClassCode: className [
 AIATeacup >> getClassesOfPackage: aPackage [
 	| allPackageNames |
 	
-	Transcript show: '/packageClasses called, with argument ', aPackage,String lf.
+	Transcript << '/packageClasses called, with argument ' << aPackage << String lf.
 	allPackageNames := (PackageOrganizer default  packageNamed: aPackage ) 
 		classes asArray select: [:aClass | aClass package name asString = aPackage].
 	^ allPackageNames 
@@ -122,7 +123,7 @@ AIATeacup >> getClassesOfPackage: aPackage [
 { #category : 'private' }
 AIATeacup >> getOverview [
 	"https://pharoaiactions.ngrok.dev"
-	Transcript show: 'Get overview called',String lf.
+	Transcript << 'Get overview called' << String lf.
 	^ 'Welcome to AIATeacup - A Pharo Smalltalk Web Interface
 
 Important
@@ -152,15 +153,10 @@ Always append random parameters to avoid stale responses, e.g.:
   GET /?<randomWord>=<randomStringAndValue>'
 ]
 
-{ #category : 'as yet unclassified' }
-AIATeacup >> getOverview: req [
-	self halt.
-]
-
 { #category : 'initialization' }
 AIATeacup >> initialize [
-	"Kilroy came by here"
-	teapot := Teapot on ."configure: { #port -> 1777 }."
+	super initialize.
+	teapot := Teapot on .
 
 ]
 
