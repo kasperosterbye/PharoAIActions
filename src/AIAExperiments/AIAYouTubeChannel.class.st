@@ -122,7 +122,8 @@ IWST2011$PLBFA36B5236B77AD7' lines.
 { #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> novelChannels [
 	"Returns an array of YouTube channel names for novel content"
-    ^ { #DarkspaceAudio. 
+    ^ { #MiscSciFi.
+		  #DarkspaceAudio. 
         #'vitalAgehealth1-f1f'. 
         #GalaxyChroniclesX. 
         #EpicSpaceChronicles. 
@@ -152,6 +153,7 @@ AIAYouTubeChannel class >> subscriptionChannels [
 	"Returns an array of YouTube channel names for subscription"
     ^ { #HouseofEl.
 		  #'HouseofEl-AI'.
+		  #TLDRnewsEU.
 		  #'dw_podcasts'.
         #TwoBitDaVinci. 
         #JustHaveaThink. 
