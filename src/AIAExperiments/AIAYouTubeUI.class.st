@@ -111,13 +111,13 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 	"Parse the meta file and return title, formatted date, and first paragraph."
 	| details |
 	details := 
-		(self episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle),
+		(self episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle),
 		(self episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle).
 	^ "Microdown asRichText:" details
 ]
 
 { #category : 'initialization' }
-AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
+AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines title date episodeId desc details |
 	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
 		'/' , anEpisodeId , '_meta.txt'.
@@ -128,7 +128,7 @@ AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
 	title := '# Channel: ', aChannelHandle, String lf.
 	title := title, '## Episode: ', lines first.
 	date  := '> ', (self formatDate: lines fifth).
-	episodeId := 'YouTupe id: ''', lines third , ''''.
+	episodeId := 'YouTube id: ''', lines third , ''''.
 	desc := ' ', lines sixth.
 	details := title , String lf , date , String lf , String lf , episodeId, String lf, desc.
 	^ details
@@ -137,7 +137,7 @@ AIAYouTubeUI >> episodeMataDetailFor: anEpisodeId forChannel: aChannelHandle [
 { #category : 'as yet unclassified' }
 AIAYouTubeUI >> episodeTextAction [
 	episodeDetail whenSubmitDo: [ :a | 
-		AIAPresenter onText: ('What is the essence of the descrition I gave you. Please let your response be at most 20 line. Start the title with the Cannel name and Episode Name'
+		AIAPresenter onText: ('What is the essence of the description I gave you. Please let your response be at most 20 line. Start the title with the Channel name and Episode Name'
 		q0: [ a ])]
 ]
 
