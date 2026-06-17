@@ -1,3 +1,6 @@
+"
+Kilroy is not here
+"
 Class {
 	#name : 'AIATeapot',
 	#superclass : 'Object',
@@ -34,9 +37,10 @@ AIATeapot class >> teapotDocumentation [
 ]
 
 { #category : 'private' }
-AIATeapot >> doExpression: expr [
-	| result |
+AIATeapot >> doExpression: url [
+	| expr result |
 	
+	expr := ZnUrl new decodePercent: url.
 	Transcript << '>>> doExpression: called with argument: ' << expr << String lf.
 	result := ''.
 	[ result := (OpalCompiler new evaluate: expr) printString]
@@ -94,10 +98,11 @@ AIATeapot >> getOverview [
 	^ 'Welcome to AIATeacup - A Pharo Smalltalk Web Interface
 
 Important
-Use ?<randomWord>=<randomStringAndValue> to bypass caching. Do that for any endpoint
+Use randowm words xxx and yyy in ?<xxx>=<yyy> to bypass caching. Do that for ALL endpoints
 
 AVAILABLE ENDPOINTS:
   GET /                          - This overview 
+  GET /pharoSyntax               - Pharo14 class definition syntax with examples 
   GET /time                      - Current server time
   GET /packages                  - List of all Pharo packages
   GET /packageClasses/<name>     - All classes in a package
@@ -114,11 +119,9 @@ SELF-TEST:
 Please verify your setup by calling:
   GET /doExpression?expr=2%2B3%2A4
 Expected result: 20
-(This confirms correct URL-encoding and that Pharo operator precedence is respected)
+(This confirms correct URL-encoding and that Pharo operator precedence is respected).
 
-CACHE NOTE:
-Always append random parameters to avoid stale responses, e.g.:
-  GET /?<randomWord>=<randomStringAndValue>'
+To make classes in Pharo14, check https://pharoaiactions.ngrok.dev/getPharoSyntax?<randomWord>=<randomStringAndValue>'
 ]
 
 { #category : 'as yet unclassified' }
@@ -127,10 +130,10 @@ AIATeapot >> getPharoSyntax [
 
 To define a class in Pharo14, use the fluid class definition API:
 
-  Object << #MyNewClass
+  (Object << #MyNewClass
       slots: { #foo . #bar };
       tag: ''MyTag'';
-      package: ''MyPackage''
+      package: ''MyPackage'') fluidInstall.
 
 WHERE:
   Object       - the superclass (can be any existing class e.g. Object, Collection)
