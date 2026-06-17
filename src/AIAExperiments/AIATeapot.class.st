@@ -1,48 +1,17 @@
 "
-# Class Comment for AIATeacup
+AIATeapot is the Teapot-based web server for PharoAIActions.
 
-## Purpose and Role in the System
+It exposes REST endpoints for%3A
+- Package and class browsing
+- Class comments and source
+- Dynamic expression evaluation.
 
-The `AIATeacup` class serves as a web service interface within the Pharo Smalltalk environment. It utilises the Teapot framework to create a lightweight HTTP server, providing endpoints to access and manipulate Smalltalk class information dynamically. This class is particularly useful for developers and system administrators who need to interact with Pharo's class structure programmatically or through a web interface.
+Uses Teapot for routing%2C OpalCompiler for eval.
 
-## Main Collaborators or Dependencies
-
-- **Teapot**: The primary dependency is the Teapot framework, which is a lightweight web framework for Pharo. It handles HTTP requests and responses, routing, and server management.
-- **PackageOrganizer**: This collaborator is used to access and manage the packages within the Pharo environment, allowing `AIATeacup` to retrieve and list classes from specific packages.
-- **WebBrowser**: Used to open documentation or external resources, such as the Teapot User Guide, providing additional support and context for users.
-
-## Important Invariants or Design Constraints
-
-1. **Teapot Initialisation**: The `AIATeacup` class assumes that the Teapot framework is available in the Smalltalk environment. If not, it dynamically loads it using Metacello.
-2. **Server Configuration**: The server is configured to run on port 1777. This port number should be unique and not conflict with other services running on the same machine.
-3. **Route Handling**: The class defines several routes to handle different types of requests, such as retrieving an overview, listing all packages, and fetching class source code. Each route is designed to handle specific query parameters and return appropriate responses.
-
-## Illustrative Usage Examples
-
-### Example 1: Starting the Server
-
-To start the server and make the endpoints available, you can use the following code snippet:
-
-```smalltalk
-AIATeacup new initialize.
-```
-
-This will initialise the server and set up the necessary routes. The server will then be accessible at `http://localhost:1777`.
-
-### Example 2: Accessing Class Information
-
-To retrieve the source code of a specific class, you can make a GET request to the `/classSource` endpoint with the class name as a query parameter:
-
-```smalltalk
-WebClient htmlSubmit: 'http://localhost:1777/classSource?className=AIATeacup'.
-```
-
-This will return the source code of the `AIATeacup` class, formatted and ready for inspection.
-
-By leveraging the `AIATeacup` class, developers can easily integrate web-based access to Pharo's class structure, enhancing the interactivity and accessibility of the development environment.
+Always URL-encode params and add cache-busters.
 "
 Class {
-	#name : 'AIATeacup',
+	#name : 'AIATeapot',
 	#superclass : 'Object',
 	#instVars : [
 		'teapot'
@@ -53,7 +22,7 @@ Class {
 }
 
 { #category : 'examples' }
-AIATeacup class >> ensureTeacup [
+AIATeapot class >> ensureTeapot [
 	<example> "should be a better name..."
 	
 	(Smalltalk globals includesKey: #Teapot) ifTrue: [ ^ self ].
@@ -64,19 +33,20 @@ AIATeacup class >> ensureTeacup [
 ]
 
 { #category : 'examples' }
-AIATeacup class >> new [ 
+AIATeapot class >> new [ 
+	self ensureTeapot.
 	^ super new
 ]
 
 { #category : 'examples' }
-AIATeacup class >> teapotDocumentation [
-	<example> "should be a better name..."
+AIATeapot class >> teapotDocumentation [
+	<example>
 	
 	WebBrowser openOn: 'https://github.com/zeroflag/Teapot/blob/master/docs/UserGuide.md'
 ]
 
 { #category : 'private' }
-AIATeacup >> doExpression: expr [
+AIATeapot >> doExpression: expr [
 	| result |
 	
 	Transcript << '>>> doExpression: called with argument: ' << expr << String lf.
@@ -93,7 +63,7 @@ AIATeacup >> doExpression: expr [
 ]
 
 { #category : 'private' }
-AIATeacup >> getAllPackages [
+AIATeapot >> getAllPackages [
 	| allPackageNames |
 	Transcript << '/packages called'  << String lf.
 	allPackageNames := PackageOrganizer default packages 
@@ -102,7 +72,7 @@ AIATeacup >> getAllPackages [
 ]
 
 { #category : 'private' }
-AIATeacup >> getClassCode: className [
+AIATeapot >> getClassCode: className [
 	| aClass |
 	Transcript << '/classSource called, with argument ' << className << String lf.
 	aClass := Smalltalk at: className asSymbol 
@@ -111,7 +81,7 @@ AIATeacup >> getClassCode: className [
 ]
 
 { #category : 'private' }
-AIATeacup >> getClassComment: className [
+AIATeapot >> getClassComment: className [
 	| aClass |
 	Transcript << '/getClassComment: called, with argument ' << className << String lf.
 	aClass := Smalltalk at: className asSymbol 
@@ -120,7 +90,7 @@ AIATeacup >> getClassComment: className [
 ]
 
 { #category : 'private' }
-AIATeacup >> getClassesOfPackage: aPackage [
+AIATeapot >> getClassesOfPackage: aPackage [
 	| allPackageNames |
 	
 	Transcript << '/packageClasses called, with argument ' << aPackage << String lf.
@@ -130,7 +100,7 @@ AIATeacup >> getClassesOfPackage: aPackage [
 ]
 
 { #category : 'private' }
-AIATeacup >> getOverview [
+AIATeapot >> getOverview [
 	"https://pharoaiactions.ngrok.dev"
 	Transcript << 'Get overview called' << String lf.
 	^ 'Welcome to AIATeacup - A Pharo Smalltalk Web Interface
@@ -143,7 +113,8 @@ AVAILABLE ENDPOINTS:
   GET /time                      - Current server time
   GET /packages                  - List of all Pharo packages
   GET /packageClasses/<name>     - All classes in a package
-  GET /classSource/<name>        - Source code of a class
+  GET /classComment/<name>       - Comment of a class <name>
+  GET /classSource/<name>        - Source code of a class <name>
   GET /doExpression?expr=<code>  - Evaluate a Pharo expression
 
 IMPORTANT - URL ENCODING:
@@ -163,14 +134,14 @@ Always append random parameters to avoid stale responses, e.g.:
 ]
 
 { #category : 'initialization' }
-AIATeacup >> initialize [
+AIATeapot >> initialize [
 	super initialize.
 	teapot := Teapot on .
 
 ]
 
 { #category : 'private' }
-AIATeacup >> setIndex [
+AIATeapot >> setIndex [
       
 	teapot 
 		GET: '/' -> [self getOverview] ;
