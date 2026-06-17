@@ -1,15 +1,3 @@
-"
-AIATeapot is the Teapot-based web server for PharoAIActions.
-
-It exposes REST endpoints for%3A
-- Package and class browsing
-- Class comments and source
-- Dynamic expression evaluation.
-
-Uses Teapot for routing%2C OpalCompiler for eval.
-
-Always URL-encode params and add cache-busters.
-"
 Class {
 	#name : 'AIATeapot',
 	#superclass : 'Object',
