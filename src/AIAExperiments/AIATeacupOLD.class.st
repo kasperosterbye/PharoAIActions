@@ -42,7 +42,7 @@ This will return the source code of the `AIATeacup` class, formatted and ready f
 By leveraging the `AIATeacup` class, developers can easily integrate web-based access to Pharo's class structure, enhancing the interactivity and accessibility of the development environment.
 "
 Class {
-	#name : 'AIATeacup',
+	#name : 'AIATeacupOLD',
 	#superclass : 'Object',
 	#instVars : [
 		'teapot'
@@ -53,7 +53,7 @@ Class {
 }
 
 { #category : 'examples' }
-AIATeacup class >> ensureTeacup [
+AIATeacupOLD class >> ensureTeacup [
 	<example> "should be a better name..."
 	
 	(Smalltalk globals includesKey: #Teapot) ifTrue: [ ^ self ].
@@ -64,19 +64,19 @@ AIATeacup class >> ensureTeacup [
 ]
 
 { #category : 'examples' }
-AIATeacup class >> new [ 
+AIATeacupOLD class >> new [ 
 	^ super new
 ]
 
 { #category : 'examples' }
-AIATeacup class >> teapotDocumentation [
-	<example> "should be a better name..."
+AIATeacupOLD class >> teapotDocumentation [
+	<example>
 	
 	WebBrowser openOn: 'https://github.com/zeroflag/Teapot/blob/master/docs/UserGuide.md'
 ]
 
 { #category : 'private' }
-AIATeacup >> doExpression: expr [
+AIATeacupOLD >> doExpression: expr [
 	| result |
 	
 	Transcript << '>>> doExpression: called with argument: ' << expr << String lf.
@@ -93,7 +93,7 @@ AIATeacup >> doExpression: expr [
 ]
 
 { #category : 'private' }
-AIATeacup >> getAllPackages [
+AIATeacupOLD >> getAllPackages [
 	| allPackageNames |
 	Transcript << '/packages called'  << String lf.
 	allPackageNames := PackageOrganizer default packages 
@@ -102,7 +102,7 @@ AIATeacup >> getAllPackages [
 ]
 
 { #category : 'private' }
-AIATeacup >> getClassCode: className [
+AIATeacupOLD >> getClassCode: className [
 	| aClass |
 	Transcript << '/classSource called, with argument ' << className << String lf.
 	aClass := Smalltalk at: className asSymbol 
@@ -111,7 +111,7 @@ AIATeacup >> getClassCode: className [
 ]
 
 { #category : 'private' }
-AIATeacup >> getClassComment: className [
+AIATeacupOLD >> getClassComment: className [
 	| aClass |
 	Transcript << '/getClassComment: called, with argument ' << className << String lf.
 	aClass := Smalltalk at: className asSymbol 
@@ -120,7 +120,7 @@ AIATeacup >> getClassComment: className [
 ]
 
 { #category : 'private' }
-AIATeacup >> getClassesOfPackage: aPackage [
+AIATeacupOLD >> getClassesOfPackage: aPackage [
 	| allPackageNames |
 	
 	Transcript << '/packageClasses called, with argument ' << aPackage << String lf.
@@ -130,7 +130,7 @@ AIATeacup >> getClassesOfPackage: aPackage [
 ]
 
 { #category : 'private' }
-AIATeacup >> getOverview [
+AIATeacupOLD >> getOverview [
 	"https://pharoaiactions.ngrok.dev"
 	Transcript << 'Get overview called' << String lf.
 	^ 'Welcome to AIATeacup - A Pharo Smalltalk Web Interface
@@ -163,14 +163,14 @@ Always append random parameters to avoid stale responses, e.g.:
 ]
 
 { #category : 'initialization' }
-AIATeacup >> initialize [
+AIATeacupOLD >> initialize [
 	super initialize.
 	teapot := Teapot on .
 
 ]
 
 { #category : 'private' }
-AIATeacup >> setIndex [
+AIATeacupOLD >> setIndex [
       
 	teapot 
 		GET: '/' -> [self getOverview] ;

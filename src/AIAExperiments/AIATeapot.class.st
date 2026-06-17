@@ -121,6 +121,43 @@ Always append random parameters to avoid stale responses, e.g.:
   GET /?<randomWord>=<randomStringAndValue>'
 ]
 
+{ #category : 'as yet unclassified' }
+AIATeapot >> getPharoSyntax [
+    ^ 'PHARO14 CLASS DEFINITION SYNTAX
+
+To define a class in Pharo14, use the fluid class definition API:
+
+  Object << #MyNewClass
+      slots: { #foo . #bar };
+      tag: ''MyTag'';
+      package: ''MyPackage''
+
+WHERE:
+  Object       - the superclass (can be any existing class e.g. Object, Collection)
+  #MyNewClass  - the name of the new class (a Symbol with #)
+  slots:       - instance variables, array of Symbols (replaces old instanceVariableNames:)
+                 zero slots: slots: {}
+                 one slot:   slots: { #foo }
+                 many slots: slots: { #foo . #bar . #baz }
+  tag:         - sub-package grouping within the package (optional)
+  package:     - the package name (a String)
+
+NOTE: << is the Pharo14 fluid class definition operator.
+It replaces the old verbose form:
+  Object subclass: #MyNewClass
+      instanceVariableNames: ''foo bar''
+      classVariableNames: ''''
+      poolDictionaries: ''''
+      category: ''MyPackage''
+
+To create a class, pass the definition to /doExpression with URL-encoding:
+  + becomes %2B, space becomes %20, # becomes %23, > becomes %3E
+
+SELF-TEST:
+  GET /doExpression?expr=Object%20%3C%3C%20%23TestClass123
+  Expected: TestClass123'
+]
+
 { #category : 'initialization' }
 AIATeapot >> initialize [
 	super initialize.
@@ -133,6 +170,7 @@ AIATeapot >> setIndex [
       
 	teapot 
 		GET: '/' -> [self getOverview] ;
+		GET: '/pharoSyntax' -> [self getPharoSyntax] ;
 		GET: '/packages' -> [ self getAllPackages ] ;
 		GET: '/doExpression' -> [:req | self doExpression: (req at: #expr ifAbsent: ['']) ];
     	GET: '/time' -> [ DateAndTime now asString ];
