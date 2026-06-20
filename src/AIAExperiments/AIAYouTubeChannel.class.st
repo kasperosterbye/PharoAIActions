@@ -85,7 +85,7 @@ AIAYouTubeChannel class >> episodeFetch: youtube [
 
 { #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> episodeUpdateLimit [
-	^ 25 asString
+	^ 10 asString
 ]
 
 { #category : 'as yet unclassified' }
@@ -122,14 +122,14 @@ IWST2011$PLBFA36B5236B77AD7' lines.
 { #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> novelChannels [
 	"Returns an array of YouTube channel names for novel content"
-    ^ { #MiscSciFi.
+    ^ { #'ScifiGalaxyTales'.
+		  #'Sci-FiShortStory-y8d'.
+		  #'Scifistoryq2g'.
+		  #MiscSciFi.
 		  #DarkspaceAudio. 
         #'vitalAgehealth1-f1f'. 
-        #GalaxyChroniclesX. 
-        #EpicSpaceChronicles. 
-        #hyf_chronicles_prime.
-        #HFYZenith. 
-		  #TheHYFUnleashed. 
+        #GalaxyChroniclesX.
+        #HFYZenith.
         #'EarthbornLegends-y8o'. 
         #'Sci-Fi-Vault' }
 
