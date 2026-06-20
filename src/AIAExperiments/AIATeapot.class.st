@@ -1,14 +1,5 @@
 "
-AIATeapot is the Teapot-based web server for PharoAIActions.
-
-It exposes REST endpoints for%3A
-- Package and class browsing
-- Class comments and source
-- Dynamic expression evaluation.
-
-Uses Teapot for routing%2C OpalCompiler for eval.
-
-Always URL-encode params and add cache-busters.
+Kilroy is not here
 "
 Class {
 	#name : 'AIATeapot',
@@ -46,9 +37,10 @@ AIATeapot class >> teapotDocumentation [
 ]
 
 { #category : 'private' }
-AIATeapot >> doExpression: expr [
-	| result |
+AIATeapot >> doExpression: url [
+	| expr result |
 	
+	expr := ZnUrl new decodePercent: url.
 	Transcript << '>>> doExpression: called with argument: ' << expr << String lf.
 	result := ''.
 	[ result := (OpalCompiler new evaluate: expr) printString]
@@ -106,10 +98,11 @@ AIATeapot >> getOverview [
 	^ 'Welcome to AIATeacup - A Pharo Smalltalk Web Interface
 
 Important
-Use ?<randomWord>=<randomStringAndValue> to bypass caching. Do that for any endpoint
+Use randowm words xxx and yyy in ?<xxx>=<yyy> to bypass caching. Do that for ALL endpoints
 
 AVAILABLE ENDPOINTS:
   GET /                          - This overview 
+  GET /pharoSyntax               - Pharo14 class definition syntax with examples 
   GET /time                      - Current server time
   GET /packages                  - List of all Pharo packages
   GET /packageClasses/<name>     - All classes in a package
@@ -126,11 +119,46 @@ SELF-TEST:
 Please verify your setup by calling:
   GET /doExpression?expr=2%2B3%2A4
 Expected result: 20
-(This confirms correct URL-encoding and that Pharo operator precedence is respected)
+(This confirms correct URL-encoding and that Pharo operator precedence is respected).
 
-CACHE NOTE:
-Always append random parameters to avoid stale responses, e.g.:
-  GET /?<randomWord>=<randomStringAndValue>'
+To make classes in Pharo14, check https://pharoaiactions.ngrok.dev/getPharoSyntax?<randomWord>=<randomStringAndValue>'
+]
+
+{ #category : 'as yet unclassified' }
+AIATeapot >> getPharoSyntax [
+    ^ 'PHARO14 CLASS DEFINITION SYNTAX
+
+To define a class in Pharo14, use the fluid class definition API:
+
+  (Object << #MyNewClass
+      slots: { #foo . #bar };
+      tag: ''MyTag'';
+      package: ''MyPackage'') fluidInstall.
+
+WHERE:
+  Object       - the superclass (can be any existing class e.g. Object, Collection)
+  #MyNewClass  - the name of the new class (a Symbol with #)
+  slots:       - instance variables, array of Symbols (replaces old instanceVariableNames:)
+                 zero slots: slots: {}
+                 one slot:   slots: { #foo }
+                 many slots: slots: { #foo . #bar . #baz }
+  tag:         - sub-package grouping within the package (optional)
+  package:     - the package name (a String)
+
+NOTE: << is the Pharo14 fluid class definition operator.
+It replaces the old verbose form:
+  Object subclass: #MyNewClass
+      instanceVariableNames: ''foo bar''
+      classVariableNames: ''''
+      poolDictionaries: ''''
+      category: ''MyPackage''
+
+To create a class, pass the definition to /doExpression with URL-encoding:
+  + becomes %2B, space becomes %20, # becomes %23, > becomes %3E
+
+SELF-TEST:
+  GET /doExpression?expr=Object%20%3C%3C%20%23TestClass123
+  Expected: TestClass123'
 ]
 
 { #category : 'initialization' }
@@ -145,6 +173,7 @@ AIATeapot >> setIndex [
       
 	teapot 
 		GET: '/' -> [self getOverview] ;
+		GET: '/pharoSyntax' -> [self getPharoSyntax] ;
 		GET: '/packages' -> [ self getAllPackages ] ;
 		GET: '/doExpression' -> [:req | self doExpression: (req at: #expr ifAbsent: ['']) ];
     	GET: '/time' -> [ DateAndTime now asString ];

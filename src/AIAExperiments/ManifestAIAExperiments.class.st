@@ -27,5 +27,5 @@ ManifestAIAExperiments class >> ruleStringConcatenationRuleV1FalsePositive [
 ManifestAIAExperiments class >> ruleUncommonMessageSendRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGClassDefinition #(#AIATeacup)) #'2026-06-15T13:36:15.19578+02:00') #(#(#RGClassDefinition #(#AIATeapot)) #'2026-06-15T14:23:37.931429+02:00') )
+	^ #(#(#(#RGClassDefinition #(#AIATeacupOLD)) #'2026-06-15T13:36:15.19578+02:00') #(#(#RGClassDefinition #(#AIATeapot)) #'2026-06-15T14:23:37.931429+02:00') )
 ]
