@@ -122,16 +122,13 @@ IWST2011$PLBFA36B5236B77AD7' lines.
 { #category : 'as yet unclassified' }
 AIAYouTubeChannel class >> novelChannels [
 	"Returns an array of YouTube channel names for novel content"
-    ^ { #'ScifiGalaxyTales'.
-		  #'Sci-FiShortStory-y8d'.
-		  #'Scifistoryq2g'.
-		  #MiscSciFi.
+    ^ { #MiscSciFi.
+        #HFYZenith.
+        #'Sci-Fi-Vault'.
+		  #ScifiGalaxyTales.
 		  #DarkspaceAudio. 
         #'vitalAgehealth1-f1f'. 
-        #GalaxyChroniclesX.
-        #HFYZenith.
-        #'EarthbornLegends-y8o'. 
-        #'Sci-Fi-Vault' }
+        #GalaxyChroniclesX }
 
 ]
 
@@ -158,8 +155,6 @@ AIAYouTubeChannel class >> subscriptionChannels [
         #TwoBitDaVinci. 
         #JustHaveaThink. 
         #SabineHossenfelder. 
-        #UKSTUG.
-		  #esugboard.
         #UndecidedTechnology. 
         #parthknowsai. 
         #PracticalEngineeringChannel. 
