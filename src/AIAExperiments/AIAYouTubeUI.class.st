@@ -154,7 +154,7 @@ AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 
 { #category : 'as yet unclassified' }
 AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
-	| path file lines date title |
+	| path file lines date title hasBeenRead |
 	aChannelHandle ifNil: [ ^ anEpisodeId ].
 	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
@@ -163,7 +163,23 @@ AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
 	lines size < 5 ifTrue: [ ^ anEpisodeId ].
 	date := self formatDate: (lines at: 5).
 	title := lines first.
-	^ date , ' ' , title
+	hasBeenRead := lines last = 'have read: true'.
+	^ hasBeenRead 
+    ifTrue: [ '✓ ' , date , ' ' , title ]
+    ifFalse: [ date , ' ' , title ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> episodeToggleRead: indexes [
+    | channel episode episodeId |
+    channel := channelList selectedItem.
+    episode := AIAYouTubeEpisode new channel: channel; yourself.
+    indexes do: [ :index |
+        episodeId := episodeList items at: index.
+        (episode episodeIsRead: episodeId)
+            ifTrue: [ episode episodeMarkAsUnread: episodeId ]
+            ifFalse: [ episode episodeMarkAsRead: episodeId ] ].
+    episodeList refresh.
 ]
 
 { #category : 'as yet unclassified' }
@@ -171,20 +187,6 @@ AIAYouTubeUI >> episodesFor: aChannelHandle [
 	| dir entries |
 	aChannelHandle ifNil: [ ^ #() ].
 	dir := FileReference / (AIAYouTubeChannel new channelDirectory: aChannelHandle).
-	dir exists ifFalse: [ ^ #() ].
-	entries := (dir entries
-		select: [ :entry | entry basename endsWith: '_meta.txt' ])
-		collect: [ :entry | entry basename copyFrom: 1 to: entry basename size - '_meta.txt' size ].
-	^ entries sort: [ :a :b |
-		(self episodeDateFor: a forChannel: aChannelHandle) >
-		(self episodeDateFor: b forChannel: aChannelHandle) ]
-]
-
-{ #category : 'as yet unclassified' }
-AIAYouTubeUI >> episodesFor_old: aChannelHandle [
-	| dir entries |
-	aChannelHandle ifNil: [ ^ #() ].
-	dir := File named: (AIAYouTubeChannel new channelDirectory: aChannelHandle).
 	dir exists ifFalse: [ ^ #() ].
 	entries := (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])
@@ -210,6 +212,10 @@ AIAYouTubeUI >> initializePresenters [
 	channelList := self newList.
 	episodeList := self newList.
 	episodeList beMultipleSelection.
+	
+	episodeList bindKeyCombination: $r command asKeyCombination
+            toAction: [:list | self episodeToggleRead: list selectedIndexes ].
+	
 	descriptionText := self newText.
 	episodeDetail := self newText.
 	channelTypeList items: AIAYouTubeChannel channels asOrderedDictionary keys.

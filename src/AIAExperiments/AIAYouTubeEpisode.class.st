@@ -77,43 +77,6 @@ AIAYouTubeEpisode >> episodeFetch: episodeId [
 		close
 ]
 
-{ #category : 'episode' }
-AIAYouTubeEpisode >> episodeFetch_new: episodeId [
-    "Fetches and processes the transcript for a YouTube video using its episode ID."
-    | transcript |
-    AIAYouTubeChannel transcriptLanguages
-        detect: [ :lang |
-            language := lang.
-            self episodeDownloadVtt: episodeId.
-            transcript := self episodeTranscript: episodeId.
-            (transcript beginsWith: '***YouTubeEpisode Error***') not ]
-        ifNone: [ ].
-    (File named: (self episodeVttPath: episodeId)) delete.
-    (File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
-                nextPutAll: transcript;
-                close.
-]
-
-{ #category : 'episode' }
-AIAYouTubeEpisode >> episodeFetch_old: episodeId [
-    "Fetches and processes the transcript for a YouTube video using its episode ID."
-    | transcript |
-    AIAYouTubeChannel transcriptLanguages do: [ :lang |
-		language := lang.
-        self episodeDownloadVtt: episodeId.
-        transcript := self episodeTranscript: episodeId.
-        (transcript beginsWith: '***YouTubeEpisode Error***') ifFalse: [
-            (File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
-                nextPutAll: transcript;
-                close.
-            (File named: (self episodeVttPath: episodeId)) delete.
-            ^ transcript ] ].
-	 (File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
-                nextPutAll: transcript;
-                close.
-    ^ transcript 
-]
-
 { #category : 'as yet unclassified' }
 AIAYouTubeEpisode >> episodeHasAutoCaptions: episodeId [
     | command result |
@@ -121,6 +84,43 @@ AIAYouTubeEpisode >> episodeHasAutoCaptions: episodeId [
     LibC runCommand: command.
     result := (File named: '/tmp/yt_subs.txt') readStream contents asString.
     ^ (result includesSubstring: 'has no automatic captions') not
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeEpisode >> episodeIsRead: episodeId [
+    | file lines |
+    file := File named: (self episodePath: episodeId) , episodeId , '_meta.txt'.
+    file exists ifFalse: [ ^ false ].
+    lines := file readStream contents asString lines.
+    ^ lines last = 'have read: true'
+]
+
+{ #category : 'yt-dlp' }
+AIAYouTubeEpisode >> episodeMarkAsRead: episodeId [
+    "Adds 'have read: true' to the end of the meta file."
+    | file contents |
+    file := File named: (self episodePath: episodeId) , episodeId , '_meta.txt'.
+    file exists ifFalse: [ ^ self ].
+    contents := file readStream contents asString.
+    (contents includesSubstring: 'have read: true') ifTrue: [ ^ self ].
+	 file delete.
+    file writeStream
+        << contents << String lf << 'have read: true';
+        close
+
+]
+
+{ #category : 'yt-dlp' }
+AIAYouTubeEpisode >> episodeMarkAsUnread: episodeId [
+    "Removes 'have read: true' from the meta file."	 
+    |  file contents cleaned |
+    file := File named: (self episodePath: episodeId) , episodeId , '_meta.txt'.
+	 file exists ifFalse: [ ^ self ].
+    contents := file readStream contents asString.
+    (contents includesSubstring: 'have read: true') ifFalse: [ ^ self ].
+	 cleaned := contents copyReplaceAll: String lf, 'have read: true'  with: ''.
+	 file delete.
+    file writeStream << cleaned; close
 ]
 
 { #category : 'yt-dlp' }
