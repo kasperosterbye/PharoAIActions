@@ -1,11 +1,14 @@
 "
-Kilroy is not here
+Kilroy is not here, but Grok was
 "
 Class {
 	#name : 'AIATeapot',
 	#superclass : 'Object',
 	#instVars : [
 		'teapot'
+	],
+	#classInstVars : [
+		'default'
 	],
 	#category : 'AIAExperiments-Teacup issue',
 	#package : 'AIAExperiments',
@@ -27,6 +30,15 @@ AIATeapot class >> ensureTeapot [
 AIATeapot class >> new [ 
 	self ensureTeapot.
 	^ super new
+]
+
+{ #category : 'instance creation' }
+AIATeapot class >> open [
+	<example>
+	default := self new.
+	default setIndex.
+	Cupboard open.
+	
 ]
 
 { #category : 'examples' }
