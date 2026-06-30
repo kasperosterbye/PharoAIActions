@@ -155,7 +155,7 @@ AIAYouTubeEpisode >> episodePath: episodeId [
 AIAYouTubeEpisode >> episodeTranscript: episodeId [
 	"Returns the transcript of a YouTube video, processing the VTT file to extract and clean the text."
 
-	| lines result |
+	| lines result response|
 	[ 
 		lines := OrderedCollection newFromArray: (File named: (self episodeVttPath: episodeId)) readStream contents asString lines.
 		lines removeFirst: 3.
@@ -163,8 +163,11 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 		lines removeAllSuchThat: [ :line | (line includes: $<) not ].
 		lines removeAllSuchThat: [ :line | line includesAll: 'align:start position:0%' ].
 		result := WriteStream on: ''.
-		1 to: lines size do: [ :line | result << ((lines at: line) copyWithRegex: '<[^>]*>' matchesReplacedWith: '') << ' ' ].
-		^ result contents copyReplaceAll: '. ' with: '.' , String cr ]
+		1 to: lines size do: [ :line | 
+				result << ((lines at: line) copyWithRegex: '<[^>]*>' matchesReplacedWith: '') << ' ' ].
+		response := result contents copyReplaceAll: '. ' with: '.' , String cr.
+		response := response copyReplaceAll: '&gt;' with: ''.
+		^ response ]
 		on: Error
 		do: [ ^ '***YouTubeEpisode Error*** The id: ' , episodeId , ' could not be read' ]
 ]
