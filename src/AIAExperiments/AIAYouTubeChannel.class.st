@@ -47,9 +47,9 @@ By providing these detailed examples, users can understand how to effectively ut
 Class {
 	#name : 'AIAYouTubeChannel',
 	#superclass : 'Object',
-	#category : 'AIAExperiments-Novels',
+	#category : 'AIAExperiments-YouTube',
 	#package : 'AIAExperiments',
-	#tag : 'Novels'
+	#tag : 'YouTube'
 }
 
 { #category : 'as yet unclassified' }
@@ -62,10 +62,10 @@ AIAYouTubeChannel class >> channelDictionary [
 AIAYouTubeChannel class >> channels [
 	"Returns an array of YouTube channel names for novel content"
     ^ { 
-		'Subscription' -> self subscriptionChannels . 
-		'Novel' -> self novelChannels . 
+		'Subscriptions' -> self subscriptionChannels . 
+		'SciFi' -> self scifiChannels . 
 		'Smalltalk' -> self smalltalkChannels . 
-		'@esugboard' -> self esugboardPlaylists.
+		"'@esugboard' -> self esugboardPlaylists."
 		'Misc' -> { 'Misc' } } asOrderedCollection 
 
 ]
@@ -120,7 +120,7 @@ IWST2011$PLBFA36B5236B77AD7' lines.
 ]
 
 { #category : 'as yet unclassified' }
-AIAYouTubeChannel class >> novelChannels [
+AIAYouTubeChannel class >> scifiChannels [
 	"Returns an array of YouTube channel names for novel content"
     ^ { #MiscSciFi.
         #HFYZenith.

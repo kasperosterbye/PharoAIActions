@@ -8,9 +8,9 @@ Class {
 		'descriptionText',
 		'episodeDetail'
 	],
-	#category : 'AIAExperiments-Novels',
+	#category : 'AIAExperiments-YouTube',
 	#package : 'AIAExperiments',
-	#tag : 'Novels'
+	#tag : 'YouTube'
 }
 
 { #category : 'instance creation' }

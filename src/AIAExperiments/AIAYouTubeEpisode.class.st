@@ -5,9 +5,9 @@ Class {
 		'channel',
 		'language'
 	],
-	#category : 'AIAExperiments-Novels',
+	#category : 'AIAExperiments-YouTube',
 	#package : 'AIAExperiments',
-	#tag : 'Novels'
+	#tag : 'YouTube'
 }
 
 { #category : 'as yet unclassified' }
