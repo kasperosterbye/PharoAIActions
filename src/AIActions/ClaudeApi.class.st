@@ -59,11 +59,10 @@ ClaudeApi class >> modelNames [
 	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
 	
 	^ #(
-	'claude-sonnet-4-20250514' 
-	'claude-3-haiku-20240307'
 	'claude-haiku-4-5-20251001' 
-	'claude-opus-4-6'
-	'claude-opus-4-5-20251101') 
+	'claude-sonnet-5'
+	'claude-opus-4-8'
+	'claude-fable-5') 
 ]
 
 { #category : 'AI models' }
