@@ -69,7 +69,7 @@ Class {
 }
 
 { #category : 'private' }
-PForth >> booter [
+PForth >> booter [ 
 	| cfaWords |
 	cfaWords := self class selectorsInProtocol: 'CFA'.
 	cfaWords do: [ :cfa |
