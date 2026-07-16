@@ -154,7 +154,8 @@ AIAYouTubeChannel class >> subscriptionChannels [
 		  #'dw_podcasts'.
         #TwoBitDaVinci. 
         #JustHaveaThink. 
-        #SabineHossenfelder. 
+        #SabineHossenfelder.
+		  #'scottmanley'.
         #UndecidedTechnology. 
         #parthknowsai. 
         #PracticalEngineeringChannel. 
