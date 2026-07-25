@@ -1,3 +1,133 @@
+"
+# AIASWMreport Class Comment
+
+## Purpose and Role in the System
+
+The `AIASWMreport` class serves as a **multi-AI scientific paper analysis and reporting engine**, designed to systematically evaluate and synthesise critiques of academic papers using diverse large language models (LLMs). Its primary role is to automate the generation of structured, multi-perspective assessments of research documents, facilitating rapid and comprehensive peer-review-like analysis.
+
+This class is a core component of an **experimental research pipeline** for evaluating the capabilities of AI models in academic critique, meta-analysis, and synthesis. It orchestrates interactions between multiple AI providers (e.g., Mistral, Claude, Grok, Gemini, OpenAI) to produce layered evaluations: independent model assessments, integrated refinements, and a final consolidated report. The output is a **Markdown-formatted document** that can be exported for further review or publication.
+
+`AIASWMreport` is particularly suited for **comparative AI research**, **automated literature review**, and **scientific paper evaluation workflows**, where human-like analysis is augmented by machine intelligence.
+
+---
+
+## Main Collaborators or Dependencies
+
+### **Core Dependencies**
+- **`AIAHistory`**: A key collaborator that encapsulates the interaction history with a single AI model, including prompts, responses, and API configuration. `AIASWMreport` creates and manages multiple `AIAHistory` instances to track evaluations from different models.
+- **AI API Wrappers**: Classes such as `MistralApi`, `ClaudeApi`, `GrokApi`, `GeminiApi`, and `OpenAIApi`, which provide standardised interfaces to external AI services. These are configured dynamically via `testModels` and related class-side methods.
+- **`MicHTMLDocument`** (optional): Used for converting Markdown reports into HTML for web-based presentation.
+
+### **Data and Configuration**
+- **FileSystem**: Used to read input papers (as `.txt` files) and write output reports (`.md` and optionally `.html`).
+- **`OrderedCollection`**: Central to managing collections of models, response histories, and refined responses.
+- **`Job` framework**: Used to provide progress feedback and interruptible execution for long-running analysis tasks, ensuring user control and transparency.
+
+### **External Systems**
+- **AI Model Providers**: The class depends on external APIs (e.g., Mistral, Anthropic, OpenAI) for generating evaluations. Network availability, API keys, and rate limits are implicit constraints.
+
+---
+
+## Important Invariants and Design Constraints
+
+### **Invariants**
+1. **Multi-Stage Evaluation Pipeline**:
+   - The analysis process is **three-tiered**:
+     1. **Level 1**: Independent evaluations by each model.
+     2. **Level 2**: Each model refines its analysis after seeing all Level 1 responses.
+     3. **Level 3**: A high-level model (e.g., Claude) synthesises all refined responses into a final assessment.
+   - This structure ensures **diversity of perspective** and **meta-analytic depth**.
+
+2. **Immutability of Input Paper**:
+   - The original paper content, once loaded via `getPaperHistory:`, remains **unchanged** throughout the analysis. All evaluations are derived from this fixed input.
+
+3. **Progressive State Construction**:
+   - The instance variables (`models`, `resposeHistories`, `refinedResponses`, `finalResponse`, `originalPaperHistory`) are populated **sequentially** and must not be modified out of order. For example, `getRefinedResponses` depends on the completion of `getEvaluations`.
+
+4. **Markdown Output Format**:
+   - All reports are generated in **Markdown**, ensuring portability, readability, and ease of conversion to other formats (e.g., HTML, PDF).
+
+### **Design Constraints**
+- **Interruptibility**: All long-running operations (e.g., API calls across multiple models) are wrapped in `Job` blocks, allowing users to **cancel** the analysis at any stage without data corruption.
+- **Configurability via Class Methods**: Model selection, output inclusion, and API endpoints are controlled via class-side methods (e.g., `testModels`, `includeAll`, `finalApi`), enabling **experimentation without subclassing**.
+- **Error Resilience**: While not explicitly error-handled, the design assumes that individual model failures (e.g., API timeouts) do not halt the entire process. Failed models are skipped, and the pipeline continues with available data.
+- **Resource Intensity**: The class is **computationally and financially expensive** to run, as it involves multiple API calls across several high-end models. It is intended for **batch processing** rather than real-time use.
+
+---
+
+## Illustrative Usage Examples
+
+### Example 1: Generating a Full Report for a Single Paper
+
+```smalltalk
+""Create a report instance and generate a full Markdown analysis for a paper file.""
+| report paperFile markdownReport |
+
+paperFile := 'RustBelt.txt'.  ""Assumed to be in the configured directory""
+report := AIASWMreport new.
+markdownReport := report forPaper: paperFile.
+
+""Save the report to disk (optional)""
+report mdFileFor: paperFile markdown: markdownReport.
+```
+
+**When to Use**:
+- When evaluating a single research paper for strengths, weaknesses, and gaps.
+- When a **detailed, multi-AI perspective** is required for internal review or peer feedback.
+- When generating **standardised reports** for a collection of papers (e.g., conference submissions).
+
+---
+
+### Example 2: Customising Model Selection for an Experiment
+
+```smalltalk
+""Override default models to use only fast, lightweight models for a quick analysis.""
+AIASWMreport class compile: 'testModels ^ { MistralApi newOnModel: 1 }'.
+
+| report markdown |
+report := AIASWMreport new.
+report getPaperHistory: 'Paper1.txt'.
+report getEvaluations.
+report getRefinedResponses.
+markdown := report markdownReport.
+
+""View the report in a presenter""
+AIAPresenter onText: markdown.
+```
+
+**When to Use**:
+- When conducting **ablation studies** or comparing the performance of specific AI models.
+- When **time or cost constraints** require limiting the number of models or API calls.
+- When testing **new prompts or evaluation strategies** without full-scale deployment.
+
+---
+
+### Example 3: Batch Processing Multiple Papers
+
+```smalltalk
+""Process all papers in the directory and generate reports.""
+| papers |
+
+papers := #('Paper1.txt' 'Paper2.txt' 'Paper3.txt').
+papers do: [ :paper |
+    | report |
+    report := AIASWMreport new.
+    report forPaper: paper.
+    Transcript show: 'Generated report for ', paper; cr.
+].
+```
+
+**When to Use**:
+- When evaluating **multiple submissions** (e.g., for a conference or journal).
+- When building a **corpus of AI-generated critiques** for meta-research.
+- When automating **pre-screening** of papers for relevance or quality.
+
+---
+
+## Summary
+
+`AIASWMreport` is a **powerful, configurable tool** for AI-driven scientific paper analysis, designed for researchers and developers working at the intersection of **natural language processing** and **academic research**. It excels in scenarios requiring **multi-perspective synthesis**, **automated critique**, and **scalable evaluation workflows**, but should be used judiciously due to its resource demands. Its design emphasises **modularity**, **interruptibility**, and **reproducibility**, making it suitable for both exploratory and production use in research settings.
+"
 Class {
 	#name : 'AIASWMreport',
 	#superclass : 'Object',
@@ -106,10 +236,19 @@ AIASWMreport class >> prompts [
 { #category : 'default-settings' }
 AIASWMreport class >> testModels [
 	^ {
-		  GrokApi newOnModel: 2 "grok-code-fast-1".
-		  GeminiApi newOnModel: 1 "" .
-		  TogetherApi newOnModel: 4 "DeepSeek-V3.1".
-		  OpenAIApi newOnModel: 3 "gpt-5.1" }
+		  GrokApi newOnModel: 4.
+		  GeminiApi newOnModel: 1.
+		  ClaudeApi newOnModel: 2.
+		  OpenAIApi newOnModel: 4 "gpt-5.1" }
+]
+
+{ #category : 'default-settings' }
+AIASWMreport class >> testModels02 [
+	^ {
+		  GrokApi newOnModel: 4.
+		  GeminiApi newOnModel: 1.
+		  ClaudeApi newOnModel: 2.
+		  OpenAIApi newOnModel: 4 "gpt-5.1" }
 ]
 
 { #category : 'default-settings' }
@@ -145,7 +284,7 @@ AIASWMreport >> forPaper: paper [
 		getFinalResponses.
 	md := self markdownReport.
 	self mdFileFor: paper markdown: md.
-	self htmlFileFor: paper markdown: md.
+	"self htmlFileFor: paper markdown: md."
 	^ md
 ]
 
