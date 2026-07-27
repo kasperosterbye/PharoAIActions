@@ -66,7 +66,7 @@ AIAYouTubeChannel class >> channels [
 		'SciFi' -> self scifiChannels . 
 		'Smalltalk' -> self smalltalkChannels . 
 		"'@esugboard' -> self esugboardPlaylists."
-		'Misc' -> { 'Misc' } } asOrderedCollection 
+		'Misc' -> { 'Misc'. 'Fasting'} } asOrderedCollection 
 
 ]
 
@@ -150,11 +150,12 @@ AIAYouTubeChannel class >> subscriptionChannels [
 	"Returns an array of YouTube channel names for subscription"
     ^ { #HouseofEl.
 		  #'HouseofEl-AI'.
+        #SabineHossenfelder.
 		  #TLDRnewsEU.
-		  #'dw_podcasts'.
+		  #'JamesKerLindsay'.
+		  #AnastasiInTech.
         #TwoBitDaVinci. 
         #JustHaveaThink. 
-        #SabineHossenfelder.
 		  #'scottmanley'.
         #UndecidedTechnology. 
         #parthknowsai. 
