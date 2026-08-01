@@ -126,9 +126,7 @@ AIAYouTubeChannel class >> scifiChannels [
         #HFYZenith.
         #'Sci-Fi-Vault'.
 		  #ScifiGalaxyTales.
-		  #DarkspaceAudio. 
-        #'vitalAgehealth1-f1f'. 
-        #GalaxyChroniclesX }
+		  #AegisofSol}
 
 ]
 
