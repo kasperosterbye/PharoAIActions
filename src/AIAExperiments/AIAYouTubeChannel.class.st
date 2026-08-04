@@ -156,10 +156,7 @@ AIAYouTubeChannel class >> subscriptionChannels [
         #JustHaveaThink. 
 		  #'scottmanley'.
         #UndecidedTechnology. 
-        #parthknowsai. 
-        #PracticalEngineeringChannel. 
-        #ThunderboltsProject. 
-        #SeethePattern }
+        #ZirothTech}
 ]
 
 { #category : 'as yet unclassified' }
