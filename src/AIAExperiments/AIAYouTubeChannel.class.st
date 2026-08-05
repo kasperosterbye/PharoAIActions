@@ -126,6 +126,9 @@ AIAYouTubeChannel class >> scifiChannels [
         #HFYZenith.
         #'Sci-Fi-Vault'.
 		  #ScifiGalaxyTales.
+		  #'TheLastSci-fiChild'.
+		  #PhotonHFY.
+		  #'LegendsofHumanity-l6q'.
 		  #AegisofSol}
 
 ]
