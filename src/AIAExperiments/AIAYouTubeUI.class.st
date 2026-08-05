@@ -26,18 +26,29 @@ AIAYouTubeUI >> channelChangeAction [
 	channelList whenSelectionChangedDo: [ :selection |
 		| selected |
 		selected := selection selectedItem.
-		selected ifNotNil: [ self showChannel: selected ] ].
+		selected ifNotNil: [
+			self showChannel: selected ] ].
+
 	channelList whenActivatedDo: [ :selection |
 		| selected |
 		selected := selection selectedItem.
 		selected ifNotNil: [
 			[
 				self window title: 'Updating: ' , selected.
-				AIAYouTubeChannel new channelUpdate: selected.
+				(self channelClassFor: selected) new
+					channelUpdate: selected.
 				self window title: 'YouTube Browser'.
-				self showChannel: selected ]
-					forkAt: Processor userBackgroundPriority
-					named: 'YouTube update: ' , selected ] ].
+				self showChannel: selected
+			]
+				forkAt: Processor userBackgroundPriority
+				named: 'Channel update: ' , selected ] ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> channelClassFor: aChannel [
+	^ (aChannel asString beginsWith: 'dr_')
+		ifTrue: [ AIAdrChannel ]
+		ifFalse: [ AIAYouTubeChannel ]
 ]
 
 { #category : 'initialization' }
@@ -75,7 +86,7 @@ AIAYouTubeUI >> descriptionFor: aChannelHandle [
 	path := AIAYouTubeChannel new channelDirectory: aChannelHandle , '/description.txt'.
 	file := File named: path.
 	^ file exists
-		ifTrue: [ file readStream contents utf8Decoded ]
+		ifTrue: [ file readStream contents asString "utf8Decoded" ]
 		ifFalse: [ 'Not loaded yet' ]
 ]
 

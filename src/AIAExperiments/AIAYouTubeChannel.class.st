@@ -65,7 +65,7 @@ AIAYouTubeChannel class >> channels [
 		'Subscriptions' -> self subscriptionChannels . 
 		'SciFi' -> self scifiChannels . 
 		'Smalltalk' -> self smalltalkChannels . 
-		"'@esugboard' -> self esugboardPlaylists."
+		'DR' -> AIAdrChannel drChannels. 
 		'Misc' -> { 'Misc'. 'Fasting'} } asOrderedCollection 
 
 ]
@@ -256,4 +256,10 @@ AIAYouTubeChannel >> channelUpdate: channelHandle [
 	newIds do: [ :id |
 		episode episodeFetch: id.
 		episode episodeMeta: id ].
+]
+
+{ #category : 'testing' }
+AIAYouTubeChannel >> isDRChannel: aChannel [
+self halt.
+	^ aChannel asString beginsWith: 'dr_'
 ]
