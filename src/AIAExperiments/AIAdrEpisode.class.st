@@ -35,16 +35,6 @@ AIAdrEpisode >> channel: handler [
 	channel := handler.
 ]
 
-{ #category : 'as yet unclassified' }
-AIAdrEpisode >> ensureXMLParser [
-	(Smalltalk globals includesKey: #XMLDOMParser) ifTrue: [ ^ self ].
-
-	Metacello new
-		baseline: 'XMLParser';
-		repository: 'github://pharo-contributions/XML-XMLParser/src';
-		load
-]
-
 { #category : 'yt-dlp' }
 AIAdrEpisode >> episodeDownloadVtt: episodeId [
 	"Downloads the VTT subtitle file for a YouTube video using yt-dlp."
@@ -206,8 +196,6 @@ AIAdrEpisode >> episodeVttPath: episodeId [
 { #category : 'yt-dlp' }
 AIAdrEpisode >> episodeXMLItem: episodeId [
 	| document items |
-
-	self ensureXMLParser.
 
 	document := XMLDOMParser parseURL:
 		('https://api.dr.dk/podcasts/v1/feeds/', (channel asString allButFirst: 3)).
