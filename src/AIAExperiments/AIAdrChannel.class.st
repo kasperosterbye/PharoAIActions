@@ -52,20 +52,20 @@ Class {
 	#tag : 'YouTube'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAdrChannel class >> channelDictionary [
 	"Returns the directory path for storing YouTube channel data"
     ^ '/Users/kasper/D/YouTube/'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAdrChannel class >> drChannels [
 	^ { #dr_radioavisen.
 		#'dr_p1-debat'.
 		#'dr_akkurat-med-clement' }
 ]
 
-{ #category : 'yt-dlp' }
+{ #category : 'accessing' }
 AIAdrChannel class >> episodeUpdateLimit [
 	^ 2 asString
 ]
@@ -83,17 +83,17 @@ AIAdrChannel >> channelDirectory: channelHandle [
 	^ self class channelDictionary , channelHandle
 ]
 
-{ #category : 'yt-dlp' }
+{ #category : 'dr access' }
 AIAdrChannel >> channelEnsureDescription: channelHandle [
 	"Ensures the channel description file exists, creating it if necessary."
 
-	| path document channelElement title description link |
+	| path document channelElement title description |
 
 	path := (self channelDirectory: channelHandle) , '/description.txt'.
 	(File named: path) exists ifTrue: [ ^ self ].
 
 	document := XMLDOMParser parseURL:
-		(self feedURLFor: channelHandle).
+		('https://api.dr.dk/podcasts/v1/feeds/', (channelHandle asString allButFirst: 3)).
 
 	channelElement := (document allElementsNamed: 'channel') first.
 
@@ -120,7 +120,7 @@ AIAdrChannel >> channelEnsureDirectory: channelHandle [
 		LibC runCommand: 'mkdir -p "' , dir , '"' ]
 ]
 
-{ #category : 'yt-dlp' }
+{ #category : 'dr access' }
 AIAdrChannel >> channelEpisodeIds: channelHandle [
 	| feed document items ids |
 
@@ -168,10 +168,4 @@ AIAdrChannel >> channelUpdate: channelHandle [
 	newIds do: [ :id |
 		episode episodeFetch: id.
 		episode episodeMeta: id ]
-]
-
-{ #category : 'as yet unclassified' }
-AIAdrChannel >> feedURLFor: channelHandle [
-	^ 'https://api.dr.dk/podcasts/v1/feeds/',
-		(channelHandle asString allButFirst: 3)
 ]

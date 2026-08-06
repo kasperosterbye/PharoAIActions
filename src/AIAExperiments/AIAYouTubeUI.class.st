@@ -21,7 +21,7 @@ AIAYouTubeUI class >> open [
 	^ self new open
 ]
 
-{ #category : 'initialization' }
+{ #category : 'channel' }
 AIAYouTubeUI >> channelChangeAction [
 	channelList whenSelectionChangedDo: [ :selection |
 		| selected |
@@ -44,14 +44,14 @@ AIAYouTubeUI >> channelChangeAction [
 				named: 'Channel update: ' , selected ] ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'channel' }
 AIAYouTubeUI >> channelClassFor: aChannel [
 	^ (aChannel asString beginsWith: 'dr_')
 		ifTrue: [ AIAdrChannel ]
 		ifFalse: [ AIAYouTubeChannel ]
 ]
 
-{ #category : 'initialization' }
+{ #category : 'channel' }
 AIAYouTubeUI >> channelTypeChangeAction [
 	channelTypeList whenSelectionChangedDo: [ :selection |
 		| selected |
@@ -59,7 +59,7 @@ AIAYouTubeUI >> channelTypeChangeAction [
 		selected ifNotNil: [ self showChannelsForType: selected ] ].
 ]
 
-{ #category : 'initialization' }
+{ #category : 'misc' }
 AIAYouTubeUI >> defaultLayout [
 	| topPanel leftPanel |
 	topPanel := SpPanedLayout newVertical
@@ -80,7 +80,7 @@ AIAYouTubeUI >> defaultLayout [
 		yourself.
 ]
 
-{ #category : 'initialization' }
+{ #category : 'misc' }
 AIAYouTubeUI >> descriptionFor: aChannelHandle [
 	| path file |
 	path := AIAYouTubeChannel new channelDirectory: aChannelHandle , '/description.txt'.
@@ -90,7 +90,7 @@ AIAYouTubeUI >> descriptionFor: aChannelHandle [
 		ifFalse: [ 'Not loaded yet' ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeChangeAction [
 	episodeList whenSelectionChangedDo: [ :selection |
 		| selected |
@@ -106,7 +106,7 @@ AIAYouTubeUI >> episodeChangeAction [
 			LibC runCommand: 'open -a Safari "' , url , '"' ] ].
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeDateFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines |
 	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
@@ -117,7 +117,7 @@ AIAYouTubeUI >> episodeDateFor: anEpisodeId forChannel: aChannelHandle [
 	^ lines at: 5
 ]
 
-{ #category : 'initialization' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 	"Parse the meta file and return title, formatted date, and first paragraph."
 	| details |
@@ -127,7 +127,7 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 	^ "Microdown asRichText:" details
 ]
 
-{ #category : 'initialization' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines title date episodeId desc details |
 	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
@@ -145,14 +145,14 @@ AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	^ details
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeTextAction [
 	episodeDetail whenSubmitDo: [ :a | 
-		AIAPresenter onText: ('What is the essence of the description I gave you. Please let your response be at most 20 line. Start the title with the Channel name and Episode Name'
+		AIAPresenter onText: ('What is the essence of the description I gave you. Start the title with the Channel name and Episode Name. Please let your response be in the same language as the description text'
 		q0: [ a ])]
 ]
 
-{ #category : 'initialization' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| text file lines |
 	text := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
@@ -163,7 +163,7 @@ AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 	^ String lf, String lf, '### Episode contents', String lf, '```text', String lf, lines, String lf, '```'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines date title hasBeenRead |
 	aChannelHandle ifNil: [ ^ anEpisodeId ].
@@ -180,7 +180,7 @@ AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
     ifFalse: [ date , ' ' , title ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeToggleRead: indexes [
     | channel episode episodeId |
     channel := channelList selectedItem.
@@ -193,7 +193,7 @@ AIAYouTubeUI >> episodeToggleRead: indexes [
     episodeList refresh.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodesFor: aChannelHandle [
 	| dir entries |
 	aChannelHandle ifNil: [ ^ #() ].
@@ -207,7 +207,7 @@ AIAYouTubeUI >> episodesFor: aChannelHandle [
 		(self episodeDateFor: b forChannel: aChannelHandle) ]
 ]
 
-{ #category : 'initialization' }
+{ #category : 'misc' }
 AIAYouTubeUI >> formatDate: aDateString [
 	"Convert YYYYMMDD to DD-MM-YYYY."
 	aDateString size < 8 ifTrue: [ ^ aDateString ].
@@ -240,10 +240,12 @@ AIAYouTubeUI >> initializePresenters [
 AIAYouTubeUI >> initializeWindow: aWindowPresenter [
 	"Set the window title."
 	super initializeWindow: aWindowPresenter.
-	aWindowPresenter title: 'YouTube Browser'.
+	aWindowPresenter 
+		title: 'YouTube Browser';
+		initialExtent: 900 @ 700.
 ]
 
-{ #category : 'initialization' }
+{ #category : 'misc' }
 AIAYouTubeUI >> showChannel: aChannelHandle [
 	aChannelHandle ifNil: [ ^ self ].
 	descriptionText text: (self descriptionFor: aChannelHandle).
@@ -251,7 +253,7 @@ AIAYouTubeUI >> showChannel: aChannelHandle [
 	episodeDetail text: ''.
 ]
 
-{ #category : 'initialization' }
+{ #category : 'misc' }
 AIAYouTubeUI >> showChannelsForType: aTypeString [
 	| channels |
 	aTypeString ifNil: [ ^ self ].
@@ -262,13 +264,13 @@ AIAYouTubeUI >> showChannelsForType: aTypeString [
 	episodeDetail text: ''.
 ]
 
-{ #category : 'initialization' }
+{ #category : 'misc' }
 AIAYouTubeUI >> showEpisode: anEpisodeId [
 	anEpisodeId ifNil: [ ^ self ].
 	episodeDetail text: (self episodeDetailFor: anEpisodeId forChannel: channelList selectedItem).
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'misc' }
 AIAYouTubeUI >> showEpisodes: anEpisodeIdCollection [
 	| combined |
 	combined := anEpisodeIdCollection 

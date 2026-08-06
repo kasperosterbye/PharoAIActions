@@ -10,14 +10,14 @@ Class {
 	#tag : 'YouTube'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeEpisode class >> channelDictionary [
 	"Returns the directory path for storing YouTube channel data"
 	self error.
     ^ '/Users/kasper/D/YouTube/'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeEpisode class >> episodeFetch: youtube [
     "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
     | episodeId |
@@ -30,7 +30,7 @@ AIAYouTubeEpisode class >> episodeFetch: youtube [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeEpisode class >> episodeId: youtube [
     "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
     
@@ -77,7 +77,7 @@ AIAYouTubeEpisode >> episodeFetch: episodeId [
 		close
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeEpisode >> episodeHasAutoCaptions: episodeId [
     | command result |
     command := 'yt-dlp --list-subs "https://www.youtube.com/watch?v=' , episodeId , '" > /tmp/yt_subs.txt'.
@@ -86,7 +86,7 @@ AIAYouTubeEpisode >> episodeHasAutoCaptions: episodeId [
     ^ (result includesSubstring: 'has no automatic captions') not
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeEpisode >> episodeIsRead: episodeId [
     | file lines |
     file := File named: (self episodePath: episodeId) , episodeId , '_meta.txt'.

@@ -52,13 +52,13 @@ Class {
 	#tag : 'YouTube'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> channelDictionary [
 	"Returns the directory path for storing YouTube channel data"
     ^ '/Users/kasper/D/YouTube/'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> channels [
 	"Returns an array of YouTube channel names for novel content"
     ^ { 
@@ -70,7 +70,7 @@ AIAYouTubeChannel class >> channels [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> episodeFetch: youtube [
     "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
     | episodeId |
@@ -83,12 +83,12 @@ AIAYouTubeChannel class >> episodeFetch: youtube [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> episodeUpdateLimit [
 	^ 10 asString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> esugboardPlaylists [
 	"yt-dlp --flat-playlist --print ""%(id)s %(title)s"" ""https://www.youtube.com/@esugboard/playlists"" "
 	| lists |
@@ -119,7 +119,7 @@ IWST2011$PLBFA36B5236B77AD7' lines.
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> scifiChannels [
 	"Returns an array of YouTube channel names for novel content"
     ^ { #MiscSciFi.
@@ -133,7 +133,7 @@ AIAYouTubeChannel class >> scifiChannels [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> smalltalkChannels [
 	"Returns an array of YouTube channel names for novel content"
     ^ {
@@ -146,7 +146,7 @@ AIAYouTubeChannel class >> smalltalkChannels [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> subscriptionChannels [
 	"Returns an array of YouTube channel names for subscription"
     ^ { #HouseofEl.
@@ -162,7 +162,7 @@ AIAYouTubeChannel class >> subscriptionChannels [
         #ZirothTech}
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAYouTubeChannel class >> transcriptLanguages [ 
 	^ { 'en'. 'fr'. 'es'. 'pt' }
 ]
@@ -256,10 +256,4 @@ AIAYouTubeChannel >> channelUpdate: channelHandle [
 	newIds do: [ :id |
 		episode episodeFetch: id.
 		episode episodeMeta: id ].
-]
-
-{ #category : 'testing' }
-AIAYouTubeChannel >> isDRChannel: aChannel [
-self halt.
-	^ aChannel asString beginsWith: 'dr_'
 ]
