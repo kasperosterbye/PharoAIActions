@@ -30,16 +30,6 @@ AIAdrEpisode class >> episodeFetch: youtube [
 
 ]
 
-{ #category : 'as yet unclassified' }
-AIAdrEpisode class >> episodeId: youtube [
-    "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
-    
-    self new 
-		episodeFetch: youtube;
-		episodeMeta: youtube.
-
-]
-
 { #category : 'episode' }
 AIAdrEpisode >> channel: handler [
 	channel := handler.
@@ -69,40 +59,30 @@ self halt.
 
 { #category : 'episode' }
 AIAdrEpisode >> episodeFetch: episodeId [
-	| item enclosure url audioPath wavPath modelPath txtPath |
+	| item enclosure url audioPath wavPath txtPath text |
 
 	item := self episodeXMLItem: episodeId.
 	enclosure := item elementAt: 'enclosure'.
 	url := enclosure attributeAt: 'url'.
-self halt.
 	audioPath := self episodePath , episodeId , '.audio'.
 
 	LibC runCommand:
 		'curl -L -o "' , audioPath , '" "' , url , '"'.
 
 	wavPath := self episodePath , episodeId , '.wav'.
-
 	LibC runCommand:
 		'ffmpeg -y -i "' , audioPath ,
 		'" -ar 16000 -ac 1 -c:a pcm_s16le "' ,
 		wavPath , '"'.
-
-	modelPath :=
-		'/Users/kasper/whisper-models/ggml-large-v3-turbo.bin'.
+	
+	text := self textFromAudioOpenAI: wavPath asFileReference.	
 
 	txtPath := self episodePath , episodeId.
-
-	LibC runCommand:
-		'whisper-cli -m "' , modelPath ,
-		'" -f "' , wavPath ,
-		'" -l da -otxt -of "' , txtPath , '"'.
-
-	(File named: txtPath , '.txt') exists ifFalse: [
-		self error: 'Whisper did not create transcript for ' , episodeId ].
-
+	(File named: txtPath , '.txt') writeStream
+		<< text utf8Encoded << String lf ;
+		close.
 	(File named: wavPath) delete.
 	(File named: audioPath) delete.
-
 	^ txtPath , '.txt'
 ]
 
@@ -246,4 +226,45 @@ AIAdrEpisode >> episodeXMLItem: episodeId [
 { #category : 'initialization' }
 AIAdrEpisode >> initialize [
 	channel := ''.
+]
+
+{ #category : 'STT' }
+AIAdrEpisode >> textFromAudioOpenAI: aFileReference [
+	| entity part response parsed |
+
+	part := ZnMimePart
+		fieldName: 'file'
+		fileName: aFileReference basename
+		entity: (ZnEntity
+			with: aFileReference binaryReadStream contents
+			type: (ZnMimeType fromString: 'audio/wav')).
+
+	entity := ZnMultiPartFormDataEntity new.
+	entity
+		addPart: part;
+		addPart: (ZnMimePart
+			fieldName: 'model'
+			value: 'gpt-4o-mini-transcribe');
+		addPart: (ZnMimePart
+			fieldName: 'language'
+			value: 'da');
+		addPart: (ZnMimePart
+			fieldName: 'response_format'
+			value: 'json').
+
+	response := ZnClient new
+		url: 'https://api.openai.com/v1/audio/transcriptions';
+		headerAt: 'Authorization'
+			put: OpenAIApi openAI01;
+		entity: entity;
+		post;
+		contents.
+
+	parsed := STONJSON fromString: response.
+
+	^ (parsed includesKey: 'text')
+		ifTrue: [ parsed at: 'text' ]
+		ifFalse: [
+			self error:
+				'OpenAI transcription failed: ' , parsed asString ]
 ]
