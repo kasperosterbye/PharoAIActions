@@ -13,6 +13,23 @@ Class {
 	#tag : 'YouTube'
 }
 
+{ #category : 'examples' }
+AIAYouTubeUI class >> ensureXMLParser [
+	
+	(Smalltalk globals includesKey: #XMLDOMParser) ifTrue: [ ^ self ].
+	
+	Metacello new
+  		baseline: 'XMLParser';
+  		repository: 'github://pharo-contributions/XML-XMLParser/src';
+  		load.
+]
+
+{ #category : 'examples' }
+AIAYouTubeUI class >> new [ 
+	self ensureXMLParser.
+	^ super new
+]
+
 { #category : 'instance creation' }
 AIAYouTubeUI class >> open [
 	"Open the YouTube browser UI."
