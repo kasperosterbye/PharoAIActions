@@ -61,13 +61,17 @@ AIAdrChannel class >> channelDictionary [
 { #category : 'accessing' }
 AIAdrChannel class >> drChannels [
 	^ { #dr_radioavisen.
+		#'dr_vildt-naturligt'.
+		#'dr_norsken-svensken-og-dansken'.
+		#'dr_orientering'.
+		#'dr_p1-morgen'.
 		#'dr_p1-debat'.
 		#'dr_akkurat-med-clement' }
 ]
 
 { #category : 'accessing' }
 AIAdrChannel class >> episodeUpdateLimit [
-	^ 2 asString
+	^ 5 asString
 ]
 
 { #category : 'channel' }
