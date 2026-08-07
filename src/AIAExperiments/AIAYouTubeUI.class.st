@@ -165,7 +165,7 @@ AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeTextAction [
 	episodeDetail whenSubmitDo: [ :a | 
-		AIAPresenter onText: ('What is the essence of the description I gave you. Start the title with the Channel name and Episode Name. Please let your response be in the same language as the description text'
+		AIAPresenter onText: ('What is the details of the prompt I gave you? Start the title with the Channel name and Episode Name. Please let your response be in the same language as the description text'
 		q0: [ a ])]
 ]
 
