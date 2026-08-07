@@ -13,6 +13,34 @@ Class {
 	#tag : 'YouTube'
 }
 
+{ #category : 'accessing - structure variables' }
+AIAYouTubeUI class >> channels [
+	^ self channelsFromFile
+]
+
+{ #category : 'accessing - structure variables' }
+AIAYouTubeUI class >> channelsFromFile [
+	| result currentChannelsGroup currentChannels file |
+
+	file := '/Users/kasper/D/YouTube/channels.md' asFileReference.
+	result := OrderedCollection new.
+	currentChannelsGroup := '**empty**'.
+	currentChannels := OrderedCollection new.
+
+	file contents lines do: [ :line |
+		(line beginsWith: '# ') ifTrue: [
+				currentChannels ifNotEmpty: [
+					result add: currentChannelsGroup -> currentChannels ].
+				currentChannelsGroup := line allButFirst: 2.
+				currentChannels := OrderedCollection new ].	
+		(line beginsWith: '- ') ifTrue: [
+				currentChannels add: (line allButFirst: 2) asSymbol ] ].
+
+		result add: currentChannelsGroup -> currentChannels.
+
+	^ result
+]
+
 { #category : 'examples' }
 AIAYouTubeUI class >> ensureXMLParser [
 	

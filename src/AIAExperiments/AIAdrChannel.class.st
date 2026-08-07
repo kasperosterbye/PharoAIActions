@@ -63,7 +63,6 @@ AIAdrChannel class >> drChannels [
 	^ { #dr_radioavisen.
 		#'dr_vildt-naturligt'.
 		#'dr_norsken-svensken-og-dansken'.
-		#'dr_udsyn'.
 		#'dr_p1-morgen'.
 		#'dr_p1-orientering'.
 		#'dr_p1-debat'.
