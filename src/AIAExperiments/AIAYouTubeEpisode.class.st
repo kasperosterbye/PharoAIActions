@@ -50,7 +50,7 @@ AIAYouTubeEpisode >> episodeDownloadVtt: episodeId [
 	"Downloads the VTT subtitle file for a YouTube video using yt-dlp."
     | command |
     command := 'yt-dlp --write-auto-sub --skip-download --sub-lang ', language,  
-		' -o "', AIAYouTubeChannel channelDictionary,  
+		' -o "', AIAYouTubeUI channelDictionary,  
 		'%(id)s.%(ext)s" "https://www.youtube.com/watch?v=' , episodeId , '"'.
     LibC runCommand: command.
 
@@ -140,14 +140,14 @@ AIAYouTubeEpisode >> episodeMeta: episodeId [
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodePath [
 	"Returns the file path for the specified episode ID."
-    ^ AIAYouTubeChannel channelDictionary , channel, '/'
+    ^ AIAYouTubeUI channelDictionary , channel, '/'
 
 ]
 
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodePath: episodeId [
 	"Returns the file path for the specified episode ID."
-    ^ AIAYouTubeChannel channelDictionary , channel, '/'
+    ^ AIAYouTubeUI channelDictionary , channel, '/'
 
 ]
 
@@ -175,7 +175,7 @@ AIAYouTubeEpisode >> episodeTranscript: episodeId [
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodeVttPath: episodeId [
 	"Returns the file path for the VTT subtitle file of a YouTube video."
-    ^ AIAYouTubeChannel channelDictionary , episodeId , '.', language , '.vtt'
+    ^ AIAYouTubeUI channelDictionary , episodeId , '.', language , '.vtt'
 
 ]
 

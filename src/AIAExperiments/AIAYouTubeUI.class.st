@@ -134,12 +134,10 @@ AIAYouTubeUI >> defaultLayout [
 { #category : 'misc' }
 AIAYouTubeUI >> descriptionFor: aChannelHandle [
 	| path file |
-	self halt.
-	"path := AIAYouTubeChannel new channelDirectory: aChannelHandle , '/description.txt'."
 	path := self class channelDictionary , aChannelHandle , '/description.txt'.
 	file := File named: path.
 	^ file exists
-		ifTrue: [ file readStream contents utf8Decoded ]
+		ifTrue: [ file readStream contents asString  ]
 		ifFalse: [ 'Not loaded yet' ]
 ]
 
@@ -184,7 +182,7 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines title date episodeId desc details |
-	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
+	path := self class channelDictionary , aChannelHandle  ,
 		'/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ 'Not loaded yet' ].
@@ -209,7 +207,7 @@ AIAYouTubeUI >> episodeTextAction [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| text file lines |
-	text := (AIAYouTubeChannel new channelDirectory: aChannelHandle) ,
+	text := self class channelDictionary , aChannelHandle ,
 		'/' , anEpisodeId , '.txt'.
 	file := File named: text.
 	file exists ifFalse: [ ^ '' ].
@@ -221,7 +219,8 @@ AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines date title hasBeenRead |
 	aChannelHandle ifNil: [ ^ anEpisodeId ].
-	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
+	"path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'."
+	path :=  self class channelDictionary, aChannelHandle , '/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ anEpisodeId ].
 	lines := file readStream contents utf8Decoded lines.

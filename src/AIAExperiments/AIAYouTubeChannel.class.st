@@ -191,8 +191,7 @@ AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 	"Ensures the channel description file exists, creating it if necessary."
 
 	| path command raw |
-	path := (self channelDirectory: channelHandle) , '/description.txt'.
-	"(File named: path) exists ifTrue: [ ^ self ]."
+	path := AIAYouTubeUI channelDictionary , channelHandle , '/description.txt'.
 	command := 'yt-dlp -I 0 --print "playlist:description" "https://www.youtube.com/@' , 
 		channelHandle , '" > /tmp/yt_channel.txt'.
 	LibC runCommand: command.
@@ -207,7 +206,8 @@ AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 AIAYouTubeChannel >> channelEnsureDirectory: channelHandle [
 	"Ensures the directory for the specified channel handle exists, creating it if necessary."
 	| dir |
-	dir := self channelDirectory: channelHandle.
+	"dir := self channelDirectory: channelHandle."
+	dir := AIAYouTubeUI channelDictionary , channelHandle.
 	(File named: dir) exists ifFalse: [ 
 		LibC runCommand: 'mkdir -p "' , dir , '"' ]
 ]
@@ -239,7 +239,7 @@ AIAYouTubeChannel >> channelEpisodesOnDisk: channelHandle [
 	"Return a collection of episode IDs already downloaded for this channel."
 	| dir |
 	channelHandle ifNil: [ ^ #() ].
-	dir := FileReference / (self channelDirectory: channelHandle).
+	dir := FileReference / (AIAYouTubeUI channelDictionary , channelHandle).
 	dir exists ifFalse: [ ^ #() ].
 	^ (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])
