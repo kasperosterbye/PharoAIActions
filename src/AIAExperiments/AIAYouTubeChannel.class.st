@@ -55,12 +55,14 @@ Class {
 { #category : 'accessing' }
 AIAYouTubeChannel class >> channelDictionary [
 	"Returns the directory path for storing YouTube channel data"
+	self halt: 'Should not be called'.
     ^ '/Users/kasper/D/YouTube/'
 ]
 
 { #category : 'accessing' }
 AIAYouTubeChannel class >> channels [
 	"Returns an array of YouTube channel names for novel content"
+	self halt: 'Should not be called'.
     ^ { 
 		'Subscriptions' -> self subscriptionChannels . 
 		'SciFi' -> self scifiChannels . 
@@ -92,6 +94,7 @@ AIAYouTubeChannel class >> episodeUpdateLimit [
 AIAYouTubeChannel class >> esugboardPlaylists [
 	"yt-dlp --flat-playlist --print ""%(id)s %(title)s"" ""https://www.youtube.com/@esugboard/playlists"" "
 	| lists |
+	self halt: 'Should not be called'.
 	lists := 'ESUG 2025$PLJ5nSnWzQXi94CahnvTIO0F69oOdGJ3Xb
 ESUG 2024: Show Us Your Project$PLJ5nSnWzQXi89jwnBCmGPh9xG6shuvuwb
 ESUG 2024$PLJ5nSnWzQXi-uyYOZIVgXg1up_bclQc7e
@@ -122,6 +125,7 @@ IWST2011$PLBFA36B5236B77AD7' lines.
 { #category : 'accessing' }
 AIAYouTubeChannel class >> scifiChannels [
 	"Returns an array of YouTube channel names for novel content"
+	self halt: 'Should not be called'.
     ^ { #MiscSciFi.
         #HFYZenith.
         #'Sci-Fi-Vault'.
@@ -136,6 +140,7 @@ AIAYouTubeChannel class >> scifiChannels [
 { #category : 'accessing' }
 AIAYouTubeChannel class >> smalltalkChannels [
 	"Returns an array of YouTube channel names for novel content"
+	self halt: 'Should not be called'.
     ^ {
 		#'Pharo-projectOrg'.
 		#esugboard. 
@@ -149,6 +154,7 @@ AIAYouTubeChannel class >> smalltalkChannels [
 { #category : 'accessing' }
 AIAYouTubeChannel class >> subscriptionChannels [
 	"Returns an array of YouTube channel names for subscription"
+	self halt: 'Should not be called'.
     ^ { #HouseofEl.
 		  #'HouseofEl-AI'.
         #SabineHossenfelder.

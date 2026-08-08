@@ -13,6 +13,12 @@ Class {
 	#tag : 'YouTube'
 }
 
+{ #category : 'accessing' }
+AIAYouTubeUI class >> channelDictionary [
+	"Returns the directory path for storing YouTube channel data"
+    ^ '/Users/kasper/D/YouTube/'
+]
+
 { #category : 'accessing - structure variables' }
 AIAYouTubeUI class >> channels [
 	^ self channelsFromFile
@@ -22,7 +28,7 @@ AIAYouTubeUI class >> channels [
 AIAYouTubeUI class >> channelsFromFile [
 	| result currentChannelsGroup currentChannels file |
 
-	file := '/Users/kasper/D/YouTube/channels.md' asFileReference.
+	file := (self channelDictionary , 'channels.txt') asFileReference.
 	result := OrderedCollection new.
 	currentChannelsGroup := '**empty**'.
 	currentChannels := OrderedCollection new.
@@ -128,10 +134,12 @@ AIAYouTubeUI >> defaultLayout [
 { #category : 'misc' }
 AIAYouTubeUI >> descriptionFor: aChannelHandle [
 	| path file |
-	path := AIAYouTubeChannel new channelDirectory: aChannelHandle , '/description.txt'.
+	self halt.
+	"path := AIAYouTubeChannel new channelDirectory: aChannelHandle , '/description.txt'."
+	path := self class channelDictionary , aChannelHandle , '/description.txt'.
 	file := File named: path.
 	^ file exists
-		ifTrue: [ file readStream contents asString "utf8Decoded" ]
+		ifTrue: [ file readStream contents utf8Decoded ]
 		ifFalse: [ 'Not loaded yet' ]
 ]
 
@@ -154,7 +162,8 @@ AIAYouTubeUI >> episodeChangeAction [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeDateFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines |
-	path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
+	"path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'."
+	path := self class channelDictionary , aChannelHandle  , '/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ '00000000' ].
 	lines := file readStream contents asString lines.
@@ -242,7 +251,8 @@ AIAYouTubeUI >> episodeToggleRead: indexes [
 AIAYouTubeUI >> episodesFor: aChannelHandle [
 	| dir entries |
 	aChannelHandle ifNil: [ ^ #() ].
-	dir := FileReference / (AIAYouTubeChannel new channelDirectory: aChannelHandle).
+	"dir := FileReference / (AIAYouTubeChannel new channelDirectory: aChannelHandle)."
+	dir := FileReference / (self class channelDictionary , aChannelHandle).
 	dir exists ifFalse: [ ^ #() ].
 	entries := (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])
@@ -274,7 +284,7 @@ AIAYouTubeUI >> initializePresenters [
 	
 	descriptionText := self newText.
 	episodeDetail := self newText.
-	channelTypeList items: AIAYouTubeChannel channels asOrderedDictionary keys.
+	channelTypeList items: self class channels asOrderedDictionary keys.
 	self channelTypeChangeAction.
 	self channelChangeAction.
 	self episodeChangeAction.
@@ -302,7 +312,8 @@ AIAYouTubeUI >> showChannel: aChannelHandle [
 AIAYouTubeUI >> showChannelsForType: aTypeString [
 	| channels |
 	aTypeString ifNil: [ ^ self ].
-	channels := AIAYouTubeChannel channels asDictionary at: aTypeString .
+	"channels := AIAYouTubeChannel channels asDictionary at: aTypeString ."
+	channels := self class channels asDictionary at: aTypeString .
 	channelList items: channels.
 	descriptionText text: ''.
 	episodeList items: #().
