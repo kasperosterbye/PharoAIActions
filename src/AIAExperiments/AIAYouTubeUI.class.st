@@ -150,11 +150,20 @@ AIAYouTubeUI >> episodeChangeAction [
 	episodeList display: [ :episodeId |
 		self episodeTitleFor: episodeId forChannel: channelList selectedItem ].
 	episodeList whenActivatedDo: [ :selection |
-		| selected url |
+		| selected url channel raw channelName|
 		selected := selection selectedItem.
-		selected ifNotNil: [
-			url := 'https://www.youtube.com/watch?v=' , selected.
-			LibC runCommand: 'open -a Safari "' , url , '"' ] ].
+		channel :=  channelList selectedItem.
+		(channel beginsWith: 'dr_')
+			ifTrue: [ 
+				raw := self episodeRawMetaDetailFor: selected forChannel: channel.
+				channelName := channel allButFirst: 3.
+				url := 'https://www.dr.dk/lyd/p1/', channelName , '/' , channelName, '-', 
+						(raw fifth first: 4), '/', 
+						(raw first asLowercase copyReplaceAll: ' ' with: '-' ), '-', selected .]
+			ifFalse: [
+				url := 'https://www.youtube.com/watch?v=' , selected].
+			
+		LibC runCommand: 'open -a Safari "' , url , '"'  ].
 ]
 
 { #category : 'episode' }
@@ -195,6 +204,16 @@ AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	desc := ' ', lines sixth.
 	details := title , String lf , date , String lf , String lf , episodeId, String lf, desc.
 	^ details
+]
+
+{ #category : 'episode' }
+AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
+	| path file |
+	path := self class channelDictionary , aChannelHandle  ,
+		'/' , anEpisodeId , '_meta.txt'.
+	file := File named: path.
+	file exists ifFalse: [ ^ 'Not loaded yet' ].
+	^ file readStream contents utf8Decoded lines
 ]
 
 { #category : 'episode' }
