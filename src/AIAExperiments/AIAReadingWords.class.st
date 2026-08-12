@@ -10,17 +10,16 @@ Class {
 AIAReadingWords >> wordsOfSize: n count: k [
 	| result file |
 
-	result := OrderedCollection new: k.
+	result := OrderedCollection new.
 	file := '../../dsdo.txt' asFileReference.
 
 	file readStreamDo: [ :stream |
-		[ stream atEnd or: [ result size = k ] ] whileFalse: [
+		[ stream atEnd ] whileFalse: [
 			| word |
 			word := stream nextLine.
-			(word size = n and: [
-				(word includes: $-) not and: [
-				(word includes: $') not ]])
+			(word size = n and: [  
+				word first isLowercase and: [
+				word isLiteralSymbol  ]])
 				ifTrue: [ result add: word ] ] ].
-
-	^ result asArray
+	^ result shuffled first: (k min: result size)
 ]
