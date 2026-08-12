@@ -160,8 +160,7 @@ AIAYouTubeUI >> episodeChangeAction [
 				url := 'https://www.dr.dk/lyd/p1/', channelName , '/' , channelName, '-', 
 						(raw fifth first: 4), '/', 
 						(raw first asLowercase copyReplaceAll: ' ' with: '-' ), '-', selected .]
-			ifFalse: [
-				url := 'https://www.youtube.com/watch?v=' , selected].
+			ifFalse: [ url := 'https://www.youtube.com/watch?v=' , selected ].
 			
 		LibC runCommand: 'open -a Safari "' , url , '"'  ].
 ]
