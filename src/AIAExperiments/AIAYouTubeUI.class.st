@@ -218,8 +218,13 @@ AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle 
 { #category : 'episode' }
 AIAYouTubeUI >> episodeTextAction [
 	episodeDetail whenSubmitDo: [ :a | 
-		AIAPresenter onText: ('What is the details of the prompt I gave you? Start the title with the Channel name and Episode Name. Please let your response be in the same language as the description text'
-		q0: [ a ])]
+		| aiResponse |
+		aiResponse := ('Please summarize in details the prompt I gave you? 
+			Ignore the text before "Episode contents" in your response. 
+			Please let your response be in the same language as the description text'
+		q0: [ a ]).
+		AIAPresenter onText: (aiResponse copyReplaceAll: '$' with: '\$').
+		]
 ]
 
 { #category : 'episode' }
