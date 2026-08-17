@@ -293,6 +293,32 @@ AIAYouTubeUI >> formatDate: aDateString [
 		, (aDateString copyFrom: 7 to: 8)
 ]
 
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> getEpisodes [
+	
+	[ :job | | aiProcess secs |
+		aiProcess := [ 
+				self api messageList: self apiMessageList; loadResponse: self. 
+			] newProcess.
+		aiProcess priority: Processor userBackgroundPriority. 
+		aiProcess resume.
+		SystemProgressMorph uniqueInstance position: 10@20.
+		job interruptBlock: [
+			aiProcess terminate.
+			self assistant: 'AI based response Terminated'.
+			^ self
+		].
+		secs := self api responseWaitingInSecs.
+		1 to: secs * 2 do: [:each |
+			job
+				progress: ((1/(secs * 2)) * each) ;
+				title: ( self api asString, ' working {1} of {2}' 
+					format: {(each/2) asFloat printString. secs}).
+				self response ifNil: [500 milliSeconds wait].
+		].
+	] asJob run.
+]
+
 { #category : 'initialization' }
 AIAYouTubeUI >> initializePresenters [
 	super initializePresenters.
