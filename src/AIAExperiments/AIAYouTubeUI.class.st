@@ -8,6 +8,9 @@ Class {
 		'descriptionText',
 		'episodeDetail'
 	],
+	#classInstVars : [
+		'episodeUpdateLimit'
+	],
 	#category : 'AIAExperiments-YouTube',
 	#package : 'AIAExperiments',
 	#tag : 'YouTube'
@@ -56,6 +59,17 @@ AIAYouTubeUI class >> ensureXMLParser [
   		baseline: 'XMLParser';
   		repository: 'github://pharo-contributions/XML-XMLParser/src';
   		load.
+]
+
+{ #category : 'accessing' }
+AIAYouTubeUI class >> episodeUpdateLimit [
+	episodeUpdateLimit ifNil: [ episodeUpdateLimit := 2 ].
+	^ episodeUpdateLimit 
+]
+
+{ #category : 'accessing' }
+AIAYouTubeUI class >> episodeUpdateLimit: newLimit [
+	episodeUpdateLimit := newLimit 
 ]
 
 { #category : 'examples' }
@@ -110,12 +124,31 @@ AIAYouTubeUI >> channelTypeChangeAction [
 		selected ifNotNil: [ self showChannelsForType: selected ] ].
 ]
 
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> channelUpdateAll [
+	Transcript << 'Update all...' << String lf.
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> channelUpdateAllButton [
+	|all| 
+	all := self newButton
+		label: 'Update All';
+		help: 'Update all channels not marked with % in file channels.txt';
+		action: [ self channelUpdateAll ].
+	^ all
+]
+
 { #category : 'misc' }
 AIAYouTubeUI >> defaultLayout [
 	| topPanel leftPanel |
 	topPanel := SpPanedLayout newVertical
 		add: (SpPanedLayout newHorizontal
-			add: channelTypeList;
+			add: (SpBoxLayout newVertical 
+				add: channelTypeList;
+				add: (SpBoxLayout newHorizontal 
+					add: self channelUpdateAllButton expand: false;
+					add: self episodeUpdateLimitButton expand: false ));
 			add: channelList;
 			yourself);
 		add: descriptionText;
@@ -267,6 +300,15 @@ AIAYouTubeUI >> episodeToggleRead: indexes [
             ifTrue: [ episode episodeMarkAsUnread: episodeId ]
             ifFalse: [ episode episodeMarkAsRead: episodeId ] ].
     episodeList refresh.
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> episodeUpdateLimitButton [
+	| noOfEpisodeUpdates | 
+	noOfEpisodeUpdates := self newDropList
+		items: #(2 3 5 7 10);
+		whenSelectedItemChangedDo: [:newLimit | self class episodeUpdateLimit: newLimit ].
+	^ noOfEpisodeUpdates
 ]
 
 { #category : 'episode' }

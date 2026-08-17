@@ -86,11 +86,6 @@ AIAYouTubeChannel class >> episodeFetch: youtube [
 ]
 
 { #category : 'accessing' }
-AIAYouTubeChannel class >> episodeUpdateLimit [
-	^ 10 asString
-]
-
-{ #category : 'accessing' }
 AIAYouTubeChannel class >> esugboardPlaylists [
 	"yt-dlp --flat-playlist --print ""%(id)s %(title)s"" ""https://www.youtube.com/@esugboard/playlists"" "
 	| lists |
@@ -120,6 +115,11 @@ Favorites$FLO-vBhaKVZf0al-ISMMPvRw
 IWST2011$PLBFA36B5236B77AD7' lines.
 	^ lists collect: [ :l | (l splitOn: $$) first ]
 	
+]
+
+{ #category : 'accessing' }
+AIAYouTubeChannel class >> old_episodeUpdateLimit [
+	^ 10 asString
 ]
 
 { #category : 'accessing' }
@@ -216,7 +216,7 @@ AIAYouTubeChannel >> channelEnsureDirectory: channelHandle [
 AIAYouTubeChannel >> channelEpisodeIds: channelHandle [
 	"Returns a collection of episode IDs for a specified YouTube channel, limited to a specified count."
 	| yt  result |
-	yt := 'yt-dlp --flat-playlist --playlist-end ', AIAYouTubeChannel episodeUpdateLimit,
+	yt := 'yt-dlp --flat-playlist --playlist-end ', AIAYouTubeUI episodeUpdateLimit,
       ' --print "%(id)s" "https://www.youtube.com/@', channelHandle, '/videos" > /tmp/yt_ids.txt'.
 	LibC runCommand: yt.
 	result := (File named: '/tmp/yt_ids.txt') readStream contents asString lines.

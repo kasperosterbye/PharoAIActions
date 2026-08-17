@@ -414,16 +414,6 @@ AIASWMreport >> getRefinedResponses [
 				refinedResponses add: refined ] ] asJob run
 ]
 
-{ #category : 'as yet unclassified' }
-AIASWMreport >> htmlFileFor: paper markdown: md [
-	| html file |
-	file := self fileFor: paper fileType: '.html'.
-	html := MicHTMLDocument new
-        fromMicrodown: md;
-        contents.
-   file writeStreamDo: [ :s | s nextPutAll: html ]
-]
-
 { #category : 'initialization' }
 AIASWMreport >> initialize [ 
 	"Initializes the AIASWMreport instance by setting up the models collection."

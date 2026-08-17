@@ -70,7 +70,7 @@ AIAdrChannel class >> drChannels [
 ]
 
 { #category : 'accessing' }
-AIAdrChannel class >> episodeUpdateLimit [
+AIAdrChannel class >> old_episodeUpdateLimit [
 	^ 5 asString
 ]
 
@@ -136,7 +136,7 @@ AIAdrChannel >> channelEpisodeIds: channelHandle [
 	items := document allElementsNamed: 'item'.
 
 	ids := (items
-		first: (self class episodeUpdateLimit asInteger min: items size))
+		first: (AIAYouTubeUI episodeUpdateLimit asInteger min: items size))
 		collect: [ :item |
 			(item elementAt: 'guid')
 				contentString trimBoth ].
