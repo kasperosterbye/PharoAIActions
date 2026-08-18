@@ -42,12 +42,31 @@ AIAYouTubeUI class >> channelsFromFile [
 					result add: currentChannelsGroup -> currentChannels ].
 				currentChannelsGroup := line allButFirst: 2.
 				currentChannels := OrderedCollection new ].	
-		(line beginsWith: '- ') ifTrue: [
+		((line beginsWith: '- ') or: [ line beginsWith: '% ' ])  ifTrue: [
 				currentChannels add: (line allButFirst: 2) asSymbol ] ].
 
 		result add: currentChannelsGroup -> currentChannels.
 
 	^ result
+]
+
+{ #category : 'accessing - structure variables' }
+AIAYouTubeUI class >> channelsManualOnly [
+	"Channels marked with % are not included in Update All"
+	^ ((self channelDictionary , 'channels.txt') asFileReference contents lines
+		select: [ :line | line beginsWith: '% ' ])
+		collect: [ :line | (line allButFirst: 2) asSymbol ]
+
+
+]
+
+{ #category : 'accessing - structure variables' }
+AIAYouTubeUI class >> channelsToAutoUpdate [
+	| manual all |
+	manual := self channelsManualOnly.
+	all := OrderedCollection new.
+	self channels do: [ :group | all addAll: group value ].
+	^ (all reject: [ :handle | manual includes: handle ])
 ]
 
 { #category : 'examples' }
@@ -126,7 +145,9 @@ AIAYouTubeUI >> channelTypeChangeAction [
 
 { #category : 'as yet unclassified' }
 AIAYouTubeUI >> channelUpdateAll [
-	Transcript << 'Update all...' << String lf.
+	[ self channelUpdateAllJob ]
+		forkAt: Processor userBackgroundPriority
+		named: 'Update all channels'
 ]
 
 { #category : 'as yet unclassified' }
@@ -139,7 +160,26 @@ AIAYouTubeUI >> channelUpdateAllButton [
 	^ all
 ]
 
-{ #category : 'misc' }
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> channelUpdateAllJob [
+	| channels |
+	channels := self class channelsToAutoUpdate.
+	[ :job |
+		job interruptBlock: [
+			self window title: 'YouTube Browser'.
+			^ self ].
+		channels withIndexDo: [ :handle :index |
+			job
+				title: 'Updating ' , handle asString , ' (' , index asString
+						, ' of ' , channels size asString , ')';
+				progress: (index - 1) / channels size.
+			(self channelClassFor: handle) new channelUpdate: handle ].
+		job progress: 1 ] asJob run.
+	self window title: 'YouTube Browser'.
+	self showChannel: channelList selectedItem
+]
+
+{ #category : 'layout' }
 AIAYouTubeUI >> defaultLayout [
 	| topPanel leftPanel |
 	topPanel := SpPanedLayout newVertical
