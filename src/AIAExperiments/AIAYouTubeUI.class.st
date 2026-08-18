@@ -143,14 +143,14 @@ AIAYouTubeUI >> channelTypeChangeAction [
 		selected ifNotNil: [ self showChannelsForType: selected ] ].
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'channel' }
 AIAYouTubeUI >> channelUpdateAll [
 	[ self channelUpdateAllJob ]
 		forkAt: Processor userBackgroundPriority
 		named: 'Update all channels'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'channel' }
 AIAYouTubeUI >> channelUpdateAllButton [
 	|all| 
 	all := self newButton
@@ -160,7 +160,7 @@ AIAYouTubeUI >> channelUpdateAllButton [
 	^ all
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'channel' }
 AIAYouTubeUI >> channelUpdateAllJob [
 	| channels |
 	channels := self class channelsToAutoUpdate.
@@ -170,7 +170,7 @@ AIAYouTubeUI >> channelUpdateAllJob [
 			^ self ].
 		channels withIndexDo: [ :handle :index |
 			job
-				title: 'Updating ' , handle asString , ' (' , index asString
+				title: 'Updating channel: ' , handle asString , ' (' , index asString
 						, ' of ' , channels size asString , ')';
 				progress: (index - 1) / channels size.
 			(self channelClassFor: handle) new channelUpdate: handle ].
@@ -216,6 +216,9 @@ AIAYouTubeUI >> descriptionFor: aChannelHandle [
 
 { #category : 'episode' }
 AIAYouTubeUI >> episodeChangeAction [
+	episodeList bindKeyCombination: $r command asKeyCombination
+            toAction: [self episodeToggleRead ].
+	
 	episodeList whenSelectionChangedDo: [ :selection |
 		| selected |
 		selected := selection selectedItems.
@@ -290,6 +293,8 @@ AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle 
 
 { #category : 'episode' }
 AIAYouTubeUI >> episodeTextAction [
+	episodeDetail bindKeyCombination: $r command asKeyCombination
+				toAction: [ self episodeToggleRead ].
 	episodeDetail whenSubmitDo: [ :a | 
 		| aiResponse |
 		aiResponse := ('Please summarize in details the prompt I gave you? 
@@ -297,7 +302,7 @@ AIAYouTubeUI >> episodeTextAction [
 			Please let your response be in the same language as the description text'
 		q0: [ a ]).
 		AIAPresenter onText: (aiResponse copyReplaceAll: '$' with: '\$').
-		]
+		].
 ]
 
 { #category : 'episode' }
@@ -330,11 +335,11 @@ AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
 ]
 
 { #category : 'episode' }
-AIAYouTubeUI >> episodeToggleRead: indexes [
+AIAYouTubeUI >> episodeToggleRead [
     | channel episode episodeId |
     channel := channelList selectedItem.
     episode := AIAYouTubeEpisode new channel: channel; yourself.
-    indexes do: [ :index |
+    episodeList selectionMode selectedIndexes do: [ :index |
         episodeId := episodeList items at: index.
         (episode episodeIsRead: episodeId)
             ifTrue: [ episode episodeMarkAsUnread: episodeId ]
@@ -342,7 +347,7 @@ AIAYouTubeUI >> episodeToggleRead: indexes [
     episodeList refresh.
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeUpdateLimitButton [
 	| noOfEpisodeUpdates | 
 	noOfEpisodeUpdates := self newDropList
@@ -375,32 +380,6 @@ AIAYouTubeUI >> formatDate: aDateString [
 		, (aDateString copyFrom: 7 to: 8)
 ]
 
-{ #category : 'as yet unclassified' }
-AIAYouTubeUI >> getEpisodes [
-	
-	[ :job | | aiProcess secs |
-		aiProcess := [ 
-				self api messageList: self apiMessageList; loadResponse: self. 
-			] newProcess.
-		aiProcess priority: Processor userBackgroundPriority. 
-		aiProcess resume.
-		SystemProgressMorph uniqueInstance position: 10@20.
-		job interruptBlock: [
-			aiProcess terminate.
-			self assistant: 'AI based response Terminated'.
-			^ self
-		].
-		secs := self api responseWaitingInSecs.
-		1 to: secs * 2 do: [:each |
-			job
-				progress: ((1/(secs * 2)) * each) ;
-				title: ( self api asString, ' working {1} of {2}' 
-					format: {(each/2) asFloat printString. secs}).
-				self response ifNil: [500 milliSeconds wait].
-		].
-	] asJob run.
-]
-
 { #category : 'initialization' }
 AIAYouTubeUI >> initializePresenters [
 	super initializePresenters.
@@ -408,13 +387,10 @@ AIAYouTubeUI >> initializePresenters [
 	channelList := self newList.
 	episodeList := self newList.
 	episodeList beMultipleSelection.
-	
-	episodeList bindKeyCombination: $r command asKeyCombination
-            toAction: [:list | self episodeToggleRead: list selectedIndexes ].
-	
 	descriptionText := self newText.
 	episodeDetail := self newText.
 	channelTypeList items: self class channels asOrderedDictionary keys.
+	
 	self channelTypeChangeAction.
 	self channelChangeAction.
 	self episodeChangeAction.

@@ -198,7 +198,5 @@ AIAdrEpisode >> textFromAudioXAI: aFileReference [
 
 	^ (parsed includesKey: 'text')
 		ifTrue: [ parsed at: 'text' ]
-		ifFalse: [
-			self error:
-				'xAI transcription failed: ' , parsed asString ]
+		ifFalse: [ 'xAI transcription failed: ' , parsed asString ]
 ]
