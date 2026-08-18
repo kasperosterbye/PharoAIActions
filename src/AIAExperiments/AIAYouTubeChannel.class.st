@@ -216,7 +216,7 @@ AIAYouTubeChannel >> channelEnsureDirectory: channelHandle [
 AIAYouTubeChannel >> channelEpisodeIds: channelHandle [
 	"Returns a collection of episode IDs for a specified YouTube channel, limited to a specified count."
 	| yt  result |
-	yt := 'yt-dlp --flat-playlist --playlist-end ', AIAYouTubeUI episodeUpdateLimit,
+	yt := 'yt-dlp --flat-playlist --playlist-end ', AIAYouTubeUI episodeUpdateLimit asString,
       ' --print "%(id)s" "https://www.youtube.com/@', channelHandle, '/videos" > /tmp/yt_ids.txt'.
 	LibC runCommand: yt.
 	result := (File named: '/tmp/yt_ids.txt') readStream contents asString lines.
