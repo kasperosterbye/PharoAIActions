@@ -96,14 +96,14 @@ AilienInnerCall >> executeToolNamed: name withArgs: args [
     ^ 'Unknown tool: ', name
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'adding' }
 AilienInnerCall >> handleToolCall [
 	"Handles the tool calls by processing each call and adding the result to the message list."
 	(toolCall at: 'tool_calls') do: [ :call | 
 		outer messageList add: (self processToolCall: call) ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'adding' }
 AilienInnerCall >> innerCall [
 	"Initiates the language model call, checks for tool calls, and processes them or handles the response"
 	|  llmName  |
@@ -116,10 +116,17 @@ AilienInnerCall >> innerCall [
 	self handleToolCall
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'adding' }
 AilienInnerCall >> messageListAdd [
-	"Adds the tool call to the message list for the outer object"
-	outer messageList add: 'assistant' -> toolCall. 
+	"Adds a cleaned assistant message (only role + tool_calls) to the history"
+	| cleaned |
+	cleaned := Dictionary newFrom: {
+		'role' -> 'assistant'.
+		'tool_calls' -> (toolCall at: 'tool_calls')
+	}.
+	(toolCall at: 'content' ifAbsent: [ nil ]) ifNotNil: [ :c |
+		cleaned at: 'content' put: c ].
+	outer messageList add: 'assistant' -> cleaned.
 ]
 
 { #category : 'accessing' }

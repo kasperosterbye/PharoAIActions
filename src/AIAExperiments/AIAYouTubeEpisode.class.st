@@ -1,3 +1,30 @@
+"
+# Class: AIAYouTubeEpisode
+
+`AIAYouTubeEpisode` handles the download and processing of individual YouTube video transcripts and metadata.
+
+It uses `yt-dlp` to:
+- Check for available auto-generated captions
+- Download VTT subtitle files
+- Extract and clean the transcript text
+- Fetch and store basic video metadata (title, uploader, duration, upload date, description)
+
+The class also tracks whether an episode has been marked as read, storing this status in a local `_meta.txt` file.
+
+## Main responsibilities
+- Fetching and cleaning auto-captions into plain text
+- Managing local file storage for transcripts and metadata per channel
+- Marking episodes as read / unread
+
+## Dependencies
+- Requires `yt-dlp` to be installed and available on the system path
+- Relies on `AIAYouTubeUI channelDictionary` for the base storage path
+
+## Typical usage
+```smalltalk
+AIAYouTubeEpisode episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA'
+```
+"
 Class {
 	#name : 'AIAYouTubeEpisode',
 	#superclass : 'Object',

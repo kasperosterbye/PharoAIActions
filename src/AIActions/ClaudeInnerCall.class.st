@@ -66,6 +66,12 @@ ClaudeInnerCall >> handleToolCall [
 ]
 
 { #category : 'adding' }
+ClaudeInnerCall >> messageListAdd [
+	"Adds the tool call to the message list for the outer object"
+	outer messageList add: 'assistant' -> toolCall. 
+]
+
+{ #category : 'adding' }
 ClaudeInnerCall >> processToolCall: call [
 	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history"
     | result encoded|
