@@ -24,7 +24,10 @@ GeminiApi class >> modelNames [
 	"Look at https://ai.google.dev/gemini-api/docs/models to see the list"
 	
 	"^ #( 'gemini-2.0-flash' 'gemini-2.0-flash-lite-preview-02-05' 'gemini-1.5-pro' )"
-	^ #('gemini-2.5-flash') 
+	^ #('gemini-2.5-flash'
+	'gemini-3.5-flash'
+	'gemini-3.6-flash'
+	) 
 ]
 
 { #category : 'AI models' }

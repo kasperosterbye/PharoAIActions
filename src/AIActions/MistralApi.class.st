@@ -54,7 +54,12 @@ MistralApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 	
-	^ #('codestral-latest'  'devstral-latest' 'labs-devstral-small-2512' 'mistral-large-latest') 
+	^ #(
+		'codestral-latest'  
+		'zai-glm-5-2' 
+		'mistral-medium-3-5' 
+		'mistral-large-latest'
+		) 
 ]
 
 { #category : 'accessing' }

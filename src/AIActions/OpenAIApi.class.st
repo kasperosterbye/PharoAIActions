@@ -48,8 +48,8 @@ OpenAIApi class >> modelNames [
 	"Look at https://platform.openai.com/docs/models to see the list"
 	
 	^ #(  
-	'gpt-5-mini' 
-	'gpt-5.2-2025-12-11' 
+	'gpt-5.4-nano-2026-03-17' 
+	'gpt-5-2025-08-07' 
 	'gpt-5.1' 
 	'gpt-5.5'
 	)
