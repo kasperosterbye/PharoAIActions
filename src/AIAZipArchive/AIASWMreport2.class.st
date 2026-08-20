@@ -273,7 +273,6 @@ AIASWMreport2 >> getPaperHistory [
 		user: 'What is the title of the paper, and who wrote it.';
 		responseType: 'Your response should be written in Markdown. Your response should be smaller than header three `###`';
 		getResponse.
-	self halt.
 	^ originalPaperHistory 
 		
 	
