@@ -129,9 +129,10 @@ papers do: [ :paper |
 `AIASWMreport` is a **powerful, configurable tool** for AI-driven scientific paper analysis, designed for researchers and developers working at the intersection of **natural language processing** and **academic research**. It excels in scenarios requiring **multi-perspective synthesis**, **automated critique**, and **scalable evaluation workflows**, but should be used judiciously due to its resource demands. Its design emphasises **modularity**, **interruptibility**, and **reproducibility**, making it suitable for both exploratory and production use in research settings.
 "
 Class {
-	#name : 'AIASWPMreport',
+	#name : 'AIASWMreport2',
 	#superclass : 'Object',
 	#instVars : [
+		'paperTitle',
 		'models',
 		'resposeHistories',
 		'refinedResponses',
@@ -139,7 +140,7 @@ Class {
 		'originalPaperHistory'
 	],
 	#classVars : [
-		'MarkDown'
+		'Markdown'
 	],
 	#category : 'AIAZipArchive-ExperimentsResearch',
 	#package : 'AIAZipArchive',
@@ -147,38 +148,56 @@ Class {
 }
 
 { #category : 'default-settings' }
-AIASWPMreport class >> finalApi [
+AIASWMreport2 class >> finalApi [
 	^ ClaudeApi newOnModel: 4
-	"^ MistralApi newOnModel: 1"
 ]
 
 { #category : 'default-settings' }
-AIASWPMreport class >> includeAll [
+AIASWMreport2 class >> forFile: fileName [
+	| root txtFile |
+	root := self swmDirectory.
+	txtFile := (fileName first: (fileName size - 4)) , '.txt'.
+	(root, txtFile ) asFileReference exists 
+		ifFalse: [ "Assume it is a pdf file"
+			AilienOCR pdf: fileName in: root ].
+	^ self new forPaper: txtFile 
+	
+]
+
+{ #category : 'default-settings' }
+AIASWMreport2 class >> includeAll [
 	^ false
 ]
 
 { #category : 'default-settings' }
-AIASWPMreport class >> testModels [
+AIASWMreport2 class >> swmDirectory [
+	^  '/Users/kasper/D/AI-Experiments/SWM2/'.
+    
+]
+
+{ #category : 'default-settings' }
+AIASWMreport2 class >> testModels [
 	^ {
 		  GrokApi newOnModel: 4.
-		  "GeminiApi newOnModel: 1.
-		  ClaudeApi newOnModel: 2.
-		  OpenAIApi newOnModel: 4" "gpt-5.1" }
+		  GeminiApi newOnModel: 1.
+		  ClaudeApi newOnModel: 3.
+		  OpenAIApi newOnModel: 4 }
 ]
 
 { #category : 'file in/out' }
-AIASWPMreport >> fileFor: paper fileType: ft [
+AIASWMreport2 >> fileFor: paper fileType: ft [
 	^ FileSystem disk root / 'Users' / 'kasper' 
-        / 'D' / 'AI-Experiments' / 'SWPM' 
+        / 'D' / 'AI-Experiments' / 'SWM' 
         / (paper copyReplaceAll: '.txt' with: ft)
 ]
 
 { #category : 'markdown' }
-AIASWPMreport >> forPaper: paper [
+AIASWMreport2 >> forPaper: paper [
 
 	| md |
+	paperTitle := paper.
 	self
-		getPaperHistory: paper;
+		getPaperHistory;
 		getEvaluations;
 		getRefinedResponses;
 		getFinalResponses.
@@ -188,7 +207,7 @@ AIASWPMreport >> forPaper: paper [
 ]
 
 { #category : 'SWM builder' }
-AIASWPMreport >> getEvaluations [
+AIASWMreport2 >> getEvaluations [
 	"This method generates independent evaluations of a paper using multiple AI models, creating a collection of responses that form the first level of analysis."
 
 	resposeHistories := OrderedCollection new.
@@ -201,7 +220,7 @@ AIASWPMreport >> getEvaluations [
 						api: model;
 						addPreHistory: originalPaperHistory;
 						user: '[PROMTED] ' , model printString;
-						user: 'What do you see as its strengts, what do you see as its weaknesses, what do you see as potentials, and what do you see as its missing areas?';
+						user: 'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?';
 						responseType: 'Your response should be written in Markdown.';
 						getResponse .
 				resposeHistories add: hist 
@@ -210,7 +229,7 @@ AIASWPMreport >> getEvaluations [
 ]
 
 { #category : 'SWM builder' }
-AIASWPMreport >> getFinalResponses [
+AIASWMreport2 >> getFinalResponses [
 	"The method generates a consolidated evaluation of a paper by synthesizing responses from multiple AI models. It uses a high-level model (Claude) to combine and refine all previous evaluations into a final comprehensive assessment."
 
 	finalResponse := AIAHistory new.
@@ -223,13 +242,13 @@ AIASWPMreport >> getFinalResponses [
 					user: model messages first value , ' was asked, and gave this response';
 					user: model messages third value ].
 		finalResponse user:
-			'The previous responses were from several AI systems. Based on their answers, what do you see as its strengts, what do you see as its weaknesses, what do you see as potentials, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.'.
+			'The previous responses were from several AI systems. Based on their answers, what do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas?. Do not summarize, but include aspects you think are important.'.
 		finalResponse getResponse ] asJob run.
 	^ finalResponse
 ]
 
 { #category : 'SWM builder' }
-AIASWPMreport >> getModels [
+AIASWMreport2 >> getModels [
 	"This method initializes and returns a collection of AI models configured for testing purposes. It creates instances of different AI providers with specific model versions, ensuring a diverse set of models for evaluation."
 	| aiModels aiModel|
 	aiModels := OrderedCollection new.
@@ -243,11 +262,30 @@ AIASWPMreport >> getModels [
 ]
 
 { #category : 'SWM builder' }
-AIASWPMreport >> getPaperHistory: paper [
+AIASWMreport2 >> getPaperHistory [
+	| paperBackground |
+	paperBackground := (self class swmDirectory asFileReference / paperTitle )
+				readStream contents trimBoth.
+	originalPaperHistory := AIAHistory new.
+	originalPaperHistory 
+		api: (MistralApi newOnModel: 1);
+		background: paperBackground ;
+		user: 'What is the title of the paper, and who wrote it.';
+		responseType: 'Your response should be written in Markdown. Your response should be smaller than header three `###`';
+		getResponse.
+	self halt.
+	^ originalPaperHistory 
+		
+	
+]
+
+{ #category : 'SWM builder' }
+AIASWMreport2 >> getPaperHistory: paper [
 	"Method reads paper content, creates history object with Mistral API, and extracts title and authors in Markdown format"
 	| paperBackground |
-	paperBackground := (FileSystem disk root / 'Users' / 'kasper' 
-		/ 'D' / 'AI-Experiments' / 'SWPM' / paper) readStream contents trimBoth.
+	self error: 'Should not be called'.
+	paperBackground := (self class swmDirectory asFileReference / paper)
+				readStream contents trimBoth.
 	originalPaperHistory := AIAHistory new.
 	originalPaperHistory 
 		api: (MistralApi newOnModel: 1);
@@ -261,7 +299,7 @@ AIASWPMreport >> getPaperHistory: paper [
 ]
 
 { #category : 'SWM builder' }
-AIASWPMreport >> getPaperSummary [
+AIASWMreport2 >> getPaperSummary [
 	"Generates a concise 20-line Markdown summary of the paper including title and authors"
 	| summary |
 	summary := AIAHistory new.
@@ -275,7 +313,7 @@ AIASWPMreport >> getPaperSummary [
 ]
 
 { #category : 'SWM builder' }
-AIASWPMreport >> getRefinedResponses [
+AIASWMreport2 >> getRefinedResponses [
 	"The method synthesizes multiple AI evaluations into refined responses by combining all initial assessments and prompting each model to integrate them into a cohesive analysis."
 
 	| allResponses |
@@ -294,25 +332,25 @@ AIASWPMreport >> getRefinedResponses [
 					addPreHistory: allResponses;
 					user: '[PROMTED] ' , model api printString;
 					user:
-						'What do you see as its strengts, what do you see as its weaknesses, what do you see as potentials, and what do you see as its missing areas? Please combine your answers from the responces given sofar';
+						'What do you see as its strengts, what do you see as its weaknesses, and what do you see as its missing areas? Please combine your answers from the responces given sofar';
 					responseType: 'Your response should be written in Markdown. Your response should be smaller than header `###`';
 					getResponse.
 				refinedResponses add: refined ] ] asJob run
 ]
 
 { #category : 'initialization' }
-AIASWPMreport >> initialize [ 
+AIASWMreport2 >> initialize [ 
 	"Initializes the AIASWMreport instance by setting up the models collection."
 	super initialize.
 	models := self class testModels
 ]
 
 { #category : 'markdown' }
-AIASWPMreport >> markdownRefinedResponses [
+AIASWMreport2 >> markdownRefinedResponses [
 	"The method generates a Markdown-formatted summary of refined AI evaluations, combining multiple perspectives into a cohesive analysis."
 	
-	MarkDown ifNil: [   MarkDown := WriteStream on: ''].
-	MarkDown 
+	Markdown ifNil: [   Markdown := WriteStream on: ''].
+	Markdown 
 		<< '## Level 2 AI based readings of the paper' << String cr << String cr
 		<< 'Each AI model was then shown ALL Level 1 responses and asked 
 to synthesize them into a combined analysis. This tests whether models 
@@ -321,18 +359,18 @@ can integrate multiple viewpoints coherently.
 This approach reveals both individual AI perspectives and their ability 
 to perform meta-analysis across different viewpoints.' << String cr << String cr.
 	refinedResponses do: [ :rh |
-		MarkDown << '### ' "<< rh messages first key << ' -> '" <<  rh messages first value << String cr .
-		MarkDown << rh messages second key << ' -> ' <<  rh messages second value << String cr .
+		Markdown << '### ' "<< rh messages first key << ' -> '" <<  rh messages first value << String cr .
+		Markdown << rh messages second key << ' -> ' <<  rh messages second value << String cr .
 		
-		MarkDown << rh messages third key << ' -> ' << String cr << 
+		Markdown << rh messages third key << ' -> ' << String cr << 
 			rh messages third value << String cr <<  String cr<< String cr.
 		
 		 ].
-	^ MarkDown contents
+	^ Markdown contents
 ]
 
 { #category : 'markdown' }
-AIASWPMreport >> markdownReport [
+AIASWMreport2 >> markdownReport [
 	"The method generates a comprehensive Markdown report combining all AI evaluations of a scientific paper."
 
 	| title  overview |
@@ -344,42 +382,42 @@ AIASWPMreport >> markdownReport [
 		markdownJob title: 'Building Biblatex'.
 		
 
-		MarkDown := WriteStream on: ''.
-		MarkDown << '# Paper judgement ' << Date today asString << String cr << String cr << title << String cr << String cr << overview
-		<< String cr << String cr << String cr << String cr
-		<< '### Best, weak, potential and missing summary' << String cr << String cr << finalResponse messages last value << String cr
-		<< String cr.
+		Markdown := WriteStream on: ''.
+		Markdown << '# Paper judgement ' << Date today asString << String lf << String lf << title << String lf << String lf << overview
+		<< String lf << String lf << String lf << String lf
+		<< '### Best, weak, and missing summary' << String lf << String lf << finalResponse messages last value << String lf
+		<< String lf.
 		self class includeAll ifTrue: [
 			markdownJob title: 'Building Level 1'.
-			MarkDown << self markdownResposeHistories.
+			Markdown << self markdownResposeHistories.
 			markdownJob title: 'Building Level 2'.
-			MarkDown << self markdownRefinedResponses ]] asJob run.
-	AIAPresenter onText: MarkDown contents.
-	^ MarkDown contents
+			Markdown << self markdownRefinedResponses ]] asJob run.
+	AIAPresenter onText: Markdown contents.
+	^ Markdown contents
 ]
 
 { #category : 'markdown' }
-AIASWPMreport >> markdownResposeHistories [ 
+AIASWMreport2 >> markdownResposeHistories [ 
 	"The method generates a Markdown-formatted summary of initial AI evaluations, showing individual model perspectives on paper strengths, weaknesses, and missing areas."
-	MarkDown ifNil: [   MarkDown := WriteStream on: ''].
-	MarkDown 
+	Markdown ifNil: [   Markdown := WriteStream on: ''].
+	Markdown 
 		<< '## Level 1 AI based readings of the paper' << String cr << String cr
 		<< 'Each AI model received the paper and was asked: "What are its 
-strengths, weaknesses, potentials, and missing areas?" These are independent, 
+strengths, weaknesses, and missing areas?" These are independent, 
 single-perspective analyses.' << String cr << String cr.
 	resposeHistories do: [ :rh |
-		MarkDown << '### ' "<< rh messages first key << ' -> ' " <<  rh messages first value << String cr .
-		MarkDown << rh messages second key << ' -> ' <<  rh messages second value << String cr .
+		Markdown << '### ' "<< rh messages first key << ' -> ' " <<  rh messages first value << String cr .
+		Markdown << rh messages second key << ' -> ' <<  rh messages second value << String cr .
 		
-		MarkDown << rh messages third key << ' -> ' << String cr << 
+		Markdown << rh messages third key << ' -> ' << String cr << 
 			rh messages third value << String cr <<  String cr<< String cr.
 		
 		 ].
-	^ MarkDown contents
+	^ Markdown contents
 ]
 
 { #category : 'file in/out' }
-AIASWPMreport >> mdFileFor: paper markdown: md [
+AIASWMreport2 >> mdFileFor: paper markdown: md [
 	| file |
 	file := self fileFor: paper fileType: '.md'.
    file writeStreamDo: [ :s | s nextPutAll: md ]

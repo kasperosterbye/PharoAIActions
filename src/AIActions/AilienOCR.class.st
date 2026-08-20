@@ -38,8 +38,19 @@ Class {
 { #category : 'as yet unclassified' }
 AilienOCR class >> pdf: aFileName [
     | folder fileReference text outputReference |
-    "folder := '/Users/kasper/downloads' asFileReference."
-	 folder := '/Users/kasper/D/AI-Experiments/SWM/' asFileReference.
+    folder := '/Users/kasper/downloads' asFileReference.
+    fileReference := folder / aFileName.
+    text := self new textFromPDF: fileReference.
+    outputReference := folder / (aFileName copyReplaceAll: '.pdf' with: '.txt').
+    outputReference writeStreamDo: [ :stream |
+        stream nextPutAll: text ].
+    ^ text
+]
+
+{ #category : 'as yet unclassified' }
+AilienOCR class >> pdf: aFileName in: folderFile [
+    | folder fileReference text outputReference |
+	 folder := folderFile asFileReference.
     fileReference := folder / aFileName.
     text := self new textFromPDF: fileReference.
     outputReference := folder / (aFileName copyReplaceAll: '.pdf' with: '.txt').
