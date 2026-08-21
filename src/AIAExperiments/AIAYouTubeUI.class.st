@@ -297,7 +297,7 @@ AIAYouTubeUI >> episodeTextAction [
 				toAction: [ self episodeToggleRead ].
 	episodeDetail whenSubmitDo: [ :a | 
 		| aiResponse |
-		aiResponse := ('Please summarize in details the prompt I gave you? 
+		aiResponse := ('Please summarize the episode text I gave you, about 250 tokens in size. 
 			Ignore the text before "Episode contents" in your response. 
 			Please let your response be in the same language as the description text'
 		q0: [ a ]).
