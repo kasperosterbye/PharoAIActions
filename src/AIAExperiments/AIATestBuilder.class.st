@@ -229,7 +229,6 @@ AIATestBuilder >> repairResponseMethod [
 	lines := testMethod lines.
 	startIndex := lines findFirst: [ :line | line beginsWith: 'test' ].
 	startIndex > 1 ifTrue: [
-		self halt.
 			testMethod := lines findFirst: [ :line | line beginsWith: 'test' ] ]
 	
 ]
@@ -253,39 +252,4 @@ AIATestBuilder >> testMethodName [
 		joinUsing: ''.
 	testName := 'test', name.
 	^ testName
-]
-
-{ #category : 'as yet unclassified' }
-AIATestBuilder >> xxx_captureErrorFor: aSelector in: aTestClass [
-    | result suite case |
-self halt.
-    suite := TestSuite new.
-    case := aTestClass selector: aSelector.
-    suite addTest: case.
-    result := suite run.
-    result errors ifNotEmpty: [ :errors | 
-        | ex |
-
-self halt.
-        ex := errors first exception.
-        ^ 'SYNTAX/RUNTIME ERROR: ', ex description, 
-          ' at: ', (ex signalerContext method selector asString) ].
-    ^ nil
-
-
-]
-
-{ #category : 'as yet unclassified' }
-AIATestBuilder >> xxx_captureFailureFor: aSelector in: aTestClass [
-    | result suite case |
-    suite := TestSuite new.
-    case := aTestClass selector: aSelector.
-    suite addTest: case.
-    result := suite run.
-
-    result failures ifNotEmpty: [ :failures |
-        | signal |
-        signal := failures first exception.
-        ^ 'LOGIC FAILURE: ', signal messageText ].
-    ^ nil
 ]
