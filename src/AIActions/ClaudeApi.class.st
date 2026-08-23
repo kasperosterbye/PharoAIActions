@@ -75,6 +75,11 @@ ClaudeApi class >> znClientHeaders: jsonPrompt [
 ]
 
 { #category : 'adding' }
+ClaudeApi >> innerCallClass [
+	^ ClaudeInnerCall
+]
+
+{ #category : 'adding' }
 ClaudeApi >> jsonHistory [
 	"Returns the JSON representation of the message history for API interaction"
     | jsonHistory |
@@ -87,21 +92,6 @@ ClaudeApi >> jsonHistory [
                     'role' -> item key.
                     'content' -> item value }) ] ].
     ^ jsonHistory asArray
-]
-
-{ #category : 'adding' }
-ClaudeApi >> loadResponse: aHistory [
-	"Loads and processes the response from the AI API, updating the conversation history with the assistant's reply."
-	| maxTurns  |
-	history := aHistory.
-	maxTurns := 50.
-	1 to: maxTurns do: [ :turn |
-			| inner |
-			inner := (ClaudeInnerCall on: self turn: turn) innerCall.
-			inner = '*notool*' ifTrue: [ ^ self ].
-			].
-	history assistant: 
-		('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
 ]
 
 { #category : 'adding' }

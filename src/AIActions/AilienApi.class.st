@@ -291,6 +291,11 @@ AilienApi >> initialize [
 	self responseWaitingInSecs: 20*60.
 ]
 
+{ #category : 'adding' }
+AilienApi >> innerCallClass [
+	^ AilienInnerCall
+]
+
 { #category : 'accessing' }
 AilienApi >> jsonHistory [
     | jsonHistory |
@@ -306,7 +311,7 @@ AilienApi >> loadResponse: aHistory [
 	maxTurns := 50.
 	1 to: maxTurns do: [ :turn |
 			| inner |
-			inner := (AilienInnerCall on: self turn: turn) innerCall.
+			inner := (self innerCallClass on: self turn: turn) innerCall.
 			inner = '*notool*' ifTrue: [ ^ self ].
 			].
 	history assistant: ('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })

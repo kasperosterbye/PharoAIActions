@@ -101,15 +101,7 @@ self halt.
 	^ message.
 ]
 
-{ #category : 'responses' }
-OllamaApi >> loadResponse: aHistory [
-	"Loads and processes the response from the AI API, updating the conversation history with the assistant's reply."
-	| maxTurns  |
-	history := aHistory.
-	maxTurns := 50.
-	1 to: maxTurns do: [ :turn |
-			(OllamaInnerCall on: self turn: turn) innerCall.
-			].
-	^ history assistant: 
-		('API Error: tried more than the {1} allowed TOOLS calls' format: { maxTurns })
+{ #category : 'adding' }
+OllamaApi >> innerCallClass [
+	^ OllamaInnerCall
 ]
