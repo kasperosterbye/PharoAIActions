@@ -89,7 +89,7 @@ OllamaApi >> continueToolCall: parsed orWrite: aHistory [
 	"Continues tool calls writes assistant content or handles api errors"
 
 	| message content |
-self halt.
+self error: 'Should not be called'.
 	(parsed includesKey: 'error') ifTrue: [ 
 		self responseError: parsed hist: aHistory. 
 		^ nil ].
