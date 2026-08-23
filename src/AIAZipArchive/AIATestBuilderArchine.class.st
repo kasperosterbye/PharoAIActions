@@ -6,6 +6,11 @@ Class {
 	#tag : 'Tests01'
 }
 
+{ #category : 'as yet unclassified' }
+AIATestBuilderArchine >> historyBuilder [
+	^ self shouldBeImplemented
+]
+
 { #category : 'instance creation' }
 AIATestBuilderArchine >> xxx_backgroundGenerator [
 	"The systemGenerator method provides context about the system including packages classes and methods to ensure accurate test generation."

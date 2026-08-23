@@ -103,7 +103,7 @@ AIATestBuilder >> chatHistory [
 	^ chatBuilder chatHistory
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'test builder' }
 AIATestBuilder >> checkBuildedTest: testMethodRef [
 	"Run the test method using SUnit infrastructure"
 

@@ -5,6 +5,7 @@ Class {
 		'name',
 		'comment'
 	],
-	#category : 'AIActions-Tests',
-	#package : 'AIActions-Tests'
+	#category : 'AIActions-Tests-OldAndShouldBeRedone-Tests',
+	#package : 'AIActions-Tests',
+	#tag : 'OldAndShouldBeRedone-Tests'
 }
