@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"MethodExample demonstrates simple arithmetic operation and variable assignment for testing purposes"
+	"Example method used to test adding and removing method comments in AIAMethodCommentTest"
 	| foo |
 	foo := 88.
 	^ foo + 12.

@@ -1,3 +1,6 @@
+"
+Killroy test
+"
 Class {
 	#name : 'AIAClassComment',
 	#superclass : 'AIACommentBuilding',

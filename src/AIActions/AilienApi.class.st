@@ -54,7 +54,7 @@ Class {
 	],
 	#classVars : [
 		'ErrorResponse',
-		'LastHistory',
+		'LastHistoryX',
 		'Provider'
 	],
 	#classInstVars : [
