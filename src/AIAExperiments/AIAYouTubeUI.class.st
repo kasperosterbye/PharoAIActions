@@ -30,7 +30,6 @@ AIAYouTubeUI class >> channels [
 { #category : 'accessing - structure variables' }
 AIAYouTubeUI class >> channelsFromFile [
 	| result currentChannelsGroup currentChannels file |
-
 	file := (self channelDictionary , 'channels.txt') asFileReference.
 	result := OrderedCollection new.
 	currentChannelsGroup := '**empty**'.
@@ -46,7 +45,6 @@ AIAYouTubeUI class >> channelsFromFile [
 				currentChannels add: (line allButFirst: 2) asSymbol ] ].
 
 		result add: currentChannelsGroup -> currentChannels.
-
 	^ result
 ]
 
@@ -69,6 +67,14 @@ AIAYouTubeUI class >> channelsToAutoUpdate [
 	^ (all reject: [ :handle | manual includes: handle ])
 ]
 
+{ #category : 'accessing' }
+AIAYouTubeUI class >> directoryForChannel: channel [
+	| group |
+	group := (self channels
+		detect: [ :each | each value includes: channel ]) key.
+	^ self channelDictionary, group, '/', channel, '/'
+]
+
 { #category : 'examples' }
 AIAYouTubeUI class >> ensureXMLParser [
 	
@@ -89,6 +95,14 @@ AIAYouTubeUI class >> episodeUpdateLimit [
 { #category : 'accessing' }
 AIAYouTubeUI class >> episodeUpdateLimit: newLimit [
 	episodeUpdateLimit := newLimit 
+]
+
+{ #category : 'hooks' }
+AIAYouTubeUI class >> groupFor: aHandle [
+self channels do: [ :assoc |
+(assoc value includes: aHandle asSymbol)
+ifTrue: [ ^ assoc key ] ].
+self error: 'Unknown channel: ' , aHandle asString
 ]
 
 { #category : 'examples' }
@@ -188,7 +202,9 @@ AIAYouTubeUI >> defaultLayout [
 				add: channelTypeList;
 				add: (SpBoxLayout newHorizontal 
 					add: self channelUpdateAllButton expand: false;
-					add: self episodeUpdateLimitButton expand: false ));
+					add: self reloadAllYouTubeButton expand: false;
+					add: self episodeUpdateLimitButton expand: false )
+					);
 			add: channelList;
 			yourself);
 		add: descriptionText;
@@ -207,10 +223,11 @@ AIAYouTubeUI >> defaultLayout [
 { #category : 'misc' }
 AIAYouTubeUI >> descriptionFor: aChannelHandle [
 	| path file |
-	path := self class channelDictionary , aChannelHandle , '/description.txt'.
+	path := (self class directoryForChannel: aChannelHandle)
+		, 'description.txt'.
 	file := File named: path.
 	^ file exists
-		ifTrue: [ file readStream contents asString  ]
+		ifTrue: [ file readStream contents asString ]
 		ifFalse: [ 'Not loaded yet' ]
 ]
 
@@ -244,8 +261,7 @@ AIAYouTubeUI >> episodeChangeAction [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeDateFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines |
-	"path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'."
-	path := self class channelDictionary , aChannelHandle  , '/' , anEpisodeId , '_meta.txt'.
+	path := (self class directoryForChannel: aChannelHandle)  , '/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ '00000000' ].
 	lines := file readStream contents asString lines.
@@ -266,7 +282,7 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines title date episodeId desc details |
-	path := self class channelDictionary , aChannelHandle  ,
+	path := (self class directoryForChannel:aChannelHandle)  ,
 		'/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ 'Not loaded yet' ].
@@ -284,7 +300,7 @@ AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| path file |
-	path := self class channelDictionary , aChannelHandle  ,
+	path := (self class directoryForChannel: aChannelHandle)  ,
 		'/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ 'Not loaded yet' ].
@@ -308,7 +324,7 @@ AIAYouTubeUI >> episodeTextAction [
 { #category : 'episode' }
 AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| text file lines |
-	text := self class channelDictionary , aChannelHandle ,
+	text := (self class directoryForChannel: aChannelHandle) ,
 		'/' , anEpisodeId , '.txt'.
 	file := File named: text.
 	file exists ifFalse: [ ^ '' ].
@@ -320,8 +336,7 @@ AIAYouTubeUI >> episodeTextDetailFor: anEpisodeId forChannel: aChannelHandle [
 AIAYouTubeUI >> episodeTitleFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines date title hasBeenRead |
 	aChannelHandle ifNil: [ ^ anEpisodeId ].
-	"path := (AIAYouTubeChannel new channelDirectory: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'."
-	path :=  self class channelDictionary, aChannelHandle , '/' , anEpisodeId , '_meta.txt'.
+	path :=  (self class directoryForChannel: aChannelHandle) , '/' , anEpisodeId , '_meta.txt'.
 	file := File named: path.
 	file exists ifFalse: [ ^ anEpisodeId ].
 	lines := file readStream contents utf8Decoded lines.
@@ -360,8 +375,7 @@ AIAYouTubeUI >> episodeUpdateLimitButton [
 AIAYouTubeUI >> episodesFor: aChannelHandle [
 	| dir entries |
 	aChannelHandle ifNil: [ ^ #() ].
-	"dir := FileReference / (AIAYouTubeChannel new channelDirectory: aChannelHandle)."
-	dir := FileReference / (self class channelDictionary , aChannelHandle).
+	dir := FileReference / (self class directoryForChannel: aChannelHandle).
 	dir exists ifFalse: [ ^ #() ].
 	entries := (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])
@@ -404,6 +418,30 @@ AIAYouTubeUI >> initializeWindow: aWindowPresenter [
 	aWindowPresenter 
 		title: 'YouTube Browser';
 		initialExtent: 900 @ 700.
+]
+
+{ #category : 'channel' }
+AIAYouTubeUI >> reloadAllYouTube [
+	| selectedType selectedChannel |
+	selectedType := channelTypeList selectedItem.
+	selectedChannel := channelList selectedItem.
+
+	channelTypeList items:
+		self class channels asOrderedDictionary keys.
+
+	selectedType ifNotNil: [
+		self showChannelsForType: selectedType ].
+
+	selectedChannel ifNotNil: [
+		self showChannel: selectedChannel ]
+]
+
+{ #category : 'channel' }
+AIAYouTubeUI >> reloadAllYouTubeButton [
+	^ self newButton
+		label: 'Reload';
+		help: 'Reload channels and episodes from channels.txt';
+		action: [ self reloadAllYouTube ]
 ]
 
 { #category : 'misc' }

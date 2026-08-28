@@ -53,26 +53,6 @@ Class {
 }
 
 { #category : 'accessing' }
-AIAYouTubeChannel class >> channelDictionary [
-	"Returns the directory path for storing YouTube channel data"
-	self halt: 'Should not be called'.
-    ^ '/Users/kasper/D/YouTube/'
-]
-
-{ #category : 'accessing' }
-AIAYouTubeChannel class >> channels [
-	"Returns an array of YouTube channel names for novel content"
-	self halt: 'Should not be called'.
-    ^ { 
-		'Subscriptions' -> self subscriptionChannels . 
-		'SciFi' -> self scifiChannels . 
-		'Smalltalk' -> self smalltalkChannels . 
-		'DR' -> AIAdrChannel drChannels. 
-		'Misc' -> { 'Misc'. 'Fasting'} } asOrderedCollection 
-
-]
-
-{ #category : 'accessing' }
 AIAYouTubeChannel class >> episodeFetch: youtube [
     "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
     | episodeId |
@@ -83,89 +63,6 @@ AIAYouTubeChannel class >> episodeFetch: youtube [
             episodeId := youtube copyFrom: vPos to: vPos + 10 ].
     ^ self new episodeFetch: episodeId
 
-]
-
-{ #category : 'accessing' }
-AIAYouTubeChannel class >> esugboardPlaylists [
-	"yt-dlp --flat-playlist --print ""%(id)s %(title)s"" ""https://www.youtube.com/@esugboard/playlists"" "
-	| lists |
-	self halt: 'Should not be called'.
-	lists := 'ESUG 2025$PLJ5nSnWzQXi94CahnvTIO0F69oOdGJ3Xb
-ESUG 2024: Show Us Your Project$PLJ5nSnWzQXi89jwnBCmGPh9xG6shuvuwb
-ESUG 2024$PLJ5nSnWzQXi-uyYOZIVgXg1up_bclQc7e
-ESUG 2023$PLJ5nSnWzQXi8-w5MAt_Rf-OjNDtBME7nK
-ESUG 2022 - ShowUsYourProject$PLJ5nSnWzQXi-QLQViXAR41B0KdsSb4-nq
-ESUG 2022$PLJ5nSnWzQXi_7LGwiSa-8VwYXELwFQLBt
-ESUG 2018$PLJ5nSnWzQXi9RhA8zyKw_qelUpVVlumV9
-ESUG 2019$PLJ5nSnWzQXi8DPNpy1jCkjE4yE0WUtDP2
-ESUG 2017$PLJ5nSnWzQXi_THfKwhzxFwbXy00YTi0uv
-IWST16$PLJ5nSnWzQXi-hDyGVkyohvKqAgGxQyloy
-ESUG 2016$PLJ5nSnWzQXi8pkvGyi1ZniLcAu_J8OFRs
-ESUG 2015$PLJ5nSnWzQXi9rnk77bTf-juPt5I6-ered
-IWST 2014$PLJ5nSnWzQXi-xeYIVRM2kxPbdCtccmNcj
-ESUG 2014$PLJ5nSnWzQXi_6yyRLsMMBqG8YlwfhvB0X
-ESUG 2013$PLJ5nSnWzQXi_K_cQxWOLadk3TQTsS4Rys
-Smalltalk Misc$PL53E5DACB81D86034
-ESUG 2009$PL74E35D8EC7E756AE
-ESUG 2010$PL431285A978F581BB
-ESUG 2008$PL4A297B9019B3884D
-Deep into Smalltalk$PL843D1D545F9F52B6
-ESUG 2011$PL813665D04A2E4C0A
-Favorites$FLO-vBhaKVZf0al-ISMMPvRw
-IWST2011$PLBFA36B5236B77AD7' lines.
-	^ lists collect: [ :l | (l splitOn: $$) first ]
-	
-]
-
-{ #category : 'accessing' }
-AIAYouTubeChannel class >> old_episodeUpdateLimit [
-	^ 10 asString
-]
-
-{ #category : 'accessing' }
-AIAYouTubeChannel class >> scifiChannels [
-	"Returns an array of YouTube channel names for novel content"
-	self halt: 'Should not be called'.
-    ^ { #MiscSciFi.
-        #HFYZenith.
-        #'Sci-Fi-Vault'.
-		  #ScifiGalaxyTales.
-		  #'TheLastSci-fiChild'.
-		  #PhotonHFY.
-		  #'LegendsofHumanity-l6q'.
-		  #AegisofSol}
-
-]
-
-{ #category : 'accessing' }
-AIAYouTubeChannel class >> smalltalkChannels [
-	"Returns an array of YouTube channel names for novel content"
-	self halt: 'Should not be called'.
-    ^ {
-		#'Pharo-projectOrg'.
-		#esugboard. 
-		#UKSTUG.
-		#inrialearninglab.
-		#CincomSmalltalk.
-		#gtoolkit }
-
-]
-
-{ #category : 'accessing' }
-AIAYouTubeChannel class >> subscriptionChannels [
-	"Returns an array of YouTube channel names for subscription"
-	self halt: 'Should not be called'.
-    ^ { #HouseofEl.
-		  #'HouseofEl-AI'.
-        #SabineHossenfelder.
-		  #TLDRnewsEU.
-		  #'JamesKerLindsay'.
-		  #AnastasiInTech.
-        #TwoBitDaVinci. 
-        #JustHaveaThink. 
-		  #'scottmanley'.
-        #UndecidedTechnology. 
-        #ZirothTech}
 ]
 
 { #category : 'accessing' }
@@ -183,7 +80,7 @@ AIAYouTubeChannel >> channelBuildInFileSystem: channelHandle [
 { #category : 'channel' }
 AIAYouTubeChannel >> channelDirectory: channelHandle [
 	"Returns the directory path for the specified channel handle."
-	^ self class channelDictionary , channelHandle
+	^ AIAYouTubeUI directoryForChannel: channelHandle
 ]
 
 { #category : 'yt-dlp' }
@@ -191,7 +88,7 @@ AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 	"Ensures the channel description file exists, creating it if necessary."
 
 	| path command raw |
-	path := AIAYouTubeUI channelDictionary , channelHandle , '/description.txt'.
+	path := (AIAYouTubeUI directoryForChannel: channelHandle ), '/description.txt'.
 	command := 'yt-dlp -I 0 --print "playlist:description" "https://www.youtube.com/@' , 
 		channelHandle , '" > /tmp/yt_channel.txt'.
 	LibC runCommand: command.
@@ -206,8 +103,7 @@ AIAYouTubeChannel >> channelEnsureDescription: channelHandle [
 AIAYouTubeChannel >> channelEnsureDirectory: channelHandle [
 	"Ensures the directory for the specified channel handle exists, creating it if necessary."
 	| dir |
-	"dir := self channelDirectory: channelHandle."
-	dir := AIAYouTubeUI channelDictionary , channelHandle.
+	dir := AIAYouTubeUI directoryForChannel: channelHandle.
 	(File named: dir) exists ifFalse: [ 
 		LibC runCommand: 'mkdir -p "' , dir , '"' ]
 ]
@@ -239,7 +135,7 @@ AIAYouTubeChannel >> channelEpisodesOnDisk: channelHandle [
 	"Return a collection of episode IDs already downloaded for this channel."
 	| dir |
 	channelHandle ifNil: [ ^ #() ].
-	dir := FileReference / (AIAYouTubeUI channelDictionary , channelHandle).
+	dir := FileReference / (AIAYouTubeUI directoryForChannel: channelHandle).
 	dir exists ifFalse: [ ^ #() ].
 	^ (dir entries
 		select: [ :entry | entry basename endsWith: '_meta.txt' ])

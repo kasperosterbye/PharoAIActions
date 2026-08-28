@@ -11,13 +11,6 @@ Class {
 }
 
 { #category : 'accessing' }
-AIAdrEpisode class >> channelDictionary [
-	"Returns the directory path for storing YouTube channel data"
-	self error.
-    ^ '/Users/kasper/D/YouTube/'
-]
-
-{ #category : 'accessing' }
 AIAdrEpisode class >> episodeFetch: youtube [
     "AIAYouTube episodeFetch: 'https://www.youtube.com/watch?v=jrP7buPo2yA&t=87s'"
     | episodeId |
@@ -97,7 +90,7 @@ AIAdrEpisode >> episodeMeta: episodeId [
 { #category : 'episode' }
 AIAdrEpisode >> episodePath [
 	"Returns the file path for the specified episode ID."
-    ^ AIAdrChannel channelDictionary , channel, '/'
+    ^ (AIAYouTubeUI directoryForChannel: channel), '/'
 
 ]
 

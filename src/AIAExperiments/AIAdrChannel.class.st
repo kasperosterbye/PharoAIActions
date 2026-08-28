@@ -52,28 +52,6 @@ Class {
 	#tag : 'YouTube'
 }
 
-{ #category : 'accessing' }
-AIAdrChannel class >> channelDictionary [
-	"Returns the directory path for storing YouTube channel data"
-    ^ '/Users/kasper/D/YouTube/'
-]
-
-{ #category : 'accessing' }
-AIAdrChannel class >> drChannels [
-	^ { #dr_radioavisen.
-		#'dr_vildt-naturligt'.
-		#'dr_norsken-svensken-og-dansken'.
-		#'dr_p1-morgen'.
-		#'dr_p1-orientering'.
-		#'dr_p1-debat'.
-		#'dr_akkurat-med-clement' }
-]
-
-{ #category : 'accessing' }
-AIAdrChannel class >> old_episodeUpdateLimit [
-	^ 5 asString
-]
-
 { #category : 'channel' }
 AIAdrChannel >> channelBuildInFileSystem: channelHandle [
 	"Ensures the directory and description file for a specified YouTube channel exist, creating them if necessary."
@@ -84,35 +62,29 @@ AIAdrChannel >> channelBuildInFileSystem: channelHandle [
 { #category : 'channel' }
 AIAdrChannel >> channelDirectory: channelHandle [
 	"Returns the directory path for the specified channel handle."
-	^ self class channelDictionary , channelHandle
+	^ AIAYouTubeUI directoryForChannel: channelHandle
 ]
 
 { #category : 'dr access' }
 AIAdrChannel >> channelEnsureDescription: channelHandle [
-	"Ensures the channel description file exists, creating it if necessary."
-
 	| path document channelElement title description |
-
-	path := (self channelDirectory: channelHandle) , '/description.txt'.
+	path := (self channelDirectory: channelHandle), 'description.txt'.
 	(File named: path) exists ifTrue: [ ^ self ].
 
 	document := XMLDOMParser parseURL:
-		('https://api.dr.dk/podcasts/v1/feeds/', (channelHandle asString allButFirst: 3)).
+		('https://api.dr.dk/podcasts/v1/feeds/',
+			(channelHandle asString allButFirst: 3)).
 
 	channelElement := (document allElementsNamed: 'channel') first.
-
 	title := (channelElement elementAt: 'title')
 		contentString trimBoth.
-
 	description := (channelElement elementAt: 'description')
 		contentString trimBoth.
 
-	"link := (channelElement elementAt: 'link')
-		contentString trimBoth."
 	(File named: path) writeStreamDo: [ :stream |
 		stream
 			<< '### ' << title << String lf
-			<< description << String lf]
+			<< description << String lf ]
 ]
 
 { #category : 'channel' }
