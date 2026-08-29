@@ -38,6 +38,7 @@ Class {
 		'api',
 		'preHistories',
 		'messages',
+		'fileStore',
 		'firstRoles',
 		'lastRoles',
 		'responseHearderLevel'
@@ -223,6 +224,16 @@ AIAHistory >> chatHistory [
 ]
 
 { #category : 'accessing' }
+AIAHistory >> fileStore [
+	^ fileStore
+]
+
+{ #category : 'accessing' }
+AIAHistory >> fileStore: aFileStore [
+	fileStore := aFileStore
+]
+
+{ #category : 'accessing' }
 AIAHistory >> firstRoles [
 	^ firstRoles
 ]
@@ -316,6 +327,11 @@ AIAHistory >> messagesAdd: keyValue [
         SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new ].
 ]
 
+{ #category : 'accessing' }
+AIAHistory >> preHistories [
+	^ preHistories
+]
+
 { #category : 'printing' }
 AIAHistory >> printOn: stream [
 	"Prints the title on the stream if available, otherwise prints the prompt."
@@ -337,6 +353,11 @@ AIAHistory >> response [
 	(messages last key = 'assistant')
 		ifTrue: [ ^ messages last value ]
 		ifFalse: [ ^ nil ]
+]
+
+{ #category : 'accessing' }
+AIAHistory >> responseHearderLevel [
+	^ responseHearderLevel
 ]
 
 { #category : 'accessing' }
