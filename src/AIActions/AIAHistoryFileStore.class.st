@@ -2,8 +2,7 @@ Class {
 	#name : 'AIAHistoryFileStore',
 	#superclass : 'Object',
 	#instVars : [
-		'id',
-		'kind',
+		'kindX',
 		'createdAt',
 		'modifiedAt'
 	],
@@ -12,49 +11,23 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'accessing' }
-AIAHistoryFileStore class >> kind: aKind [
-	^ self new
-		kind: aKind;
-		yourself
+{ #category : 'loading' }
+AIAHistoryFileStore class >> loadFrom: aFileReference [
+	| json |
+	json := aFileReference readStreamDo: [ :stream |
+		stream contents ].
+	^ self new historyFromJson: json
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore class >> rootDirectory [
 	^ FileLocator home / 'D' / 'Pharo' / 'history'
 ]
 
-{ #category : 'actions' }
-AIAHistoryFileStore >> dictionaryFrom: aHistory [
-	| preHistoryIds |
-	preHistoryIds := (aHistory preHistories collect: [ :each |
-		| store |
-		store := each fileStore.
-		store ifNil: [
-			self error: 'A preHistory has no fileStore' ].
-		store id ]) asArray.
-
-	^ Dictionary new
-		at: 'formatVersion' put: 1;
-		at: 'id' put: id;
-		at: 'kind' put: kind;
-		at: 'createdAt' put: createdAt asString;
-		at: 'modifiedAt' put: modifiedAt asString;
-		at: 'title' put: aHistory title;
-		at: 'provider' put: aHistory api class name asString;
-		at: 'model' put: aHistory api model;
-		at: 'preHistoryIds' put: preHistoryIds;
-		at: 'firstRoles' put:
-			((aHistory firstRoles collect: [ :each |
-				self roleDictionaryFrom: each ]) asArray);
-		at: 'messages' put:
-			((aHistory messages collect: [ :each |
-				self roleDictionaryFrom: each ]) asArray);
-		at: 'lastRoles' put:
-			((aHistory lastRoles collect: [ :each |
-				self roleDictionaryFrom: each ]) asArray);
-		at: 'responseHeaderLevel' put: aHistory responseHearderLevel;
-		yourself
+{ #category : 'accessing' }
+AIAHistoryFileStore >> associationFromRoleDictionary: aDictionary [
+	^ (aDictionary at: 'role')
+		-> (aDictionary at: 'content')
 ]
 
 { #category : 'accessing' }
@@ -65,38 +38,106 @@ AIAHistoryFileStore >> fileName [
 		copyWithoutAll: '-'.
 	time := (createdString copyFrom: 12 to: 19)
 		copyWithoutAll: ':'.
-	shortId := ((id copyWithoutAll: '-') first: 12)
-		asUppercase.
+	shortId := (createdString copyFrom: 21 to: 25).
 	^ date, '-', time, '-', shortId, '.json'
 ]
 
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileReference [
-	^ self class rootDirectory / kind / self fileName
+	^ self class rootDirectory / self fileName
 ]
 
 { #category : 'actions' }
-AIAHistoryFileStore >> historyFrom: aDictionary [
+AIAHistoryFileStore >> historyFromJson: json [
+	"Converts a dictionary into an AIAHistory object, initialising its properties and associations from the dictionary."
+	| aDictionary history providerClass api |
+	aDictionary := STONJSON fromString: json.
+	(aDictionary at: 'preHistoryIds') ifNotEmpty: [
+		self error:
+			'Loading preHistories is not implemented yet' ].
+
+	createdAt := DateAndTime fromString:
+		(aDictionary at: 'createdAt').
+	modifiedAt := DateAndTime fromString:
+		(aDictionary at: 'modifiedAt').
+
+	providerClass := Smalltalk globals
+		at: (aDictionary at: 'provider') asSymbol
+		ifAbsent: [ self error: 'Unknown API provider' ].
+
+	(AilienApi allSubclasses includes: providerClass)
+		ifFalse: [ self error: 'Invalid API provider' ].
+
+	api := providerClass new.
+	api model: (aDictionary at: 'model').
+
+	history := AIAHistory new.
+	history
+		fileStore: self;
+		title: (aDictionary at: 'title');
+		api: api;
+		responseHearderLevel:
+			(aDictionary at: 'responseHeaderLevel').
+
+	(aDictionary at: 'firstRoles') do: [ :each |
+		history firstRoles add:
+			(self associationFromRoleDictionary: each) ].
+
+	(aDictionary at: 'messages') do: [ :each |
+		history messages add:
+			(self associationFromRoleDictionary: each) ].
+
+	(aDictionary at: 'lastRoles') do: [ :each |
+		history lastRoles add:
+			(self associationFromRoleDictionary: each) ].
+
+	^ history
 ]
 
 { #category : 'initialization' }
 AIAHistoryFileStore >> initialize [
 	super initialize.
-	id := UUID new asString.
 	createdAt := DateAndTime now.
 	modifiedAt := createdAt
 ]
 
-{ #category : 'accessing' }
-AIAHistoryFileStore >> kind: aKind [
-	kind := aKind asString
+{ #category : 'actions' }
+AIAHistoryFileStore >> jsonFromHistory: aHistory [
+	"Converts an AIAHistory object into a JSON string, including its properties and associations."
+
+	| preHistoryIds |
+	preHistoryIds := (aHistory preHistories collect: [ :each |
+			                  | store |
+			                  store := each fileStore.
+			                  store ifNil: [ self error: 'A preHistory has no fileStore' ].
+			                  store id ]) asArray.
+	^ STONJSON toString: (Dictionary new
+			   at: 'formatVersion' put: 1;
+			   at: 'createdAt' put: createdAt asString;
+			   at: 'modifiedAt' put: modifiedAt asString;
+			   at: 'title' put: aHistory title;
+			   at: 'provider' put: aHistory api class name asString;
+			   at: 'model' put: aHistory api model;
+			   at: 'preHistoryIds' put: preHistoryIds;
+			   at: 'firstRoles' put: (aHistory firstRoles 
+						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
+			   at: 'messages' put: (aHistory messages 
+						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
+			   at: 'lastRoles' put: (aHistory lastRoles 
+						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
+			   at: 'responseHeaderLevel' put: aHistory responseHearderLevel;
+			   yourself)
 ]
 
 { #category : 'loading' }
 AIAHistoryFileStore >> load [
+	| json  |
+	json := self fileReference readStreamDo: [ :stream |
+		stream contents ].
+	^ self historyFromJson: json
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryFileStore >> roleDictionaryFrom: anAssociation [
 	^ Dictionary new
 		at: 'role' put: anAssociation key;
@@ -106,13 +147,12 @@ AIAHistoryFileStore >> roleDictionaryFrom: anAssociation [
 
 { #category : 'actions' }
 AIAHistoryFileStore >> save: aHistory [
+
 	| file json |
 	modifiedAt := DateAndTime now.
 	file := self fileReference.
 	file parent ensureCreateDirectory.
-	json := STONJSON toString:
-		(self dictionaryFrom: aHistory).
-	file writeStreamDo: [ :stream |
-		stream nextPutAll: json ].
+	json := self jsonFromHistory: aHistory.
+	file writeStreamDo: [ :stream | stream nextPutAll: json ].
 	^ file
 ]
