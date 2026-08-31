@@ -1,3 +1,6 @@
+"
+AIAHistoryFileStore persists and loads AIAHistory conversations as files, allowing histories to be saved and restored between Pharo sessions.
+"
 Class {
 	#name : 'AIAHistoryFileStore',
 	#superclass : 'Object',
