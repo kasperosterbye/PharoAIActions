@@ -70,9 +70,12 @@ AIAYouTubeUI class >> channelsToAutoUpdate [
 { #category : 'accessing' }
 AIAYouTubeUI class >> directoryForChannel: channel [
 	| group |
-	group := (self channels
-		detect: [ :each | each value includes: channel ]) key.
-	^ self channelDictionary, group, '/', channel, '/'
+	channel = ''
+		ifTrue: [ ^ self channelDictionary, 'Misc/Misc/']
+		ifFalse:[
+				group := (self channels
+				detect: [ :each | each value includes: channel ]) key.
+				^ self channelDictionary, group, '/', channel, '/']
 ]
 
 { #category : 'examples' }
