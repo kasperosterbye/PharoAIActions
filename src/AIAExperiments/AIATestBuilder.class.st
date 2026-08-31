@@ -49,10 +49,10 @@ Class {
 { #category : 'instance creation' }
 AIATestBuilder class >> aiBuildList [
 	^ {
-		GrokApi newOnModel: 2.
+		GrokApi newOnModel: 3.
 		GrokApi newOnModel: 4.
-		ClaudeApi newOnModel: 4.
-		OpenAIApi newOnModel: 3.
+		ClaudeApi newOnModel: 3.
+		OpenAIApi newOnModel: 4.
 		
 	}
 ]
