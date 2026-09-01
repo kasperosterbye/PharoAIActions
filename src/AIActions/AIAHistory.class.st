@@ -225,6 +225,8 @@ AIAHistory >> chatHistory [
 
 { #category : 'accessing' }
 AIAHistory >> fileStore [
+	fileStore ifNil: [
+		fileStore := AIAHistoryFileStore new ].
 	^ fileStore
 ]
 
@@ -323,6 +325,7 @@ AIAHistory >> messages [
 { #category : 'adding' }
 AIAHistory >> messagesAdd: keyValue [
     messages add: keyValue.
+	self fileStore save: self.
     keyValue key = 'assistant' ifTrue: [
         SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new ].
 ]
