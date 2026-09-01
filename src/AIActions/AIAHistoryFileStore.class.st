@@ -5,9 +5,9 @@ Class {
 	#name : 'AIAHistoryFileStore',
 	#superclass : 'Object',
 	#instVars : [
-		'kindX',
 		'createdAt',
-		'modifiedAt'
+		'modifiedAt',
+		'rootDirectory'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -16,15 +16,13 @@ Class {
 
 { #category : 'loading' }
 AIAHistoryFileStore class >> loadFrom: aFileReference [
-	| json |
+	"Load a history store from a file reference"
+	| json store |
 	json := aFileReference readStreamDo: [ :stream |
 		stream contents ].
-	^ self new historyFromJson: json
-]
-
-{ #category : 'loading' }
-AIAHistoryFileStore class >> rootDirectory [
-	^ FileLocator home / 'D' / 'Pharo' / 'history'
+	store := self new.
+	store rootDirectory: aFileReference parent.
+	^ store historyFromJson: json
 ]
 
 { #category : 'accessing' }
@@ -35,6 +33,7 @@ AIAHistoryFileStore >> associationFromRoleDictionary: aDictionary [
 
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileName [
+	"Returns a filename built from the creation date and time"
 	| date time shortId createdString |
 	createdString := createdAt asString.
 	date := (createdString copyFrom: 1 to: 10)
@@ -47,17 +46,17 @@ AIAHistoryFileStore >> fileName [
 
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileReference [
-	^ self class rootDirectory / self fileName
+	^ self rootDirectory / self fileName
 ]
 
 { #category : 'actions' }
 AIAHistoryFileStore >> historyFromJson: json [
 	"Converts a dictionary into an AIAHistory object, initialising its properties and associations from the dictionary."
-	| aDictionary history providerClass api |
+	| aDictionary history providerClass api preHistoryFiles |
 	aDictionary := STONJSON fromString: json.
-	(aDictionary at: 'preHistoryIds') ifNotEmpty: [
-		self error:
-			'Loading preHistories is not implemented yet' ].
+	preHistoryFiles := aDictionary
+		at: 'preHistoryFiles'
+		ifAbsent: [ #() ].
 
 	createdAt := DateAndTime fromString:
 		(aDictionary at: 'createdAt').
@@ -93,7 +92,10 @@ AIAHistoryFileStore >> historyFromJson: json [
 	(aDictionary at: 'lastRoles') do: [ :each |
 		history lastRoles add:
 			(self associationFromRoleDictionary: each) ].
-
+	preHistoryFiles do: [ :fileName |
+		history preHistories add:
+			(self class loadFrom:
+				self rootDirectory / fileName) ].
 	^ history
 ]
 
@@ -101,19 +103,16 @@ AIAHistoryFileStore >> historyFromJson: json [
 AIAHistoryFileStore >> initialize [
 	super initialize.
 	createdAt := DateAndTime now.
-	modifiedAt := createdAt
+	modifiedAt := createdAt.
+	rootDirectory := FileLocator home / 'D' / 'Pharo' / 'history'.
 ]
 
 { #category : 'actions' }
 AIAHistoryFileStore >> jsonFromHistory: aHistory [
 	"Converts an AIAHistory object into a JSON string, including its properties and associations."
 
-	| preHistoryIds |
-	preHistoryIds := (aHistory preHistories collect: [ :each |
-			                  | store |
-			                  store := each fileStore.
-			                  store ifNil: [ self error: 'A preHistory has no fileStore' ].
-			                  store id ]) asArray.
+	| preHistoryFiles |
+	preHistoryFiles := (aHistory preHistories collect: [ :each | each fileStore fileName ]) asArray.
 	^ STONJSON toString: (Dictionary new
 			   at: 'formatVersion' put: 1;
 			   at: 'createdAt' put: createdAt asString;
@@ -121,7 +120,7 @@ AIAHistoryFileStore >> jsonFromHistory: aHistory [
 			   at: 'title' put: aHistory title;
 			   at: 'provider' put: aHistory api class name asString;
 			   at: 'model' put: aHistory api model;
-			   at: 'preHistoryIds' put: preHistoryIds;
+			   at: 'preHistoryFiles' put: preHistoryFiles;
 			   at: 'firstRoles' put: (aHistory firstRoles 
 						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
 			   at: 'messages' put: (aHistory messages 
@@ -146,6 +145,16 @@ AIAHistoryFileStore >> roleDictionaryFrom: anAssociation [
 		at: 'role' put: anAssociation key;
 		at: 'content' put: anAssociation value;
 		yourself
+]
+
+{ #category : 'accessing' }
+AIAHistoryFileStore >> rootDirectory [
+	^ rootDirectory
+]
+
+{ #category : 'accessing' }
+AIAHistoryFileStore >> rootDirectory: aFileReference [
+	rootDirectory := aFileReference
 ]
 
 { #category : 'actions' }

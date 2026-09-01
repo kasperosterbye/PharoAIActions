@@ -114,7 +114,7 @@ AIAHistory class >> qPrefix [
 
 { #category : 'history globals' }
 AIAHistory class >> qPrefixSystemText [
-	^ 'You are a Pharo14 Smalltalk expert. Pharo14 is the last version of Pharo. In Pharo a typical class is written as: 
+	^ 'You are a Pharo14 Smalltalk expert. Pharo14 is the last stable version of Pharo. In Pharo a typical class is written as: 
 	SuperclassName << #SubclassName
 	slots: { #var1 . #var2 . #var3 };
 	sharedVariables: { #GlobalVar1 . #GlobalVar2 };
@@ -153,6 +153,7 @@ AIAHistory class >> writeCurrent [
 AIAHistory >> addPreHistory: pre [
 	"Adds a previous history instance to the collection of pre-histories"
 	preHistories add: pre.
+	self fileStore save: self.
 ]
 
 { #category : 'accessing' }
