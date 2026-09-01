@@ -139,6 +139,30 @@ AIAHistory class >> readCurrent [
 		do: [ self error: 'No file available' ]
 ]
 
+{ #category : 'history globals' }
+AIAHistory class >> reloadHistories [
+	^ self reloadHistoriesFrom:
+		AIAHistoryFileStore new rootDirectory
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> reloadHistoriesFrom: aDirectory [
+	"Discard the in-memory histories and reconstruct them from all JSON
+	history files in the given directory."
+
+	self clearHistories.
+
+	aDirectory exists ifFalse: [
+		^ self histories ].
+
+	(aDirectory files select: [ :file |
+		file extension = 'json' ])
+		do: [ :file |
+			AIAHistoryFileStore loadFrom: file ].
+
+	^ self histories
+]
+
 { #category : 'writing' }
 AIAHistory class >> writeCurrent [
 	| discussion fileName |
