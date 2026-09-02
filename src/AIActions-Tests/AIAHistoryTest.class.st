@@ -29,6 +29,60 @@ AIAHistoryTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAHistoryTest >> testFirstMessageIsStoredWithoutAssigningFileStore [
+	"A newly created history must persist its first message without the
+	caller explicitly creating or assigning a file store."
+
+	refAIAHistory fileStore rootDirectory: rootDirectory.
+	refAIAHistory user: 'Automatically stored message'.
+
+	self assert: rootDirectory files size equals: 1
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testReloadHistoriesDoesNotDuplicatePreHistories [
+	"A history referenced as a pre-history also has its own file. Reloading
+	must create exactly one object per file and reuse that same object in
+	the reconstructed pre-history graph."
+
+	| currentHistory preHistory currentStore preStore
+	  histories loadedCurrent matchingPreHistories loadedPreHistory |
+
+	currentStore := AIAHistoryFileStore new.
+	currentStore rootDirectory: rootDirectory.
+
+	preStore := AIAHistoryFileStore new.
+	preStore rootDirectory: rootDirectory.
+
+	preHistory := refAIAHistory class new.
+	preHistory fileStore: preStore.
+	preHistory user: 'Shared pre-history'.
+
+	currentHistory := refAIAHistory.
+	currentHistory fileStore: currentStore.
+	currentHistory user: 'Current history'.
+	currentHistory addPreHistory: preHistory.
+
+	refAIAHistory class clearHistories.
+	refAIAHistory class reloadHistoriesFrom: rootDirectory.
+	histories := refAIAHistory class histories.
+
+	loadedCurrent := histories detect: [ :each |
+		each messages = currentHistory messages ].
+
+	matchingPreHistories := histories select: [ :each |
+		each messages = preHistory messages ].
+
+	self assert: histories size equals: 2.
+	self assert: matchingPreHistories size equals: 1.
+
+	loadedPreHistory := matchingPreHistories first.
+	self assert: loadedCurrent preHistories size equals: 1.
+	self assert:
+		loadedCurrent preHistories first == loadedPreHistory
+]
+
+{ #category : 'tests' }
 AIAHistoryTest >> testReloadHistoriesRestoresAllStoredHistories [
 	"Reloading must discard the current in-memory collection and reconstruct
 	every stored history. File order is irrelevant; observable conversations

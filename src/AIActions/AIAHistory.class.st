@@ -1,34 +1,5 @@
 "
-# Class Comment for AIAHistory
-
-`AIAHistory` is a class designed to manage and maintain conversation history between a user and an AI assistant. It provides functionality to store, retrieve, and format messages exchanged in a chat session, while also supporting contextual roles such as system messages and response types.
-
-## Key Features
-
-- **Message Management**: Stores and retrieves messages in chronological order, distinguishing between user and assistant messages.
-- **Contextual Roles**: Supports system messages and response type definitions to provide context for AI responses.
-- **API Integration**: Works with an AI API provider (e.g., `AilienApi`) to generate and retrieve responses.
-- **Progress Tracking**: Includes visual progress indicators for long-running AI processes.
-- **Formatted Output**: Generates formatted chat history suitable for display or logging.
-
-## Usage Example
-
-```st
-""Create and configure a new AIAHistory instance""
-history := AIAHistory new
-    system: 'You are a helpful assistant.';
-    background: 'The user is learning about AI.';
-    user: 'What is the capital of France?';
-    yourself.
-
-""Get a response from the AI""
-history getResponse.
-
-""Inspect the formatted chat history""
-history chatHistory
-```
-
-This class is particularly useful for applications requiring persistent conversation management, such as chatbots, virtual assistants, or AI-powered support systems.
+`AIAHistory` manages the conversational message history for a Pharo/Smalltalk AI assistant. It keeps user and assistant messages (including contextual system/background information), prepares the history for API calls, and formats it for display or logging—supporting persistent, role-aware chat sessions.
 "
 Class {
 	#name : 'AIAHistory',
@@ -147,20 +118,18 @@ AIAHistory class >> reloadHistories [
 
 { #category : 'as yet unclassified' }
 AIAHistory class >> reloadHistoriesFrom: aDirectory [
-	"Discard the in-memory histories and reconstruct them from all JSON
-	history files in the given directory."
+	"Discard the current in-memory histories and reconstruct them from
+	the files in aDirectory. Each file is represented by exactly one object."
 
+	| fileStores loadedHistories |
 	self clearHistories.
 
-	aDirectory exists ifFalse: [
-		^ self histories ].
+	fileStores := AIAHistoryFileStores new.
+	fileStores rootDirectory: aDirectory.
+	loadedHistories := fileStores loadAll.
 
-	(aDirectory files select: [ :file |
-		file extension = 'json' ])
-		do: [ :file |
-			AIAHistoryFileStore loadFrom: file ].
-
-	^ self histories
+	Histories := loadedHistories asOrderedCollection.
+	^ Histories
 ]
 
 { #category : 'writing' }

@@ -3,7 +3,8 @@ Class {
 	#superclass : 'TestCase',
 	#instVars : [
 		'refAIAHistoryFileStore',
-		'originalRootDirectory'
+		'originalRootDirectory',
+		'originalHistories'
 	],
 	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
@@ -13,16 +14,18 @@ Class {
 { #category : 'running' }
 AIAHistoryFileStoreTest >> setUp [
 	super setUp.
+	originalHistories := AIAHistory histories copy.
+	AIAHistory clearHistories.
+
 	refAIAHistoryFileStore := AIAHistoryFileStore new.
-	originalRootDirectory := refAIAHistoryFileStore rootDirectory.
 	refAIAHistoryFileStore rootDirectory:
-		(FileSystem memory root / 'history').
-	
+		(FileSystem memory root / 'history')
 ]
 
 { #category : 'running' }
 AIAHistoryFileStoreTest >> tearDown [
-	refAIAHistoryFileStore rootDirectory: originalRootDirectory.
+	AIAHistory clearHistories.
+	AIAHistory histories addAll: originalHistories.
 	super tearDown
 ]
 

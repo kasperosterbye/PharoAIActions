@@ -49,8 +49,17 @@ AIAHistoryFileStore >> fileReference [
 	^ self rootDirectory / self fileName
 ]
 
-{ #category : 'actions' }
+{ #category : 'as yet unclassified' }
 AIAHistoryFileStore >> historyFromJson: json [
+	^ self
+		historyFromJson: json
+		preHistoryLoader: [ :fileName |
+			self class loadFrom:
+				self rootDirectory / fileName ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> historyFromJson: json preHistoryLoader: aBlock [
 	"Converts a dictionary into an AIAHistory object, initialising its properties and associations from the dictionary."
 	| aDictionary history providerClass api preHistoryFiles |
 	aDictionary := STONJSON fromString: json.
@@ -93,9 +102,7 @@ AIAHistoryFileStore >> historyFromJson: json [
 		history lastRoles add:
 			(self associationFromRoleDictionary: each) ].
 	preHistoryFiles do: [ :fileName |
-		history preHistories add:
-			(self class loadFrom:
-				self rootDirectory / fileName) ].
+		history preHistories add: (aBlock value: fileName) ].
 	^ history
 ]
 
@@ -137,6 +144,27 @@ AIAHistoryFileStore >> load [
 	json := self fileReference readStreamDo: [ :stream |
 		stream contents ].
 	^ self historyFromJson: json
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> loadFrom: aFileReference preHistoryLoader: aBlock [
+	| json |
+	rootDirectory := aFileReference parent.
+	json := aFileReference readStreamDo: [ :stream |
+		stream contents ].
+	^ self
+		historyFromJson: json
+		preHistoryLoader: aBlock
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> loadWithPreHistoryLoader: aBlock [
+	| json |
+	json := self fileReference readStreamDo: [ :stream |
+		stream contents ].
+	^ self
+		historyFromJson: json
+		preHistoryLoader: aBlock
 ]
 
 { #category : 'accessing' }
