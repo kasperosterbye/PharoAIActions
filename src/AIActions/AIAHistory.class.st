@@ -292,6 +292,8 @@ AIAHistory >> includeInHistories [
 	noOfNoTitle > maxNoTitles ifTrue: [ 
 		Histories removeAt: firstNoTitle.
 		 ].
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new.
 	
 ]
 

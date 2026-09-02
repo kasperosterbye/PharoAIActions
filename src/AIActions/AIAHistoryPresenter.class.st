@@ -29,7 +29,7 @@ Class {
 	#name : 'AIAHistoryPresenter',
 	#superclass : 'SpPresenter',
 	#instVars : [
-		'historyList',
+		'historyTree',
 		'messageList',
 		'messageItem1',
 		'messageItem2'
@@ -39,11 +39,21 @@ Class {
 	#tag : 'UIPresenters'
 }
 
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter class >> forDirectory: aDirectory [
+	"Load the stored histories before constructing the presenter."
+
+	AIAHistory reloadHistoriesFrom: aDirectory.
+	^ self new
+]
+
 { #category : 'examples' }
 AIAHistoryPresenter class >> open [
 	<example>
-	
-	^ self new open
+
+	^ (self forDirectory:
+		AIAHistoryFileStore new rootDirectory)
+			open
 ]
 
 { #category : 'as yet unclassified' }
@@ -55,7 +65,7 @@ AIAHistoryPresenter >> assocString: assoc [
 AIAHistoryPresenter >> defaultLayout [
     | left right both |
     left := SpPanedLayout newVertical
-        add: historyList;
+        add: historyTree;
         add: messageList;
         yourself.
 
@@ -72,8 +82,9 @@ AIAHistoryPresenter >> defaultLayout [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> getHistoryList [
-	^ AIAHistory histories 
+AIAHistoryPresenter >> getHistoryTreeRoots [
+	^ AIAHistory histories collect: [ :history |
+		AIAHistoryPresenterTreeNode rootFor: history ]
 ]
 
 { #category : 'as yet unclassified' }
@@ -82,36 +93,56 @@ AIAHistoryPresenter >> getMessageList [
 ]
 
 { #category : 'as yet unclassified' }
+AIAHistoryPresenter >> historyActions [
+	historyTree
+		roots: self getHistoryTreeRoots;
+		children: [ :node | node children ];
+		display: [ :node | node history printString ].
+	self
+		historyChangeAction;
+		historyObserveTree
+]
+
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> historyChangeAction [
-    historyList whenSelectionChangedDo: [ :selection |
-        | selected msgs |
-        selected := selection selectedItem.
-        selected ifNotNil: [ 
-            msgs := selected messages.
-            messageList items: msgs.
-            messageItem1 text: msgs first key, String lf, msgs first value.
-            messageItem2 text: msgs second key, String lf, msgs second value ] ].
+	historyTree whenSelectionChangedDo: [ :selection |
+		| selected messages |
+		selected := selection selectedItem.
+		selected ifNotNil: [
+			messages := selected history messages.
+			messageList items: messages.
+
+			messageItem1 text: ''.
+			messageItem2 text: ''.
+
+			messages ifNotEmpty: [
+				messageItem1 text:
+					(self assocString: messages first) ].
+
+			messages size > 1 ifTrue: [
+				messageItem2 text:
+					(self assocString: messages second) ] ] ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> historyObserveTree [
+	SystemAnnouncer uniqueInstance
+        when: AIAHistoriesChanged
+        do: [ historyTree roots: self getHistoryTreeRoots ]
+        for: self.
 ]
 
 { #category : 'initialization' }
 AIAHistoryPresenter >> initializePresenters [
-    super initializePresenters.
-    historyList   := self newList.
-    messageList   := self newList.
-    messageItem1  := self newText.
-    messageItem2  := self newText.
-    historyList items: self getHistoryList.
-    messageList items: self getMessageList.
-    self historyChangeAction.
-    self promptChangeAction.
-    SystemAnnouncer uniqueInstance
-        when: AIAHistoriesChanged
-        do: [ self refreshHistoryList ]
-        for: self.
-    SystemAnnouncer uniqueInstance
-        when: AIAReplyChanged
-        do: [ self refreshMessageList ]
-        for: self.
+
+	super initializePresenters.
+	historyTree := self newTree.
+	messageList := self newList.
+	messageItem1 := self newText.
+	messageItem2 := self newText.
+	messageList items: self getMessageList.
+	self historyActions.
+	self messageActions.
 ]
 
 { #category : 'initialization' }
@@ -123,7 +154,16 @@ AIAHistoryPresenter >> initializeWindow: aWindow [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> promptChangeAction [
+AIAHistoryPresenter >> messageActions [
+	
+	messageList items: self getMessageList.
+	self 
+		messageChangeAction ;
+		messageRefreshTree.
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> messageChangeAction [
     messageList whenSelectionChangedDo: [ :selection |
         | selected newReply1Text |
         selected := selection selectedItem.
@@ -134,17 +174,13 @@ AIAHistoryPresenter >> promptChangeAction [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> refreshHistoryList [
-    | items |
-    items := self getHistoryList.
-    historyList items: items.
-    items ifNotEmpty: [ 
-        historyList selectIndex: items size ].
-]
+AIAHistoryPresenter >> messageRefreshTree [
 
-{ #category : 'as yet unclassified' }
-AIAHistoryPresenter >> refreshMessageList [
-    | selected |
-    selected := historyList selection selectedItem.
-    selected ifNotNil: [ messageList items: selected messages ].
+	| selected |
+	SystemAnnouncer uniqueInstance
+		when: AIAReplyChanged
+		do: [
+				selected := historyTree selection selectedItem.
+				selected ifNotNil: [ messageList items: selected messages ] ]
+		for: self
 ]
