@@ -320,10 +320,10 @@ AIAHistory >> messages [
 
 { #category : 'adding' }
 AIAHistory >> messagesAdd: keyValue [
-    messages add: keyValue.
+	messages add: keyValue.
 	self fileStore save: self.
-    keyValue key = 'assistant' ifTrue: [
-        SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new ].
+	SystemAnnouncer uniqueInstance
+		announce: AIAReplyChanged new
 ]
 
 { #category : 'accessing' }

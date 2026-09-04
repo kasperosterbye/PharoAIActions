@@ -29,6 +29,28 @@ AIAHistoryTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAHistoryTest >> testAddingUserMessageAnnouncesReplyChanged [
+	"Adding a message outside the presenter must announce the change so an
+	open presenter can refresh the displayed conversation."
+
+	| wasAnnounced |
+	wasAnnounced := false.
+	refAIAHistory fileStore rootDirectory: rootDirectory.
+
+	[
+		SystemAnnouncer uniqueInstance
+			when: AIAReplyChanged
+			do: [ wasAnnounced := true ]
+			for: self.
+
+		refAIAHistory user: 'Message added outside the UI'.
+
+		self assert: wasAnnounced
+	] ensure: [
+		SystemAnnouncer uniqueInstance unsubscribe: self ]
+]
+
+{ #category : 'tests' }
 AIAHistoryTest >> testFirstMessageIsStoredWithoutAssigningFileStore [
 	"A newly created history must persist its first message without the
 	caller explicitly creating or assigning a file store."

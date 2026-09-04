@@ -32,7 +32,10 @@ Class {
 		'historyTree',
 		'messageList',
 		'messageItem1',
-		'messageItem2'
+		'messageItem2',
+		'promptInput',
+		'addButton',
+		'sendButton'
 	],
 	#category : 'AIActions-UIPresenters',
 	#package : 'AIActions',
@@ -56,6 +59,20 @@ AIAHistoryPresenter class >> open [
 			open
 ]
 
+{ #category : 'adding' }
+AIAHistoryPresenter >> addPrompt [
+	| selectedNode prompt |
+	selectedNode := historyTree selectedItem.
+	selectedNode ifNil: [ ^ self ].
+	selectedNode isReference ifTrue: [ ^ self ].
+
+	prompt := promptInput text asString.
+	prompt ifEmpty: [ ^ self ].
+
+	selectedNode history user: prompt.
+	promptInput text: ''
+]
+
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> assocString: assoc [
 	^ assoc key, String lf, assoc value
@@ -63,22 +80,32 @@ AIAHistoryPresenter >> assocString: assoc [
 
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
-    | left right both |
-    left := SpPanedLayout newVertical
-        add: historyTree;
-        add: messageList;
-        yourself.
+	| left right both promptRow |
+	left := SpPanedLayout newVertical
+		add: historyTree;
+		add: messageList;
+		yourself.
 
-    right := SpPanedLayout newVertical
-        add: messageItem1;
-        add: messageItem2;
-        yourself.
+	right := SpPanedLayout newVertical
+		add: messageItem1;
+		add: messageItem2;
+		yourself.
 
-    both :=  SpPanedLayout newHorizontal
-        add: left;
-        add: right;
-        yourself.
-	^ both
+	both := SpPanedLayout newHorizontal
+		add: left;
+		add: right;
+		yourself.
+
+	promptRow := SpBoxLayout newLeftToRight
+		add: promptInput;
+		add: addButton expand: false;
+		add: sendButton expand: false;
+		yourself.
+
+	^ SpBoxLayout newTopToBottom
+		add: both;
+		add: promptRow expand: false;
+		yourself
 ]
 
 { #category : 'as yet unclassified' }
@@ -108,6 +135,8 @@ AIAHistoryPresenter >> historyChangeAction [
 	historyTree whenSelectionChangedDo: [ :selection |
 		| selected messages |
 		selected := selection selectedItem.
+		addButton enabled: (selected notNil and: [ selected isReference not ]).
+		sendButton enabled: (selected notNil and: [ selected isReference not ]).
 		selected ifNotNil: [
 			messages := selected history messages.
 			messageList items: messages.
@@ -140,6 +169,17 @@ AIAHistoryPresenter >> initializePresenters [
 	messageList := self newList.
 	messageItem1 := self newText.
 	messageItem2 := self newText.
+	promptInput := self newText.
+	addButton := self newButton
+		label: 'Add';
+		action: [ self addPrompt ];
+		yourself.
+	addButton disable.
+	sendButton := self newButton
+		label: 'Send';
+		action: [ self sendPrompt ];
+		yourself.
+	sendButton disable.
 	messageList items: self getMessageList.
 	self historyActions.
 	self messageActions.
@@ -181,6 +221,22 @@ AIAHistoryPresenter >> messageRefreshTree [
 		when: AIAReplyChanged
 		do: [
 				selected := historyTree selection selectedItem.
-				selected ifNotNil: [ messageList items: selected messages ] ]
+				selected ifNotNil: [ messageList items: selected history messages ] ]
 		for: self
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> sendPrompt [
+	| selectedNode prompt |
+	selectedNode := historyTree selectedItem.
+	selectedNode ifNil: [ ^ self ].
+	selectedNode isReference ifTrue: [ ^ self ].
+
+	prompt := promptInput text asString.
+	prompt ifEmpty: [ ^ self ].
+
+	selectedNode history
+		user: prompt;
+		getResponse.
+	promptInput text: ''
 ]
