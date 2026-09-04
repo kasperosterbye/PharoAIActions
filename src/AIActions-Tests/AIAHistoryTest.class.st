@@ -29,6 +29,32 @@ AIAHistoryTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAHistoryTest >> testAddingPreHistoryAnnouncesHistoriesChanged [
+	"Adding a pre-history changes the structure displayed by the history
+	tree. Open presenters must therefore be notified immediately."
+
+	| preHistory wasAnnounced |
+	refAIAHistory fileStore rootDirectory: rootDirectory.
+
+	preHistory := AIAHistory new.
+	preHistory fileStore rootDirectory: rootDirectory.
+	preHistory user: 'Stored pre-history'.
+
+	wasAnnounced := false.
+	[
+		SystemAnnouncer uniqueInstance
+			when: AIAHistoriesChanged
+			do: [ wasAnnounced := true ]
+			for: self.
+
+		refAIAHistory addPreHistory: preHistory.
+
+		self assert: wasAnnounced
+	] ensure: [
+		SystemAnnouncer uniqueInstance unsubscribe: self ]
+]
+
+{ #category : 'tests' }
 AIAHistoryTest >> testAddingUserMessageAnnouncesReplyChanged [
 	"Adding a message outside the presenter must announce the change so an
 	open presenter can refresh the displayed conversation."
@@ -59,6 +85,124 @@ AIAHistoryTest >> testFirstMessageIsStoredWithoutAssigningFileStore [
 	refAIAHistory user: 'Automatically stored message'.
 
 	self assert: rootDirectory files size equals: 1
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testHistoryWithOneMessagePrintsItsPrompt [
+	"A history containing one user message is a valid history created by
+	du. Its tree label must show that prompt rather than '> No prompt'."
+
+	refAIAHistory fileStore rootDirectory: rootDirectory.
+	refAIAHistory user: 'Single user prompt'.
+
+	self
+		assert: refAIAHistory printString
+		equals: 'Single user prompt'
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testQPrefixIsUniqueInHistories [
+	"qPrefix is a single shared history. Requesting it with another storage
+	directory must not create a second qPrefix in the active histories."
+
+	| firstPrefix secondPrefix anotherDirectory matchingPrefixes |
+	anotherDirectory := rootDirectory parent / 'other-history'.
+
+	firstPrefix := AIAHistory qPrefixIn: rootDirectory.
+	secondPrefix := AIAHistory qPrefixIn: anotherDirectory.
+
+	matchingPrefixes := AIAHistory histories select: [ :history |
+		history title = 'qPrefix' ].
+
+	self assert: firstPrefix identicalTo: secondPrefix.
+	self assert: matchingPrefixes size equals: 1
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testQPrefixRecreatesMissingFile [
+	"Deleting the qPrefix file externally must not leave later histories
+	referring to a nonexistent file. Requesting qPrefix recreates its file."
+
+	| qPrefix file returnedPrefix |
+	qPrefix := AIAHistory qPrefixIn: rootDirectory.
+	file := qPrefix fileStore fileReference.
+	file delete.
+
+	self deny: file exists.
+
+	returnedPrefix := AIAHistory qPrefixIn: rootDirectory.
+
+	self assert: returnedPrefix identicalTo: qPrefix.
+	self assert: file exists
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testQPrefixWithoutMessagesCanBeReloadedAsPreHistory [
+	"qPrefix contains context roles but no messages. It must nevertheless be
+	persisted, because another stored history may reference it."
+
+	| qPrefix current histories loadedPrefix loadedCurrent |
+	qPrefix := AIAHistory qPrefixIn: rootDirectory. 
+
+	current := refAIAHistory.
+	current fileStore rootDirectory: rootDirectory.
+	current addPreHistory: qPrefix.
+	current user: 'A question using qPrefix'.
+
+	self assert: qPrefix fileStore fileReference exists.
+
+	AIAHistory clearHistories.
+	AIAHistory reloadHistoriesFrom: rootDirectory.
+	histories := AIAHistory histories.
+
+	loadedPrefix := histories detect: [ :history |
+		history title = 'qPrefix' ].
+	loadedCurrent := histories detect: [ :history |
+		history messages = current messages ].
+
+	self assert: loadedPrefix messages isEmpty.
+	self assert:
+		loadedCurrent preHistories first
+			identicalTo: loadedPrefix
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testReloadAnnouncesCompletedHistoryGraph [
+	"Reload listeners must receive a final announcement after every history
+	and pre-history relationship has been completely reconstructed."
+
+	| preHistory currentHistory currentMessages announcementWasComplete |
+	preHistory := refAIAHistory.
+	preHistory fileStore rootDirectory: rootDirectory.
+	preHistory user: 'Stored pre-history'.
+
+	currentHistory := AIAHistory new.
+	currentHistory fileStore rootDirectory: rootDirectory.
+	currentHistory user: 'History using pre-history'.
+	currentHistory addPreHistory: preHistory.
+	currentMessages := currentHistory messages copy.
+
+	announcementWasComplete := false.
+	[
+		SystemAnnouncer uniqueInstance
+			when: AIAHistoriesChanged
+			do: [
+				| loadedCurrent |
+				loadedCurrent := AIAHistory histories
+					detect: [ :history |
+						history messages = currentMessages ]
+					ifNone: [ nil ].
+				announcementWasComplete :=
+					loadedCurrent notNil and: [
+						loadedCurrent preHistories size = 1 ] ]
+			for: self.
+
+		AIAHistory clearHistories.
+		AIAHistory reloadHistoriesFrom: rootDirectory.
+
+		self assert: announcementWasComplete
+	] ensure: [
+		SystemAnnouncer uniqueInstance unsubscribe: self ]
 ]
 
 { #category : 'tests' }

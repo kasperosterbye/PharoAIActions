@@ -31,6 +31,17 @@ AIAHistoryFileStore >> associationFromRoleDictionary: aDictionary [
 		-> (aDictionary at: 'content')
 ]
 
+{ #category : 'submorphs - add/remove' }
+AIAHistoryFileStore >> delete [
+	"Delete the persisted history file if it still exists."
+
+	| file |
+	file := self fileReference.
+	file exists ifTrue: [
+		file delete ].
+	^ file
+]
+
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileName [
 	"Returns a filename built from the creation date and time"

@@ -30,6 +30,24 @@ AIAHistoryFileStoreTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAHistoryFileStoreTest >> testDeleteRemovesStoredHistoryFile [
+	"Deleting a file store must remove its persisted history file. Removal
+	from AIAHistory histories and UI updates belong to higher layers."
+
+	| history file |
+	history := AIAHistory new.
+	history fileStore: refAIAHistoryFileStore.
+	history user: 'Temporary history'.
+
+	file := refAIAHistoryFileStore fileReference.
+	self assert: file exists.
+
+	refAIAHistoryFileStore delete.
+
+	self deny: file exists
+]
+
+{ #category : 'tests' }
 AIAHistoryFileStoreTest >> testLoadFromPreservesFileReference [
 	"A history loaded from a file must remain connected to that same file.
 	Future changes must not accidentally be written to another directory."

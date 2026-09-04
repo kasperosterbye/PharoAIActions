@@ -72,15 +72,31 @@ AIAHistory class >> open [
 
 { #category : 'history globals' }
 AIAHistory class >> qPrefix [
-	"Returns the qPrefix history, creating it if necessary, with system text and response type"
-	<example>
-	^ Histories 
-		detect: [ :hist | hist title = 'qPrefix' ]
+	"Return the persistent qPrefix history, creating it when necessary."
+
+	^ self qPrefixIn:
+		AIAHistoryFileStore new rootDirectory
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> qPrefixIn: aDirectory [
+	| prefix |
+	prefix := self histories
+		detect: [ :history |
+			history title = 'qPrefix' ]
 		ifNone: [
-			self new
+			prefix := self new.
+			prefix
 				title: 'qPrefix';
-				system: self qPrefixSystemText;
-				yourself] 
+				system: self qPrefixSystemText.
+			prefix ].
+
+	prefix fileStore rootDirectory: aDirectory.
+
+	prefix fileStore fileReference exists ifFalse: [
+		prefix fileStore save: prefix ].
+
+	^ prefix
 ]
 
 { #category : 'history globals' }
@@ -118,8 +134,8 @@ AIAHistory class >> reloadHistories [
 
 { #category : 'as yet unclassified' }
 AIAHistory class >> reloadHistoriesFrom: aDirectory [
-	"Discard the current in-memory histories and reconstruct them from
-	the files in aDirectory. Each file is represented by exactly one object."
+	"Discard the current in-memory histories, reconstruct them from files
+	and announce only after the resulting graph is available."
 
 	| fileStores loadedHistories |
 	self clearHistories.
@@ -129,6 +145,10 @@ AIAHistory class >> reloadHistoriesFrom: aDirectory [
 	loadedHistories := fileStores loadAll.
 
 	Histories := loadedHistories asOrderedCollection.
+
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new.
+
 	^ Histories
 ]
 
@@ -143,10 +163,14 @@ AIAHistory class >> writeCurrent [
 ]
 
 { #category : 'accessing' }
-AIAHistory >> addPreHistory: pre [
-	"Adds a previous history instance to the collection of pre-histories"
-	preHistories add: pre.
+AIAHistory >> addPreHistory: preHistory [
+	"Add a pre-history, persist the changed relationship and notify open
+	history presenters that the tree structure has changed."
+
+	preHistories add: preHistory.
 	self fileStore save: self.
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new
 ]
 
 { #category : 'accessing' }
@@ -341,9 +365,9 @@ AIAHistory >> printOn: stream [
 
 { #category : 'printing' }
 AIAHistory >> printPrompt [
-	(messages isNotNil and: [ messages size > 1 ])
-		ifTrue: [ ^ messages first value maxFirst: 20  ] 
-		ifFalse: [ ^ '> No prompt' ]
+	messages ifNotEmpty: [
+		^ messages first value maxFirst: 20 ].
+	^ '> No prompt'
 ]
 
 { #category : 'accessing' }

@@ -113,6 +113,55 @@ AIAHistoryPresenterTest >> testAddPromptDoesNotModifyReference [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testDeleteRemovesSelectedUnreferencedHistory [
+	"Deleting an unreferenced root removes its file, its in-memory history
+	and its root from the presenter."
+
+	| historyTree deleteButton root history file |
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+	deleteButton := refAIAHistoryPresenter
+		instVarNamed: #deleteButton.
+
+	root := historyTree roots first.
+	history := root history.
+	file := history fileStore fileReference.
+	historyTree selectItem: root.
+
+	self assert: file exists.
+	deleteButton action value.
+
+	self deny: file exists.
+	self deny: (AIAHistory histories anySatisfy: [ :each |
+		each == history ]).
+	self deny: (historyTree roots anySatisfy: [ :node |
+		node history == history ])
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testExternalHistoryCreationPreservesSelection [
+	"Adding a history outside the presenter must refresh its tree without
+	changing the history on which the user is currently working."
+
+	| historyTree selectedHistory externalHistory |
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+
+	historyTree selectItem: historyTree roots first.
+	selectedHistory := historyTree selectedItem history.
+
+	externalHistory := AIAHistory new.
+	externalHistory fileStore rootDirectory:
+		selectedHistory fileStore rootDirectory.
+	externalHistory user: 'An externally created history'.
+
+	self assert: historyTree selectedItem isNotNil.
+	self assert:
+		historyTree selectedItem history
+			identicalTo: selectedHistory
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testExternalMessageRefreshesSelectedConversation [
 	"When the selected history changes outside the presenter, the reply
 	announcement must refresh the message list."
@@ -171,6 +220,42 @@ AIAHistoryPresenterTest >> testNewPromptCreatesIndependentHistory [
 			selectedItem history
 		identicalTo: newHistory.
 	self assert: promptInput text equals: ''
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testNewStoresHistoryInPresenterDirectory [
+	"New histories must be stored in the directory represented by the
+	presenter, regardless of the factory history's initial file store."
+
+	| directory wrongDirectory promptInput newButton createdHistory |
+	directory := AIAHistory histories first fileStore rootDirectory.
+	wrongDirectory := directory parent / 'wrong-history'.
+
+	SystemAnnouncer uniqueInstance
+		unsubscribe: refAIAHistoryPresenter.
+	refAIAHistoryPresenter :=
+		AIAHistoryPresenter forDirectory: directory.
+
+	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
+	newButton := refAIAHistoryPresenter instVarNamed: #newButton.
+
+	refAIAHistoryPresenter
+		instVarNamed: #newHistoryFactory
+		put: [
+			createdHistory := AIAHistory new.
+			createdHistory fileStore rootDirectory: wrongDirectory.
+			createdHistory api: AIAHistoryPresenterTestApi new.
+			createdHistory ].
+
+	promptInput text: 'Stored in the presenter directory'.
+	newButton action value.
+
+	self
+		assert: createdHistory fileStore rootDirectory
+		equals: directory.
+	self assert: createdHistory fileStore fileReference exists.
+	self deny:
+		(wrongDirectory / createdHistory fileStore fileName) exists
 ]
 
 { #category : 'tests' }
@@ -256,6 +341,95 @@ AIAHistoryPresenterTest >> testPresenterLoadsPreHistoryReferencesFromDirectory [
 	self deny: preRoot isReference.
 	self assert: reference isReference.
 	self assert: reference history identicalTo: preRoot history
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testReferencedHistoryCannotBeDeleted [
+	"A history used as pre-history must remain stored. Delete is disabled,
+	and calling the action directly must still leave the history intact."
+
+	| historyTree deleteButton preHistory currentHistory preRoot file |
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+	deleteButton := refAIAHistoryPresenter
+		instVarNamed: #deleteButton.
+
+	preHistory := AIAHistory histories first.
+	file := preHistory fileStore fileReference.
+
+	currentHistory := AIAHistory new.
+	currentHistory fileStore rootDirectory:
+		preHistory fileStore rootDirectory.
+	currentHistory user: 'History using shared context'.
+	currentHistory addPreHistory: preHistory.
+
+	preRoot := historyTree roots detect: [ :node |
+		node history == preHistory ].
+	historyTree selectItem: preRoot.
+
+	self deny: deleteButton isEnabled.
+
+	deleteButton action value.
+
+	self assert: file exists.
+	self assert: (AIAHistory histories anySatisfy: [ :history |
+		history == preHistory ])
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testReloadLoadsFileCreatedOutsidePresenter [
+	"Reload must discard the current in-memory view and reconstruct the tree
+	from the files, including files created while the presenter was open."
+
+	| directory historyTree reloadButton initialSize externalHistory |
+	directory := AIAHistory histories first fileStore rootDirectory.
+
+	SystemAnnouncer uniqueInstance
+		unsubscribe: refAIAHistoryPresenter.
+	refAIAHistoryPresenter :=
+		AIAHistoryPresenter forDirectory: directory.
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	initialSize := historyTree roots size.
+
+	"Prevent announcements from updating the presenter automatically."
+	SystemAnnouncer uniqueInstance
+		unsubscribe: refAIAHistoryPresenter.
+
+	externalHistory := AIAHistory new.
+	externalHistory fileStore rootDirectory: directory.
+	externalHistory user: 'Created outside the presenter'.
+
+	self assert: historyTree roots size equals: initialSize.
+
+	reloadButton := refAIAHistoryPresenter
+		instVarNamed: #reloadButton.
+	reloadButton action value.
+
+	self assert: historyTree roots size equals: initialSize + 1
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testReloadRemovesHistoryDeletedOutsidePresenter [
+	"Reload must remove the history whose file was deleted externally,
+	without assuming that the history directory contains no other files."
+
+	| historyTree reloadButton root fileName |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	reloadButton := refAIAHistoryPresenter instVarNamed: #reloadButton.
+	root := historyTree roots first.
+	fileName := root history fileStore fileName.
+
+	root history fileStore fileReference delete.
+
+	self assert: (historyTree roots anySatisfy: [ :node |
+		node history fileStore fileName = fileName ]).
+
+	reloadButton action value.
+
+	self deny: (AIAHistory histories anySatisfy: [ :history |
+		history fileStore fileName = fileName ]).
+	self deny: (historyTree roots anySatisfy: [ :node |
+		node history fileStore fileName = fileName ])
 ]
 
 { #category : 'tests' }

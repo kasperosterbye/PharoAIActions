@@ -35,7 +35,12 @@ Class {
 		'messageItem2',
 		'promptInput',
 		'addButton',
-		'sendButton'
+		'sendButton',
+		'newButton',
+		'newHistoryFactory',
+		'rootDirectory',
+		'reloadButton',
+		'deleteButton'
 	],
 	#category : 'AIActions-UIPresenters',
 	#package : 'AIActions',
@@ -44,10 +49,11 @@ Class {
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter class >> forDirectory: aDirectory [
-	"Load the stored histories before constructing the presenter."
-
+	| presenter |
 	AIAHistory reloadHistoriesFrom: aDirectory.
-	^ self new
+	presenter := self new.
+	presenter rootDirectory: aDirectory.
+	^ presenter
 ]
 
 { #category : 'examples' }
@@ -78,6 +84,16 @@ AIAHistoryPresenter >> assocString: assoc [
 	^ assoc key, String lf, assoc value
 ]
 
+{ #category : 'testing' }
+AIAHistoryPresenter >> canDeleteNode: aNode [
+	aNode ifNil: [ ^ false ].
+	aNode isReference ifTrue: [ ^ false ].
+
+	^ (AIAHistory histories anySatisfy: [ :history |
+		history preHistories anySatisfy: [ :preHistory |
+			preHistory == aNode history ] ]) not
+]
+
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
 	| left right both promptRow |
@@ -98,14 +114,33 @@ AIAHistoryPresenter >> defaultLayout [
 
 	promptRow := SpBoxLayout newLeftToRight
 		add: promptInput;
+		add: newButton expand: false;
 		add: addButton expand: false;
 		add: sendButton expand: false;
+		add: reloadButton expand: false;
+		add: deleteButton expand: false;
 		yourself.
 
 	^ SpBoxLayout newTopToBottom
 		add: both;
 		add: promptRow expand: false;
 		yourself
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> deleteSelectedHistory [
+	| selectedNode history |
+	selectedNode := historyTree selectedItem.
+	(self canDeleteNode: selectedNode) ifFalse: [ ^ self ].
+
+	history := selectedNode history.
+	history fileStore delete.
+	AIAHistory histories
+		remove: history
+		ifAbsent: [ ^ self ].
+
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new
 ]
 
 { #category : 'as yet unclassified' }
@@ -124,7 +159,8 @@ AIAHistoryPresenter >> historyActions [
 	historyTree
 		roots: self getHistoryTreeRoots;
 		children: [ :node | node children ];
-		display: [ :node | node history printString ].
+		display: [ :node | node history printString ];
+		displayItalic: [ :node | node isReference ].
 	self
 		historyChangeAction;
 		historyObserveTree
@@ -137,6 +173,7 @@ AIAHistoryPresenter >> historyChangeAction [
 		selected := selection selectedItem.
 		addButton enabled: (selected notNil and: [ selected isReference not ]).
 		sendButton enabled: (selected notNil and: [ selected isReference not ]).
+		deleteButton enabled: (self canDeleteNode: selected).
 		selected ifNotNil: [
 			messages := selected history messages.
 			messageList items: messages.
@@ -180,7 +217,26 @@ AIAHistoryPresenter >> initializePresenters [
 		action: [ self sendPrompt ];
 		yourself.
 	sendButton disable.
+	newHistoryFactory := [ AIAHistory new ].
+
+	newButton := self newButton
+		label: 'New';
+		action: [ self newPrompt ];
+		yourself.
 	messageList items: self getMessageList.
+	rootDirectory ifNil: [ rootDirectory := AIAHistoryFileStore new rootDirectory ].
+
+	reloadButton := self newButton
+		label: 'Reload';
+		action: [ self reloadHistories ];
+		yourself.
+
+	deleteButton := self newButton
+		label: 'Delete';
+		action: [ self deleteSelectedHistory ];
+		yourself.
+	deleteButton disable.
+		
 	self historyActions.
 	self messageActions.
 ]
@@ -220,9 +276,41 @@ AIAHistoryPresenter >> messageRefreshTree [
 	SystemAnnouncer uniqueInstance
 		when: AIAReplyChanged
 		do: [
+				historyTree refresh.
 				selected := historyTree selection selectedItem.
 				selected ifNotNil: [ messageList items: selected history messages ] ]
 		for: self
+]
+
+{ #category : 'instance creation' }
+AIAHistoryPresenter >> newPrompt [
+	| prompt history root |
+	prompt := promptInput text asString.
+	prompt ifEmpty: [ ^ self ].
+
+	history := newHistoryFactory value.
+	history fileStore rootDirectory: rootDirectory.
+	
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+
+	history
+		user: prompt;
+		getResponse.
+
+	promptInput text: ''
+]
+
+{ #category : 'history globals' }
+AIAHistoryPresenter >> reloadHistories [
+	AIAHistory reloadHistoriesFrom: rootDirectory.
+	historyTree roots: self getHistoryTreeRoots
+]
+
+{ #category : 'accessing' }
+AIAHistoryPresenter >> rootDirectory: aDirectory [
+	rootDirectory := aDirectory
 ]
 
 { #category : 'as yet unclassified' }
