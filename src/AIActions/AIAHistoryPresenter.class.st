@@ -96,11 +96,16 @@ AIAHistoryPresenter >> canDeleteNode: aNode [
 
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
-	| left right both composer composerButtons globalButtons |
+	| left right both composer composerButtons
+	  leftButtons buttonSpacer |
+
+	buttonSpacer := SpBoxLayout newLeftToRight.
 
 	composerButtons := SpBoxLayout newLeftToRight
 		add: addButton expand: false;
 		add: sendButton expand: false;
+		add: buttonSpacer;
+		add: newButton expand: false;
 		yourself.
 
 	composer := SpBoxLayout newTopToBottom
@@ -108,9 +113,14 @@ AIAHistoryPresenter >> defaultLayout [
 		add: composerButtons expand: false;
 		yourself.
 
-	left := SpPanedLayout newVertical
+	leftButtons := SpBoxLayout newLeftToRight
+		add: reloadButton expand: false;
+		add: deleteButton expand: false;
+		yourself.
+
+	left := SpBoxLayout newTopToBottom
 		add: historyTree;
-		add: messageItem1;
+		add: leftButtons expand: false;
 		yourself.
 
 	right := SpPanedLayout newVertical
@@ -123,16 +133,7 @@ AIAHistoryPresenter >> defaultLayout [
 		add: right;
 		yourself.
 
-	globalButtons := SpBoxLayout newLeftToRight
-		add: newButton expand: false;
-		add: reloadButton expand: false;
-		add: deleteButton expand: false;
-		yourself.
-
-	^ SpBoxLayout newTopToBottom
-		add: both;
-		add: globalButtons expand: false;
-		yourself
+	^ both
 ]
 
 { #category : 'as yet unclassified' }
@@ -179,7 +180,7 @@ AIAHistoryPresenter >> historyActions [
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> historyChangeAction [
 	historyTree whenSelectionChangedDo: [ :selection |
-		| selected messages |
+		| selected |
 		selected := selection selectedItem.
 
 		addButton enabled:
@@ -189,24 +190,9 @@ AIAHistoryPresenter >> historyChangeAction [
 		deleteButton enabled: (self canDeleteNode: selected).
 
 		selected
-			ifNil: [
-				self displayMessages: #().
-				messageItem1 text: ''.
-				messageItem2 text: '' ]
+			ifNil: [ self displayMessages: #() ]
 			ifNotNil: [
-				messages := selected history messages.
-				self displayMessages: messages.
-
-				messageItem1 text: ''.
-				messageItem2 text: ''.
-
-				messages ifNotEmpty: [
-					messageItem1 text:
-						(self assocString: messages first) ].
-
-				messages size > 1 ifTrue: [
-					messageItem2 text:
-						(self assocString: messages second) ] ] ]
+				self displayMessages: selected history messages ] ]
 ]
 
 { #category : 'as yet unclassified' }
