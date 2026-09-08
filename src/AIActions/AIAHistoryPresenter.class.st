@@ -30,7 +30,7 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'historyTree',
-		'messageList',
+		'messageText',
 		'messageItem1',
 		'messageItem2',
 		'promptInput',
@@ -96,15 +96,26 @@ AIAHistoryPresenter >> canDeleteNode: aNode [
 
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
-	| left right both promptRow |
+	| left right both composer composerButtons globalButtons |
+
+	composerButtons := SpBoxLayout newLeftToRight
+		add: addButton expand: false;
+		add: sendButton expand: false;
+		yourself.
+
+	composer := SpBoxLayout newTopToBottom
+		add: promptInput;
+		add: composerButtons expand: false;
+		yourself.
+
 	left := SpPanedLayout newVertical
 		add: historyTree;
-		add: messageList;
+		add: messageItem1;
 		yourself.
 
 	right := SpPanedLayout newVertical
-		add: messageItem1;
-		add: messageItem2;
+		add: messageText;
+		add: composer;
 		yourself.
 
 	both := SpPanedLayout newHorizontal
@@ -112,18 +123,15 @@ AIAHistoryPresenter >> defaultLayout [
 		add: right;
 		yourself.
 
-	promptRow := SpBoxLayout newLeftToRight
-		add: promptInput;
+	globalButtons := SpBoxLayout newLeftToRight
 		add: newButton expand: false;
-		add: addButton expand: false;
-		add: sendButton expand: false;
 		add: reloadButton expand: false;
 		add: deleteButton expand: false;
 		yourself.
 
 	^ SpBoxLayout newTopToBottom
 		add: both;
-		add: promptRow expand: false;
+		add: globalButtons expand: false;
 		yourself
 ]
 
@@ -144,14 +152,16 @@ AIAHistoryPresenter >> deleteSelectedHistory [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> getHistoryTreeRoots [
-	^ AIAHistory histories collect: [ :history |
-		AIAHistoryPresenterTreeNode rootFor: history ]
+AIAHistoryPresenter >> displayMessages: messages [
+	messageText ifNil: [ ^ self ].
+	messageText text:
+		(self stringFromMessages: messages)
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> getMessageList [
-    ^ #()
+AIAHistoryPresenter >> getHistoryTreeRoots [
+	^ AIAHistory histories collect: [ :history |
+		AIAHistoryPresenterTreeNode rootFor: history ]
 ]
 
 { #category : 'as yet unclassified' }
@@ -180,12 +190,12 @@ AIAHistoryPresenter >> historyChangeAction [
 
 		selected
 			ifNil: [
-				messageList items: #().
+				self displayMessages: #().
 				messageItem1 text: ''.
 				messageItem2 text: '' ]
 			ifNotNil: [
 				messages := selected history messages.
-				messageList items: messages.
+				self displayMessages: messages.
 
 				messageItem1 text: ''.
 				messageItem2 text: ''.
@@ -211,8 +221,9 @@ AIAHistoryPresenter >> historyObserveTree [
 AIAHistoryPresenter >> initializePresenters [
 
 	super initializePresenters.
+	messageText := self newText.
 	historyTree := self newTree.
-	messageList := self newList.
+	messageText beNotEditable.
 	messageItem1 := self newText.
 	messageItem2 := self newText.
 	promptInput := self newText.
@@ -232,7 +243,6 @@ AIAHistoryPresenter >> initializePresenters [
 		label: 'New';
 		action: [ self newPrompt ];
 		yourself.
-	messageList items: self getMessageList.
 	rootDirectory ifNil: [ rootDirectory := AIAHistoryFileStore new rootDirectory ].
 
 	reloadButton := self newButton
@@ -260,22 +270,9 @@ AIAHistoryPresenter >> initializeWindow: aWindow [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> messageActions [
-	
-	messageList items: self getMessageList.
-	self 
-		messageChangeAction ;
-		messageRefreshTree.
-]
-
-{ #category : 'as yet unclassified' }
-AIAHistoryPresenter >> messageChangeAction [
-    messageList whenSelectionChangedDo: [ :selection |
-        | selected newReply1Text |
-        selected := selection selectedItem.
-        selected ifNotNil: [
-				newReply1Text := selected key, String lf, selected value.
-				messageItem2 text: messageItem1 text.
-            messageItem1 text: newReply1Text ] ].
+	self
+		displayMessages: #();
+		messageRefreshTree
 ]
 
 { #category : 'as yet unclassified' }
@@ -287,7 +284,7 @@ AIAHistoryPresenter >> messageRefreshTree [
 		do: [
 				historyTree refresh.
 				selected := historyTree selection selectedItem.
-				selected ifNotNil: [ messageList items: selected history messages ] ]
+				selected ifNotNil: [ self displayMessages: selected history messages ] ]
 		for: self
 ]
 
@@ -373,4 +370,19 @@ AIAHistoryPresenter >> sendPrompt [
 		user: prompt;
 		getResponse.
 	promptInput text: ''
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> stringFromMessages: messages [
+	^ String streamContents: [ :stream |
+		messages withIndexDo: [ :message :index |
+			index > 1 ifTrue: [
+				stream nextPutAll: String lf.
+				stream nextPutAll: String lf ].
+
+			stream
+				nextPutAll: message key asString;
+				nextPutAll: ':';
+				nextPutAll: String lf;
+				nextPutAll: message value asString ] ]
 ]

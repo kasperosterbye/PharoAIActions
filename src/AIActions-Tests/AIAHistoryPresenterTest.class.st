@@ -198,24 +198,20 @@ AIAHistoryPresenterTest >> testExternalHistoryCreationPreservesSelection [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testExternalMessageRefreshesSelectedConversation [
-	"When the selected history changes outside the presenter, the reply
-	announcement must refresh the message list."
+	"An external messageThis is a test message must refresh the displayed conversation."
 
-	| historyTree messageList root |
-	historyTree := refAIAHistoryPresenter
-		instVarNamed: #historyTree.
-	messageList := refAIAHistoryPresenter
-		instVarNamed: #messageList.
+	| historyTree messageText root |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
 	root := historyTree roots first.
 
 	historyTree selectItem: root.
-	messageList items: #().
+	messageText text: ''.
 
 	root history user: 'Added outside the presenter'.
 
-	self
-		assert: messageList items
-		equals: root history messages
+	self assert: (messageText text asString
+		includesSubstring: 'Added outside the presenter')
 ]
 
 { #category : 'tests' }
@@ -413,24 +409,22 @@ AIAHistoryPresenterTest >> testReferencedHistoryCannotBeDeleted [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testReloadAfterFileDeletionClearsDisplayedConversation [
-	"When the selected history has been deleted outside Pharo, Reload must
-	remove the selection and clear the now obsolete displayed messages."
+	"Reloading after deletion of the selected file must clear its display."
 
-	| historyTree messageList reloadButton history |
+	| historyTree messageText reloadButton history |
 	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageList := refAIAHistoryPresenter instVarNamed: #messageList.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
 	reloadButton := refAIAHistoryPresenter instVarNamed: #reloadButton.
 
 	historyTree selectItem: historyTree roots first.
 	history := historyTree selectedItem history.
 
-	self assert: messageList items isNotEmpty.
+	self assert: messageText text asString isNotEmpty.
 	history fileStore delete.
-
 	reloadButton action value.
 
-	self assert: historyTree selectedItem isNil.
-	self assert: messageList items isEmpty
+	self assert: historyTree selectedItem isNil..
+	self assert: messageText text asString isEmpty
 ]
 
 { #category : 'tests' }
@@ -520,22 +514,57 @@ AIAHistoryPresenterTest >> testReloadRemovesHistoryDeletedOutsidePresenter [
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testSelectingHistoryDisplaysAllMessages [
-	"Selecting a history root must display the complete conversation in the
-	message list, preserving roles, contents and order."
+AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCompleteConversation [
+	"The selected history must display every role and complete message
+	in chronological order."
 
-	| historyTree messageList root |
-	historyTree := refAIAHistoryPresenter
-		instVarNamed: #historyTree.
-	messageList := refAIAHistoryPresenter
-		instVarNamed: #messageList.
+	| historyTree messageText root answer expected |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
 	root := historyTree roots first.
+
+	answer := 'First answer line', String lf, 'Second answer line'.
+	root history
+		user: 'Second question';
+		assistant: answer.
 
 	historyTree selectItem: root.
 
+	expected :=
+		'user:', String lf,
+		'A message without an answer', String lf, String lf,
+		'user:', String lf,
+		'Second question', String lf, String lf,
+		'assistant:', String lf,
+		answer.
+
+	self assert: messageText text asString equals: expected
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSelectingAnotherHistoryReplacesDisplayedConversation [
+	"Selecting another history must replace the complete displayed text;
+	content from the previous selection must not remain."
+
+	| historyTree messageText firstRoot secondHistory secondRoot directory |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+	firstRoot := historyTree roots first.
+	directory := firstRoot history fileStore rootDirectory.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore rootDirectory: directory.
+	secondHistory user: 'Only in the second history'.
+
+	secondRoot := historyTree roots detect: [ :node |
+		node history == secondHistory ].
+
+	historyTree selectItem: firstRoot.
+	historyTree selectItem: secondRoot.
+
 	self
-		assert: messageList items
-		equals: root history messages
+		assert: messageText text asString
+		equals: 'user:', String lf, 'Only in the second history'
 ]
 
 { #category : 'tests' }
