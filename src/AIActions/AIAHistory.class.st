@@ -163,12 +163,23 @@ AIAHistory class >> writeCurrent [
 ]
 
 { #category : 'accessing' }
-AIAHistory >> addPreHistory: preHistory [
-	"Add a pre-history, persist the changed relationship and notify open
-	history presenters that the tree structure has changed."
+AIAHistory >> addPreHistory: aHistory [
 
-	preHistories add: preHistory.
+	(preHistories anySatisfy: [ :each | each == aHistory ])
+		ifTrue: [ ^ self ].
+
+	(aHistory selfAndPreHistories anySatisfy: [ :each |
+		each == self ])
+		ifTrue: [
+			self error: 'A history cannot contain a cyclic pre-history' ].
+	self fileStore rootDirectory = aHistory fileStore rootDirectory
+	ifFalse: [
+		self error:
+			'A history and its pre-history must use the same directory' ].
+
+	preHistories add: aHistory.
 	self fileStore save: self.
+
 	SystemAnnouncer uniqueInstance
 		announce: AIAHistoriesChanged new
 ]
@@ -300,25 +311,11 @@ AIAHistory >> getResponse [
 
 { #category : 'accessing' }
 AIAHistory >> includeInHistories [
-	"Adds the current history instance to the shared Histories collection and manages its size by removing the oldest untitled instance if the maximum number of untitled instances is exceeded."
-	| firstNoTitle noOfNoTitle maxNoTitles |
 	Histories ifNil: [ self class clearHistories ].
 	Histories add: self.
-	firstNoTitle := 0.
-	noOfNoTitle := 0.
-	maxNoTitles := 20.
-	1 to: Histories size do: [ :index |
-		(Histories at: index) title ifNil: [ 
-			firstNoTitle > 0 ifFalse: [ firstNoTitle := index ].
-			noOfNoTitle := noOfNoTitle + 1.
-			 ]
-		 ].
-	noOfNoTitle > maxNoTitles ifTrue: [ 
-		Histories removeAt: firstNoTitle.
-		 ].
+
 	SystemAnnouncer uniqueInstance
-		announce: AIAHistoriesChanged new.
-	
+		announce: AIAHistoriesChanged new
 ]
 
 { #category : 'initialization' }
@@ -436,14 +433,19 @@ AIAHistory >> sanitizedResonse: response forHeaderLevel: level [
 
 { #category : 'accessing' }
 AIAHistory >> selfAndPreHistories [
-	"Returns an ordered collection of all pre histories and the current instance."
-	| pres |
-	pres := Set new.
-	preHistories do: [ :preModel |
-		pres addAll: preModel selfAndPreHistories.
-		 ].
-	pres add: self.
-	^ pres
+	| result visited visit |
+	result := OrderedCollection new.
+	visited := IdentitySet new.
+
+	visit := [ :history |
+		(visited includes: history) ifFalse: [
+			visited add: history.
+			history preHistories do: [ :preHistory |
+				visit value: preHistory ].
+			result add: history ] ].
+
+	visit value: self.
+	^ result
 ]
 
 { #category : 'context roles' }

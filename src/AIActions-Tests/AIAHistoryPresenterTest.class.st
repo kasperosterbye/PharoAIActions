@@ -22,7 +22,8 @@ AIAHistoryPresenterTest >> setUp [
 		FileSystem memory root / 'history'.
 	history user: 'A message without an answer'.
 
-	refAIAHistoryPresenter := AIAHistoryPresenter new
+	refAIAHistoryPresenter :=
+	AIAHistoryPresenter forDirectory: history fileStore rootDirectory
 ]
 
 { #category : 'running' }
@@ -136,6 +137,40 @@ AIAHistoryPresenterTest >> testDeleteRemovesSelectedUnreferencedHistory [
 		each == history ]).
 	self deny: (historyTree roots anySatisfy: [ :node |
 		node history == history ])
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testDeletingHistoryKeepsItsPreHistories [
+	"Deleting a history must delete only that history. Its pre-histories
+	remain independently stored and available as editable roots."
+
+	| historyTree deleteButton preHistory history
+	  preHistoryFile historyFile root |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	deleteButton := refAIAHistoryPresenter instVarNamed: #deleteButton.
+
+	preHistory := AIAHistory histories first.
+
+	history := AIAHistory new.
+	history fileStore rootDirectory:
+		preHistory fileStore rootDirectory.
+	history user: 'History using shared context'.
+	history addPreHistory: preHistory.
+
+	preHistoryFile := preHistory fileStore fileReference.
+	historyFile := history fileStore fileReference.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+
+	deleteButton action value.
+
+	self deny: historyFile exists.
+	self assert: preHistoryFile exists.
+	self assert: (AIAHistory histories anySatisfy: [ :each |
+		each == preHistory ])
 ]
 
 { #category : 'tests' }
@@ -377,6 +412,28 @@ AIAHistoryPresenterTest >> testReferencedHistoryCannotBeDeleted [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testReloadAfterFileDeletionClearsDisplayedConversation [
+	"When the selected history has been deleted outside Pharo, Reload must
+	remove the selection and clear the now obsolete displayed messages."
+
+	| historyTree messageList reloadButton history |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageList := refAIAHistoryPresenter instVarNamed: #messageList.
+	reloadButton := refAIAHistoryPresenter instVarNamed: #reloadButton.
+
+	historyTree selectItem: historyTree roots first.
+	history := historyTree selectedItem history.
+
+	self assert: messageList items isNotEmpty.
+	history fileStore delete.
+
+	reloadButton action value.
+
+	self assert: historyTree selectedItem isNil.
+	self assert: messageList items isEmpty
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testReloadLoadsFileCreatedOutsidePresenter [
 	"Reload must discard the current in-memory view and reconstruct the tree
 	from the files, including files created while the presenter was open."
@@ -406,6 +463,36 @@ AIAHistoryPresenterTest >> testReloadLoadsFileCreatedOutsidePresenter [
 	reloadButton action value.
 
 	self assert: historyTree roots size equals: initialSize + 1
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testReloadPreservesSelectedHistory [
+	"Reloading must preserve the selected history when its file still exists.
+	Object identity may change, but the persistent file remains the same."
+
+	| directory historyTree reloadButton selectedFileName |
+	directory := AIAHistory histories first fileStore rootDirectory.
+
+	SystemAnnouncer uniqueInstance
+		unsubscribe: refAIAHistoryPresenter.
+	refAIAHistoryPresenter :=
+		AIAHistoryPresenter forDirectory: directory.
+
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+	reloadButton := refAIAHistoryPresenter
+		instVarNamed: #reloadButton.
+
+	historyTree selectItem: historyTree roots first.
+	selectedFileName :=
+		historyTree selectedItem history fileStore fileName.
+
+	reloadButton action value.
+
+	self assert: historyTree selectedItem isNotNil.
+	self
+		assert: historyTree selectedItem history fileStore fileName
+		equals: selectedFileName
 ]
 
 { #category : 'tests' }

@@ -171,31 +171,40 @@ AIAHistoryPresenter >> historyChangeAction [
 	historyTree whenSelectionChangedDo: [ :selection |
 		| selected messages |
 		selected := selection selectedItem.
-		addButton enabled: (selected notNil and: [ selected isReference not ]).
-		sendButton enabled: (selected notNil and: [ selected isReference not ]).
+
+		addButton enabled:
+			(selected notNil and: [ selected isReference not ]).
+		sendButton enabled:
+			(selected notNil and: [ selected isReference not ]).
 		deleteButton enabled: (self canDeleteNode: selected).
-		selected ifNotNil: [
-			messages := selected history messages.
-			messageList items: messages.
 
-			messageItem1 text: ''.
-			messageItem2 text: ''.
+		selected
+			ifNil: [
+				messageList items: #().
+				messageItem1 text: ''.
+				messageItem2 text: '' ]
+			ifNotNil: [
+				messages := selected history messages.
+				messageList items: messages.
 
-			messages ifNotEmpty: [
-				messageItem1 text:
-					(self assocString: messages first) ].
+				messageItem1 text: ''.
+				messageItem2 text: ''.
 
-			messages size > 1 ifTrue: [
-				messageItem2 text:
-					(self assocString: messages second) ] ] ]
+				messages ifNotEmpty: [
+					messageItem1 text:
+						(self assocString: messages first) ].
+
+				messages size > 1 ifTrue: [
+					messageItem2 text:
+						(self assocString: messages second) ] ] ]
 ]
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> historyObserveTree [
 	SystemAnnouncer uniqueInstance
-        when: AIAHistoriesChanged
-        do: [ historyTree roots: self getHistoryTreeRoots ]
-        for: self.
+		when: AIAHistoriesChanged
+		do: [ self refreshHistoryTreePreservingSelection ]
+		for: self
 ]
 
 { #category : 'initialization' }
@@ -302,10 +311,47 @@ AIAHistoryPresenter >> newPrompt [
 	promptInput text: ''
 ]
 
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
+	| selectedNode selectedHistory roots replacement |
+	selectedNode := historyTree selectedItem.
+	selectedHistory := selectedNode
+		ifNil: [ nil ]
+		ifNotNil: [ selectedNode history ].
+
+	roots := self getHistoryTreeRoots.
+	historyTree roots: roots.
+
+	selectedHistory ifNil: [ ^ self ].
+
+	replacement := roots
+		detect: [ :node | node history == selectedHistory ]
+		ifNone: [ ^ self ].
+
+	historyTree selectItem: replacement
+]
+
 { #category : 'history globals' }
 AIAHistoryPresenter >> reloadHistories [
+	| selectedNode selectedFileName selectedRoot |
+	selectedNode := historyTree selectedItem.
+	selectedFileName := nil.
+
+	selectedNode ifNotNil: [
+		selectedFileName :=
+			selectedNode history fileStore fileName ].
+
 	AIAHistory reloadHistoriesFrom: rootDirectory.
-	historyTree roots: self getHistoryTreeRoots
+	historyTree roots: self getHistoryTreeRoots.
+
+	selectedFileName ifNil: [ ^ self ].
+
+	selectedRoot := historyTree roots
+		detect: [ :node |
+			node history fileStore fileName = selectedFileName ]
+		ifNone: [ ^ self ].
+
+	historyTree selectItem: selectedRoot
 ]
 
 { #category : 'accessing' }

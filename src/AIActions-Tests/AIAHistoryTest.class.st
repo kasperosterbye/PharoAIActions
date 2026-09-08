@@ -77,6 +77,69 @@ AIAHistoryTest >> testAddingUserMessageAnnouncesReplyChanged [
 ]
 
 { #category : 'tests' }
+AIAHistoryTest >> testApiMessageListPreservesPreHistoryOrder [
+	"Pre-histories must reach the API in the order in which they were added.
+	The current history follows all its pre-histories."
+
+	| history expected |
+	history := refAIAHistory.
+	history fileStore rootDirectory: rootDirectory.
+
+	1 to: 8 do: [ :index |
+		| preHistory |
+		preHistory := AIAHistory new.
+		preHistory fileStore rootDirectory: rootDirectory.
+		preHistory user: 'Context ', index asString.
+		history addPreHistory: preHistory ].
+
+	history user: 'Current prompt'.
+
+	expected :=
+		((1 to: 8) collect: [ :index |
+			'Context ', index asString ])
+		, #( 'Current prompt' ).
+
+	self
+		assert: (history apiMessageList collect: #value) asArray
+		equals: expected
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testDefaultApiFollowsCurrentProvider [
+	"A history without an explicitly assigned API must use the currently
+	selected global provider. It must therefore follow provider changes."
+
+	| originalProvider |
+	originalProvider := AilienApi provider.
+
+	[
+		AilienApi provider: ClaudeApi.
+		self assert: refAIAHistory api class equals: ClaudeApi.
+
+		AilienApi provider: MistralApi.
+		self assert: refAIAHistory api class equals: MistralApi
+	] ensure: [
+		AilienApi provider: originalProvider ]
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testExplicitApiRemainsStable [
+	"Once an API instance is explicitly assigned, global provider changes
+	must not alter the API used by that history."
+
+	| originalProvider explicitApi |
+	originalProvider := AilienApi provider.
+	explicitApi := ClaudeApi new.
+	refAIAHistory api: explicitApi.
+
+	[
+		AilienApi provider: MistralApi.
+		self assert: refAIAHistory api identicalTo: explicitApi
+	] ensure: [
+		AilienApi provider: originalProvider ]
+]
+
+{ #category : 'tests' }
 AIAHistoryTest >> testFirstMessageIsStoredWithoutAssigningFileStore [
 	"A newly created history must persist its first message without the
 	caller explicitly creating or assigning a file store."
@@ -98,6 +161,46 @@ AIAHistoryTest >> testHistoryWithOneMessagePrintsItsPrompt [
 	self
 		assert: refAIAHistory printString
 		equals: 'Single user prompt'
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testPreHistoryCycleIsRejected [
+	"A history graph must remain acyclic. Adding an ancestor as a
+	pre-history would create files that cannot be loaded recursively."
+
+	| firstHistory secondHistory |
+	firstHistory := refAIAHistory.
+	firstHistory fileStore rootDirectory: rootDirectory.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore rootDirectory: rootDirectory.
+
+	firstHistory addPreHistory: secondHistory.
+
+	self
+		should: [ secondHistory addPreHistory: firstHistory ]
+		raise: Error.
+
+	self assert: secondHistory preHistories isEmpty
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testPreHistoryFromDifferentDirectoryIsRejected [
+	"A pre-history reference stores only a filename. Both histories must
+	therefore belong to the same history directory."
+
+	| preHistory otherDirectory |
+	refAIAHistory fileStore rootDirectory: rootDirectory.
+	otherDirectory := rootDirectory parent / 'other-history'.
+
+	preHistory := AIAHistory new.
+	preHistory fileStore rootDirectory: otherDirectory.
+
+	self
+		should: [ refAIAHistory addPreHistory: preHistory ]
+		raise: Error.
+
+	self assert: refAIAHistory preHistories isEmpty
 ]
 
 { #category : 'tests' }
@@ -277,4 +380,42 @@ AIAHistoryTest >> testReloadHistoriesRestoresAllStoredHistories [
 		each messages = firstHistory messages ]).
 	self assert: (histories anySatisfy: [ :each |
 		each messages = secondHistory messages ])
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testSamePreHistoryIsAddedOnlyOnce [
+	"A repeated addition of the identical pre-history must not create
+	duplicate graph edges, duplicate tree nodes or duplicate file references."
+
+	| preHistory |
+	refAIAHistory fileStore rootDirectory: rootDirectory.
+
+	preHistory := AIAHistory new.
+	preHistory fileStore rootDirectory: rootDirectory.
+
+	refAIAHistory addPreHistory: preHistory.
+	refAIAHistory addPreHistory: preHistory.
+
+	self assert: refAIAHistory preHistories size equals: 1.
+	self assert:
+		refAIAHistory preHistories first
+			identicalTo: preHistory
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testStoredHistoriesAreNotSilentlyDiscarded [
+	"Creating many persistent histories must not silently remove older
+	histories from the observable collection. Deletion is an explicit action."
+
+	| initialSize history |
+	initialSize := AIAHistory histories size.
+
+	1 to: 25 do: [ :index |
+		history := AIAHistory new.
+		history fileStore rootDirectory: rootDirectory.
+		history user: 'History ', index asString ].
+
+	self
+		assert: AIAHistory histories size
+		equals: initialSize + 25
 ]
