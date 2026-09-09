@@ -31,9 +31,8 @@ Class {
 	#instVars : [
 		'historyTree',
 		'messageText',
-		'messageItem1',
-		'messageItem2',
 		'promptInput',
+		'promptMode',
 		'addButton',
 		'sendButton',
 		'newButton',
@@ -75,8 +74,19 @@ AIAHistoryPresenter >> addPrompt [
 	prompt := promptInput text asString.
 	prompt ifEmpty: [ ^ self ].
 
-	selectedNode history user: prompt.
+	self addPrompt: prompt to: selectedNode history.
 	promptInput text: ''
+]
+
+{ #category : 'adding' }
+AIAHistoryPresenter >> addPrompt: aString to: aHistory [
+	promptMode selectedItem = 'Pharo'
+		ifTrue: [
+			aHistory user: ':eval: ', aString.
+			aHistory user:
+				(OpalCompiler new evaluate: aString) asString ]
+		ifFalse: [
+			aHistory user: aString ]
 ]
 
 { #category : 'as yet unclassified' }
@@ -178,7 +188,7 @@ AIAHistoryPresenter >> historyActions [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> historyChangeAction [
+AIAHistoryPresenter >> historyChangeAction [ 
 	historyTree whenSelectionChangedDo: [ :selection |
 		| selected |
 		selected := selection selectedItem.
@@ -210,9 +220,11 @@ AIAHistoryPresenter >> initializePresenters [
 	messageText := self newText.
 	historyTree := self newTree.
 	messageText beNotEditable.
-	messageItem1 := self newText.
-	messageItem2 := self newText.
 	promptInput := self newText.
+	promptMode := self newDropList
+		items: #('Raw' 'Pharo');
+		selectIndex: 1;
+	yourself.
 	addButton := self newButton
 		label: 'Add';
 		action: [ self addPrompt ];
@@ -288,8 +300,7 @@ AIAHistoryPresenter >> newPrompt [
 	historyTree selectItem: root.
 
 	history
-		user: prompt;
-		getResponse.
+		user: prompt.
 
 	promptInput text: ''
 ]

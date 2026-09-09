@@ -36,6 +36,34 @@ AIAHistoryPresenterTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testAddInPharoModeRecordsExpressionAndResult [
+	"In Pharo mode, Add must preserve the entered expression and its
+	evaluated result. Both become visible parts of the history."
+
+	| historyTree promptInput promptMode addButton history previousSize |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
+	promptMode := refAIAHistoryPresenter instVarNamed: #promptMode.
+	addButton := refAIAHistoryPresenter instVarNamed: #addButton.
+
+	historyTree selectItem: historyTree roots first.
+	history := historyTree selectedItem history.
+	previousSize := history messages size.
+
+	promptMode selectIndex: 2.
+	promptInput text: '40 + 2'.
+	addButton action value.
+
+	self assert: history messages size equals: previousSize + 2.
+	self
+		assert: (history messages at: previousSize + 1)
+		equals: 'user' -> ':eval: 40 + 2'.
+	self
+		assert: (history messages at: previousSize + 2)
+		equals: 'user' -> '42'
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testAddPromptAppendsUserMessageToSelectedRoot [
 	"Add must append the entered text as a user message to the selected
 	top-level history without requesting an AI response. The prompt field
@@ -241,11 +269,9 @@ AIAHistoryPresenterTest >> testNewPromptCreatesIndependentHistory [
 	newHistory := AIAHistory histories last.
 
 	self assert: AIAHistory histories size equals: previousSize + 1.
-	self assert: newHistory preHistories isEmpty.
+	self assert: newHistory messages size equals: 1.
 	self assert: newHistory messages first
 		equals: 'user' -> 'An independent prompt'.
-	self assert: newHistory messages last
-		equals: 'assistant' -> 'Deterministic test response'.
 	self assert:
 		(refAIAHistoryPresenter instVarNamed: #historyTree)
 			selectedItem history
