@@ -40,17 +40,17 @@ AIAHistoryPresenterTest >> testAddInPharoModeRecordsExpressionAndResult [
 	"In Pharo mode, Add must preserve the entered expression and its
 	evaluated result. Both become visible parts of the history."
 
-	| historyTree promptInput promptMode addButton history previousSize |
+	| historyTree promptInput evalButton addButton history previousSize |
 	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
 	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
-	promptMode := refAIAHistoryPresenter instVarNamed: #promptMode.
+	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton..
 	addButton := refAIAHistoryPresenter instVarNamed: #addButton.
 
 	historyTree selectItem: historyTree roots first.
 	history := historyTree selectedItem history.
 	previousSize := history messages size.
 
-	promptMode selectIndex: 2.
+	evalButton state: true..
 	promptInput text: '40 + 2'.
 	addButton action value.
 
@@ -61,6 +61,32 @@ AIAHistoryPresenterTest >> testAddInPharoModeRecordsExpressionAndResult [
 	self
 		assert: (history messages at: previousSize + 2)
 		equals: 'user' -> '42'
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testAddInRawModePreservesLiteralText [
+	"In Raw mode, Add must preserve the entered text literally as exactly
+	one user message, without evaluating Pharo-looking contents."
+
+	| historyTree promptInput promptMode addButton history previousSize |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
+	promptMode := refAIAHistoryPresenter instVarNamed: #promptMode.
+	addButton := refAIAHistoryPresenter instVarNamed: #addButton.
+
+	historyTree selectItem: historyTree roots first.
+	history := historyTree selectedItem history.
+	previousSize := history messages size.
+
+	promptMode selectIndex: 1.
+	promptInput text: '40 + 2'.
+	addButton action value.
+
+	self assert: history messages size equals: previousSize + 1.
+	self
+		assert: history messages last
+		equals: 'user' -> '40 + 2'.
+	self assert: promptInput text equals: ''
 ]
 
 { #category : 'tests' }
@@ -202,6 +228,41 @@ AIAHistoryPresenterTest >> testDeletingHistoryKeepsItsPreHistories [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testEvalAppliesOnlyToNextAdd [
+	"Eval is a one-shot modifier. It evaluates the next addition and then
+	returns to Raw, so a later prompt cannot be evaluated accidentally."
+
+	| historyTree promptInput evalButton addButton history previousSize |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
+	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton.
+	addButton := refAIAHistoryPresenter instVarNamed: #addButton.
+
+	historyTree selectItem: historyTree roots first.
+	history := historyTree selectedItem history.
+	previousSize := history messages size.
+
+	evalButton state: true.
+	promptInput text: '40 + 2'.
+	addButton action value.
+
+	promptInput text: '40 + 3'.
+	addButton action value.
+
+	self deny: evalButton state.
+	self assert: history messages size equals: previousSize + 3.
+	self
+		assert: (history messages at: previousSize + 1)
+		equals: 'user' -> ':eval: 40 + 2'.
+	self
+		assert: (history messages at: previousSize + 2)
+		equals: 'user' -> '42'.
+	self
+		assert: (history messages at: previousSize + 3)
+		equals: 'user' -> '40 + 3'
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testExternalHistoryCreationPreservesSelection [
 	"Adding a history outside the presenter must refresh its tree without
 	changing the history on which the user is currently working."
@@ -240,6 +301,32 @@ AIAHistoryPresenterTest >> testExternalMessageRefreshesSelectedConversation [
 
 	self assert: (messageText text asString
 		includesSubstring: 'Added outside the presenter')
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testNewInPharoModeRecordsExpressionAndResult [
+	"In Pharo mode, New must create an independent history containing
+	both the entered expression and its evaluated result, without sending."
+
+	| promptInput evalButton newButton newHistory |
+	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
+	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton.
+	newButton := refAIAHistoryPresenter instVarNamed: #newButton.
+
+	evalButton state: true.
+	promptInput text: '40 + 2'.
+	newButton action value.
+
+	newHistory := AIAHistory histories last.
+
+	self assert: newHistory preHistories isEmpty.
+	self assert: newHistory messages size equals: 2.
+	self
+		assert: newHistory messages first
+		equals: 'user' -> ':eval: 40 + 2'.
+	self
+		assert: newHistory messages second
+		equals: 'user' -> '42'
 ]
 
 { #category : 'tests' }
@@ -398,6 +485,17 @@ AIAHistoryPresenterTest >> testPresenterLoadsPreHistoryReferencesFromDirectory [
 	self deny: preRoot isReference.
 	self assert: reference isReference.
 	self assert: reference history identicalTo: preRoot history
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testPromptModeDefaultsToRaw [
+	"The presenter must initially treat entered text as literal input.
+	Pharo evaluation must always require an explicit user choice."
+
+	| promptMode |
+	promptMode := refAIAHistoryPresenter instVarNamed: #promptMode.
+
+	self assert: promptMode selectedItem equals: 'Raw'
 ]
 
 { #category : 'tests' }
@@ -591,6 +689,39 @@ AIAHistoryPresenterTest >> testSelectingAnotherHistoryReplacesDisplayedConversat
 	self
 		assert: messageText text asString
 		equals: 'user:', String lf, 'Only in the second history'
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSendInPharoModeRecordsExpressionResultAndAnswer [
+	"In Pharo mode, Send must preserve the expression and its evaluated
+	result before requesting and storing the assistant response."
+
+	| historyTree promptInput evalButton sendButton history previousSize |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
+	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton.
+	sendButton := refAIAHistoryPresenter instVarNamed: #sendButton.
+
+	historyTree selectItem: historyTree roots first.
+	history := historyTree selectedItem history.
+	history api: AIAHistoryPresenterTestApi new.
+	previousSize := history messages size.
+
+	evalButton state: true.
+	promptInput text: '40 + 2'.
+	sendButton action value.
+
+	self assert: history messages size equals: previousSize + 3.
+	self
+		assert: (history messages at: previousSize + 1)
+		equals: 'user' -> ':eval: 40 + 2'.
+	self
+		assert: (history messages at: previousSize + 2)
+		equals: 'user' -> '42'.
+	self
+		assert: history messages last
+		equals: 'assistant' -> 'Deterministic test response'.
+	self assert: promptInput text equals: ''
 ]
 
 { #category : 'tests' }

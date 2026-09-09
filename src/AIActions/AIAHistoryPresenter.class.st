@@ -36,6 +36,7 @@ Class {
 		'addButton',
 		'sendButton',
 		'newButton',
+		'evalButton',
 		'newHistoryFactory',
 		'rootDirectory',
 		'reloadButton',
@@ -80,13 +81,19 @@ AIAHistoryPresenter >> addPrompt [
 
 { #category : 'adding' }
 AIAHistoryPresenter >> addPrompt: aString to: aHistory [
-	promptMode selectedItem = 'Pharo'
-		ifTrue: [
-			aHistory user: ':eval: ', aString.
-			aHistory user:
-				(OpalCompiler new evaluate: aString) asString ]
-		ifFalse: [
-			aHistory user: aString ]
+	| shouldEvaluate evaluatedPrompt |
+	shouldEvaluate := evalButton state.
+	evalButton state: false.
+
+	shouldEvaluate ifFalse: [
+		aHistory user: aString.
+		^ self ].
+
+	evaluatedPrompt :=
+		(OpalCompiler new evaluate: aString) asString.
+
+	aHistory user: ':eval: ', aString.
+	aHistory user: evaluatedPrompt
 ]
 
 { #category : 'as yet unclassified' }
@@ -107,14 +114,17 @@ AIAHistoryPresenter >> canDeleteNode: aNode [
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
 	| left right both composer composerButtons
-	  leftButtons buttonSpacer |
+	  leftButtons beforeEvalSpacer afterEvalSpacer |
 
-	buttonSpacer := SpBoxLayout newLeftToRight.
+	beforeEvalSpacer := SpBoxLayout newLeftToRight.
+	afterEvalSpacer := SpBoxLayout newLeftToRight.
 
 	composerButtons := SpBoxLayout newLeftToRight
 		add: addButton expand: false;
 		add: sendButton expand: false;
-		add: buttonSpacer;
+		add: beforeEvalSpacer;
+		add: evalButton expand: false;
+		add: afterEvalSpacer;
 		add: newButton expand: false;
 		yourself.
 
@@ -221,6 +231,9 @@ AIAHistoryPresenter >> initializePresenters [
 	historyTree := self newTree.
 	messageText beNotEditable.
 	promptInput := self newText.
+	evalButton := self newToggleButton
+		label: 'Eval';
+		yourself.
 	promptMode := self newDropList
 		items: #('Raw' 'Pharo');
 		selectIndex: 1;
@@ -294,13 +307,12 @@ AIAHistoryPresenter >> newPrompt [
 
 	history := newHistoryFactory value.
 	history fileStore rootDirectory: rootDirectory.
-	
-	root := historyTree roots detect: [ :node |
-		node history == history ].
+
+	root := historyTree roots
+		detect: [ :node | node history == history ].
 	historyTree selectItem: root.
 
-	history
-		user: prompt.
+	self addPrompt: prompt to: history.
 
 	promptInput text: ''
 ]
@@ -363,9 +375,9 @@ AIAHistoryPresenter >> sendPrompt [
 	prompt := promptInput text asString.
 	prompt ifEmpty: [ ^ self ].
 
-	selectedNode history
-		user: prompt;
-		getResponse.
+	self addPrompt: prompt to: selectedNode history.
+	selectedNode history getResponse.
+
 	promptInput text: ''
 ]
 
