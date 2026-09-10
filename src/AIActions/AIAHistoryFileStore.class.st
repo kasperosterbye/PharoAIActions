@@ -31,6 +31,11 @@ AIAHistoryFileStore >> associationFromRoleDictionary: aDictionary [
 		-> (aDictionary at: 'content')
 ]
 
+{ #category : 'accessing' }
+AIAHistoryFileStore >> createdAt [
+	^ createdAt
+]
+
 { #category : 'submorphs - add/remove' }
 AIAHistoryFileStore >> delete [
 	"Delete the persisted history file if it still exists."
@@ -176,6 +181,11 @@ AIAHistoryFileStore >> loadWithPreHistoryLoader: aBlock [
 	^ self
 		historyFromJson: json
 		preHistoryLoader: aBlock
+]
+
+{ #category : 'accessing' }
+AIAHistoryFileStore >> modifiedAt [
+	^ modifiedAt
 ]
 
 { #category : 'accessing' }

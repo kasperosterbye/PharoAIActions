@@ -36,60 +36,6 @@ AIAHistoryPresenterTest >> tearDown [
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testAddInPharoModeRecordsExpressionAndResult [
-	"In Pharo mode, Add must preserve the entered expression and its
-	evaluated result. Both become visible parts of the history."
-
-	| historyTree promptInput evalButton addButton history previousSize |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
-	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton..
-	addButton := refAIAHistoryPresenter instVarNamed: #addButton.
-
-	historyTree selectItem: historyTree roots first.
-	history := historyTree selectedItem history.
-	previousSize := history messages size.
-
-	evalButton state: true..
-	promptInput text: '40 + 2'.
-	addButton action value.
-
-	self assert: history messages size equals: previousSize + 2.
-	self
-		assert: (history messages at: previousSize + 1)
-		equals: 'user' -> ':eval: 40 + 2'.
-	self
-		assert: (history messages at: previousSize + 2)
-		equals: 'user' -> '42'
-]
-
-{ #category : 'tests' }
-AIAHistoryPresenterTest >> testAddInRawModePreservesLiteralText [
-	"In Raw mode, Add must preserve the entered text literally as exactly
-	one user message, without evaluating Pharo-looking contents."
-
-	| historyTree promptInput promptMode addButton history previousSize |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
-	promptMode := refAIAHistoryPresenter instVarNamed: #promptMode.
-	addButton := refAIAHistoryPresenter instVarNamed: #addButton.
-
-	historyTree selectItem: historyTree roots first.
-	history := historyTree selectedItem history.
-	previousSize := history messages size.
-
-	promptMode selectIndex: 1.
-	promptInput text: '40 + 2'.
-	addButton action value.
-
-	self assert: history messages size equals: previousSize + 1.
-	self
-		assert: history messages last
-		equals: 'user' -> '40 + 2'.
-	self assert: promptInput text equals: ''
-]
-
-{ #category : 'tests' }
 AIAHistoryPresenterTest >> testAddPromptAppendsUserMessageToSelectedRoot [
 	"Add must append the entered text as a user message to the selected
 	top-level history without requesting an AI response. The prompt field
@@ -228,6 +174,43 @@ AIAHistoryPresenterTest >> testDeletingHistoryKeepsItsPreHistories [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testEditedTitleIsStoredAndSurvivesReload [
+	"Editing the Title detail must update the selected history, refresh its
+	display and persist the title so it survives reloading from its file."
+
+	| historyTree historyDetails reloadButton titleRow valueColumn |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	historyDetails := refAIAHistoryPresenter
+		instVarNamed: #historyDetails.
+	reloadButton := refAIAHistoryPresenter
+		instVarNamed: #reloadButton.
+
+	historyTree selectItem: historyTree roots first.
+	titleRow := historyDetails items first.
+	valueColumn := historyDetails columns second.
+
+	valueColumn acceptAction
+		value: titleRow
+		value: 'Renamed history'.
+
+	self
+		assert: historyTree selectedItem history title
+		equals: 'Renamed history'.
+	self
+		assert: historyTree selectedItem history printString
+		equals: 'Renamed history'.
+
+	reloadButton action value.
+
+	self
+		assert: historyTree selectedItem history title
+		equals: 'Renamed history'.
+	self
+		assert: historyDetails items first
+		equals: 'Title' -> 'Renamed history'
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testEvalAppliesOnlyToNextAdd [
 	"Eval is a one-shot modifier. It evaluates the next addition and then
 	returns to Raw, so a later prompt cannot be evaluated accidentally."
@@ -260,6 +243,17 @@ AIAHistoryPresenterTest >> testEvalAppliesOnlyToNextAdd [
 	self
 		assert: (history messages at: previousSize + 3)
 		equals: 'user' -> '40 + 3'
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testEvalIsInitiallyInactive [
+	"Prompt text must initially be treated as Raw. Pharo evaluation
+	requires the user to activate Eval explicitly."
+
+	| evalButton |
+	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton.
+
+	self deny: evalButton state
 ]
 
 { #category : 'tests' }
@@ -488,17 +482,6 @@ AIAHistoryPresenterTest >> testPresenterLoadsPreHistoryReferencesFromDirectory [
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testPromptModeDefaultsToRaw [
-	"The presenter must initially treat entered text as literal input.
-	Pharo evaluation must always require an explicit user choice."
-
-	| promptMode |
-	promptMode := refAIAHistoryPresenter instVarNamed: #promptMode.
-
-	self assert: promptMode selectedItem equals: 'Raw'
-]
-
-{ #category : 'tests' }
 AIAHistoryPresenterTest >> testReferencedHistoryCannotBeDeleted [
 	"A history used as pre-history must remain stored. Delete is disabled,
 	and calling the action directly must still leave the history intact."
@@ -666,6 +649,48 @@ AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCompleteConversation [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testSelectedHistoryDisplaysPreHistoryBeforeOwnConversation [
+	"The displayed conversation must include the effective pre-history
+	context before the selected history's own user and assistant messages."
+
+	| directory preHistory history historyTree messageText root displayed
+	  systemPosition questionPosition answerPosition |
+
+	directory := AIAHistory histories first fileStore rootDirectory.
+
+	preHistory := AIAHistory new.
+	preHistory fileStore rootDirectory: directory.
+	preHistory system: 'Shared system instruction'.
+	preHistory fileStore save: preHistory.
+
+	history := AIAHistory new.
+	history fileStore rootDirectory: directory.
+	history
+		user: 'Current question';
+		assistant: 'Current answer';
+		addPreHistory: preHistory.
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+	displayed := messageText text asString.
+
+	systemPosition := displayed
+		findString: 'Shared system instruction'.
+	questionPosition := displayed
+		findString: 'Current question'.
+	answerPosition := displayed
+		findString: 'Current answer'.
+
+	self assert: systemPosition > 0.
+	self assert: questionPosition > systemPosition.
+	self assert: answerPosition > questionPosition
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectingAnotherHistoryReplacesDisplayedConversation [
 	"Selecting another history must replace the complete displayed text;
 	content from the previous selection must not remain."
@@ -689,6 +714,33 @@ AIAHistoryPresenterTest >> testSelectingAnotherHistoryReplacesDisplayedConversat
 	self
 		assert: messageText text asString
 		equals: 'user:', String lf, 'Only in the second history'
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSelectingHistoryDisplaysBasicDetails [
+	"Selecting a history must display its basic persistent properties in
+	a stable order, with visible creation and modification times."
+
+	| history historyTree historyDetails root details |
+	history := AIAHistory histories first.
+	history title: 'A useful title'.
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	historyDetails := refAIAHistoryPresenter
+		instVarNamed: #historyDetails.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+	details := historyDetails items.
+
+	self assert: details size equals: 3.
+	self assert: details first
+		equals: 'Title' -> 'A useful title'.
+	self assert: details second key equals: 'Created'.
+	self assert: details second value isNotEmpty.
+	self assert: details third key equals: 'Modified'.
+	self assert: details third value isNotEmpty
 ]
 
 { #category : 'tests' }
@@ -763,4 +815,31 @@ AIAHistoryPresenterTest >> testStoredHistoriesAreTreeRoots [
 	roots with: histories do: [ :node :history |
 		self assert: node history identicalTo: history.
 		self deny: node isReference ]
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSystemOnlyHistoryIsDisplayed [
+	"A history containing only system information must not appear empty.
+	This is the normal shape of reusable histories such as qPrefix."
+
+	| directory history historyTree messageText root displayed |
+	directory := AIAHistory histories first fileStore rootDirectory.
+
+	history := AIAHistory new.
+	history fileStore rootDirectory: directory.
+	history
+		title: 'System only';
+		system: 'A visible system instruction'.
+	history fileStore save: history.
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+	displayed := messageText text asString.
+
+	self assert:
+		(displayed includesSubstring: 'A visible system instruction')
 ]

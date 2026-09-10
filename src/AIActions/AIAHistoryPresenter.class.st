@@ -30,9 +30,9 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'historyTree',
+		'historyDetails',
 		'messageText',
 		'promptInput',
-		'promptMode',
 		'addButton',
 		'sendButton',
 		'newButton',
@@ -63,6 +63,34 @@ AIAHistoryPresenter class >> open [
 	^ (self forDirectory:
 		AIAHistoryFileStore new rootDirectory)
 			open
+]
+
+{ #category : 'visiting' }
+AIAHistoryPresenter >> acceptHistoryDetail: anAssociation value: aString [
+	| selectedNode history |
+	selectedNode := historyTree selectedItem.
+
+	selectedNode ifNil: [
+		historyDetails items: #().
+		^ self ].
+
+	(anAssociation key = 'Title'
+		and: [ selectedNode isReference not ])
+		ifFalse: [
+			self displayDetailsForHistory: selectedNode history.
+			^ self ].
+
+	history := selectedNode history.
+	history title:
+		(aString
+			ifEmpty: [ nil ]
+			ifNotEmpty: [ aString ]).
+	history fileStore save: history.
+
+	self displayDetailsForHistory: history.
+
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new
 ]
 
 { #category : 'adding' }
@@ -113,19 +141,15 @@ AIAHistoryPresenter >> canDeleteNode: aNode [
 
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
-	| left right both composer composerButtons
-	  leftButtons beforeEvalSpacer afterEvalSpacer |
-
-	beforeEvalSpacer := SpBoxLayout newLeftToRight.
-	afterEvalSpacer := SpBoxLayout newLeftToRight.
+	| left leftContent right both composer composerButtons leftButtons |
 
 	composerButtons := SpBoxLayout newLeftToRight
-		add: addButton expand: false;
-		add: sendButton expand: false;
-		add: beforeEvalSpacer;
-		add: evalButton expand: false;
-		add: afterEvalSpacer;
-		add: newButton expand: false;
+		add: addButton;
+		add: sendButton;
+		add: SpBoxLayout newLeftToRight;
+		add: evalButton;
+		add: SpBoxLayout newLeftToRight;
+		add: newButton;
 		yourself.
 
 	composer := SpBoxLayout newTopToBottom
@@ -138,8 +162,13 @@ AIAHistoryPresenter >> defaultLayout [
 		add: deleteButton expand: false;
 		yourself.
 
-	left := SpBoxLayout newTopToBottom
+	leftContent := SpPanedLayout newVertical
 		add: historyTree;
+		add: historyDetails;
+		yourself.
+
+	left := SpBoxLayout newTopToBottom
+		add: leftContent;
 		add: leftButtons expand: false;
 		yourself.
 
@@ -173,6 +202,32 @@ AIAHistoryPresenter >> deleteSelectedHistory [
 ]
 
 { #category : 'as yet unclassified' }
+AIAHistoryPresenter >> detailsForHistory: aHistory [
+	| fileStore |
+	fileStore := aHistory fileStore.
+
+	^ OrderedDictionary new
+		at: 'Title'
+			put: (aHistory title ifNil: [ '' ]);
+		at: 'Created'
+			put: fileStore createdAt asString;
+		at: 'Modified'
+			put: fileStore modifiedAt asString;
+		yourself
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> displayDetailsForHistory: aHistory [
+	historyDetails items:
+		(self detailsForHistory: aHistory) associations
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> displayHistory: aHistory [
+	self displayMessages: aHistory apiMessageList
+]
+
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> displayMessages: messages [
 	messageText ifNil: [ ^ self ].
 	messageText text:
@@ -198,7 +253,7 @@ AIAHistoryPresenter >> historyActions [
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryPresenter >> historyChangeAction [ 
+AIAHistoryPresenter >> historyChangeAction [
 	historyTree whenSelectionChangedDo: [ :selection |
 		| selected |
 		selected := selection selectedItem.
@@ -210,9 +265,12 @@ AIAHistoryPresenter >> historyChangeAction [
 		deleteButton enabled: (self canDeleteNode: selected).
 
 		selected
-			ifNil: [ self displayMessages: #() ]
+			ifNil: [
+				self displayMessages: #().
+				historyDetails items: #() ]
 			ifNotNil: [
-				self displayMessages: selected history messages ] ]
+				self displayHistory: selected history.
+				self displayDetailsForHistory: selected history ] ]
 ]
 
 { #category : 'as yet unclassified' }
@@ -225,36 +283,56 @@ AIAHistoryPresenter >> historyObserveTree [
 
 { #category : 'initialization' }
 AIAHistoryPresenter >> initializePresenters [
-
 	super initializePresenters.
+
 	messageText := self newText.
-	historyTree := self newTree.
 	messageText beNotEditable.
+
+	historyTree := self newTree.
+
+	historyDetails := self newTable.
+	historyDetails
+		addColumn: (SpStringTableColumn
+			title: 'Property'
+			evaluated: [ :association | association key ]);
+		addColumn: ((SpStringTableColumn
+			title: 'Value'
+			evaluated: [ :association | association value ])
+				beEditable;
+				onAcceptEdition: [ :association :newValue |
+					self
+						acceptHistoryDetail: association
+						value: newValue ];
+				yourself);
+		items: #().
+
 	promptInput := self newText.
+
 	evalButton := self newToggleButton
 		label: 'Eval';
 		yourself.
-	promptMode := self newDropList
-		items: #('Raw' 'Pharo');
-		selectIndex: 1;
-	yourself.
+
 	addButton := self newButton
 		label: 'Add';
 		action: [ self addPrompt ];
 		yourself.
 	addButton disable.
+
 	sendButton := self newButton
 		label: 'Send';
 		action: [ self sendPrompt ];
 		yourself.
 	sendButton disable.
+
 	newHistoryFactory := [ AIAHistory new ].
 
 	newButton := self newButton
 		label: 'New';
 		action: [ self newPrompt ];
 		yourself.
-	rootDirectory ifNil: [ rootDirectory := AIAHistoryFileStore new rootDirectory ].
+
+	rootDirectory ifNil: [
+		rootDirectory := AIAHistoryFileStore new rootDirectory ].
 
 	reloadButton := self newButton
 		label: 'Reload';
@@ -266,9 +344,9 @@ AIAHistoryPresenter >> initializePresenters [
 		action: [ self deleteSelectedHistory ];
 		yourself.
 	deleteButton disable.
-		
+
 	self historyActions.
-	self messageActions.
+	self messageActions
 ]
 
 { #category : 'initialization' }
@@ -295,7 +373,7 @@ AIAHistoryPresenter >> messageRefreshTree [
 		do: [
 				historyTree refresh.
 				selected := historyTree selection selectedItem.
-				selected ifNotNil: [ self displayMessages: selected history messages ] ]
+				selected ifNotNil: [ self displayHistory: selected history ] ]
 		for: self
 ]
 
