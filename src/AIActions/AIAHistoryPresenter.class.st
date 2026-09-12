@@ -139,6 +139,14 @@ AIAHistoryPresenter >> canDeleteNode: aNode [
 			preHistory == aNode history ] ]) not
 ]
 
+{ #category : 'testing' }
+AIAHistoryPresenter >> canDeleteNodes: nodes [
+	nodes ifEmpty: [ ^ false ].
+
+	^ nodes allSatisfy: [ :node |
+		self canDeleteNode: node ]
+]
+
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
 	| left leftContent right both composer composerButtons leftButtons |
@@ -186,6 +194,25 @@ AIAHistoryPresenter >> defaultLayout [
 ]
 
 { #category : 'as yet unclassified' }
+AIAHistoryPresenter >> deleteSelectedHistories [
+	| selectedNodes histories |
+	selectedNodes := historyTree selectedItems.
+	(self canDeleteNodes: selectedNodes) ifFalse: [ ^ self ].
+
+	histories := selectedNodes collect: [ :node |
+		node history ].
+
+	histories do: [ :history |
+		history fileStore moveToTrash.
+		AIAHistory histories
+			remove: history
+			ifAbsent: [ ] ].
+
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new
+]
+
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> deleteSelectedHistory [
 	| selectedNode history |
 	selectedNode := historyTree selectedItem.
@@ -203,8 +230,11 @@ AIAHistoryPresenter >> deleteSelectedHistory [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> detailsForHistory: aHistory [
-	| fileStore |
+	| fileStore usedBy |
 	fileStore := aHistory fileStore.
+	usedBy := AIAHistory histories select: [ :history |
+		history preHistories anySatisfy: [ :preHistory |
+			preHistory == aHistory ] ].
 
 	^ OrderedDictionary new
 		at: 'Title'
@@ -213,6 +243,10 @@ AIAHistoryPresenter >> detailsForHistory: aHistory [
 			put: fileStore createdAt asString;
 		at: 'Modified'
 			put: fileStore modifiedAt asString;
+		at: 'Pre-histories'
+			put: (self historyListString: aHistory preHistories);
+		at: 'Used by'
+			put: (self historyListString: usedBy);
 		yourself
 ]
 
@@ -236,7 +270,12 @@ AIAHistoryPresenter >> displayMessages: messages [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> getHistoryTreeRoots [
-	^ AIAHistory histories collect: [ :history |
+	| sortedHistories |
+	sortedHistories := AIAHistory histories sorted: [ :first :second |
+		first fileStore modifiedAt >
+			second fileStore modifiedAt ].
+
+	^ sortedHistories collect: [ :history |
 		AIAHistoryPresenterTreeNode rootFor: history ]
 ]
 
@@ -245,24 +284,29 @@ AIAHistoryPresenter >> historyActions [
 	historyTree
 		roots: self getHistoryTreeRoots;
 		children: [ :node | node children ];
-		display: [ :node | node history printString ];
+		display: [ :node |  self historyLabelFor: node  ];
 		displayItalic: [ :node | node isReference ].
 	self
-		historyChangeAction;
-		historyObserveTree
+		historyObserveTree;
+		historyChangeAction
 ]
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> historyChangeAction [
-	historyTree whenSelectionChangedDo: [ :selection |
-		| selected |
-		selected := selection selectedItem.
+	historyTree whenMultiSelectionChangedDo: [ :selection |
+		| selectedNodes selected |
+		selectedNodes := historyTree selectedItems.
+
+		selected := selectedNodes size = 1
+			ifTrue: [ selectedNodes first ]
+			ifFalse: [ nil ].
 
 		addButton enabled:
 			(selected notNil and: [ selected isReference not ]).
 		sendButton enabled:
 			(selected notNil and: [ selected isReference not ]).
-		deleteButton enabled: (self canDeleteNode: selected).
+		deleteButton enabled:
+			(self canDeleteNodes: selectedNodes).
 
 		selected
 			ifNil: [
@@ -271,6 +315,22 @@ AIAHistoryPresenter >> historyChangeAction [
 			ifNotNil: [
 				self displayHistory: selected history.
 				self displayDetailsForHistory: selected history ] ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> historyLabelFor: aNode [
+	| history |
+	history := aNode history.
+
+	^ history title
+		ifNil: [ '• ', history printString ]
+		ifNotNil: [ history printString ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> historyListString: histories [
+	^ ', ' join: (histories collect: [ :history |
+		history printString ])
 ]
 
 { #category : 'as yet unclassified' }
@@ -289,7 +349,7 @@ AIAHistoryPresenter >> initializePresenters [
 	messageText beNotEditable.
 
 	historyTree := self newTree.
-
+	historyTree beMultipleSelection.
 	historyDetails := self newTable.
 	historyDetails
 		addColumn: (SpStringTableColumn
@@ -341,7 +401,7 @@ AIAHistoryPresenter >> initializePresenters [
 
 	deleteButton := self newButton
 		label: 'Delete';
-		action: [ self deleteSelectedHistory ];
+		action: [ self deleteSelectedHistories ];
 		yourself.
 	deleteButton disable.
 
@@ -366,14 +426,16 @@ AIAHistoryPresenter >> messageActions [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> messageRefreshTree [
-
 	| selected |
 	SystemAnnouncer uniqueInstance
 		when: AIAReplyChanged
 		do: [
-				historyTree refresh.
-				selected := historyTree selection selectedItem.
-				selected ifNotNil: [ self displayHistory: selected history ] ]
+			self refreshHistoryTreePreservingSelection.
+			selected := historyTree selectedItem.
+			selected ifNotNil: [
+				self displayHistory: selected history.
+				self displayDetailsForHistory:
+					selected history ] ]
 		for: self
 ]
 
@@ -397,22 +459,21 @@ AIAHistoryPresenter >> newPrompt [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
-	| selectedNode selectedHistory roots replacement |
-	selectedNode := historyTree selectedItem.
-	selectedHistory := selectedNode
-		ifNil: [ nil ]
-		ifNotNil: [ selectedNode history ].
+	| selectedHistories roots replacements |
+	selectedHistories := historyTree selectedItems collect: [ :node |
+		node history ].
 
 	roots := self getHistoryTreeRoots.
 	historyTree roots: roots.
 
-	selectedHistory ifNil: [ ^ self ].
+	selectedHistories ifEmpty: [ ^ self ].
 
-	replacement := roots
-		detect: [ :node | node history == selectedHistory ]
-		ifNone: [ ^ self ].
+	replacements := roots select: [ :node |
+		selectedHistories anySatisfy: [ :history |
+			node history == history ] ].
 
-	historyTree selectItem: replacement
+	replacements ifNotEmpty: [
+		historyTree selectItems: replacements ]
 ]
 
 { #category : 'history globals' }

@@ -15,7 +15,8 @@ Class {
 		'responseHearderLevel'
 	],
 	#classVars : [
-		'Histories'
+		'Histories',
+		'RecordLlmInfo'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -126,6 +127,16 @@ AIAHistory class >> readCurrent [
 		do: [ self error: 'No file available' ]
 ]
 
+{ #category : 'as yet unclassified' }
+AIAHistory class >> recordLlmInfo [
+	^ RecordLlmInfo ifNil: [ false ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory class >> recordLlmInfo: aBoolean [
+	RecordLlmInfo := aBoolean
+]
+
 { #category : 'history globals' }
 AIAHistory class >> reloadHistories [
 	^ self reloadHistoriesFrom:
@@ -214,8 +225,13 @@ AIAHistory >> apiMessageList [
 
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
-	"Adds an assistant message to the messages collection after sanitising the input string."
-	self messagesAdd: 'assistant' -> (self sanitizedResonse: aString)
+	"Record optional LLM provenance immediately before the response."
+
+	self class recordLlmInfo ifTrue: [
+		self user: '[LLM] ', self llmInfoString ].
+
+	self messagesAdd:
+		'assistant' -> (self sanitizedResonse: aString)
 ]
 
 { #category : 'accessing' }
@@ -332,6 +348,16 @@ AIAHistory >> initialize [
 { #category : 'accessing' }
 AIAHistory >> lastRoles [
 	^ lastRoles 
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory >> llmInfoString [
+	| currentApi |
+	currentApi := self api.
+
+	^ currentApi class name asString,
+		': ',
+		currentApi model asString
 ]
 
 { #category : 'accessing' }

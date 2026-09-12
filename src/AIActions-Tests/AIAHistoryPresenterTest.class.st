@@ -98,9 +98,10 @@ AIAHistoryPresenterTest >> testAddPromptDoesNotModifyReference [
 	historyTree selectItem: currentRoot.
 	self assert: addButton isEnabled.
 	
+	historyTree unselectAll.
 	historyTree selectPath:
 		(Array with: currentIndex with: 1).
-	reference := historyTree selectedItem.
+	reference := historyTree selectedItems first.
 	
 	self deny: addButton isEnabled.
 	
@@ -114,11 +115,50 @@ AIAHistoryPresenterTest >> testAddPromptDoesNotModifyReference [
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testDeleteRemovesSelectedUnreferencedHistory [
-	"Deleting an unreferenced root removes its file, its in-memory history
-	and its root from the presenter."
+AIAHistoryPresenterTest >> testDeleteRemovesAllSelectedUnreferencedHistories [
+	"Delete removes every selected history when all selected roots
+	are independently deletable."
 
-	| historyTree deleteButton root history file |
+	| historyTree deleteButton directory firstHistory secondHistory
+	  firstRoot secondRoot firstFile secondFile |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	deleteButton := refAIAHistoryPresenter instVarNamed: #deleteButton.
+	directory := AIAHistory histories first fileStore rootDirectory.
+
+	firstHistory := AIAHistory new.
+	firstHistory fileStore rootDirectory: directory.
+	firstHistory user: 'First disposable history'.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore rootDirectory: directory.
+	secondHistory user: 'Second disposable history'.
+
+	firstFile := firstHistory fileStore fileReference.
+	secondFile := secondHistory fileStore fileReference.
+
+	firstRoot := historyTree roots detect: [ :node |
+		node history == firstHistory ].
+	secondRoot := historyTree roots detect: [ :node |
+		node history == secondHistory ].
+
+	historyTree selectItems: { firstRoot. secondRoot }.
+
+	self assert: deleteButton isEnabled.
+	deleteButton action value.
+
+	self deny: firstFile exists.
+	self deny: secondFile exists.
+	self deny: (AIAHistory histories includes: firstHistory).
+	self deny: (AIAHistory histories includes: secondHistory)
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testDeleteRemovesSelectedUnreferencedHistory [
+	"Deleting an unreferenced root moves its file to Trash and removes
+	the history from memory and the presenter."
+
+	| historyTree deleteButton root history file trashedFile |
 	historyTree := refAIAHistoryPresenter
 		instVarNamed: #historyTree.
 	deleteButton := refAIAHistoryPresenter
@@ -127,14 +167,17 @@ AIAHistoryPresenterTest >> testDeleteRemovesSelectedUnreferencedHistory [
 	root := historyTree roots first.
 	history := root history.
 	file := history fileStore fileReference.
+	trashedFile := history fileStore trashDirectory /
+		history fileStore fileName.
+
 	historyTree selectItem: root.
 
 	self assert: file exists.
 	deleteButton action value.
 
 	self deny: file exists.
-	self deny: (AIAHistory histories anySatisfy: [ :each |
-		each == history ]).
+	self assert: trashedFile exists.
+	self deny: (AIAHistory histories includes: history).
 	self deny: (historyTree roots anySatisfy: [ :node |
 		node history == history ])
 ]
@@ -257,6 +300,43 @@ AIAHistoryPresenterTest >> testEvalIsInitiallyInactive [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testExternalHistoryCreationPreservesMultipleSelection [
+	"Refreshing after external history creation must preserve every
+	selected history."
+
+	| historyTree directory firstHistory secondHistory
+	  firstRoot secondRoot selectedHistories externalHistory |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	firstHistory := AIAHistory histories first.
+	directory := firstHistory fileStore rootDirectory.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore rootDirectory: directory.
+	secondHistory user: 'Second selected history'.
+
+	firstRoot := historyTree roots detect: [ :node |
+		node history == firstHistory ].
+	secondRoot := historyTree roots detect: [ :node |
+		node history == secondHistory ].
+
+	historyTree selectItems: { firstRoot. secondRoot }.
+
+	externalHistory := AIAHistory new.
+	externalHistory fileStore rootDirectory: directory.
+	externalHistory user: 'Created externally'.
+
+	selectedHistories := historyTree selectedItems collect: [ :node |
+		node history ].
+
+	self assert: selectedHistories size equals: 2.
+	self assert: (selectedHistories anySatisfy: [ :history |
+		history == firstHistory ]).
+	self assert: (selectedHistories anySatisfy: [ :history |
+		history == secondHistory ])
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testExternalHistoryCreationPreservesSelection [
 	"Adding a history outside the presenter must refresh its tree without
 	changing the history on which the user is currently working."
@@ -295,6 +375,138 @@ AIAHistoryPresenterTest >> testExternalMessageRefreshesSelectedConversation [
 
 	self assert: (messageText text asString
 		includesSubstring: 'Added outside the presenter')
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testHistoryDetailsShowPreHistoryRelations [
+	"Details show both the selected history's direct pre-histories and
+	the histories which directly use the selected history."
+
+	| historyTree historyDetails shared dependent
+	  sharedRoot dependentRoot details |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	historyDetails := refAIAHistoryPresenter
+		instVarNamed: #historyDetails.
+
+	shared := AIAHistory histories first.
+	shared title: 'Shared context'.
+	shared fileStore save: shared.
+
+	dependent := AIAHistory new.
+	dependent fileStore rootDirectory:
+		shared fileStore rootDirectory.
+	dependent
+		title: 'Dependent conversation';
+		addPreHistory: shared.
+
+	dependentRoot := historyTree roots detect: [ :node |
+		node history == dependent ].
+	historyTree selectItem: dependentRoot.
+	details := historyDetails items.
+
+	self
+		assert: (details detect: [ :each |
+			each key = 'Pre-histories' ]) value
+		equals: 'Shared context'.
+
+	historyTree unselectAll.
+	sharedRoot := historyTree roots detect: [ :node |
+		node history == shared ].
+	historyTree selectItem: sharedRoot.
+	details := historyDetails items.
+
+	self
+		assert: (details detect: [ :each |
+			each key = 'Used by' ]) value
+		equals: 'Dependent conversation'
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testMostRecentlyModifiedHistoryIsShownFirst [
+	"History roots must be ordered by modification time. When a selected
+	history changes, it moves to the top while remaining selected."
+
+	| historyTree firstHistory secondHistory directory firstRoot |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	firstHistory := AIAHistory histories first.
+	directory := firstHistory fileStore rootDirectory.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore rootDirectory: directory.
+	secondHistory user: 'Second history'.
+
+	firstHistory fileStore
+		instVarNamed: #modifiedAt
+		put: (DateAndTime fromString:
+			'2026-01-01T00:00:00+00:00').
+	secondHistory fileStore
+		instVarNamed: #modifiedAt
+		put: (DateAndTime fromString:
+			'2026-01-02T00:00:00+00:00').
+
+	SystemAnnouncer uniqueInstance
+		announce: AIAHistoriesChanged new.
+
+	self
+		assert: historyTree roots first history
+		identicalTo: secondHistory.
+
+	firstRoot := historyTree roots detect: [ :node |
+		node history == firstHistory ].
+	historyTree selectItem: firstRoot.
+
+	firstHistory user: 'First history changed again'.
+
+	self
+		assert: historyTree roots first history
+		identicalTo: firstHistory.
+	self
+		assert: historyTree selectedItem history
+		identicalTo: firstHistory
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testMultipleDeleteIsBlockedWhenOneHistoryIsReferenced [
+	"If one selected history is used as a pre-history, Delete must be
+	disabled and none of the selected histories may be deleted."
+
+	| historyTree deleteButton preHistory dependentHistory
+	  disposableHistory preRoot disposableRoot preFile disposableFile |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	deleteButton := refAIAHistoryPresenter instVarNamed: #deleteButton.
+
+	preHistory := AIAHistory histories first.
+
+	dependentHistory := AIAHistory new.
+	dependentHistory fileStore rootDirectory:
+		preHistory fileStore rootDirectory.
+	dependentHistory user: 'Uses shared context'.
+	dependentHistory addPreHistory: preHistory.
+
+	disposableHistory := AIAHistory new.
+	disposableHistory fileStore rootDirectory:
+		preHistory fileStore rootDirectory.
+	disposableHistory user: 'May otherwise be deleted'.
+
+	preFile := preHistory fileStore fileReference.
+	disposableFile := disposableHistory fileStore fileReference.
+
+	preRoot := historyTree roots detect: [ :node |
+		node history == preHistory ].
+	disposableRoot := historyTree roots detect: [ :node |
+		node history == disposableHistory ].
+
+	historyTree selectItems: { preRoot. disposableRoot }.
+
+	self deny: deleteButton isEnabled.
+	deleteButton action value.
+
+	self assert: preFile exists.
+	self assert: disposableFile exists.
+	self assert: (AIAHistory histories includes: preHistory).
+	self assert: (AIAHistory histories includes: disposableHistory)
 ]
 
 { #category : 'tests' }
@@ -482,6 +694,43 @@ AIAHistoryPresenterTest >> testPresenterLoadsPreHistoryReferencesFromDirectory [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testReducingMultipleSelectionDisplaysRemainingHistory [
+	"When multiple selection is reduced to one history, that history's
+	conversation and details must immediately be displayed."
+
+	| historyTree messageText historyDetails directory
+	  firstHistory secondHistory firstRoot secondRoot |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+	historyDetails := refAIAHistoryPresenter
+		instVarNamed: #historyDetails.
+
+	firstHistory := AIAHistory histories first.
+	directory := firstHistory fileStore rootDirectory.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore rootDirectory: directory.
+	secondHistory user: 'Second selected history'.
+
+	firstRoot := historyTree roots detect: [ :node |
+		node history == firstHistory ].
+	secondRoot := historyTree roots detect: [ :node |
+		node history == secondHistory ].
+
+	historyTree selectItems: { firstRoot. secondRoot }.
+	self assert: messageText text asString isEmpty.
+
+	historyTree unselectItem: secondRoot.
+
+	self assert: historyTree selectedItems size equals: 1.
+	self assert:
+		(messageText text asString
+			includesSubstring: 'A message without an answer').
+	self assert: historyDetails items size equals: 5
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testReferencedHistoryCannotBeDeleted [
 	"A history used as pre-history must remain stored. Delete is disabled,
 	and calling the action directly must still leave the history intact."
@@ -625,16 +874,19 @@ AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCompleteConversation [
 	"The selected history must display every role and complete message
 	in chronological order."
 
-	| historyTree messageText root answer expected |
+	| historyTree messageText history root answer expected |
 	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
 	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-	root := historyTree roots first.
+	history := historyTree roots first history.
 
 	answer := 'First answer line', String lf, 'Second answer line'.
-	root history
+	history
 		user: 'Second question';
 		assistant: answer.
 
+	"Announcements rebuild the tree, so obtain its new root node."
+	root := historyTree roots detect: [ :node |
+		node history == history ].
 	historyTree selectItem: root.
 
 	expected :=
@@ -734,8 +986,9 @@ AIAHistoryPresenterTest >> testSelectingHistoryDisplaysBasicDetails [
 	historyTree selectItem: root.
 	details := historyDetails items.
 
-	self assert: details size equals: 3.
-	self assert: details first
+	self assert: details size equals: 5.
+	self assert: details fourth key equals: 'Pre-histories'.
+	self assert: details fifth key equals: 'Used by'.self assert: details first
 		equals: 'Title' -> 'A useful title'.
 	self assert: details second key equals: 'Created'.
 	self assert: details second value isNotEmpty.
@@ -842,4 +1095,31 @@ AIAHistoryPresenterTest >> testSystemOnlyHistoryIsDisplayed [
 
 	self assert:
 		(displayed includesSubstring: 'A visible system instruction')
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testUntitledHistoryIsMarkedInTree [
+	"An untitled history is marked, while a titled history is not."
+
+	| historyTree history root directory |
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+	directory := AIAHistory histories first
+		fileStore rootDirectory.
+
+	history := AIAHistory new.
+	history fileStore rootDirectory: directory.
+	history user: 'Who is Kilroy'.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+
+	self
+		assert: (historyTree display value: root)
+		equals: '• Who is Kilroy'.
+
+	history title: 'Kilroy'.
+	self
+		assert: (historyTree display value: root)
+		equals: 'Kilroy'
 ]

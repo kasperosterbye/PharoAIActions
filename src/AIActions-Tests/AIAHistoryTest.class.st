@@ -105,6 +105,38 @@ AIAHistoryTest >> testApiMessageListPreservesPreHistoryOrder [
 ]
 
 { #category : 'tests' }
+AIAHistoryTest >> testAssistantRecordsLlmInfoWhenEnabled [
+	"LLM information is stored immediately before its assistant response
+	only when the global recording strategy is enabled." 
+
+	| originalSetting |
+	originalSetting := AIAHistory recordLlmInfo.
+
+	[
+		refAIAHistory fileStore rootDirectory: rootDirectory.
+		refAIAHistory api: AIAHistoryPresenterTestApi new.
+
+		AIAHistory recordLlmInfo: false.
+		refAIAHistory assistant: 'First answer'.
+
+		self assert: refAIAHistory messages size equals: 1.
+
+		AIAHistory recordLlmInfo: true.
+		refAIAHistory assistant: 'Second answer'.
+
+		self
+			assert: refAIAHistory messages second
+			equals:
+				'user' ->
+				'[LLM] AIAHistoryPresenterTestApi: test-model'.
+		self
+			assert: refAIAHistory messages third
+			equals: 'assistant' -> 'Second answer'
+	] ensure: [
+		AIAHistory recordLlmInfo: originalSetting ]
+]
+
+{ #category : 'tests' }
 AIAHistoryTest >> testDefaultApiFollowsCurrentProvider [
 	"A history without an explicitly assigned API must use the currently
 	selected global provider. It must therefore follow provider changes."

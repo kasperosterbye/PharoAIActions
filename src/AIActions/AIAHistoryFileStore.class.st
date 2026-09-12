@@ -188,6 +188,22 @@ AIAHistoryFileStore >> modifiedAt [
 	^ modifiedAt
 ]
 
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> moveToTrash [
+	| source destination |
+	source := self fileReference.
+	source exists ifFalse: [ ^ nil ].
+
+	self trashDirectory ensureCreateDirectory.
+	destination := self trashDirectory / self fileName.
+
+	destination exists ifTrue: [
+		self error: 'History already exists in Trash' ].
+
+	source moveTo: destination.
+	^ destination
+]
+
 { #category : 'accessing' }
 AIAHistoryFileStore >> roleDictionaryFrom: anAssociation [
 	^ Dictionary new
@@ -216,4 +232,9 @@ AIAHistoryFileStore >> save: aHistory [
 	json := self jsonFromHistory: aHistory.
 	file writeStreamDo: [ :stream | stream nextPutAll: json ].
 	^ file
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> trashDirectory [
+	^ self rootDirectory / 'Trash'
 ]

@@ -64,6 +64,33 @@ AIAHistoryFileStoreTest >> testLoadFromPreservesFileReference [
 ]
 
 { #category : 'tests' }
+AIAHistoryFileStoreTest >> testMoveToTrashPreservesStoredHistoryFile [
+	"Moving a stored history to Trash removes it from the active directory
+	without destroying its persisted contents." 
+	
+	| history originalFile originalContents trashedFile trashedContents |
+	history := AIAHistory new.
+	history fileStore: refAIAHistoryFileStore.
+	history user: 'Recoverable history'.
+
+	originalFile := refAIAHistoryFileStore fileReference.
+	originalContents := originalFile readStreamDo: [ :stream |
+		stream contents ].
+
+	trashedFile := refAIAHistoryFileStore moveToTrash.
+
+	self deny: originalFile exists.
+	self assert: trashedFile exists.
+	self
+		assert: trashedFile parent
+		equals: refAIAHistoryFileStore trashDirectory.
+
+	trashedContents := trashedFile readStreamDo: [ :stream |
+		stream contents ].
+	self assert: trashedContents equals: originalContents
+]
+
+{ #category : 'tests' }
 AIAHistoryFileStoreTest >> testNewStoreHasStableJsonFileName [
 	"A newly created file store must have a stable filename before anything
 	is saved. Repeated requests must return the same JSON filename."
