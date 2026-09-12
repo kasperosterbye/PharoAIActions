@@ -319,7 +319,7 @@ AIAYouTubeUI >> episodeTextAction [
 		aiResponse := ('Please summarize the episode text I gave you, about 250 tokens in size. 
 			Ignore the text before "Episode contents" in your response. 
 			Please let your response be in the same language as the description text'
-		q0: [ a ]).
+		q0: [ a asString]).
 		AIAPresenter onText: (aiResponse copyReplaceAll: '$' with: '\$').
 		].
 ]
