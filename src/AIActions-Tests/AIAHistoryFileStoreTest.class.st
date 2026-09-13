@@ -48,6 +48,23 @@ AIAHistoryFileStoreTest >> testDeleteRemovesStoredHistoryFile [
 ]
 
 { #category : 'tests' }
+AIAHistoryFileStoreTest >> testFirstSavedHistoryUsesReadableSequentialFileName [
+	"In an empty history directory, the first stored history receives
+	H00001 followed by a readable form of its first prompt."
+
+	| history file |
+	history := AIAHistory new.
+	history fileStore: refAIAHistoryFileStore.
+	history user: 'Who is Kilroy?'.
+
+	file := refAIAHistoryFileStore fileReference.
+
+	self
+		assert: file basename
+		equals: 'H00001-who-is-kilroy.json'
+]
+
+{ #category : 'tests' }
 AIAHistoryFileStoreTest >> testLoadFromPreservesFileReference [
 	"A history loaded from a file must remain connected to that same file.
 	Future changes must not accidentally be written to another directory."

@@ -7,7 +7,8 @@ Class {
 	#instVars : [
 		'createdAt',
 		'modifiedAt',
-		'rootDirectory'
+		'rootDirectory',
+		'storedFileName'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -16,12 +17,17 @@ Class {
 
 { #category : 'loading' }
 AIAHistoryFileStore class >> loadFrom: aFileReference [
-	"Load a history store from a file reference"
+	"Load a history store from a file reference."
+
 	| json store |
 	json := aFileReference readStreamDo: [ :stream |
 		stream contents ].
+
 	store := self new.
-	store rootDirectory: aFileReference parent.
+	store
+		rootDirectory: aFileReference parent;
+		storedFileName: aFileReference basename.
+
 	^ store historyFromJson: json
 ]
 
@@ -49,20 +55,29 @@ AIAHistoryFileStore >> delete [
 
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileName [
-	"Returns a filename built from the creation date and time"
-	| date time shortId createdString |
-	createdString := createdAt asString.
-	date := (createdString copyFrom: 1 to: 10)
-		copyWithoutAll: '-'.
-	time := (createdString copyFrom: 12 to: 19)
-		copyWithoutAll: ':'.
-	shortId := (createdString copyFrom: 21 to: 25).
-	^ date, '-', time, '-', shortId, '.json'
+	"Return the persisted filename, or a provisional ID before first save."
+
+	storedFileName ifNotNil: [ ^ storedFileName ].
+	^ self nextHistoryIdentifier, '.json'
 ]
 
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileReference [
 	^ self rootDirectory / self fileName
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> historyFiles [
+	| files |
+	files := OrderedCollection new.
+
+	rootDirectory exists ifTrue: [
+		files addAll: rootDirectory files ].
+
+	self trashDirectory exists ifTrue: [
+		files addAll: self trashDirectory files ].
+
+	^ files
 ]
 
 { #category : 'as yet unclassified' }
@@ -122,6 +137,20 @@ AIAHistoryFileStore >> historyFromJson: json preHistoryLoader: aBlock [
 	^ history
 ]
 
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> historyNumberFrom: aFileReference [
+	| name digits |
+	name := aFileReference basename.
+	name size < 6 ifTrue: [ ^ 0 ].
+	name first = $H ifFalse: [ ^ 0 ].
+
+	digits := name copyFrom: 2 to: 6.
+	(digits allSatisfy: [ :character |
+		character isDigit ]) ifFalse: [ ^ 0 ].
+
+	^ digits asInteger
+]
+
 { #category : 'initialization' }
 AIAHistoryFileStore >> initialize [
 	super initialize.
@@ -166,6 +195,7 @@ AIAHistoryFileStore >> load [
 AIAHistoryFileStore >> loadFrom: aFileReference preHistoryLoader: aBlock [
 	| json |
 	rootDirectory := aFileReference parent.
+	storedFileName := aFileReference basename.
 	json := aFileReference readStreamDo: [ :stream |
 		stream contents ].
 	^ self
@@ -204,6 +234,33 @@ AIAHistoryFileStore >> moveToTrash [
 	^ destination
 ]
 
+{ #category : 'instance creation' }
+AIAHistoryFileStore >> newFileNameFor: aHistory [
+	| description |
+	description := aHistory title
+		ifNil: [ aHistory printPrompt ].
+
+	^ self nextHistoryIdentifier,
+		'-',
+		(self slugFrom: description),
+		'.json'
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> nextHistoryIdentifier [
+	| largest next |
+	largest := self historyFiles
+		inject: 0
+		into: [ :maximum :file |
+			maximum max: (self historyNumberFrom: file) ].
+
+	next := largest + 1.
+	next > 99999 ifTrue: [
+		self error: 'No more history identifiers available' ].
+
+	^ 'H', (('00000', next asString) last: 5)
+]
+
 { #category : 'accessing' }
 AIAHistoryFileStore >> roleDictionaryFrom: anAssociation [
 	^ Dictionary new
@@ -224,14 +281,49 @@ AIAHistoryFileStore >> rootDirectory: aFileReference [
 
 { #category : 'actions' }
 AIAHistoryFileStore >> save: aHistory [
-
 	| file json |
 	modifiedAt := DateAndTime now.
+
+	storedFileName ifNil: [
+		storedFileName := self newFileNameFor: aHistory ].
+
 	file := self fileReference.
 	file parent ensureCreateDirectory.
 	json := self jsonFromHistory: aHistory.
-	file writeStreamDo: [ :stream | stream nextPutAll: json ].
+
+	file writeStreamDo: [ :stream |
+		stream nextPutAll: json ].
+
 	^ file
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> slugFrom: aString [
+	| slug previousWasSeparator |
+	previousWasSeparator := true.
+
+	slug := String streamContents: [ :stream |
+		aString asLowercase do: [ :character |
+			character isAlphaNumeric
+				ifTrue: [
+					stream nextPut: character.
+					previousWasSeparator := false ]
+				ifFalse: [
+					previousWasSeparator ifFalse: [
+						stream nextPut: $-.
+						previousWasSeparator := true ] ] ] ].
+
+	slug := slug first: (40 min: slug size).
+
+	[ slug notEmpty and: [ slug last = $- ] ] whileTrue: [
+		slug := slug allButLast ].
+
+	^ slug ifEmpty: [ 'history' ]
+]
+
+{ #category : 'accessing' }
+AIAHistoryFileStore >> storedFileName: aString [
+	storedFileName := aString
 ]
 
 { #category : 'as yet unclassified' }

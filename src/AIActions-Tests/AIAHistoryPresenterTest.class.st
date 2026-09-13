@@ -3,7 +3,8 @@ Class {
 	#superclass : 'TestCase',
 	#instVars : [
 		'refAIAHistoryPresenter',
-		'originalHistories'
+		'originalHistories',
+		'originalRecordLlmInfo'
 	],
 	#category : 'AIActions-Tests-UIPresenters-Tests',
 	#package : 'AIActions-Tests',
@@ -15,6 +16,8 @@ AIAHistoryPresenterTest >> setUp [
 	| history |
 	super setUp.
 	originalHistories := AIAHistory histories copy.
+	originalRecordLlmInfo := AIAHistory recordLlmInfo.
+	AIAHistory recordLlmInfo: false.
 	AIAHistory clearHistories.
 
 	history := AIAHistory new.
@@ -32,6 +35,7 @@ AIAHistoryPresenterTest >> tearDown [
 		unsubscribe: refAIAHistoryPresenter.
 	AIAHistory clearHistories.
 	AIAHistory histories addAll: originalHistories.
+	AIAHistory recordLlmInfo: originalRecordLlmInfo.
 	super tearDown
 ]
 
@@ -420,6 +424,30 @@ AIAHistoryPresenterTest >> testHistoryDetailsShowPreHistoryRelations [
 		assert: (details detect: [ :each |
 			each key = 'Used by' ]) value
 		equals: 'Dependent conversation'
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testLlmTagIsDisplayedAsPartOfAssistantHeading [
+	"An LLM marker immediately before an assistant response is displayed
+	as part of its heading rather than as a separate user message."
+
+	| historyTree messageText history displayed |
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+
+	history := historyTree roots first history.
+	history api: AIAHistoryPresenterTestApi new.
+	historyTree selectItem: historyTree roots first.
+
+	AIAHistory recordLlmInfo: true.
+	history assistant: 'A tagged answer'.
+
+	displayed := messageText text asString.
+
+	self assert: (displayed includesSubstring:
+		'assistant: AIAHistoryPresenterTestApi: test-model').
+	self assert: (displayed includesSubstring: 'A tagged answer').
+	self deny: (displayed includesSubstring: '[LLM]')
 ]
 
 { #category : 'tests' }
@@ -1095,6 +1123,25 @@ AIAHistoryPresenterTest >> testSystemOnlyHistoryIsDisplayed [
 
 	self assert:
 		(displayed includesSubstring: 'A visible system instruction')
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testTagLlmButtonControlsRecordingStrategy [
+	"Tag LLM reflects and controls whether future assistant responses
+	are preceded by information about their provider and model."
+
+	| tagLlmButton |
+	tagLlmButton := refAIAHistoryPresenter
+		instVarNamed: #tagLlmButton.
+
+	self deny: tagLlmButton state.
+	self deny: AIAHistory recordLlmInfo.
+
+	tagLlmButton state: true.
+	self assert: AIAHistory recordLlmInfo.
+
+	tagLlmButton state: false.
+	self deny: AIAHistory recordLlmInfo
 ]
 
 { #category : 'tests' }

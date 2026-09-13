@@ -40,7 +40,8 @@ Class {
 		'newHistoryFactory',
 		'rootDirectory',
 		'reloadButton',
-		'deleteButton'
+		'deleteButton',
+		'tagLlmButton'
 	],
 	#category : 'AIActions-UIPresenters',
 	#package : 'AIActions',
@@ -166,8 +167,11 @@ AIAHistoryPresenter >> defaultLayout [
 		yourself.
 
 	leftButtons := SpBoxLayout newLeftToRight
-		add: reloadButton expand: false;
-		add: deleteButton expand: false;
+		add: reloadButton ;
+		add: SpBoxLayout newLeftToRight;
+		add: deleteButton ;
+		add: SpBoxLayout newLeftToRight;
+		add: tagLlmButton ;
 		yourself.
 
 	leftContent := SpPanedLayout newVertical
@@ -383,6 +387,16 @@ AIAHistoryPresenter >> initializePresenters [
 		action: [ self sendPrompt ];
 		yourself.
 	sendButton disable.
+	
+	tagLlmButton := self newToggleButton
+		label: 'Tag LLM';
+		help: 'Store provider and model with future assistant responses';
+		state: AIAHistory recordLlmInfo;
+		whenActivatedDo: [
+			AIAHistory recordLlmInfo: true ];
+		whenDeactivatedDo: [
+			AIAHistory recordLlmInfo: false ];
+		yourself.
 
 	newHistoryFactory := [ AIAHistory new ].
 
@@ -522,15 +536,39 @@ AIAHistoryPresenter >> sendPrompt [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> stringFromMessages: messages [
+	| visibleMessages index message nextMessage llmInfo |
+	visibleMessages := OrderedCollection new.
+	index := 1.
+
+	[ index <= messages size ] whileTrue: [
+		message := messages at: index.
+
+		((((message key = 'user')
+			and: [
+				message value asString beginsWith: '[LLM] ' ])
+			and: [ index < messages size ])
+			and: [
+				nextMessage := messages at: index + 1.
+				nextMessage key = 'assistant' ])
+			ifTrue: [
+				llmInfo := message value asString allButFirst: 6.
+				visibleMessages add:
+					('assistant: ', llmInfo) -> nextMessage value.
+				index := index + 2 ]
+			ifFalse: [
+				visibleMessages add:
+					(message key asString, ':') -> message value.
+				index := index + 1 ] ].
+
 	^ String streamContents: [ :stream |
-		messages withIndexDo: [ :message :index |
-			index > 1 ifTrue: [
-				stream nextPutAll: String lf.
-				stream nextPutAll: String lf ].
+		visibleMessages withIndexDo: [ :each :visibleIndex |
+			visibleIndex > 1 ifTrue: [
+				stream
+					nextPutAll: String lf;
+					nextPutAll: String lf ].
 
 			stream
-				nextPutAll: message key asString;
-				nextPutAll: ':';
+				nextPutAll: each key;
 				nextPutAll: String lf;
-				nextPutAll: message value asString ] ]
+				nextPutAll: each value asString ] ]
 ]
