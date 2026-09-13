@@ -53,6 +53,38 @@ AIAHistoryFileStore >> delete [
 	^ file
 ]
 
+{ #category : 'misc' }
+AIAHistoryFileStore >> descriptionFor: aHistory [
+	"Use an explicit title when present. Otherwise use the first context
+	or conversational text."
+
+	| candidate |
+	candidate := aHistory title.
+
+	(candidate notNil and: [
+		candidate asString isNotEmpty ])
+		ifTrue: [
+			^ candidate asString ].
+
+	aHistory firstRoles ifNotEmpty: [
+		^ aHistory firstRoles first value asString ].
+
+	aHistory messages ifNotEmpty: [
+		^ aHistory messages first value asString ].
+
+	^ 'history'
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> ensurePreHistoriesAreStoredFor: aHistory [
+	"Every referenced history must have a permanent identifier before the
+	current history is serialised."
+
+	aHistory preHistories do: [ :preHistory |
+		preHistory fileStore historyIdentifier ifNil: [
+			preHistory fileStore save: preHistory ] ]
+]
+
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileName [
 	"Return the persisted filename, or a provisional ID before first save."
@@ -61,9 +93,56 @@ AIAHistoryFileStore >> fileName [
 	^ self nextHistoryIdentifier, '.json'
 ]
 
+{ #category : 'private' }
+AIAHistoryFileStore >> fileNameFor: aHistory [
+	"Construct the current readable filename while preserving an existing
+	history identifier."
+
+	| identifier |
+	identifier := self historyIdentifier.
+
+	identifier ifNil: [
+		identifier := self nextHistoryIdentifier ].
+
+	^ identifier,
+		'-',
+		(self slugFrom:
+			(self descriptionFor: aHistory)),
+		'.json'
+]
+
 { #category : 'accessing' }
 AIAHistoryFileStore >> fileReference [
 	^ self rootDirectory / self fileName
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> fileReferenceForHistoryIdentifier: anIdentifier [
+	"Find the active JSON file whose first six characters identify the
+	requested history. Its readable suffix is deliberately ignored."
+
+	| identifier matches |
+	identifier := self historyIdentifierFromFileName:
+		anIdentifier.
+
+	identifier ifNil: [
+		self error: 'Invalid history identifier' ].
+
+	rootDirectory exists ifFalse: [
+		self error: 'History directory does not exist' ].
+
+	matches := rootDirectory files select: [ :file |
+		file extension = 'json' and: [
+			(self historyIdentifierFromFileName:
+				file basename) = identifier ] ].
+
+	matches isEmpty ifTrue: [
+		self error: 'History file not found: ', identifier ].
+
+	matches size > 1 ifTrue: [
+		self error: 'Duplicate history identifier: ', identifier ].
+
+	^ matches first
 ]
 
 { #category : 'as yet unclassified' }
@@ -72,10 +151,14 @@ AIAHistoryFileStore >> historyFiles [
 	files := OrderedCollection new.
 
 	rootDirectory exists ifTrue: [
-		files addAll: rootDirectory files ].
+		files addAll:
+			(rootDirectory files select: [ :file |
+				file extension = 'json' ]) ].
 
 	self trashDirectory exists ifTrue: [
-		files addAll: self trashDirectory files ].
+		files addAll:
+			(self trashDirectory files select: [ :file |
+				file extension = 'json' ]) ].
 
 	^ files
 ]
@@ -84,36 +167,48 @@ AIAHistoryFileStore >> historyFiles [
 AIAHistoryFileStore >> historyFromJson: json [
 	^ self
 		historyFromJson: json
-		preHistoryLoader: [ :fileName |
+		preHistoryLoader: [ :identifier |
 			self class loadFrom:
-				self rootDirectory / fileName ]
+				(self fileReferenceForHistoryIdentifier:
+					identifier) ]
 ]
 
 { #category : 'as yet unclassified' }
 AIAHistoryFileStore >> historyFromJson: json preHistoryLoader: aBlock [
-	"Converts a dictionary into an AIAHistory object, initialising its properties and associations from the dictionary."
-	| aDictionary history providerClass api preHistoryFiles |
+	"Convert persisted JSON into an AIAHistory and reconstruct its
+	pre-history associations."
+
+	| aDictionary history providerClass api preHistoryReferences |
 	aDictionary := STONJSON fromString: json.
-	preHistoryFiles := aDictionary
-		at: 'preHistoryFiles'
-		ifAbsent: [ #() ].
+
+	preHistoryReferences := aDictionary
+		at: 'preHistoryIdentifiers'
+		ifAbsent: [
+			aDictionary
+				at: 'preHistoryFiles'
+				ifAbsent: [ #() ] ].
 
 	createdAt := DateAndTime fromString:
 		(aDictionary at: 'createdAt').
+
 	modifiedAt := DateAndTime fromString:
 		(aDictionary at: 'modifiedAt').
 
 	providerClass := Smalltalk globals
 		at: (aDictionary at: 'provider') asSymbol
-		ifAbsent: [ self error: 'Unknown API provider' ].
+		ifAbsent: [
+			self error: 'Unknown API provider' ].
 
 	(AilienApi allSubclasses includes: providerClass)
-		ifFalse: [ self error: 'Invalid API provider' ].
+		ifFalse: [
+			self error: 'Invalid API provider' ].
 
 	api := providerClass new.
-	api model: (aDictionary at: 'model').
+	api model:
+		(aDictionary at: 'model').
 
 	history := AIAHistory new.
+
 	history
 		fileStore: self;
 		title: (aDictionary at: 'title');
@@ -132,23 +227,52 @@ AIAHistoryFileStore >> historyFromJson: json preHistoryLoader: aBlock [
 	(aDictionary at: 'lastRoles') do: [ :each |
 		history lastRoles add:
 			(self associationFromRoleDictionary: each) ].
-	preHistoryFiles do: [ :fileName |
-		history preHistories add: (aBlock value: fileName) ].
+
+	preHistoryReferences do: [ :identifier |
+		history preHistories add:
+			(aBlock value: identifier) ].
+
 	^ history
 ]
 
 { #category : 'as yet unclassified' }
-AIAHistoryFileStore >> historyNumberFrom: aFileReference [
+AIAHistoryFileStore >> historyIdentifier [
+	"Return the permanent identifier of a persisted history."
+
+	storedFileName ifNil: [ ^ nil ].
+
+	^ self historyIdentifierFromFileName:
+		storedFileName
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> historyIdentifierFromFileName: aFileName [
+	"Extract an identifier such as H00127. Answer nil when the filename
+	does not begin with a valid history identifier."
+
 	| name digits |
-	name := aFileReference basename.
-	name size < 6 ifTrue: [ ^ 0 ].
-	name first = $H ifFalse: [ ^ 0 ].
+	name := aFileName asString.
+	name size < 6 ifTrue: [ ^ nil ].
+	name first = $H ifFalse: [ ^ nil ].
 
 	digits := name copyFrom: 2 to: 6.
-	(digits allSatisfy: [ :character |
-		character isDigit ]) ifFalse: [ ^ 0 ].
 
-	^ digits asInteger
+	(digits allSatisfy: [ :character |
+		character isDigit ])
+		ifFalse: [ ^ nil ].
+
+	^ name first: 6
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStore >> historyNumberFrom: aFileReference [
+	| identifier |
+	identifier := self historyIdentifierFromFileName:
+		aFileReference basename.
+
+	identifier ifNil: [ ^ 0 ].
+
+	^ (identifier copyFrom: 2 to: 6) asInteger
 ]
 
 { #category : 'initialization' }
@@ -161,26 +285,37 @@ AIAHistoryFileStore >> initialize [
 
 { #category : 'actions' }
 AIAHistoryFileStore >> jsonFromHistory: aHistory [
-	"Converts an AIAHistory object into a JSON string, including its properties and associations."
+	"Convert a history into JSON. Pre-histories are referenced by their
+	permanent identifiers rather than their mutable filenames."
 
-	| preHistoryFiles |
-	preHistoryFiles := (aHistory preHistories collect: [ :each | each fileStore fileName ]) asArray.
-	^ STONJSON toString: (Dictionary new
-			   at: 'formatVersion' put: 1;
-			   at: 'createdAt' put: createdAt asString;
-			   at: 'modifiedAt' put: modifiedAt asString;
-			   at: 'title' put: aHistory title;
-			   at: 'provider' put: aHistory api class name asString;
-			   at: 'model' put: aHistory api model;
-			   at: 'preHistoryFiles' put: preHistoryFiles;
-			   at: 'firstRoles' put: (aHistory firstRoles 
-						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
-			   at: 'messages' put: (aHistory messages 
-						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
-			   at: 'lastRoles' put: (aHistory lastRoles 
-						collect: [ :each | self roleDictionaryFrom: each ]) asArray;
-			   at: 'responseHeaderLevel' put: aHistory responseHearderLevel;
-			   yourself)
+	| preHistoryIdentifiers |
+	preHistoryIdentifiers :=
+		(aHistory preHistories collect: [ :each |
+			each fileStore historyIdentifier ]) asArray.
+
+	^ STONJSON toString:
+		(Dictionary new
+			at: 'formatVersion' put: 2;
+			at: 'createdAt' put: createdAt asString;
+			at: 'modifiedAt' put: modifiedAt asString;
+			at: 'title' put: aHistory title;
+			at: 'provider'
+				put: aHistory api class name asString;
+			at: 'model' put: aHistory api model;
+			at: 'preHistoryIdentifiers'
+				put: preHistoryIdentifiers;
+			at: 'firstRoles'
+				put: (aHistory firstRoles collect: [ :each |
+					self roleDictionaryFrom: each ]) asArray;
+			at: 'messages'
+				put: (aHistory messages collect: [ :each |
+					self roleDictionaryFrom: each ]) asArray;
+			at: 'lastRoles'
+				put: (aHistory lastRoles collect: [ :each |
+					self roleDictionaryFrom: each ]) asArray;
+			at: 'responseHeaderLevel'
+				put: aHistory responseHearderLevel;
+			yourself)
 ]
 
 { #category : 'loading' }
@@ -281,18 +416,40 @@ AIAHistoryFileStore >> rootDirectory: aFileReference [
 
 { #category : 'actions' }
 AIAHistoryFileStore >> save: aHistory [
-	| file json |
+	| oldFile newFileName file json |
+	self ensurePreHistoriesAreStoredFor: aHistory.
+
 	modifiedAt := DateAndTime now.
 
-	storedFileName ifNil: [
-		storedFileName := self newFileNameFor: aHistory ].
+	oldFile := storedFileName
+		ifNil: [ nil ]
+		ifNotNil: [
+			self rootDirectory / storedFileName ].
 
-	file := self fileReference.
+	newFileName := self fileNameFor: aHistory.
+	file := self rootDirectory / newFileName.
+
+	(file exists and: [
+		oldFile isNil or: [
+			oldFile ~= file ] ])
+		ifTrue: [
+			self error:
+				'History filename already exists: ',
+				newFileName ].
+
 	file parent ensureCreateDirectory.
 	json := self jsonFromHistory: aHistory.
 
 	file writeStreamDo: [ :stream |
 		stream nextPutAll: json ].
+
+	(oldFile notNil and: [
+		oldFile ~= file and: [
+			oldFile exists ] ])
+		ifTrue: [
+			oldFile delete ].
+
+	storedFileName := newFileName.
 
 	^ file
 ]

@@ -30,6 +30,34 @@ AIAHistoryFileStoreTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAHistoryFileStoreTest >> testChangingTitleRenamesFileButPreservesIdentifier [
+	"A title may change the readable filename suffix, but never the
+	permanent history identifier."
+
+	| history firstFile secondFile identifier |
+	history := AIAHistory new.
+	history fileStore: refAIAHistoryFileStore.
+	history title: 'Old title'.
+
+	firstFile := refAIAHistoryFileStore save: history.
+	identifier := refAIAHistoryFileStore historyIdentifier.
+
+	history title: 'New useful title'.
+	secondFile := refAIAHistoryFileStore save: history.
+
+	self deny: firstFile exists.
+	self assert: secondFile exists.
+
+	self
+		assert: refAIAHistoryFileStore historyIdentifier
+		equals: identifier.
+
+	self
+		assert: secondFile basename
+		equals: 'H00001-new-useful-title.json'
+]
+
+{ #category : 'tests' }
 AIAHistoryFileStoreTest >> testDeleteRemovesStoredHistoryFile [
 	"Deleting a file store must remove its persisted history file. Removal
 	from AIAHistory histories and UI updates belong to higher layers."
@@ -62,6 +90,34 @@ AIAHistoryFileStoreTest >> testFirstSavedHistoryUsesReadableSequentialFileName [
 	self
 		assert: file basename
 		equals: 'H00001-who-is-kilroy.json'
+]
+
+{ #category : 'tests' }
+AIAHistoryFileStoreTest >> testIdentifierInTrashIsNotReused [
+	"A trashed history still owns its identifier."
+
+	| firstStore secondStore firstHistory secondHistory |
+	firstStore := AIAHistoryFileStore new.
+	firstStore rootDirectory:
+		refAIAHistoryFileStore rootDirectory.
+
+	firstHistory := AIAHistory new.
+	firstHistory fileStore: firstStore.
+	firstHistory user: 'Trashed history'.
+
+	firstStore moveToTrash.
+
+	secondStore := AIAHistoryFileStore new.
+	secondStore rootDirectory:
+		refAIAHistoryFileStore rootDirectory.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore: secondStore.
+	secondHistory user: 'New history'.
+
+	self
+		assert: secondStore historyIdentifier
+		equals: 'H00002'
 ]
 
 { #category : 'tests' }
@@ -266,4 +322,50 @@ AIAHistoryFileStoreTest >> testSavedHistoryPreservesPreHistory [
 	self
 		assert: loadedPreHistory fileStore fileReference
 		equals: preHistory fileStore fileReference
+]
+
+{ #category : 'tests' }
+AIAHistoryFileStoreTest >> testSecondSavedHistoryUsesNextIdentifier [
+	"Sequential identifiers are determined by already persisted histories."
+
+	| firstStore secondStore firstHistory secondHistory |
+	firstStore := AIAHistoryFileStore new.
+	firstStore rootDirectory:
+		refAIAHistoryFileStore rootDirectory.
+
+	secondStore := AIAHistoryFileStore new.
+	secondStore rootDirectory:
+		refAIAHistoryFileStore rootDirectory.
+
+	firstHistory := AIAHistory new.
+	firstHistory fileStore: firstStore.
+	firstHistory user: 'First history'.
+
+	secondHistory := AIAHistory new.
+	secondHistory fileStore: secondStore.
+	secondHistory user: 'Second history'.
+
+	self
+		assert: firstStore fileName
+		equals: 'H00001-first-history.json'.
+
+	self
+		assert: secondStore fileName
+		equals: 'H00002-second-history.json'
+]
+
+{ #category : 'tests' }
+AIAHistoryFileStoreTest >> testUntitledHistoryUsesFirstContextAsFileDescription [
+	"Without a title, the first context text supplies the readable suffix."
+
+	| history file |
+	history := AIAHistory new.
+	history fileStore: refAIAHistoryFileStore.
+	history system: 'You are a Pharo expert'.
+
+	file := refAIAHistoryFileStore save: history.
+
+	self
+		assert: file basename
+		equals: 'H00001-you-are-a-pharo-expert.json'
 ]

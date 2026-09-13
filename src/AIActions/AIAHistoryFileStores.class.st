@@ -3,7 +3,7 @@ Class {
 	#superclass : 'Object',
 	#instVars : [
 		'rootDirectory',
-		'historiesByFileName'
+		'historiesByIdentifier'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -14,7 +14,7 @@ Class {
 AIAHistoryFileStores >> loadAll [
 	| histories files |
 	histories := OrderedCollection new.
-	historiesByFileName := Dictionary new.
+	historiesByIdentifier := Dictionary new.
 
 	rootDirectory exists ifFalse: [
 		^ histories ].
@@ -23,34 +23,63 @@ AIAHistoryFileStores >> loadAll [
 		file extension = 'json' ].
 
 	files do: [ :file |
-		histories add: (self loadFile: file) ].
+		| history |
+		history := self loadFile: file.
+
+		(histories anySatisfy: [ :each |
+			each == history ])
+			ifFalse: [
+				histories add: history ] ].
 
 	^ histories
 ]
 
 { #category : 'as yet unclassified' }
 AIAHistoryFileStores >> loadFile: aFileReference [
-	| fileName history store |
-	fileName := aFileReference basename.
+	| identifier history store |
+	store := AIAHistoryFileStore new.
+	store rootDirectory:
+		aFileReference parent.
 
-	history := historiesByFileName
-		at: fileName
+	identifier := store historyIdentifierFromFileName:
+		aFileReference basename.
+
+	identifier ifNil: [
+		self error:
+			'Invalid history filename: ',
+				aFileReference basename ].
+
+	history := historiesByIdentifier
+		at: identifier
 		ifAbsent: [ nil ].
+
 	history ifNotNil: [
 		^ history ].
 
-	store := AIAHistoryFileStore new.
-	store rootDirectory: aFileReference parent.
-
 	history := store
 		loadFrom: aFileReference
-		preHistoryLoader: [ :preHistoryFileName |
-			self loadFile: aFileReference parent / preHistoryFileName ].
-	historiesByFileName
-		at: fileName
+		preHistoryLoader: [ :preHistoryIdentifier |
+			self loadHistoryIdentifier:
+				preHistoryIdentifier ].
+
+	historiesByIdentifier
+		at: identifier
 		put: history.
 
 	^ history
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryFileStores >> loadHistoryIdentifier: anIdentifier [
+	| store file |
+	store := AIAHistoryFileStore new.
+	store rootDirectory: rootDirectory.
+
+	file := store
+		fileReferenceForHistoryIdentifier:
+			anIdentifier.
+
+	^ self loadFile: file
 ]
 
 { #category : 'accessing' }

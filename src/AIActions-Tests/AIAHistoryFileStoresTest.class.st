@@ -95,3 +95,50 @@ AIAHistoryFileStoresTest >> testLoadAllReusesPreHistoryObject [
 	self assert:
 		loadedCurrent preHistories first == loadedPreHistory
 ]
+
+{ #category : 'tests' }
+AIAHistoryFileStoresTest >> testPreHistoryIsResolvedByIdentifierAfterFileRename [
+	"A pre-history reference uses its permanent identifier. Changing the
+	readable filename suffix must therefore not break Reload."
+
+	| preStore currentStore preHistory currentHistory
+	  originalPreFile renamedPreFile histories
+	  loadedCurrent loadedPreHistory |
+
+	preStore := AIAHistoryFileStore new.
+	preStore rootDirectory: rootDirectory.
+
+	preHistory := AIAHistory new.
+	preHistory fileStore: preStore.
+	preHistory user: 'Original pre-history'.
+
+	currentStore := AIAHistoryFileStore new.
+	currentStore rootDirectory: rootDirectory.
+
+	currentHistory := AIAHistory new.
+	currentHistory fileStore: currentStore.
+	currentHistory user: 'Current history'.
+	currentHistory addPreHistory: preHistory.
+
+	originalPreFile := preStore fileReference.
+	renamedPreFile := rootDirectory /
+		(preStore historyIdentifier, '-renamed-by-a-human.json').
+
+	originalPreFile moveTo: renamedPreFile.
+
+	AIAHistory clearHistories.
+	histories := refAIAHistoryFileStores loadAll.
+
+	loadedCurrent := histories detect: [ :history |
+		history messages = currentHistory messages ].
+
+	loadedPreHistory := loadedCurrent preHistories first.
+
+	self
+		assert: loadedPreHistory messages
+		equals: preHistory messages.
+
+	self
+		assert: loadedPreHistory fileStore fileReference
+		equals: renamedPreFile
+]
