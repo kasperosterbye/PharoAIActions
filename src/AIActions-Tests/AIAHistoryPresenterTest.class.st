@@ -258,6 +258,60 @@ AIAHistoryPresenterTest >> testEditedTitleIsStoredAndSurvivesReload [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testEditingTitleRenamesFileAndPreservesSelection [
+	"Editing the title renames the readable filename, while preserving both
+	the permanent identifier and the selected history."
+
+	| historyTree historyDetails reloadButton valueColumn titleRow
+	  history identifier oldFile selectedHistory newFile fileRow |
+
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+	historyDetails := refAIAHistoryPresenter
+		instVarNamed: #historyDetails.
+	reloadButton := refAIAHistoryPresenter
+		instVarNamed: #reloadButton.
+
+	historyTree selectItem: historyTree roots first.
+	history := historyTree selectedItem history.
+
+	identifier := history fileStore historyIdentifier.
+	oldFile := history fileStore fileReference.
+
+	titleRow := historyDetails items detect: [ :each |
+		each key = 'Title' ].
+	valueColumn := historyDetails columns second.
+
+	valueColumn acceptAction
+		value: titleRow
+		value: 'Renamed history'.
+
+	reloadButton action value.
+
+	selectedHistory := historyTree selectedItem history.
+	newFile := selectedHistory fileStore fileReference.
+
+	self
+		assert: selectedHistory fileStore historyIdentifier
+		equals: identifier.
+
+	self deny: newFile equals: oldFile.
+	self deny: oldFile exists.
+	self assert: newFile exists.
+
+	self
+		assert: newFile basename
+		equals: identifier, '-renamed-history.json'.
+
+	fileRow := historyDetails items detect: [ :each |
+		each key = 'File' ].
+
+	self
+		assert: fileRow value
+		equals: newFile basename
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testEvalAppliesOnlyToNextAdd [
 	"Eval is a one-shot modifier. It evaluates the next addition and then
 	returns to Raw, so a later prompt cannot be evaluated accidentally."
@@ -755,7 +809,7 @@ AIAHistoryPresenterTest >> testReducingMultipleSelectionDisplaysRemainingHistory
 	self assert:
 		(messageText text asString
 			includesSubstring: 'A message without an answer').
-	self assert: historyDetails items size equals: 5
+	self assert: historyDetails items size equals: 7
 ]
 
 { #category : 'tests' }
@@ -845,14 +899,16 @@ AIAHistoryPresenterTest >> testReloadLoadsFileCreatedOutsidePresenter [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testReloadPreservesSelectedHistory [
-	"Reloading must preserve the selected history when its file still exists.
-	Object identity may change, but the persistent file remains the same."
+	"Reloading preserves the selected history by its permanent identifier.
+	Object identity and readable filename are not its identity."
 
-	| directory historyTree reloadButton selectedFileName |
-	directory := AIAHistory histories first fileStore rootDirectory.
+	| directory historyTree reloadButton selectedIdentifier |
+	directory := AIAHistory histories first
+		fileStore rootDirectory.
 
 	SystemAnnouncer uniqueInstance
 		unsubscribe: refAIAHistoryPresenter.
+
 	refAIAHistoryPresenter :=
 		AIAHistoryPresenter forDirectory: directory.
 
@@ -861,16 +917,70 @@ AIAHistoryPresenterTest >> testReloadPreservesSelectedHistory [
 	reloadButton := refAIAHistoryPresenter
 		instVarNamed: #reloadButton.
 
-	historyTree selectItem: historyTree roots first.
-	selectedFileName :=
-		historyTree selectedItem history fileStore fileName.
+	historyTree selectItem:
+		historyTree roots first.
+
+	selectedIdentifier :=
+		historyTree selectedItem history
+			fileStore historyIdentifier.
 
 	reloadButton action value.
 
-	self assert: historyTree selectedItem isNotNil.
+	self assert:
+		historyTree selectedItem isNotNil.
+
 	self
-		assert: historyTree selectedItem history fileStore fileName
-		equals: selectedFileName
+		assert:
+			historyTree selectedItem history
+				fileStore historyIdentifier
+		equals: selectedIdentifier
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testReloadPreservesSelectionAfterFileSuffixChange [
+	"Changing only the readable part of a filename must not change the
+	history's identity or cause Reload to lose the selection."
+
+	| historyTree historyDetails reloadButton history
+	  identifier originalFile renamedFile fileDetail |
+
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
+	historyDetails := refAIAHistoryPresenter
+		instVarNamed: #historyDetails.
+	reloadButton := refAIAHistoryPresenter
+		instVarNamed: #reloadButton.
+
+	historyTree selectItem:
+		historyTree roots first.
+
+	history := historyTree selectedItem history.
+	identifier := history fileStore historyIdentifier.
+	originalFile := history fileStore fileReference.
+
+	renamedFile :=
+		history fileStore rootDirectory /
+			(identifier, '-renamed-outside-pharo.json').
+
+	originalFile moveTo: renamedFile.
+
+	reloadButton action value.
+
+	self assert:
+		historyTree selectedItem isNotNil.
+
+	self
+		assert:
+			historyTree selectedItem history
+				fileStore historyIdentifier
+		equals: identifier.
+
+	fileDetail := historyDetails items detect: [ :association |
+		association key = 'File' ].
+
+	self
+		assert: fileDetail value
+		equals: renamedFile basename
 ]
 
 { #category : 'tests' }
@@ -998,30 +1108,50 @@ AIAHistoryPresenterTest >> testSelectingAnotherHistoryReplacesDisplayedConversat
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectingHistoryDisplaysBasicDetails [
-	"Selecting a history must display its basic persistent properties in
-	a stable order, with visible creation and modification times."
+	"Selecting a history displays its persistent identity, filename and
+	basic properties in a stable order."
 
 	| history historyTree historyDetails root details |
 	history := AIAHistory histories first.
 	history title: 'A useful title'.
 
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	historyTree := refAIAHistoryPresenter
+		instVarNamed: #historyTree.
 	historyDetails := refAIAHistoryPresenter
 		instVarNamed: #historyDetails.
 
 	root := historyTree roots detect: [ :node |
 		node history == history ].
+
 	historyTree selectItem: root.
 	details := historyDetails items.
 
-	self assert: details size equals: 5.
-	self assert: details fourth key equals: 'Pre-histories'.
-	self assert: details fifth key equals: 'Used by'.self assert: details first
+	self assert: details size equals: 7.
+
+	self
+		assert: details first
 		equals: 'Title' -> 'A useful title'.
-	self assert: details second key equals: 'Created'.
-	self assert: details second value isNotEmpty.
-	self assert: details third key equals: 'Modified'.
-	self assert: details third value isNotEmpty
+
+	self
+		assert: details second
+		equals:
+			'ID' ->
+				history fileStore historyIdentifier.
+
+	self
+		assert: details third
+		equals:
+			'File' ->
+				history fileStore fileName.
+
+	self assert: details fourth key equals: 'Created'.
+	self assert: details fourth value isNotEmpty.
+
+	self assert: details fifth key equals: 'Modified'.
+	self assert: details fifth value isNotEmpty.
+
+	self assert: details sixth key equals: 'Pre-histories'.
+	self assert: details seventh key equals: 'Used by'
 ]
 
 { #category : 'tests' }

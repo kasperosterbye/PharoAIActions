@@ -234,23 +234,39 @@ AIAHistoryPresenter >> deleteSelectedHistory [
 
 { #category : 'as yet unclassified' }
 AIAHistoryPresenter >> detailsForHistory: aHistory [
-	| fileStore usedBy |
+	| fileStore usedBy identifier fileName |
 	fileStore := aHistory fileStore.
+
 	usedBy := AIAHistory histories select: [ :history |
 		history preHistories anySatisfy: [ :preHistory |
 			preHistory == aHistory ] ].
 
+	identifier := fileStore historyIdentifier.
+
+	fileName := identifier
+		ifNil: [ '' ]
+		ifNotNil: [
+			fileStore fileName ].
+
 	^ OrderedDictionary new
 		at: 'Title'
 			put: (aHistory title ifNil: [ '' ]);
+		at: 'ID'
+			put: (identifier ifNil: [ '' ]);
+		at: 'File'
+			put: fileName;
 		at: 'Created'
 			put: fileStore createdAt asString;
 		at: 'Modified'
 			put: fileStore modifiedAt asString;
 		at: 'Pre-histories'
-			put: (self historyListString: aHistory preHistories);
+			put:
+				(self historyListString:
+					aHistory preHistories);
 		at: 'Used by'
-			put: (self historyListString: usedBy);
+			put:
+				(self historyListString:
+					usedBy);
 		yourself
 ]
 
@@ -492,23 +508,31 @@ AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
 
 { #category : 'history globals' }
 AIAHistoryPresenter >> reloadHistories [
-	| selectedNode selectedFileName selectedRoot |
+	| selectedNode selectedIdentifier selectedRoot |
 	selectedNode := historyTree selectedItem.
-	selectedFileName := nil.
+	selectedIdentifier := nil.
 
 	selectedNode ifNotNil: [
-		selectedFileName :=
-			selectedNode history fileStore fileName ].
+		selectedIdentifier :=
+			selectedNode history fileStore
+				historyIdentifier ].
 
-	AIAHistory reloadHistoriesFrom: rootDirectory.
-	historyTree roots: self getHistoryTreeRoots.
+	AIAHistory reloadHistoriesFrom:
+		rootDirectory.
 
-	selectedFileName ifNil: [ ^ self ].
+	historyTree roots:
+		self getHistoryTreeRoots.
+
+	selectedIdentifier ifNil: [
+		^ self ].
 
 	selectedRoot := historyTree roots
 		detect: [ :node |
-			node history fileStore fileName = selectedFileName ]
-		ifNone: [ ^ self ].
+			node history fileStore
+				historyIdentifier =
+					selectedIdentifier ]
+		ifNone: [
+			^ self ].
 
 	historyTree selectItem: selectedRoot
 ]

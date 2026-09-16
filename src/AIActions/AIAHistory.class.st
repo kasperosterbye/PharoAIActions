@@ -234,13 +234,6 @@ AIAHistory >> assistant: aString [
 		'assistant' -> (self sanitizedResonse: aString)
 ]
 
-{ #category : 'accessing' }
-AIAHistory >> assistant: aString from: ailienInfo [
-	"Adds an assistant message to the messages collection after sanitising the input string."
-self error: 'Should no longer be called'.
-	messages add: 'assistant' -> (self sanitizedResonse: aString)
-]
-
 { #category : 'context roles' }
 AIAHistory >> background [
 	"Returns the background roles from the first roles collection, collecting their values."
