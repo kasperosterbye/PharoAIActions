@@ -71,3 +71,10 @@ OpenAIApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
 		headerAt: 'Content-Type' put: 'application/json'.
 ]
+
+{ #category : 'accessing' }
+OpenAIApi >> znClientEntity [
+    ^ super znClientEntity , {
+        'reasoning_effort' -> 'none'
+    }
+]
