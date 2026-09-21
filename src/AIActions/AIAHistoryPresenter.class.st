@@ -48,7 +48,7 @@ Class {
 	#tag : 'UIPresenters'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'instance creation' }
 AIAHistoryPresenter class >> forDirectory: aDirectory [
 	| presenter |
 	AIAHistory reloadHistoriesFrom: aDirectory.
@@ -125,7 +125,7 @@ AIAHistoryPresenter >> addPrompt: aString to: aHistory [
 	aHistory user: evaluatedPrompt
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 AIAHistoryPresenter >> assocString: assoc [
 	^ assoc key, String lf, assoc value
 ]
@@ -197,7 +197,7 @@ AIAHistoryPresenter >> defaultLayout [
 	^ both
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'deleting' }
 AIAHistoryPresenter >> deleteSelectedHistories [
 	| selectedNodes histories |
 	selectedNodes := historyTree selectedItems.
@@ -216,7 +216,7 @@ AIAHistoryPresenter >> deleteSelectedHistories [
 		announce: AIAHistoriesChanged new
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'deleting' }
 AIAHistoryPresenter >> deleteSelectedHistory [
 	| selectedNode history |
 	selectedNode := historyTree selectedItem.
@@ -232,7 +232,7 @@ AIAHistoryPresenter >> deleteSelectedHistory [
 		announce: AIAHistoriesChanged new
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 AIAHistoryPresenter >> detailsForHistory: aHistory [
 	| fileStore usedBy identifier fileName |
 	fileStore := aHistory fileStore.
@@ -270,25 +270,25 @@ AIAHistoryPresenter >> detailsForHistory: aHistory [
 		yourself
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'displaying' }
 AIAHistoryPresenter >> displayDetailsForHistory: aHistory [
 	historyDetails items:
 		(self detailsForHistory: aHistory) associations
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'displaying' }
 AIAHistoryPresenter >> displayHistory: aHistory [
 	self displayMessages: aHistory apiMessageList
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'displaying' }
 AIAHistoryPresenter >> displayMessages: messages [
 	messageText ifNil: [ ^ self ].
 	messageText text:
 		(self stringFromMessages: messages)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history tree' }
 AIAHistoryPresenter >> getHistoryTreeRoots [
 	| sortedHistories |
 	sortedHistories := AIAHistory histories sorted: [ :first :second |
@@ -299,7 +299,7 @@ AIAHistoryPresenter >> getHistoryTreeRoots [
 		AIAHistoryPresenterTreeNode rootFor: history ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history tree' }
 AIAHistoryPresenter >> historyActions [
 	historyTree
 		roots: self getHistoryTreeRoots;
@@ -311,7 +311,7 @@ AIAHistoryPresenter >> historyActions [
 		historyChangeAction
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history tree' }
 AIAHistoryPresenter >> historyChangeAction [
 	historyTree whenMultiSelectionChangedDo: [ :selection |
 		| selectedNodes selected |
@@ -337,7 +337,7 @@ AIAHistoryPresenter >> historyChangeAction [
 				self displayDetailsForHistory: selected history ] ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 AIAHistoryPresenter >> historyLabelFor: aNode [
 	| history |
 	history := aNode history.
@@ -347,13 +347,13 @@ AIAHistoryPresenter >> historyLabelFor: aNode [
 		ifNotNil: [ history printString ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 AIAHistoryPresenter >> historyListString: histories [
 	^ ', ' join: (histories collect: [ :history |
 		history printString ])
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history tree' }
 AIAHistoryPresenter >> historyObserveTree [
 	SystemAnnouncer uniqueInstance
 		when: AIAHistoriesChanged
@@ -447,14 +447,14 @@ AIAHistoryPresenter >> initializeWindow: aWindow [
         SystemAnnouncer uniqueInstance unsubscribe: self ].
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'messages' }
 AIAHistoryPresenter >> messageActions [
 	self
 		displayMessages: #();
 		messageRefreshTree
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'messages' }
 AIAHistoryPresenter >> messageRefreshTree [
 	| selected |
 	SystemAnnouncer uniqueInstance
@@ -487,7 +487,7 @@ AIAHistoryPresenter >> newPrompt [
 	promptInput text: ''
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history tree' }
 AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
 	| selectedHistories roots replacements |
 	selectedHistories := historyTree selectedItems collect: [ :node |
@@ -542,7 +542,7 @@ AIAHistoryPresenter >> rootDirectory: aDirectory [
 	rootDirectory := aDirectory
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'sending' }
 AIAHistoryPresenter >> sendPrompt [
 	| selectedNode prompt |
 	selectedNode := historyTree selectedItem.
@@ -558,7 +558,7 @@ AIAHistoryPresenter >> sendPrompt [
 	promptInput text: ''
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'formatting' }
 AIAHistoryPresenter >> stringFromMessages: messages [
 	| visibleMessages index message nextMessage llmInfo |
 	visibleMessages := OrderedCollection new.
