@@ -91,12 +91,13 @@ AIAYouTubeUI class >> ensureXMLParser [
 
 { #category : 'accessing' }
 AIAYouTubeUI class >> episodeUpdateLimit [
-	episodeUpdateLimit ifNil: [ episodeUpdateLimit := 2 ].
+	episodeUpdateLimit ifNil: [ episodeUpdateLimit := 5 ].
 	^ episodeUpdateLimit 
 ]
 
 { #category : 'accessing' }
 AIAYouTubeUI class >> episodeUpdateLimit: newLimit [
+	"episodeUpdateLimit := 5"
 	episodeUpdateLimit := newLimit 
 ]
 
@@ -370,6 +371,7 @@ AIAYouTubeUI >> episodeUpdateLimitButton [
 	| noOfEpisodeUpdates | 
 	noOfEpisodeUpdates := self newDropList
 		items: #(2 3 5 7 10);
+		display: [ :x | self class episodeUpdateLimit ];
 		whenSelectedItemChangedDo: [:newLimit | self class episodeUpdateLimit: newLimit ].
 	^ noOfEpisodeUpdates
 ]
