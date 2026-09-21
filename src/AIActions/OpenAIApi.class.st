@@ -47,11 +47,12 @@ OpenAIApi class >> modelNames [
 	"returns an array with one item per model."
 	"Look at https://platform.openai.com/docs/models to see the list"
 	
-	^ #(  
+	^ #(
+	'gpt-5.5'  
 	'gpt-5.6-luna' 
 	'gpt-5.6-terra' 
-	'gpt-5.6-sol' 
-	'gpt-6-astra'
+	'gpt-5.6-sol'
+	"'gpt-6-astra'"
 	)
 ]
 
@@ -74,7 +75,10 @@ OpenAIApi class >> znClientHeaders: jsonPrompt [
 
 { #category : 'accessing' }
 OpenAIApi >> znClientEntity [
-    ^ super znClientEntity , {
-        'reasoning_effort' -> 'none'
-    }
+    | effort |
+    effort := model = 'gpt-6-astra'
+        ifTrue: [ 'high' ]
+        ifFalse: [ 'none' ].
+    ^ super znClientEntity ,
+        { 'reasoning_effort' -> 'none' "effort" }
 ]

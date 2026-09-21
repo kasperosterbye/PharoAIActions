@@ -176,23 +176,17 @@ AIAHistory class >> writeCurrent [
 { #category : 'accessing' }
 AIAHistory >> addPreHistory: aHistory [
 
-	(preHistories anySatisfy: [ :each | each == aHistory ])
-		ifTrue: [ ^ self ].
+	(preHistories anySatisfy: [ :each | each == aHistory ]) ifTrue: [ ^ self ].
 
-	(aHistory selfAndPreHistories anySatisfy: [ :each |
-		each == self ])
-		ifTrue: [
-			self error: 'A history cannot contain a cyclic pre-history' ].
-	self fileStore rootDirectory = aHistory fileStore rootDirectory
-	ifFalse: [
-		self error:
-			'A history and its pre-history must use the same directory' ].
+	(aHistory selfAndPreHistories anySatisfy: [ :each | each == self ]) ifTrue: [
+		self error: 'A history cannot contain a cyclic pre-history' ].
+	self fileStore rootDirectory = aHistory fileStore rootDirectory ifFalse: [
+		self error: 'A history and its pre-history must use the same directory' ].
 
 	preHistories add: aHistory.
 	self fileStore save: self.
 
-	SystemAnnouncer uniqueInstance
-		announce: AIAHistoriesChanged new
+	SystemAnnouncer uniqueInstance announce: AIAHistoriesChanged new
 ]
 
 { #category : 'accessing' }

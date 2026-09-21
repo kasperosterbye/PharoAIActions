@@ -186,7 +186,7 @@ AilienInnerCall >> znClientBasic: jsonPrompt [
 	jsonPrompt
 		timeout: outer responseWaitingInSecs;
 		url: outer apiGenerateUrl.
-	entity := outer znClientEntity deepCopy asDictionary .
+	entity := outer znClientEntity "deepCopy" asDictionary .
 	entityPrompt := ZnEntity json: (STONJSON toString: entity).
 	jsonPrompt 
 		entity: entityPrompt .
