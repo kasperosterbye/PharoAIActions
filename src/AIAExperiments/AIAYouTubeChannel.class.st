@@ -79,7 +79,7 @@ AIAYouTubeChannel >> channelBuildInFileSystem: channelHandle [
 
 { #category : 'channel' }
 AIAYouTubeChannel >> channelDirectory: channelHandle [
-	"Added this comment as part of the experiments"
+	"Changed this comment"
 	"Returns the directory path for the specified channel handle."
 	^ AIAYouTubeUI directoryForChannel: channelHandle
 ]
