@@ -79,7 +79,7 @@ AIAHistory class >> qPrefix [
 		AIAHistoryFileStore new rootDirectory
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'recording' }
 AIAHistory class >> qPrefixIn: aDirectory [
 	| prefix |
 	prefix := self histories
@@ -127,12 +127,12 @@ AIAHistory class >> readCurrent [
 		do: [ self error: 'No file available' ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'recording' }
 AIAHistory class >> recordLlmInfo [
 	^ RecordLlmInfo ifNil: [ false ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'recording' }
 AIAHistory class >> recordLlmInfo: aBoolean [
 	RecordLlmInfo := aBoolean
 ]
@@ -143,7 +143,7 @@ AIAHistory class >> reloadHistories [
 		AIAHistoryFileStore new rootDirectory
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'recording' }
 AIAHistory class >> reloadHistoriesFrom: aDirectory [
 	"Discard the current in-memory histories, reconstruct them from files
 	and announce only after the resulting graph is available."
@@ -337,7 +337,7 @@ AIAHistory >> lastRoles [
 	^ lastRoles 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistory >> llmInfoString [
 	| currentApi |
 	currentApi := self api.

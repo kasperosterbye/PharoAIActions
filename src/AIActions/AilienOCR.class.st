@@ -35,7 +35,7 @@ Class {
 	#tag : 'AIApi'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'pdf' }
 AilienOCR class >> pdf: aFileName [
     | folder fileReference text outputReference |
     folder := '/Users/kasper/downloads' asFileReference.
@@ -47,7 +47,7 @@ AilienOCR class >> pdf: aFileName [
     ^ text
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'pdf' }
 AilienOCR class >> pdf: aFileName in: folderFile [
     | folder fileReference text outputReference |
 	 folder := folderFile asFileReference.
@@ -92,7 +92,7 @@ AilienOCR >> ocrFile: fileId [
         joinUsing: String cr
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'OCR' }
 AilienOCR >> speakText: aString [
     | response parsed audioData tempFile |
     response := ZnClient new
@@ -144,7 +144,7 @@ AilienOCR >> uploadFile: aFileReference [
     ^ parsed at: 'id'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'OCR' }
 AilienOCR >> voices [
     | response |
     response := ZnClient new

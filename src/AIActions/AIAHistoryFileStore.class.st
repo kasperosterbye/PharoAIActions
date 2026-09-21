@@ -75,7 +75,7 @@ AIAHistoryFileStore >> descriptionFor: aHistory [
 	^ 'history'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'actions' }
 AIAHistoryFileStore >> ensurePreHistoriesAreStoredFor: aHistory [
 	"Every referenced history must have a permanent identifier before the
 	current history is serialised."
@@ -116,7 +116,7 @@ AIAHistoryFileStore >> fileReference [
 	^ self rootDirectory / self fileName
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> fileReferenceForHistoryIdentifier: anIdentifier [
 	"Find the active JSON file whose first six characters identify the
 	requested history. Its readable suffix is deliberately ignored."
@@ -145,7 +145,7 @@ AIAHistoryFileStore >> fileReferenceForHistoryIdentifier: anIdentifier [
 	^ matches first
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> historyFiles [
 	| files |
 	files := OrderedCollection new.
@@ -163,7 +163,7 @@ AIAHistoryFileStore >> historyFiles [
 	^ files
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> historyFromJson: json [
 	^ self
 		historyFromJson: json
@@ -173,7 +173,7 @@ AIAHistoryFileStore >> historyFromJson: json [
 					identifier) ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'misc' }
 AIAHistoryFileStore >> historyFromJson: json preHistoryLoader: aBlock [
 	"Convert persisted JSON into an AIAHistory and reconstruct its
 	pre-history associations."
@@ -235,7 +235,7 @@ AIAHistoryFileStore >> historyFromJson: json preHistoryLoader: aBlock [
 	^ history
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> historyIdentifier [
 	"Return the permanent identifier of a persisted history."
 
@@ -245,7 +245,7 @@ AIAHistoryFileStore >> historyIdentifier [
 		storedFileName
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> historyIdentifierFromFileName: aFileName [
 	"Extract an identifier such as H00127. Answer nil when the filename
 	does not begin with a valid history identifier."
@@ -264,7 +264,7 @@ AIAHistoryFileStore >> historyIdentifierFromFileName: aFileName [
 	^ name first: 6
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> historyNumberFrom: aFileReference [
 	| identifier |
 	identifier := self historyIdentifierFromFileName:
@@ -326,7 +326,7 @@ AIAHistoryFileStore >> load [
 	^ self historyFromJson: json
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> loadFrom: aFileReference preHistoryLoader: aBlock [
 	| json |
 	rootDirectory := aFileReference parent.
@@ -338,7 +338,7 @@ AIAHistoryFileStore >> loadFrom: aFileReference preHistoryLoader: aBlock [
 		preHistoryLoader: aBlock
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> loadWithPreHistoryLoader: aBlock [
 	| json |
 	json := self fileReference readStreamDo: [ :stream |
@@ -353,7 +353,7 @@ AIAHistoryFileStore >> modifiedAt [
 	^ modifiedAt
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryFileStore >> moveToTrash [
 	| source destination |
 	source := self fileReference.
@@ -381,7 +381,7 @@ AIAHistoryFileStore >> newFileNameFor: aHistory [
 		'.json'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryFileStore >> nextHistoryIdentifier [
 	| largest next |
 	largest := self historyFiles
@@ -454,7 +454,7 @@ AIAHistoryFileStore >> save: aHistory [
 	^ file
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'private' }
 AIAHistoryFileStore >> slugFrom: aString [
 	| slug previousWasSeparator |
 	previousWasSeparator := true.
@@ -483,7 +483,7 @@ AIAHistoryFileStore >> storedFileName: aString [
 	storedFileName := aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStore >> trashDirectory [
 	^ self rootDirectory / 'Trash'
 ]

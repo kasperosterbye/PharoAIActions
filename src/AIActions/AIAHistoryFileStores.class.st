@@ -34,7 +34,7 @@ AIAHistoryFileStores >> loadAll [
 	^ histories
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStores >> loadFile: aFileReference [
 	| identifier history store |
 	store := AIAHistoryFileStore new.
@@ -69,7 +69,7 @@ AIAHistoryFileStores >> loadFile: aFileReference [
 	^ history
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'loading' }
 AIAHistoryFileStores >> loadHistoryIdentifier: anIdentifier [
 	| store file |
 	store := AIAHistoryFileStore new.
