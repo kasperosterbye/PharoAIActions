@@ -105,35 +105,66 @@ AIAHistoryTest >> testApiMessageListPreservesPreHistoryOrder [
 ]
 
 { #category : 'tests' }
-AIAHistoryTest >> testAssistantRecordsLlmInfoWhenEnabled [
-	"LLM information is stored immediately before its assistant response
-	only when the global recording strategy is enabled." 
+AIAHistoryTest >> testAssistantRecordsLlmInfo [
+    "LLM information is stored immediately before its assistant response."
 
-	| originalSetting |
-	originalSetting := AIAHistory recordLlmInfo.
+    refAIAHistory fileStore rootDirectory: rootDirectory.
+    refAIAHistory api: AIAHistoryPresenterTestApi new.
 
-	[
-		refAIAHistory fileStore rootDirectory: rootDirectory.
-		refAIAHistory api: AIAHistoryPresenterTestApi new.
+    refAIAHistory assistant: 'The answer'.
 
-		AIAHistory recordLlmInfo: false.
-		refAIAHistory assistant: 'First answer'.
+    self assert: refAIAHistory messages size equals: 2.
 
-		self assert: refAIAHistory messages size equals: 1.
+    self
+        assert: refAIAHistory messages first
+        equals:
+            'comment' ->
+            '[LLM] AIAHistoryPresenterTestApi: test-model'.
 
-		AIAHistory recordLlmInfo: true.
-		refAIAHistory assistant: 'Second answer'.
+    self
+        assert: refAIAHistory messages second
+        equals: 'assistant' -> 'The answer'
+]
 
-		self
-			assert: refAIAHistory messages second
-			equals:
-				'user' ->
-				'[LLM] AIAHistoryPresenterTestApi: test-model'.
-		self
-			assert: refAIAHistory messages third
-			equals: 'assistant' -> 'Second answer'
-	] ensure: [
-		AIAHistory recordLlmInfo: originalSetting ]
+{ #category : 'tests' }
+AIAHistoryTest >> testCommentIsStoredButNotSentToApi [
+    refAIAHistory fileStore rootDirectory: rootDirectory.
+
+    refAIAHistory
+        user: 'Question';
+        comment: 'Diagnostic information'.
+
+    self
+        assert: refAIAHistory messages asArray
+        equals: {
+            'user' -> 'Question'.
+            'comment' -> 'Diagnostic information' }.
+
+    self
+        assert: refAIAHistory apiMessageList asArray
+        equals: {
+            'user' -> 'Question' }
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testCommentSurvivesReload [
+    | loaded |
+
+    refAIAHistory fileStore rootDirectory: rootDirectory.
+    refAIAHistory
+        user: 'Question';
+        comment: 'Diagnostic information'.
+
+    AIAHistory clearHistories.
+    AIAHistory reloadHistoriesFrom: rootDirectory.
+
+    loaded := AIAHistory histories first.
+
+    self
+        assert: loaded messages asArray
+        equals: {
+            'user' -> 'Question'.
+            'comment' -> 'Diagnostic information' }
 ]
 
 { #category : 'tests' }
