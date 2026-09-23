@@ -204,28 +204,37 @@ AIAHistory >> api: anObject [
 
 { #category : 'accessing' }
 AIAHistory >> apiMessageList [
-	"Returns a list of API messages including user and assistant messages from current and pre-histories, formatted with role labels"
-	| assocKey messageList all |
-	assocKey := [ :assoc | '[', assoc key,'] ',  assoc value ].
-	messageList := OrderedCollection new.
-	all := self selfAndPreHistories.
-   all do: [ :hist | hist firstRoles do: [ :assoc | 
-				messageList add: 'user' -> (assocKey value: assoc) ]].
-	all do: [ :hist | hist getMessages do: [ :m | messageList add: m ]].
-	all do: [ :hist | hist lastRoles do: [ :assoc | 
-				messageList add: 'user' -> (assocKey value: assoc) ]].
-	^ messageList
+    "Returns the messages that should actually be sent to the LLM.
+    Comments are deliberately excluded."
+
+    | assocKey messageList all |
+
+    assocKey := [ :assoc | '[', assoc key, '] ', assoc value ].
+    messageList := OrderedCollection new.
+    all := self selfAndPreHistories.
+
+    all do: [ :hist |
+        hist firstRoles do: [ :assoc |
+            messageList add: 'user' -> (assocKey value: assoc) ] ].
+
+    all do: [ :hist |
+        hist getMessages do: [ :message |
+            message key = 'comment' ifFalse: [
+                messageList add: message ] ] ].
+
+    all do: [ :hist |
+        hist lastRoles do: [ :assoc |
+            messageList add: 'user' -> (assocKey value: assoc) ] ].
+
+    ^ messageList
 ]
 
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
-	"Record optional LLM provenance immediately before the response."
+    self comment: '[LLM] ', self llmInfoString.
 
-	self class recordLlmInfo ifTrue: [
-		self user: '[LLM] ', self llmInfoString ].
-
-	self messagesAdd:
-		'assistant' -> (self sanitizedResonse: aString)
+    self messagesAdd:
+        'assistant' -> (self sanitizedResonse: aString)
 ]
 
 { #category : 'context roles' }
@@ -253,6 +262,11 @@ AIAHistory >> chatHistory [
 			counter := counter + 1.
 		 ].
 	^ historyText contents
+]
+
+{ #category : 'accessing' }
+AIAHistory >> comment: aString [
+    self messagesAdd: 'comment' -> aString
 ]
 
 { #category : 'accessing' }
