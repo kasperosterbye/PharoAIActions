@@ -50,7 +50,8 @@ Class {
 		'model',
 		'messageList',
 		'history',
-		'responseWaitingInSecs'
+		'responseWaitingInSecs',
+		'reasoningLevel'
 	],
 	#classVars : [
 		'ErrorResponse',
@@ -130,6 +131,12 @@ AilienApi class >> modelNames [
 	"Returns a collection of available model names for the AI provider. Each name represents a distinct AI model that can be used for generating responses. The collection is derived from the provider's model registry and is used to validate and set the default model for the API."
 	self = AilienApi ifTrue: [ ^ self provider modelNames ].
 	
+]
+
+{ #category : 'as yet unclassified' }
+AilienApi class >> modelNamesAndReasoning [
+	"Returns each available provider model with its supported reasoning levels"
+	 ^ self modelNames collect: [ :model | model -> #() ].
 ]
 
 { #category : 'instance creation' }
@@ -238,6 +245,17 @@ AilienApi class >> providers [
 	^ allSubclasses sort: [ :a :b | a name < b name ]; asArray
 ]
 
+{ #category : 'as yet unclassified' }
+AilienApi class >> reasoningLevelsFor: modelName [
+    | association |
+
+    association := self modelNamesAndReasoning
+        detect: [ :each | each key = modelName ]
+        ifNone: [ ^ #() ].
+
+    ^ association value
+]
+
 { #category : 'adding' }
 AilienApi >> addJsonHistory: jsonHistory for: item [
 	"Adds a message to the JSON history based on its role and content"
@@ -284,11 +302,10 @@ AilienApi >> history [
 ]
 
 { #category : 'initialization' }
-AilienApi >> initialize [ 
-	"Initialises a new instance with empty model and history, ready for AI interactions. Sets up the foundation for conversation management and response handling."
-	super initialize.
-	self model: self class defaultModel.
-	self responseWaitingInSecs: 20*60.
+AilienApi >> initialize [
+    super initialize.
+    self model: self class defaultModel.
+    self responseWaitingInSecs: 20 * 60.
 ]
 
 { #category : 'adding' }
@@ -347,6 +364,23 @@ AilienApi >> printOn: aStream [
 	aStream << self class name asString << ': ' << self model.
 ]
 
+{ #category : 'accessing' }
+AilienApi >> reasoningLevel [
+	(reasoningLevel isNil and: [ self reasoningLevels isNotEmpty ]) 
+		ifTrue: [ reasoningLevel := self reasoningLevels middle ].
+    ^ reasoningLevel
+]
+
+{ #category : 'accessing' }
+AilienApi >> reasoningLevel: aString [
+    reasoningLevel := aString
+]
+
+{ #category : 'as yet unclassified' }
+AilienApi >> reasoningLevels [
+    ^ self class reasoningLevelsFor: self model
+]
+
 { #category : 'adding' }
 AilienApi >> responseError: parsed hist: aHistory [
 	"Handles API error responses by adding the error message to the conversation history"
@@ -381,11 +415,17 @@ AilienApi >> toolSpecification [
 
 { #category : 'accessing' }
 AilienApi >> znClientEntity [
-	"Method to create a JSON body with prompt for OpenAIApi."
-    ^ {
+    | entity level |
+    entity := {
         'model' -> model.
         'messages' -> self jsonHistory .
         'stream' -> false.
         'tools' -> self toolSpecification.
-    }
+    }.
+    level := self reasoningLevel.
+
+    level ifNil: [ ^ entity ].
+
+    ^ entity ,
+        { 'reasoning_effort' -> level }
 ]
