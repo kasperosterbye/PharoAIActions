@@ -35,3 +35,28 @@ AIALlmAvailabilityTest >> testCurrentModel [
         description: ('No usable response from ',
             api printString, ': ', answer printString)
 ]
+
+{ #category : 'tests' }
+AIALlmAvailabilityTest >> testLastOpenAIModelReturnsUsableResponse [
+    | originalProvider originalModelIndex answer |
+
+    originalProvider := AilienApi provider.
+    originalModelIndex :=
+        OpenAIApi modelNames indexOf: OpenAIApi defaultModel.
+
+    [
+        AilienApi provider: OpenAIApi.
+        OpenAIApi defaultModel: OpenAIApi modelNames size.
+        answer := (AIAHistory new
+				user: 'Who is Kilroy';
+				getResponse; 
+				response).
+
+        self assert: answer isString.
+        self assert: answer trimBoth isNotEmpty.
+        self deny: (answer beginsWith: 'API Error:')
+    ]
+    ensure: [
+        AilienApi provider: originalProvider.
+        OpenAIApi defaultModel: originalModelIndex ]
+]

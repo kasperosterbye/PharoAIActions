@@ -51,7 +51,8 @@ Class {
 		'messageList',
 		'history',
 		'responseWaitingInSecs',
-		'reasoningLevel'
+		'reasoningLevel',
+		'toolsEnabled'
 	],
 	#classVars : [
 		'ErrorResponse',
@@ -59,7 +60,8 @@ Class {
 		'Provider'
 	],
 	#classInstVars : [
-		'modelLLM'
+		'modelLLM',
+		'toolsEnabledDefault'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -119,6 +121,7 @@ AilienApi class >> initialize [
 	Provider := MistralApi.
 	ErrorResponse := nil.
 	
+	
 ]
 
 { #category : 'accessing' }
@@ -133,7 +136,7 @@ AilienApi class >> modelNames [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'responses' }
 AilienApi class >> modelNamesAndReasoning [
 	"Returns each available provider model with its supported reasoning levels"
 	 ^ self modelNames collect: [ :model | model -> #() ].
@@ -245,7 +248,7 @@ AilienApi class >> providers [
 	^ allSubclasses sort: [ :a :b | a name < b name ]; asArray
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'responses' }
 AilienApi class >> reasoningLevelsFor: modelName [
     | association |
 
@@ -254,6 +257,22 @@ AilienApi class >> reasoningLevelsFor: modelName [
         ifNone: [ ^ #() ].
 
     ^ association value
+]
+
+{ #category : 'accessing' }
+AilienApi class >> toolsEnabled [
+    toolsEnabledDefault ifNil: [ toolsEnabledDefault := true ].
+    ^ toolsEnabledDefault
+]
+
+{ #category : 'accessing' }
+AilienApi class >> toolsEnabled: aBoolean [
+    toolsEnabledDefault := aBoolean
+]
+
+{ #category : 'accessing' }
+AilienApi class >> toolsEnabledFor: modelName [
+    ^ self toolsEnabled
 ]
 
 { #category : 'adding' }
@@ -376,7 +395,7 @@ AilienApi >> reasoningLevel: aString [
     reasoningLevel := aString
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AilienApi >> reasoningLevels [
     ^ self class reasoningLevelsFor: self model
 ]
@@ -414,18 +433,28 @@ AilienApi >> toolSpecification [
 ]
 
 { #category : 'accessing' }
+AilienApi >> toolsEnabled [
+    toolsEnabled ifNotNil: [ ^ toolsEnabled ].
+    ^ self class toolsEnabledFor: self model
+]
+
+{ #category : 'accessing' }
+AilienApi >> toolsEnabled: anObject [
+
+	toolsEnabled := anObject
+]
+
+{ #category : 'accessing' }
 AilienApi >> znClientEntity [
-    | entity level |
+    | entity  |
+
     entity := {
         'model' -> model.
-        'messages' -> self jsonHistory .
-        'stream' -> false.
-        'tools' -> self toolSpecification.
-    }.
-    level := self reasoningLevel.
+        'messages' -> self jsonHistory.
+        'stream' -> false
+    } asOrderedCollection .
 
-    level ifNil: [ ^ entity ].
-
-    ^ entity ,
-        { 'reasoning_effort' -> level }
+    self toolsEnabled ifTrue: [ entity add: 'tools' -> self toolSpecification  ].
+    self reasoningLevel ifNotNil: [ :level | entity add: 'reasoning_effort' -> level  ].
+    ^ entity asArray 
 ]
