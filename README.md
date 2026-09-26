@@ -15,6 +15,14 @@ Metacello new
     load.
 ```
 
+Including current experiments and tools
+
+```smalltalk
+Metacello new
+    githubUser: 'kasperosterbye' project: 'PharoAIActions' commitish: 'master' path: 'src';
+    baseline: 'PharoAIActions';
+    load: 'extended'.
+
 ## A YouTube from 2025
 https://maarumlam.dk/ESUG25-Kasper03.mp4
 
