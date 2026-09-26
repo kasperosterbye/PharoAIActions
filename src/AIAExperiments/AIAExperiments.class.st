@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIAExperiments',
 	#superclass : 'Object',
-	#category : 'AIAZipArchive-AlgorithmicCore',
-	#package : 'AIAZipArchive',
-	#tag : 'AlgorithmicCore'
+	#category : 'AIAExperiments-ForthEtc',
+	#package : 'AIAExperiments',
+	#tag : 'ForthEtc'
 }
 
 { #category : 'sorting' }

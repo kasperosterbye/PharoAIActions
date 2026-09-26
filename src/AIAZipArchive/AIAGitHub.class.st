@@ -9,9 +9,9 @@ Class {
 		'default',
 		'pillar'
 	],
-	#category : 'AIAExperiments-MicrodownExperiments',
-	#package : 'AIAExperiments',
-	#tag : 'MicrodownExperiments'
+	#category : 'AIAZipArchive-Misc01',
+	#package : 'AIAZipArchive',
+	#tag : 'Misc01'
 }
 
 { #category : 'examples' }

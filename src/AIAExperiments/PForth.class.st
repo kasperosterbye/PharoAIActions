@@ -13,9 +13,9 @@ Class {
 		'tip',
 		'tin'
 	],
-	#category : 'AIAZipArchive-AlgorithmicCore',
-	#package : 'AIAZipArchive',
-	#tag : 'AlgorithmicCore'
+	#category : 'AIAExperiments-ForthEtc',
+	#package : 'AIAExperiments',
+	#tag : 'ForthEtc'
 }
 
 { #category : 'private' }

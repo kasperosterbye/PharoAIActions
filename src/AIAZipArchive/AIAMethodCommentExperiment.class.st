@@ -1,9 +1,9 @@
 Class {
 	#name : 'AIAMethodCommentExperiment',
 	#superclass : 'AIAMethodComment',
-	#category : 'AIAExperiments-ExperimentsTools',
-	#package : 'AIAExperiments',
-	#tag : 'ExperimentsTools'
+	#category : 'AIAZipArchive-Misc01',
+	#package : 'AIAZipArchive',
+	#tag : 'Misc01'
 }
 
 { #category : 'internals' }
