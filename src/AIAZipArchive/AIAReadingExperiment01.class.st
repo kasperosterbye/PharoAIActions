@@ -1,7 +1,7 @@
 Class {
 	#name : 'AIAReadingExperiment01',
 	#superclass : 'Object',
-	#category : 'AIAExperiments-Reading',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-Reading',
+	#package : 'AIAZipArchive',
 	#tag : 'Reading'
 }
