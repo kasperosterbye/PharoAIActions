@@ -1,8 +1,8 @@
 Class {
 	#name : 'AIAReadingWords',
 	#superclass : 'SpPresenter',
-	#category : 'AIAExperiments-Reading',
-	#package : 'AIAExperiments',
+	#category : 'AIAZipArchive-Reading',
+	#package : 'AIAZipArchive',
 	#tag : 'Reading'
 }
 
