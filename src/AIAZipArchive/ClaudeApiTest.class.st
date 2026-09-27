@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'refClaudeApi'
 	],
-	#category : 'AIActions-Tests-AIApi-Tests',
-	#package : 'AIActions-Tests',
-	#tag : 'AIApi-Tests'
+	#category : 'AIAZipArchive-Obsolete-tests',
+	#package : 'AIAZipArchive',
+	#tag : 'Obsolete-tests'
 }
 
 { #category : 'running' }

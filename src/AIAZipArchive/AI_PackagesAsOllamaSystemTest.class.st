@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'killRoy'
 	],
-	#category : 'AIActions-Tests-OldAndShouldBeRedone-Tests',
-	#package : 'AIActions-Tests',
-	#tag : 'OldAndShouldBeRedone-Tests'
+	#category : 'AIAZipArchive-Obsolete-tests',
+	#package : 'AIAZipArchive',
+	#tag : 'Obsolete-tests'
 }
 
 { #category : 'tests' }

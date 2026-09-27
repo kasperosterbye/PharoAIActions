@@ -264,7 +264,6 @@ AIASourceCode >> methodsFor: aClass [
 { #category : 'accessing' }
 AIASourceCode >> response [
 	"Returns the WriteStream used to accumulate generated source code descriptions. Initialised in initialize."
-	self halt.
 	^ response 
 ]
 
