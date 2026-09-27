@@ -21,7 +21,7 @@ BaselineOfPharoAIActions >> baseline: spec [
           with: [ spec requires: #('AIActions') ].
       spec package: 'AIAarchives' 
           with: [ spec requires: #('AIAZipArchive') ].
-
+		"default"
       spec group: 'default' with: #('AIActions' 'AIActions-Tests').
       spec group: 'extended' with: #('default' 'AIAExperiments' 'AIATestExperiments').
       spec group: 'all' with: #('default' 'extended' 'AIAZipArchive').
