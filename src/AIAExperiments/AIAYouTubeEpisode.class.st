@@ -65,45 +65,17 @@ AIAYouTubeEpisode >> channel: handler [
 	channel := handler.
 ]
 
-{ #category : 'yt-dlp' }
-AIAYouTubeEpisode >> episodeDownloadVtt: episodeId [
-	"Downloads the VTT subtitle file for a YouTube video using yt-dlp."
-    | command |
-    command := 'yt-dlp --write-auto-sub --skip-download --sub-lang ', language,  
-		' -o "', AIAYouTubeUI channelDictionary,  
-		'%(id)s.%(ext)s" "https://www.youtube.com/watch?v=' , episodeId , '"'.
-    LibC runCommand: command.
-
-]
-
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodeFetch: episodeId [
-	"Fetches and processes the transcript for a YouTube video using its episode ID."
-
 	| transcript |
-	(self episodeHasAutoCaptions: episodeId )
-		ifTrue: [
-	AIAYouTubeChannel transcriptLanguages
-		detect: [ :lang |
-				language := lang.
-				self episodeDownloadVtt: episodeId.
-				transcript := self episodeTranscript: episodeId.
-				(transcript beginsWith: '***YouTubeEpisode Error***') not ]
-		ifNone: [ ].
-	(File named: (self episodeVttPath: episodeId)) delete]
-		ifFalse: [ transcript := 'There is no transcript text available' ].
+	transcript := [ 
+			self episodeSplitSentences: 
+				(GeminiApi transcribeYouTube: 'https://www.youtube.com/watch?v=' , episodeId )]
+		on: Error
+		do: [ :e | '***YouTubeEpisode Error*** ' , e messageText ].
 	(File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
-		nextPutAll: transcript;
+		nextPutAll: transcript utf8Encoded;
 		close
-]
-
-{ #category : 'episode' }
-AIAYouTubeEpisode >> episodeHasAutoCaptions: episodeId [
-    | command result |
-    command := 'yt-dlp --list-subs "https://www.youtube.com/watch?v=' , episodeId , '" > /tmp/yt_subs.txt'.
-    LibC runCommand: command.
-    result := (File named: '/tmp/yt_subs.txt') readStream contents asString.
-    ^ (result includesSubstring: 'has no automatic captions') not
 ]
 
 { #category : 'episode' }
@@ -172,31 +144,18 @@ AIAYouTubeEpisode >> episodePath: episodeId [
 ]
 
 { #category : 'episode' }
-AIAYouTubeEpisode >> episodeTranscript: episodeId [
-	"Returns the transcript of a YouTube video, processing the VTT file to extract and clean the text."
-
-	| lines result response|
-	[ 
-		lines := OrderedCollection newFromArray: (File named: (self episodeVttPath: episodeId)) readStream contents asString lines.
-		lines removeFirst: 3.
-		lines removeAllSuchThat: [ :line | line isEmpty or: [ line = ' ' ] ].
-		lines removeAllSuchThat: [ :line | (line includes: $<) not ].
-		lines removeAllSuchThat: [ :line | line includesAll: 'align:start position:0%' ].
-		result := WriteStream on: ''.
-		1 to: lines size do: [ :line | 
-				result << ((lines at: line) copyWithRegex: '<[^>]*>' matchesReplacedWith: '') << ' ' ].
-		response := result contents copyReplaceAll: '. ' with: '.' , String cr.
-		response := response copyReplaceAll: '&gt;' with: ''.
-		^ response ]
-		on: Error
-		do: [ ^ '***YouTubeEpisode Error*** The id: ' , episodeId , ' could not be read' ]
-]
-
-{ #category : 'episode' }
-AIAYouTubeEpisode >> episodeVttPath: episodeId [
-	"Returns the file path for the VTT subtitle file of a YouTube video."
-    ^ AIAYouTubeUI channelDictionary , episodeId , '.', language , '.vtt'
-
+AIAYouTubeEpisode >> episodeSplitSentences: aString [
+	"Break after '. ' unless the word before the full stop is a known abbreviation."
+	| abbreviations pieces |
+	abbreviations := #('Dr' 'Mr' 'Mrs' 'Ms' 'Prof' 'St').
+	pieces := aString splitOn: '. '.
+	^ String streamContents: [ :stream |
+		pieces allButLast do: [ :piece |
+			stream nextPutAll: piece.
+			(abbreviations includes: (piece substrings ifEmpty: [ #('') ]) last)
+				ifTrue: [ stream nextPutAll: '. ' ]
+				ifFalse: [ stream nextPut: $.; nextPut: Character lf ] ].
+		stream nextPutAll: pieces last ]
 ]
 
 { #category : 'initialization' }

@@ -31,6 +31,24 @@ GeminiApi class >> modelNames [
 	)
 ]
 
+{ #category : 'as yet unclassified' }
+GeminiApi class >> transcribeYouTube: aUrl [
+	"GeminiApi transcribeYouTube: 'https://www.youtube.com/watch?v=x1ESqB7M9To'"
+	| body response modelName |
+	modelName := self modelNames first.
+	body := Dictionary with: 'contents' -> {
+		Dictionary with: 'parts' -> {
+			Dictionary with: 'file_data' -> (Dictionary with: 'file_uri' -> aUrl).
+			Dictionary with: 'text' -> 'Transcribe the spoken words of this video verbatim, in English. No timestamps, no commentary.' } }.
+	response := ZnClient new
+		url: 'https://generativelanguage.googleapis.com/v1beta/models/' , modelName , ':generateContent';
+		headerAt: 'x-goog-api-key' put: self geminiKey;
+		entity: (ZnEntity json: (STONJSON toString: body));
+		timeout: 600;
+		post.
+	^ ((((STONJSON fromString: response) at: 'candidates') first at: 'content') at: 'parts') first at: 'text'
+]
+
 { #category : 'AI models' }
 GeminiApi class >> znClientHeaders: jsonPrompt [
 

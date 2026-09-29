@@ -120,17 +120,6 @@ AIAYouTubeChannel >> channelEpisodeIds: channelHandle [
 	^ {channelHandle. result}
 ]
 
-{ #category : 'yt-dlp' }
-AIAYouTubeChannel >> channelEpisodeIds: channelHandle count: count [
-	"Returns a collection of episode IDs for a specified YouTube channel, limited to a specified count."
-	| yt  result |
-	yt := 'yt-dlp --flat-playlist --playlist-end ', count asString,
-      ' --print "%(id)s" "https://www.youtube.com/@', channelHandle, '/videos" > /tmp/yt_ids.txt'.
-	LibC runCommand: yt.
-	result := (File named: '/tmp/yt_ids.txt') readStream contents asString lines.
-	^ {channelHandle. result}
-]
-
 { #category : 'channel' }
 AIAYouTubeChannel >> channelEpisodesOnDisk: channelHandle [
 	"Return a collection of episode IDs already downloaded for this channel."
@@ -156,7 +145,15 @@ AIAYouTubeChannel >> channelUpdate: channelHandle [
 	newIds isEmpty ifTrue: [ ^ self ].
 	episode := AIAYouTubeEpisode new.
 	episode channel: channelHandle.
-	newIds do: [ :id |
+	"newIds do: [ :id |
 		episode episodeFetch: id.
-		episode episodeMeta: id ].
+		episode episodeMeta: id ]."
+	[ :job |
+		newIds withIndexDo: [ :id :index |
+			job
+				title: 'Transcribing ' , channelHandle asString , ' (' , index asString , ' of ' , newIds size asString , ')';
+				progress: (index - 1) / newIds size.
+			episode episodeMeta: id.
+			episode episodeFetch: id ].
+		job progress: 1 ] asJob run
 ]
