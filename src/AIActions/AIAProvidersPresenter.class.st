@@ -110,7 +110,7 @@ AIAProvidersPresenter >> initializePresenters [
 								  ifTrue: [ item ]
 								  ifFalse: [ item name ] ]);
 				 yourself);
-		roots: AilienApi subclasses;
+		roots: AilienApi providers;
 		children: [ :provider |
 				[ provider modelNames ]
 					on: Error
@@ -142,7 +142,7 @@ AIAProvidersPresenter >> providerFor: modelName [
 { #category : 'layout' }
 AIAProvidersPresenter >> refreshProviders [
 	"Refreshes the list of AI providers and their models in the tree table"
-    providers roots: AilienApi subclasses
+    providers roots: AilienApi providers
 ]
 
 { #category : 'initialization' }

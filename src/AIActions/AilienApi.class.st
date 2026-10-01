@@ -84,19 +84,18 @@ Quite another matter - I can''t read, and need a computer to convert your answer
 
 { #category : 'AI models' }
 AilienApi class >> defaultModel [
-	"Although defaultModel is defined in AilienApi class, the modelLLM slot is replicated per subclass metaclass. Each API provider maintains its own default independently."
+	"A default that is no longer in the list falls back to the first model."
 	self = AilienApi ifTrue: [ self error: 'Requires a concrete Api' ].
-	modelLLM ifNil: [ modelLLM := self modelNames first ].
+	(modelLLM isNil or: [ (self modelNames includes: modelLLM) not ])
+		ifTrue: [ modelLLM := self modelNames first ].
 	^ modelLLM
 ]
 
 { #category : 'AI models' }
 AilienApi class >> defaultModel: modelNumber [
-	"Set the default AI model for the API provider."
-
-	modelLLM := self modelNames 
-		at: modelNumber 
-		ifAbsent: [ modelLLM := self modelNames first ]
+	modelLLM := self modelNames
+		at: modelNumber
+		ifAbsent: [ self modelNames first ]
 ]
 
 { #category : 'responses' }
@@ -131,9 +130,8 @@ AilienApi class >> lastHistory [
 
 { #category : 'AI models' }
 AilienApi class >> modelNames [
-	"Returns a collection of available model names for the AI provider. Each name represents a distinct AI model that can be used for generating responses. The collection is derived from the provider's model registry and is used to validate and set the default model for the API."
 	self = AilienApi ifTrue: [ ^ self provider modelNames ].
-	
+	^ #()
 ]
 
 { #category : 'responses' }
@@ -211,7 +209,7 @@ AilienApi class >> provider: aProvider [
 	(providers includes: aProvider) ifTrue: [
 			Provider := aProvider.
 			^ self ].
-	(aProvider isInteger and: [ aProvider > 0 and: [ aProvider < self providers size ] ]) ifTrue: [
+	(aProvider isInteger and: [ aProvider between: 1 and: self providers size  ]) ifTrue: [
 			Provider := providers at: aProvider.
 			^ self ].
 	Provider := MistralApi
@@ -235,17 +233,11 @@ AilienApi class >> providerAndModels [
 
 { #category : 'provider' }
 AilienApi class >> providers [
-"Bertha"
-	| allSubclasses index |
-	"Foobar"
-	allSubclasses := OrderedCollection new.
-	allSubclasses addAll: self subclasses.
-	index := 1.
-	[ index <= allSubclasses size ] whileTrue: [ | subs |
-			subs := allSubclasses at: index.
-			subs subclasses ifNotEmpty: [ allSubclasses addAll: subs subclasses ].
-			index := index + 1 ].
-	^ allSubclasses sort: [ :a :b | a name < b name ]; asArray
+	"Concrete providers in AIActions, sorted by name. Test providers in
+	AIActions-Tests are deliberately excluded."
+	^ (self allSubclasses select: [ :cls | cls package name = 'AIActions' ])
+		sort: [ :a :b | a name < b name ];
+		asArray
 ]
 
 { #category : 'responses' }
