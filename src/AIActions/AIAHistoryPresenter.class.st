@@ -324,7 +324,7 @@ AIAHistoryPresenter >> historyChangeAction [
 		addButton enabled:
 			(selected notNil and: [ selected isReference not ]).
 		sendButton enabled:
-			(selected notNil and: [ selected isReference not ]).
+			(selected isNil or: [ selected isReference not ]).
 		deleteButton enabled:
 			(self canDeleteNodes: selectedNodes).
 
@@ -544,17 +544,23 @@ AIAHistoryPresenter >> rootDirectory: aDirectory [
 
 { #category : 'sending' }
 AIAHistoryPresenter >> sendPrompt [
-	| selectedNode prompt |
-	selectedNode := historyTree selectedItem.
-	selectedNode ifNil: [ ^ self ].
-	selectedNode isReference ifTrue: [ ^ self ].
-
+	"Send the prompt to the selected history, or to a new history when
+	nothing is selected. A new history is selected so its answer shows."
+	| selectedNode prompt history |
 	prompt := promptInput text asString.
 	prompt ifEmpty: [ ^ self ].
-
-	self addPrompt: prompt to: selectedNode history.
-	selectedNode history getResponse.
-
+	selectedNode := historyTree selectedItem.
+	selectedNode
+		ifNil: [
+			history := newHistoryFactory value.
+			history fileStore rootDirectory: rootDirectory.
+			historyTree selectItem:
+				(historyTree roots detect: [ :node | node history == history ]) ]
+		ifNotNil: [
+			selectedNode isReference ifTrue: [ ^ self ].
+			history := selectedNode history ].
+	self addPrompt: prompt to: history.
+	history getResponse.
 	promptInput text: ''
 ]
 

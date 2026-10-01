@@ -6,7 +6,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolClassInfo >> evaluateTool [
 	| desc desc1 |
 	desc := 'Returns structured documentation for a Pharo class: class comment, instance variables, and all method selectors with comments.'.
@@ -15,7 +15,7 @@ ApiToolClassInfo >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
-{ #category : 'initialization' }
+{ #category : 'evaluating' }
 ApiToolClassInfo >> executeTool: args [
 
 	| className cls |

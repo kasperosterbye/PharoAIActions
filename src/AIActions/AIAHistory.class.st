@@ -299,31 +299,33 @@ AIAHistory >> getMessages [
 
 { #category : 'llm call' }
 AIAHistory >> getResponse [
-	"This method initiates an AI process to retrieve a response, displaying progress and handling interruptions."
-	self apiMessageList ifEmpty: [ 
+	"Start the LLM call in a background process and show progress until
+	the answer arrives, the user interrupts, or the time limit is reached."
+	self apiMessageList ifEmpty: [
 		self assistant: 'No answer, as I was not asked'.
 		^ self ].
-	[ :job | | aiProcess secs |
-		aiProcess := [ 
-				self api messageList: self apiMessageList; loadResponse: self. 
-			] newProcess.
-		aiProcess priority: Processor userBackgroundPriority. 
+	[ :job |
+		| aiProcess secs |
+		aiProcess := [
+			self api
+				messageList: self apiMessageList;
+				loadResponse: self ] newProcess.
+		aiProcess priority: Processor userBackgroundPriority.
 		aiProcess resume.
-		SystemProgressMorph uniqueInstance position: 10@20.
+		SystemProgressMorph uniqueInstance position: 10 @ 20.
 		job interruptBlock: [
-			aiProcess terminate.
-			self assistant: 'AI based response Terminated'.
-			^ self
-		].
+			self response ifNil: [
+				aiProcess terminate.
+				self assistant: 'AI based response Terminated' ].
+			^ self ].
 		secs := self api responseWaitingInSecs.
-		1 to: secs * 2 do: [:each |
+		1 to: secs * 2 do: [ :each |
+			self response ifNotNil: [ ^ self ].
 			job
-				progress: ((1/(secs * 2)) * each) ;
-				title: ( self api asString, ' working {1} of {2}' 
-					format: {(each/2) asFloat printString. secs}).
-				self response ifNil: [500 milliSeconds wait].
-		].
-	] asJob run.
+				progress: 1 / (secs * 2) * each;
+				title: (self api asString , ' working {1} of {2}'
+					format: { (each / 2) asFloat printString. secs }).
+			500 milliSeconds wait ] ] asJob run
 ]
 
 { #category : 'accessing' }

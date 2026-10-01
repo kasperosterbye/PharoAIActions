@@ -54,7 +54,6 @@ Class {
 { #category : 'access' }
 AilienApiTool class >> toolList [
 	"Returns a list of API tool classes used for various functionalities"
-
 	| list |
 	"list := self subclasses."
 	list := {
@@ -63,11 +62,13 @@ AilienApiTool class >> toolList [
 		        ApiToolGetWeather.
 		        ApiToolGitHub.
 		        ApiToolTextFromImage.
-		        ApiToolWebReader }.
+		        ApiToolWebReader.
+		        ApiToolDefineClass.
+		        ApiToolCompileMethod }.
 	^ list
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 AilienApiTool >> evaluateTool: descs [
 	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
 	| desc desc1|
@@ -90,6 +91,26 @@ AilienApiTool >> evaluateTool: descs [
             })
         })
     }
+]
+
+{ #category : 'evaluating' }
+AilienApiTool >> evaluateToolDescription: desc properties: propsDict required: requiredNames [
+	"Generic variant of evaluateTool:. propsDict maps a parameter name to either a description String (type string) or to an Array {type. description}. requiredNames is a collection of required parameter names."
+	| properties |
+	properties := Dictionary new.
+	propsDict keysAndValuesDo: [ :pname :spec |
+		properties at: pname put: (spec isString
+			ifTrue: [ Dictionary newFrom: { 'type' -> 'string'. 'description' -> spec } ]
+			ifFalse: [ Dictionary newFrom: { 'type' -> spec first. 'description' -> spec second } ]) ].
+	^ Dictionary newFrom: {
+		'type' -> 'function'.
+		'function' -> (Dictionary newFrom: {
+			'name' -> name.
+			'description' -> desc.
+			'parameters' -> (Dictionary newFrom: {
+				'type' -> 'object'.
+				'properties' -> properties.
+				'required' -> requiredNames asArray }) }) }
 ]
 
 { #category : 'initialization' }
