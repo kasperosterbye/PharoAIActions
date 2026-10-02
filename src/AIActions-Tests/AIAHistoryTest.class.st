@@ -29,7 +29,7 @@ AIAHistoryTest >> setUp [
 ]
 
 { #category : 'running' }
-AIAHistoryTest >> tearDown [
+AIAHistoryTest >> tearDown [ 
 	refAIAHistory class clearHistories.
 	refAIAHistory class histories addAll: originalHistories.
 	super tearDown

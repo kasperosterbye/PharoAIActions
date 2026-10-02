@@ -29,7 +29,7 @@ AIAHistoryFileStoresTest >> setUp [
 ]
 
 { #category : 'running' }
-AIAHistoryFileStoresTest >> tearDown [
+AIAHistoryFileStoresTest >> tearDown [ 
 	AIAHistory clearHistories.
 	AIAHistory histories addAll: originalHistories.
 	super tearDown

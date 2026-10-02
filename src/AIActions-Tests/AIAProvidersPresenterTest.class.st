@@ -21,7 +21,7 @@ Class {
 }
 
 { #category : 'running' }
-AIAProvidersPresenterTest >> setUp [
+AIAProvidersPresenterTest >> setUp [ 
 	super setUp.
 	rootDirectory := FileSystem memory root / 'AIAiliensTest'.
 	rootDirectory ensureCreateDirectory.

@@ -15,7 +15,7 @@ Class {
 }
 
 { #category : 'running' }
-AIAiliensFileTest >> setUp [
+AIAiliensFileTest >> setUp [ 
 	super setUp.
 	rootDirectory := FileSystem memory root / 'AIAiliensFileTest'.
 	rootDirectory ensureCreateDirectory

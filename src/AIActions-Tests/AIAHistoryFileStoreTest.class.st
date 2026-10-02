@@ -24,7 +24,7 @@ Class {
 
 { #category : 'running' }
 AIAHistoryFileStoreTest >> setUp [
-	super setUp.
+	super setUp. 
 	originalHistories := AIAHistory histories copy.
 	AIAHistory clearHistories.
 
