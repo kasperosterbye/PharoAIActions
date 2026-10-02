@@ -12,7 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
-	"Demonstrates a simple method returning the sum of a local value and twelve"
+	"Example method used as a fixture for comment generation tests returning the sum of foo and twelve"
 	| foo |
 	foo := 88.
 	^ foo + 12.

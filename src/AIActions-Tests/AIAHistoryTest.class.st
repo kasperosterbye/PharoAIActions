@@ -1,3 +1,10 @@
+"
+I am a test case for `AIAHistory`, the conversation history used by AI actions.
+
+I verify that a history behaves correctly as an observable, persistent conversation: messages and comments are recorded and reloaded from storage, the API in use follows or ignores the global provider as appropriate, pre-histories form an acyclic graph that is preserved in order and reconstructed faithfully on reload, the shared qPrefix history remains unique and recoverable, and interested presenters are notified whenever a history or the set of histories changes.
+
+Each test runs against an in-memory file system and restores the globally registered histories afterwards, so the image's real histories are left untouched.
+"
 Class {
 	#name : 'AIAHistoryTest',
 	#superclass : 'TestCase',

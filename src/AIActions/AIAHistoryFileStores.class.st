@@ -1,3 +1,6 @@
+"
+AIAHistoryFileStores manages the storage and retrieval of AI history data from a specified directory.
+"
 Class {
 	#name : 'AIAHistoryFileStores',
 	#superclass : 'Object',

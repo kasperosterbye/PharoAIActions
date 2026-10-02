@@ -131,7 +131,7 @@ AilienApi class >> lastHistory [
 { #category : 'AI models' }
 AilienApi class >> modelNames [
 	self = AilienApi ifTrue: [ ^ self provider modelNames ].
-	^ #()
+	^ (self modelNamesAndReasoning collect: [ :each | each key ]) asArray
 ]
 
 { #category : 'responses' }

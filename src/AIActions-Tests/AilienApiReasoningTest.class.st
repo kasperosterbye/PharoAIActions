@@ -1,3 +1,6 @@
+"
+Unit tests for the reasoning-level support of `OpenAIApi`. Verifies that reasoning-capable models (e.g. Astra) expose the expected set of reasoning levels and a sensible default, that non-reasoning models expose none, and that the generated request entity includes or omits `reasoning_effort` accordingly.
+"
 Class {
 	#name : 'AilienApiReasoningTest',
 	#superclass : 'TestCase',
