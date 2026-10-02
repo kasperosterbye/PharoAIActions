@@ -37,15 +37,16 @@ TogetherApi class >> apiGenerateUrl [
     
 ]
 
-{ #category : 'accessing' }
-TogetherApi class >> modelNames [
-   "Returns an array of available Together models. "
-	"Check https://api.together.ai/models (use GitHub at login) for updates."
-	"Account area: https://api.together.ai/settings/api-keys"
-    ^ #( 'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8'
-			'deepseek-ai/DeepSeek-V3.1'
-			'deepseek-ai/DeepSeek-V4-Pro'
-			'meta-llama/Llama-3.3-70B-Instruct-Turbo' ).
+{ #category : 'AI models' }
+TogetherApi class >> modelNamesAndReasoning [
+	"Check https://api.together.ai/models (use GitHub at login) for updates
+Account area: https://api.together.ai/settings/api-keys"
+
+	^ {
+		'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8' -> #().
+		'deepseek-ai/DeepSeek-V3.1' -> #().
+		'deepseek-ai/DeepSeek-V4-Pro' -> #().
+		'meta-llama/Llama-3.3-70B-Instruct-Turbo' -> #(). }
 ]
 
 { #category : 'accessing' }

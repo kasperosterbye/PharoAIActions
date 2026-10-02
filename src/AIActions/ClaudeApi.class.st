@@ -54,15 +54,9 @@ ClaudeApi class >> claudeKey [
 ]
 
 { #category : 'AI models' }
-ClaudeApi class >> modelNames [
-	"returns an array with one item per model."
-	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
-	
-	^ #(
-	'claude-haiku-4-5-20251001' 
-	'claude-sonnet-5'
-	'claude-opus-5'
-	'claude-fable-5-1') 
+ClaudeApi class >> modelNamesAndReasoning [
+	^ {
+		'claude-opus-5' -> #(). }
 ]
 
 { #category : 'AI models' }

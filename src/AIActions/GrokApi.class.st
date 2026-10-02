@@ -83,16 +83,16 @@ GrokApi class >> grokKey [
     ^ (FileSystem disk workingDirectory / '../../grokcode00.txt') readStream contents trimBoth.
 ]
 
-{ #category : 'accessing' }
-GrokApi class >> modelNames [
-   "Returns an array of available Grok models. Check https://docs.x.ai/ for updates."
-	"https://console.x.ai/team/5e551e89-6f2d-49bc-88ba-edd9b27ae732/models/grok-code-fast-1"
-    ^ #(
-	'grok-4.20-0309-reasoning' 
-	'grok-4.20-0309-non-reasoning'
-	'grok-4.3'
-	'grok-4.6'
-	).
+{ #category : 'AI models' }
+GrokApi class >> modelNamesAndReasoning [
+	"Check https://docs.x.ai/ for updates
+Console: https://console.x.ai/team/5e551e89-6f2d-49bc-88ba-edd9b27ae732/models/grok-code-fast-1"
+
+	^ {
+		'grok-4.20-0309-reasoning' -> #().
+		'grok-4.20-0309-non-reasoning' -> #().
+		'grok-4.3' -> #().
+		'grok-4.6' -> #(). }
 ]
 
 { #category : 'accessing' }

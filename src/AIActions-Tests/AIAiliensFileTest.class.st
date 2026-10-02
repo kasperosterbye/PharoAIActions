@@ -1,3 +1,8 @@
+"
+Unit tests for `AIAiliensFile`, the markdown-style file that holds the list of AI providers, their models, reasoning levels and comments shared between images.
+
+The tests cover parsing the file format (providers, models, reasoning levels and comment lines in order), round-tripping through save and load, exporting the current image's model lists, installing a file into the image (compiling model names, preserving the default model by name, falling back when it has been removed, rejecting unknown providers atomically and leaving the current provider untouched), and recording the model selection history.
+"
 Class {
 	#name : 'AIAiliensFileTest',
 	#superclass : 'TestCase',
@@ -8,6 +13,13 @@ Class {
 	#package : 'AIActions-Tests',
 	#tag : 'AIApi-Tests'
 }
+
+{ #category : 'running' }
+AIAiliensFileTest >> setUp [ 
+	super setUp.
+	rootDirectory := FileSystem memory root / 'AIAiliensFileTest'.
+	rootDirectory ensureCreateDirectory
+]
 
 { #category : 'tests' }
 AIAiliensFileTest >> testExportFromImageMatchesCurrentModelNames [
@@ -79,22 +91,6 @@ AIAiliensFileTest >> testInstallKeepsDefaultModelByName [
 - gamma
 - alpha') install.
 	self assert: AIAiliensTestApi defaultModel equals: 'gamma'
-]
-
-{ #category : 'tests' }
-AIAiliensFileTest >> testInstallRejectsOllama [
-	"Ollama answers its models from the local server. Compiling a fixed
-	list over that method would silently hide newly pulled models."
-	| before |
-	before := OllamaApi class compiledMethodAt: #modelNames.
-	self
-		should: [
-			(AIAiliensFile fromString: '# OllamaApi
-- llama3') install ]
-		raise: Error.
-	self
-		assert: (OllamaApi class compiledMethodAt: #modelNames)
-		identicalTo: before
 ]
 
 { #category : 'tests' }

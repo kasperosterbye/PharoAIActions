@@ -1,3 +1,6 @@
+"
+OllamaInnerCall handles the processing of tool calls within the AI API framework, executing specified tools and managing the interaction with the language model.
+"
 Class {
 	#name : 'OllamaInnerCall',
 	#superclass : 'AilienInnerCall',

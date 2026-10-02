@@ -43,10 +43,13 @@ OllamaApi class >> apiGenerateUrl [
 	
 ]
 
-{ #category : 'accessing' }
-OllamaApi class >> modelNames [
-	"returns an array with one item per model."
-	^ self models collect: [ :ollamaModel | ollamaModel at: 'name' ]
+{ #category : 'AI models' }
+OllamaApi class >> modelNamesAndReasoning [
+	"Look at https://ollama.com/search"
+
+	^ {
+		'llama3.2:latest' -> #().
+		'Kilroy6.9:left' -> #(). }
 ]
 
 { #category : 'accessing' }

@@ -1,3 +1,6 @@
+"
+Tests that tool support in `OpenAIApi` can be switched on and off, both at provider (class) level and per instance, and that the generated request entity reflects that setting. Also verifies that reasoning models disable tools by default and send a `reasoning_effort` field instead.
+"
 Class {
 	#name : 'AilienApiToolsTest',
 	#superclass : 'TestCase',

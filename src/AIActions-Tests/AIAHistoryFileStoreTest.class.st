@@ -1,3 +1,14 @@
+"
+I test `AIAHistoryFileStore`, the component responsible for persisting an `AIAHistory` as a JSON file and loading it back.
+
+I verify that:
+
+- a history can be saved and reloaded with its messages, context (title, roles, header level, provider and model) and nested pre-histories intact;
+- stored files receive stable, readable, sequential filenames (`H00001-some-title.json`), where the identifier never changes even if the title does and is never reused, even for trashed histories;
+- deleting and moving to Trash behave as expected without losing persisted contents.
+
+All tests run against an in-memory filesystem, so no real history files are ever created or destroyed. The global history registry is saved and restored around each test.
+"
 Class {
 	#name : 'AIAHistoryFileStoreTest',
 	#superclass : 'TestCase',
@@ -13,7 +24,7 @@ Class {
 
 { #category : 'running' }
 AIAHistoryFileStoreTest >> setUp [
-	super setUp.
+	super setUp. 
 	originalHistories := AIAHistory histories copy.
 	AIAHistory clearHistories.
 

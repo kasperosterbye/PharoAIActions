@@ -42,25 +42,16 @@ OpenAIApi class >> apiGenerateUrl [
     ^ 'https://api.openai.com/v1/chat/completions'
 ]
 
-{ #category : 'accessing' }
-OpenAIApi class >> modelNames [
-	"returns an array with one item per model."
-	"Look at https://platform.openai.com/docs/models to see the list"
-	
-	^ self modelNamesAndReasoning asOrderedDictionary keys
-]
-
-{ #category : 'accessing' }
+{ #category : 'AI models' }
 OpenAIApi class >> modelNamesAndReasoning [
-	"returns an array with one item per model."
 	"Look at https://platform.openai.com/docs/models to see the list"
-    ^ {
-        'gpt-5.5' -> #().
-        'gpt-5.6-luna' -> #( none low medium high xhigh max ).
-        'gpt-5.6-terra' -> #( none low medium high xhigh max ).
-        'gpt-5.6-sol' -> #( none low medium high xhigh max ).
-        'gpt-6-astra' -> #( low medium high xhigh max )
-    }
+
+	^ {
+		'gpt-5.5' -> #().
+		'gpt-5.6-luna' -> #(#none #low #medium #high #xhigh #max).
+		'gpt-5.6-terra' -> #(#none #low #medium #high #xhigh #max).
+		'gpt-5.6-sol' -> #(#none #low #medium #high #xhigh #max).
+		'gpt-6-astra' -> #(#low #medium #high #xhigh #max). }
 ]
 
 { #category : 'accessing' }

@@ -1,3 +1,6 @@
+"
+GeminiApi provides an interface to interact with the Gemini AI models for generating content and transcribing audio from YouTube videos.
+"
 Class {
 	#name : 'GeminiApi',
 	#superclass : 'AilienApi',
@@ -19,19 +22,17 @@ GeminiApi class >> geminiKey [
 ]
 
 { #category : 'AI models' }
-GeminiApi class >> modelNames [
-	"returns an array with one item per model."
+GeminiApi class >> modelNamesAndReasoning [
 	"Look at https://ai.google.dev/gemini-api/docs/models to see the list"
-	
-	"^ #( 'gemini-2.0-flash' 'gemini-2.0-flash-lite-preview-02-05' 'gemini-1.5-pro' )"
-	^ #('gemini-2.5-flash'
-	'gemini-3.5-flash'
-	'gemini-3.7-flash'
-	'gemini-3.8-flash'
-	)
+
+	^ {
+		'gemini-2.5-flash' -> #().
+		'gemini-3.5-flash' -> #().
+		'gemini-3.7-flash' -> #().
+		'gemini-3.8-flash' -> #(). }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 GeminiApi class >> transcribeYouTube: aUrl [
 	"GeminiApi transcribeYouTube: 'https://www.youtube.com/watch?v=x1ESqB7M9To'"
 	| body response modelName |

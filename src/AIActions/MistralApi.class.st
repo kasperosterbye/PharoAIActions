@@ -49,17 +49,10 @@ MistralApi class >> esug [
 	^ ZnClient new url: 'https://maarumlam.dk/kasper/pharoCommentsByMistral.txt'; get.
 ]
 
-{ #category : 'accessing' }
-MistralApi class >> modelNames [
-	"returns an array with one item per model."
-	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
-	
-	^ #(
-		'codestral-latest'
-		'zai-glm-5-2' 
-		'mistral-medium-3-5' 
-		'mistral-large-latest'
-		) 
+{ #category : 'AI models' }
+MistralApi class >> modelNamesAndReasoning [
+	^ {
+		'codestral-latest' -> #(). }
 ]
 
 { #category : 'accessing' }

@@ -1,3 +1,6 @@
+"
+AIAiliensSelection is a class designed to encapsulate information related to AI model selections, including the timestamp of the selection, the provider's name, and the model's name.
+"
 Class {
 	#name : 'AIAiliensSelection',
 	#superclass : 'Object',

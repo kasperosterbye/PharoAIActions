@@ -37,7 +37,8 @@ Class {
 	#superclass : 'SpPresenter',
 	#instVars : [
 		'providers',
-		'window'
+		'window',
+		'ailiensDirectory'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -49,6 +50,16 @@ AIAProvidersPresenter class >> open [
 	<example>
 	
 	^ self new open
+]
+
+{ #category : 'accessing' }
+AIAProvidersPresenter >> ailiensDirectory [
+	^ ailiensDirectory ifNil: [ AIAiliensFile defaultRootDirectory ]
+]
+
+{ #category : 'accessing' }
+AIAProvidersPresenter >> ailiensDirectory: dir [
+	^ ailiensDirectory := dir
 ]
 
 { #category : 'layout' }
@@ -139,10 +150,25 @@ AIAProvidersPresenter >> providerFor: modelName [
 	^ [dict at: modelName] on: Error do: [ nil ]
 ]
 
+{ #category : 'accessing' }
+AIAProvidersPresenter >> providerRoots [
+	^ providers roots
+]
+
 { #category : 'layout' }
 AIAProvidersPresenter >> refreshProviders [
-	"Refreshes the list of AI providers and their models in the tree table"
-    providers roots: AilienApi providers
+	| ailiens activeProviders |
+
+	ailiens := AIAiliensFile loadFromt: self ailiensDirectory.
+	ailiens install.
+
+	activeProviders := ailiens providerNames collect: [ :name |
+		Smalltalk globals at: name ].
+
+	(activeProviders includes: AilienApi provider)
+		ifFalse: [ AilienApi provider: activeProviders first ].
+
+	providers roots: activeProviders
 ]
 
 { #category : 'initialization' }

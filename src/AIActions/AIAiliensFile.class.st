@@ -1,3 +1,6 @@
+"
+The `AIAiliensFile` class manages the configuration and interaction with AI providers, handling model definitions, comments, and selection history.
+"
 Class {
 	#name : 'AIAiliensFile',
 	#superclass : 'Object',
@@ -25,6 +28,18 @@ AIAiliensFile class >> commentLinesOf: aProviderClass [
 ]
 
 { #category : 'accessing' }
+AIAiliensFile class >> default [
+	"Minimal configuration used when no ailiens.txt exists."
+
+	^ self fromString: '# MistralApi
+Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list
+- codestral-latest
+- zai-glm-5-2
+- mistral-medium-3-5
+- mistral-large-latest'
+]
+
+{ #category : 'accessing' }
 AIAiliensFile class >> defaultRootDirectory [
 	^ FileLocator home / 'D' / 'Pharo'
 ]
@@ -41,7 +56,7 @@ AIAiliensFile class >> fromImage [
 	| ailiens |
 	ailiens := self new.
 	(AilienApi providers reject: [ :cls |
-		cls == OllamaApi or: [ cls package name endsWith: '-Tests' ] ])
+		cls package name endsWith: '-Tests' ] )
 		do: [ :cls |
 			ailiens
 				addProvider: cls name
@@ -64,6 +79,22 @@ AIAiliensFile class >> historyFileName [
 
 { #category : 'accessing' }
 AIAiliensFile class >> loadFrom: aDirectory [
+	"Loads the Ailiens file from a specified directory, handling both existing and default configurations."
+	| file ailiens |
+
+	file := aDirectory / self fileName.
+
+	ailiens := file exists
+		ifTrue: [ self fromString: file contents ]
+		ifFalse: [ self default ].
+
+	ailiens rootDirectory: aDirectory.
+	^ ailiens
+]
+
+{ #category : 'accessing' }
+AIAiliensFile class >> loadRawFrom: aDirectory [
+	"Loads the raw contents of the Ailiens file from a specified directory."
 	^ (self fromString: (aDirectory / self fileName) contents)
 		rootDirectory: aDirectory;
 		yourself
@@ -108,10 +139,6 @@ AIAiliensFile >> compileModelsOf: aProviderName into: aProviderClass [
 			stream print: each key; nextPutAll: ' -> '; print: each value; nextPut: $. ].
 		stream nextPutAll: ' }' ].
 	aProviderClass class compile: source classified: 'AI models'.
-	aProviderClass class
-		compile: 'modelNames
-	^ (self modelNamesAndReasoning collect: [ :each | each key ]) asArray'
-		classified: 'AI models'
 ]
 
 { #category : 'saving' }
@@ -212,8 +239,6 @@ AIAiliensFile >> providerClassFor: aProviderName [
 		ifAbsent: [ self error: 'Unknown provider: ', aProviderName ].
 	(AilienApi allSubclasses includes: cls) ifFalse: [
 		self error: 'Not an AilienApi provider: ', aProviderName ].
-	cls == OllamaApi ifTrue: [
-		self error: 'OllamaApi lists its models from the server' ].
 	^ cls
 ]
 

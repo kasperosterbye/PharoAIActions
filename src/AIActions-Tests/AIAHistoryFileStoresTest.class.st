@@ -1,3 +1,10 @@
+"
+I am a unit test for `AIAHistoryFileStores`, which loads every persisted history file from a root directory and reconstructs the corresponding `AIAHistory` objects.
+
+I check that loading all files yields exactly one history per file, that a shared pre-history is reconstructed once and reused by any history referencing it, and that pre-history references survive a human renaming of the file, since they are resolved by permanent identifier rather than by filename.
+
+I work on an in-memory file system and preserve the global history registry around each test, so I leave no trace in the image.
+"
 Class {
 	#name : 'AIAHistoryFileStoresTest',
 	#superclass : 'TestCase',
@@ -22,7 +29,7 @@ AIAHistoryFileStoresTest >> setUp [
 ]
 
 { #category : 'running' }
-AIAHistoryFileStoresTest >> tearDown [
+AIAHistoryFileStoresTest >> tearDown [ 
 	AIAHistory clearHistories.
 	AIAHistory histories addAll: originalHistories.
 	super tearDown
