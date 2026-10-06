@@ -12,7 +12,8 @@ Class {
 BaselineOfPharoAIActions >> baseline: spec [
   <baseline>
   spec for: #common do: [
-		Transcript << 'baseline: called with ' << spec asString << String cr.
+		Transcript << '*** PharoAIActions baseline: called with ' << spec asString << String cr.
+		spec postLoadDoIt: #postLoad.
 		spec package: 'AIActions'.
       spec package: 'AIActions-Tests' 
           with: [ spec requires: #('AIActions') ].
@@ -32,7 +33,7 @@ BaselineOfPharoAIActions >> baseline: spec [
 { #category : 'script' }
 BaselineOfPharoAIActions >> postLoad [
     "Called after packages are loaded"
-	Transcript << 'Baseline postLoad called' << String CR.
+	Transcript << '*** Baseline postLoad called' << String CR.
 	KMRepository reset.
 	(Smalltalk at: #AIAProvidersPresenter ifAbsent: [ nil ]) 
 		ifNotNil: [ :aiList | aiList open ].
