@@ -12,7 +12,8 @@ Class {
 BaselineOfPharoAIActions >> baseline: spec [
   <baseline>
   spec for: #common do: [
-      spec package: 'AIActions'.
+		Transcript << 'baseline: called with ' << spec asString << String cr.
+		spec package: 'AIActions'.
       spec package: 'AIActions-Tests' 
           with: [ spec requires: #('AIActions') ].
       spec package: 'AIAExperiments' 
@@ -26,4 +27,14 @@ BaselineOfPharoAIActions >> baseline: spec [
       spec group: 'extended' with: #('default' 'AIAExperiments' 'AIATestExperiments').
       spec group: 'all' with: #('default' 'extended' 'AIAZipArchive').
   ]
+]
+
+{ #category : 'script' }
+BaselineOfPharoAIActions >> postLoad [
+    "Called after packages are loaded"
+
+	KMRepository reset.
+	(Smalltalk at: #AIAProvidersPresenter ifAbsent: [ nil ]) 
+		ifNotNil: [ :aiList | aiList open ].
+	
 ]
