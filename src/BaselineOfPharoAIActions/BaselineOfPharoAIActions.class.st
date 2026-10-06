@@ -33,7 +33,7 @@ BaselineOfPharoAIActions >> baseline: spec [
 { #category : 'script' }
 BaselineOfPharoAIActions >> postLoad [
     "Called after packages are loaded"
-	Transcript << '*** Baseline postLoad called' << String CR.
+	Transcript << '*** Baseline postLoad called' << String cr.
 	KMRepository reset.
 	(Smalltalk at: #AIAProvidersPresenter ifAbsent: [ nil ]) 
 		ifNotNil: [ :aiList | aiList open ].
