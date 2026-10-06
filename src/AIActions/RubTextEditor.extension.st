@@ -29,7 +29,7 @@ RubTextEditor >> pauseOrResumeSpeaking: aKeyboardEvent [
 RubTextEditor >> speakIt: aKeyboardEvent [
 	"Speak the selection (or current line) with macOS say, replacing any ongoing speech."
 	| rate voice text file |
-	rate := 300.
+	rate := 250.
 	voice := 'Ava'.
 	"Going by what I know, which may be out of date:
 American: Ava (Premium) is widely considered the best non-Siri voice. Zoe (Premium) and Evan (Premium) are alternatives.
