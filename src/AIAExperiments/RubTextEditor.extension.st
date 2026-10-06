@@ -1,6 +1,6 @@
 Extension { #name : 'RubTextEditor' }
 
-{ #category : '*AIActions' }
+{ #category : '*AIAExperiments' }
 RubTextEditor class >> buildSpeakShortcutsOn: aBuilder [
 	<keymap>
 	"KMRepository reset."
@@ -16,7 +16,7 @@ RubTextEditor class >> buildSpeakShortcutsOn: aBuilder [
 		description: 'Pause or resume speech'
 ]
 
-{ #category : '*AIActions' }
+{ #category : '*AIAExperiments' }
 RubTextEditor >> pauseOrResumeSpeaking: aKeyboardEvent [
 	"Pause say if it is speaking; resume it if it is paused."
 	(LibC runCommand: 'ps -axco stat=,comm= | grep -q "^T.*say$"') = 0
@@ -25,7 +25,7 @@ RubTextEditor >> pauseOrResumeSpeaking: aKeyboardEvent [
 	^ true
 ]
 
-{ #category : '*AIActions' }
+{ #category : '*AIAExperiments' }
 RubTextEditor >> speakIt: aKeyboardEvent [
 	"Speak the selection (or current line) with macOS say, replacing any ongoing speech."
 	| rate voice text file |
