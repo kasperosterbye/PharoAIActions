@@ -159,7 +159,7 @@ AIAProvidersPresenter >> providerRoots [
 AIAProvidersPresenter >> refreshProviders [
 	| ailiens activeProviders |
 
-	ailiens := AIAiliensFile loadFromt: self ailiensDirectory.
+	ailiens := AIAiliensFile loadFrom: self ailiensDirectory.
 	ailiens install.
 
 	activeProviders := ailiens providerNames collect: [ :name |
