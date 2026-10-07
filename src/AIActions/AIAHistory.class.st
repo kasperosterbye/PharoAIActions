@@ -204,29 +204,8 @@ AIAHistory >> api: anObject [
 
 { #category : 'accessing' }
 AIAHistory >> apiMessageList [
-    "Returns the messages that should actually be sent to the LLM.
-    Comments are deliberately excluded."
 
-    | assocKey messageList all |
-
-    assocKey := [ :assoc | '[', assoc key, '] ', assoc value ].
-    messageList := OrderedCollection new.
-    all := self selfAndPreHistories.
-
-    all do: [ :hist |
-        hist firstRoles do: [ :assoc |
-            messageList add: 'user' -> (assocKey value: assoc) ] ].
-
-    all do: [ :hist |
-        hist getMessages do: [ :message |
-            message key = 'comment' ifFalse: [
-                messageList add: message ] ] ].
-
-    all do: [ :hist |
-        hist lastRoles do: [ :assoc |
-            messageList add: 'user' -> (assocKey value: assoc) ] ].
-
-    ^ messageList
+	^ self messageListIncludingComments: false
 ]
 
 { #category : 'accessing' }
@@ -268,6 +247,11 @@ AIAHistory >> chatHistory [
 { #category : 'accessing' }
 AIAHistory >> comment: aString [
     self messagesAdd: 'comment' -> aString
+]
+
+{ #category : 'accessing' }
+AIAHistory >> displayMessageList [
+	^ self messageListIncludingComments: true
 ]
 
 { #category : 'accessing' }
@@ -362,6 +346,30 @@ AIAHistory >> llmInfoString [
 	^ currentApi class name asString,
 		': ',
 		currentApi model asString
+]
+
+{ #category : 'accessing' }
+AIAHistory >> messageListIncludingComments: includeComments [
+	| assocKey messageList all |
+
+	assocKey := [ :assoc | '[', assoc key, '] ', assoc value ].
+	messageList := OrderedCollection new.
+	all := self selfAndPreHistories.
+
+	all do: [ :hist |
+		hist firstRoles do: [ :assoc |
+			messageList add: 'user' -> (assocKey value: assoc) ] ].
+
+	all do: [ :hist |
+		hist getMessages do: [ :message |
+			(includeComments or: [ message key ~= 'comment' ])
+				ifTrue: [ messageList add: message ] ] ].
+
+	all do: [ :hist |
+		hist lastRoles do: [ :assoc |
+			messageList add: 'user' -> (assocKey value: assoc) ] ].
+
+	^ messageList
 ]
 
 { #category : 'accessing' }

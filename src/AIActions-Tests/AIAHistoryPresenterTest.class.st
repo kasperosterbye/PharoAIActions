@@ -1013,6 +1013,43 @@ AIAHistoryPresenterTest >> testSelectedHistoryDisplaysComments [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCommentsFromPreHistory [
+	"Comments in a pre-history are part of the visible conversation."
+
+	| directory preHistory history historyTree messageText root displayed |
+
+	directory := AIAHistory histories first fileStore rootDirectory.
+
+	preHistory := AIAHistory new.
+	preHistory fileStore rootDirectory: directory.
+	preHistory
+		user: 'Pre-history question';
+		comment: 'Pre-history diagnostic information'.
+
+	history := AIAHistory new.
+	history fileStore rootDirectory: directory.
+	history
+		user: 'Current question';
+		addPreHistory: preHistory.
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+
+	displayed := messageText text asString.
+
+	self assert:
+		(displayed includesSubstring: 'Pre-history question').
+	self assert:
+		(displayed includesSubstring: 'Pre-history diagnostic information').
+	self assert:
+		(displayed includesSubstring: 'Current question')
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCompleteConversation [
 	"The selected history must display every role and complete message
 	in chronological order."
