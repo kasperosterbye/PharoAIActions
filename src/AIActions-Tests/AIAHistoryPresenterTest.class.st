@@ -481,30 +481,6 @@ AIAHistoryPresenterTest >> testHistoryDetailsShowPreHistoryRelations [
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testLlmTagIsDisplayedAsPartOfAssistantHeading [
-	"An LLM marker immediately before an assistant response is displayed
-	as part of its heading rather than as a separate user message."
-
-	| historyTree messageText history displayed |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-
-	history := historyTree roots first history.
-	history api: AIAHistoryPresenterTestApi new.
-	historyTree selectItem: historyTree roots first.
-
-	AIAHistory recordLlmInfo: true.
-	history assistant: 'A tagged answer'.
-
-	displayed := messageText text asString.
-
-	self assert: (displayed includesSubstring:
-		'assistant: AIAHistoryPresenterTestApi: test-model').
-	self assert: (displayed includesSubstring: 'A tagged answer').
-	self deny: (displayed includesSubstring: '[LLM]')
-]
-
-{ #category : 'tests' }
 AIAHistoryPresenterTest >> testMostRecentlyModifiedHistoryIsShownFirst [
 	"History roots must be ordered by modification time. When a selected
 	history changes, it moves to the top while remaining selected."
@@ -1005,6 +981,35 @@ AIAHistoryPresenterTest >> testReloadRemovesHistoryDeletedOutsidePresenter [
 		history fileStore fileName = fileName ]).
 	self deny: (historyTree roots anySatisfy: [ :node |
 		node history fileStore fileName = fileName ])
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSelectedHistoryDisplaysComments [
+	"Comments are part of the visible history and must be shown unchanged."
+
+	| historyTree messageText history root displayed |
+
+	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+
+	history := historyTree roots first history.
+	history
+		comment: 'Diagnostic information';
+		comment: '[LLM] ClaudeApi: claude-opus-5';
+		assistant: 'The answer'.
+
+	root := historyTree roots detect: [ :node |
+		node history == history ].
+	historyTree selectItem: root.
+
+	displayed := messageText text asString.
+
+	self assert:
+		(displayed includesSubstring: 'Diagnostic information').
+	self assert:
+		(displayed includesSubstring: '[LLM] ClaudeApi: claude-opus-5').
+	self assert:
+		(displayed includesSubstring: 'The answer')
 ]
 
 { #category : 'tests' }

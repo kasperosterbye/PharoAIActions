@@ -231,10 +231,11 @@ AIAHistory >> apiMessageList [
 
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
-    self comment: '[LLM] ', self llmInfoString.
+	self class recordLlmInfo ifTrue: [
+		self comment: '[LLM] ', self llmInfoString ].
 
-    self messagesAdd:
-        'assistant' -> (self sanitizedResonse: aString)
+	self messagesAdd:
+		'assistant' -> (self sanitizedResonse: aString)
 ]
 
 { #category : 'context roles' }
