@@ -51,8 +51,13 @@ MistralApi class >> esug [
 
 { #category : 'AI models' }
 MistralApi class >> modelNamesAndReasoning [
+	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
+
 	^ {
-		'codestral-latest' -> #(). }
+		'codestral-latest' -> #().
+		'zai-glm-latest' -> #().
+		'mistral-medium-3-5' -> #().
+		'mistral-large-latest' -> #(). }
 ]
 
 { #category : 'accessing' }
