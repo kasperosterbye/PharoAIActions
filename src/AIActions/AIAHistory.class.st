@@ -129,7 +129,7 @@ AIAHistory class >> readCurrent [
 
 { #category : 'recording' }
 AIAHistory class >> recordLlmInfo [
-	^ RecordLlmInfo ifNil: [ false ]
+	^ RecordLlmInfo ifNil: [ true ]
 ]
 
 { #category : 'recording' }
@@ -210,8 +210,7 @@ AIAHistory >> apiMessageList [
 
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
-	self class recordLlmInfo ifTrue: [
-		self comment: '[LLM] ', self llmInfoString ].
+	self comment: '[LLM] ', self llmInfoString .
 
 	self messagesAdd:
 		'assistant' -> (self sanitizedResonse: aString)
