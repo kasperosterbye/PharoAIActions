@@ -9,9 +9,9 @@ Class {
 		'default',
 		'pillar'
 	],
-	#category : 'AIAZipArchive-Misc01',
-	#package : 'AIAZipArchive',
-	#tag : 'Misc01'
+	#category : 'AIActions-AIApiTool',
+	#package : 'AIActions',
+	#tag : 'AIApiTool'
 }
 
 { #category : 'examples' }
