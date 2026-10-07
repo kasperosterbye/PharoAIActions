@@ -278,7 +278,7 @@ AIAHistoryPresenter >> displayDetailsForHistory: aHistory [
 
 { #category : 'displaying' }
 AIAHistoryPresenter >> displayHistory: aHistory [
-	self displayMessages: aHistory apiMessageList
+	self displayMessages: aHistory displayMessageList
 ]
 
 { #category : 'displaying' }
@@ -566,39 +566,16 @@ AIAHistoryPresenter >> sendPrompt [
 
 { #category : 'formatting' }
 AIAHistoryPresenter >> stringFromMessages: messages [
-	| visibleMessages index message nextMessage llmInfo |
-	visibleMessages := OrderedCollection new.
-	index := 1.
-
-	[ index <= messages size ] whileTrue: [
-		message := messages at: index.
-
-		((((message key = 'user')
-			and: [
-				message value asString beginsWith: '[LLM] ' ])
-			and: [ index < messages size ])
-			and: [
-				nextMessage := messages at: index + 1.
-				nextMessage key = 'assistant' ])
-			ifTrue: [
-				llmInfo := message value asString allButFirst: 6.
-				visibleMessages add:
-					('assistant: ', llmInfo) -> nextMessage value.
-				index := index + 2 ]
-			ifFalse: [
-				visibleMessages add:
-					(message key asString, ':') -> message value.
-				index := index + 1 ] ].
-
 	^ String streamContents: [ :stream |
-		visibleMessages withIndexDo: [ :each :visibleIndex |
-			visibleIndex > 1 ifTrue: [
+		messages withIndexDo: [ :message :index |
+			index > 1 ifTrue: [
 				stream
 					nextPutAll: String lf;
 					nextPutAll: String lf ].
 
 			stream
-				nextPutAll: each key;
+				nextPutAll: message key asString;
+				nextPutAll: ':';
 				nextPutAll: String lf;
-				nextPutAll: each value asString ] ]
+				nextPutAll: message value asString ] ]
 ]

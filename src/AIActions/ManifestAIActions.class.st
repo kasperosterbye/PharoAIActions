@@ -13,7 +13,7 @@ Class {
 ManifestAIActions class >> ruleCollectionProtocolRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGMethodDefinition #(#AIAHistoryFileStore #historyFromJson: #false)) #'2026-09-01T11:07:29.222431+02:00') #(#(#RGClassDefinition #(#AIAHistoryFileStore)) #'2026-09-01T11:07:42.113686+02:00') )
+	^ #(#(#(#RGMethodDefinition #(#AIAHistoryFileStore #historyFromJson: #false)) #'2026-09-01T11:07:29.222431+02:00') #(#(#RGClassDefinition #(#AIAHistoryFileStore)) #'2026-09-01T11:07:42.113686+02:00') #(#(#RGPackageDefinition #(#AIActions)) #'2026-10-07T09:26:45.827754+02:00') )
 ]
 
 { #category : 'code-critics' }
