@@ -75,7 +75,9 @@ String >> p [
 { #category : '*AIActions' }
 String >> q [
 	
-	(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^''].
+	[(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^'']]
+		on: Error
+		do: [].
 	^ AIAHistory new
 		addPreHistory: AIAHistory qPrefix ;
 		user: self; 
@@ -86,7 +88,9 @@ String >> q [
 { #category : '*AIActions' }
 String >> q0 [
 	
-	(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^''].
+	[(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^'']]
+		on: Error
+		do: [].
 	^ (AIAHistory new
 		user: self;
 		getResponse; 
