@@ -38,8 +38,7 @@ Class {
 
 { #category : 'accessing' }
 OpenAIApi class >> apiGenerateUrl [
-	"Method to generate the API URL for OpenAIApi."
-    ^ 'https://api.openai.com/v1/chat/completions'
+	^ 'https://api.openai.com/v1/responses'
 ]
 
 { #category : 'AI models' }
@@ -63,8 +62,8 @@ OpenAIApi class >> openAI01 [
 
 { #category : 'accessing' }
 OpenAIApi class >> toolsEnabledFor: modelName [
-    (self reasoningLevelsFor: modelName) isNotEmpty
-        ifTrue: [ ^ false ].
+"    (self reasoningLevelsFor: modelName) isNotEmpty
+        ifTrue: [ ^ false ]."
 
     ^ self toolsEnabled
 ]
@@ -77,4 +76,38 @@ OpenAIApi class >> znClientHeaders: jsonPrompt [
 		headerAt: 'OpenAI-Organization' put: 'org-XmWYpGR0EsRqkASrs8HE3hy6';
 		headerAt: 'OpenAI-Project' put: 'proj_2QRIZLNVevImlaU0bMVzafGt';
 		headerAt: 'Content-Type' put: 'application/json'.
+]
+
+{ #category : 'adding' }
+OpenAIApi >> innerCallClass [
+	^ OpenAIResponsesInnerCall 
+]
+
+{ #category : 'adding' }
+OpenAIApi >> toolSpecification [
+	^ super toolSpecification collect: [ :tool |
+		| function |
+		function := tool at: 'function'.
+
+		Dictionary newFrom: {
+			'type' -> 'function'.
+			'name' -> (function at: 'name').
+			'description' -> (function at: 'description').
+			'parameters' -> (function at: 'parameters') } ]
+]
+
+{ #category : 'accessing' }
+OpenAIApi >> znClientEntity [
+    | entity  |
+
+    entity := {
+        'model' -> model.
+        'input' -> self jsonHistory.
+        'stream' -> false
+    } asOrderedCollection .
+
+    self toolsEnabled ifTrue: [ entity add: 'tools' -> self toolSpecification  ].
+    self reasoningLevel ifNotNil: [ :level |
+			entity add: 'reasoning' -> (Dictionary newFrom: { 'effort' -> level }) ].
+    ^ entity asArray 
 ]
