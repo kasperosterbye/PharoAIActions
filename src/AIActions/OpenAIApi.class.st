@@ -41,19 +41,6 @@ OpenAIApi class >> apiGenerateUrl [
 	^ 'https://api.openai.com/v1/responses'
 ]
 
-{ #category : 'AI models' }
-OpenAIApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
-	"Look at https://platform.openai.com/docs/models to see the list"
-
-	^ {
-		'gpt-5.5' -> #().
-		'gpt-5.6-luna' -> #(#none #low #medium #high #xhigh #max).
-		'gpt-5.6-terra' -> #(#none #low #medium #high #xhigh #max).
-		'gpt-5.6-sol' -> #(#none #low #medium #high #xhigh #max).
-		'gpt-6-astra' -> #(#low #medium #high #xhigh #max). }
-]
-
 { #category : 'accessing' }
 OpenAIApi class >> openAI01 [
 	"Method to read and trim the contents of a file named Eva01.txt."

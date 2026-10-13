@@ -138,7 +138,6 @@ AilienApi class >> modelNames [
 { #category : 'AI models' }
 AilienApi class >> modelNamesAndReasoning [
     "Return models and reasoning levels from the active configuration."
-
     self = AilienApi ifTrue: [
         ^ self provider modelNamesAndReasoning ].
     ^ AIAiliensFile current modelNamesAndReasoningFor: self name

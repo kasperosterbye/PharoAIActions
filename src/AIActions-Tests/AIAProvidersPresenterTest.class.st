@@ -40,6 +40,26 @@ AIAProvidersPresenterTest >> tearDown [
 ]
 
 { #category : 'tests' }
+AIAProvidersPresenterTest >> testRefreshDoesNotCompileMethods [
+    "Refreshing must not change compiled methods in provider classes."
+    | ailiensFile methodsBefore methodsAfter |
+
+    methodsBefore := AIAiliensTestApi class methodDict copy.
+
+    ailiensFile := AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha low
+- beta high'.
+    ailiensFile rootDirectory: rootDirectory.
+    ailiensFile save.
+
+    presenter refreshProviders.
+
+    methodsAfter := AIAiliensTestApi class methodDict.
+
+    self assert: methodsAfter equals: methodsBefore
+]
+
+{ #category : 'tests' }
 AIAProvidersPresenterTest >> testRefreshFallsBackWhenCurrentProviderDisappears [
 	"If the currently selected provider is removed from ailiens.txt,
 	refreshing must select a provider that is still active."
@@ -212,6 +232,46 @@ AIAProvidersPresenterTest >> testRefreshShowsOnlyProvidersListedInFile [
 		equals: {  ClaudeApi . MistralApi }.
 
 	self assert: (Smalltalk globals includesKey: #TogetherApi)
+]
+
+{ #category : 'tests' }
+AIAProvidersPresenterTest >> testRefreshUpdatesReasoningLevels [
+    "Refreshing must update model names and reasoning levels
+    directly from the file, without compiling methods."
+    | ailiensFile |
+
+    ailiensFile := AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha low medium
+- beta high'.
+    ailiensFile rootDirectory: rootDirectory.
+    ailiensFile save.
+
+    presenter refreshProviders.
+
+    self
+        assert: AIAiliensTestApi modelNames
+        equals: #( 'alpha' 'beta' ).
+    self
+        assert: (AIAiliensTestApi reasoningLevelsFor: 'alpha')
+        equals: #( #low #medium ).
+
+    ailiensFile := AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha high
+- gamma none low'.
+    ailiensFile rootDirectory: rootDirectory.
+    ailiensFile save.
+
+    presenter refreshProviders.
+
+    self
+        assert: AIAiliensTestApi modelNames
+        equals: #( 'alpha' 'gamma' ).
+    self
+        assert: (AIAiliensTestApi reasoningLevelsFor: 'alpha')
+        equals: #( #high ).
+    self
+        assert: (AIAiliensTestApi reasoningLevelsFor: 'gamma')
+        equals: #( #none #low )
 ]
 
 { #category : 'tests' }

@@ -83,19 +83,6 @@ GrokApi class >> grokKey [
     ^ (FileSystem disk workingDirectory / '../../grokcode00.txt') readStream contents trimBoth.
 ]
 
-{ #category : 'AI models' }
-GrokApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
-	"Check https://docs.x.ai/ for updates
-Console: https://console.x.ai/team/5e551e89-6f2d-49bc-88ba-edd9b27ae732/models/grok-code-fast-1"
-
-	^ {
-		'grok-4.20-0309-reasoning' -> #().
-		'grok-4.20-0309-non-reasoning' -> #().
-		'grok-4.3' -> #().
-		'grok-4.6' -> #(). }
-]
-
 { #category : 'accessing' }
 GrokApi class >> znClientHeaders: jsonPrompt [
 	"Sets the headers for the HTTP request to the Grok API, including the authorization token and content type"
