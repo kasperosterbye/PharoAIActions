@@ -9,6 +9,9 @@ Class {
 		'comments',
 		'models'
 	],
+	#classInstVars : [
+		'current'
+	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
 	#tag : 'AIApi'
@@ -17,6 +20,7 @@ Class {
 { #category : 'accessing' }
 AIAiliensFile class >> commentLinesOf: aProviderClass [
 	| method |
+self halt.
 	method := aProviderClass class
 		compiledMethodAt: #modelNamesAndReasoning
 		ifAbsent: [
@@ -25,6 +29,18 @@ AIAiliensFile class >> commentLinesOf: aProviderClass [
 				ifAbsent: [ ^ #() ] ].
 	^ (method ast comments collect: [ :each | each contents ])
 		flatCollect: [ :text | text lines collect: [ :line | line trimBoth ] ]
+]
+
+{ #category : 'accessing' }
+AIAiliensFile class >> current [
+    ^ current ifNil: [
+        current := self loadFrom: self defaultRootDirectory ]
+]
+
+{ #category : 'actions' }
+AIAiliensFile class >> current: anAIAiliensFile [
+    "Replace the shared configuration. Primarily intended for testing."
+    current := anAIAiliensFile
 ]
 
 { #category : 'accessing' }
@@ -54,6 +70,7 @@ AIAiliensFile class >> fromImage [
 	"Build the file contents from the model lists compiled in this image.
 	Ollama asks its server, and test providers do not belong in the file."
 	| ailiens |
+	self halt.
 	ailiens := self new.
 	(AilienApi providers reject: [ :cls |
 		cls package name endsWith: '-Tests' ] )
@@ -100,6 +117,23 @@ AIAiliensFile class >> loadRawFrom: aDirectory [
 		yourself
 ]
 
+{ #category : 'actions' }
+AIAiliensFile class >> reload [
+    "Reload the configuration from disk, replacing the shared instance."
+    ^ current := self loadFrom: self defaultRootDirectory
+]
+
+{ #category : 'as yet unclassified' }
+AIAiliensFile class >> reloadFrom: aDirectory [
+    "Reload the configuration only if every provider is valid.
+    Leave the current configuration unchanged on failure."
+    | candidate |
+    candidate := self loadFrom: aDirectory.
+    candidate providerNames do: [ :name |
+        candidate providerClassFor: name ].
+    ^ current := candidate
+]
+
 { #category : 'initialization' }
 AIAiliensFile >> addProvider: aProviderName comment: lines modelsAndReasoning: associations [
 	self ensureProvider: aProviderName.
@@ -128,6 +162,7 @@ AIAiliensFile >> comments: anObject [
 { #category : 'installing' }
 AIAiliensFile >> compileModelsOf: aProviderName into: aProviderClass [
 	| comment source |
+	self halt.
 	comment := (self commentFor: aProviderName) copyReplaceAll: '"' with: '""'.
 	source := String streamContents: [ :stream |
 		stream nextPutAll: 'modelNamesAndReasoning'; cr.
@@ -177,9 +212,10 @@ AIAiliensFile >> install [
 	"Validate every provider before compiling any, so a bad file
 	leaves the image untouched."
 	| classes |
+	self halt.
 	classes := self providerNames collect: [ :name | self providerClassFor: name ].
 	classes with: self providerNames do: [ :cls :name |
-		self compileModelsOf: name into: cls ]
+		"self compileModelsOf: name into: cls" ]
 ]
 
 { #category : 'accessing' }

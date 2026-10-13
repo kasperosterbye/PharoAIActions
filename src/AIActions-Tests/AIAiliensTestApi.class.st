@@ -8,15 +8,3 @@ Class {
 	#package : 'AIActions-Tests',
 	#tag : 'AIApi-Tests'
 }
-
-{ #category : 'AI models' }
-AIAiliensTestApi class >> modelNames [
-	^ (self modelNamesAndReasoning collect: [ :each | each key ]) asArray
-]
-
-{ #category : 'AI models' }
-AIAiliensTestApi class >> modelNamesAndReasoning [
-	"This is auto generated from ../Pharo/ailiens.txt file"
-	^ {
-		'alpha' -> #(). }
-]

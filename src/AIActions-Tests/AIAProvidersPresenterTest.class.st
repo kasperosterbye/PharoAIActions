@@ -13,7 +13,8 @@ Class {
 	#superclass : 'TestCase',
 	#instVars : [
 		'rootDirectory',
-		'presenter'
+		'presenter',
+		'originalConfiguration'
 	],
 	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
@@ -21,12 +22,21 @@ Class {
 }
 
 { #category : 'running' }
-AIAProvidersPresenterTest >> setUp [ 
-	super setUp.
-	rootDirectory := FileSystem memory root / 'AIAiliensTest'.
-	rootDirectory ensureCreateDirectory.
-	presenter := AIAProvidersPresenter new.
-	presenter ailiensDirectory: rootDirectory
+AIAProvidersPresenterTest >> setUp [
+    "Prepare an isolated filesystem and preserve the active configuration."
+    super setUp.
+    originalConfiguration := AIAiliensFile current.
+    rootDirectory := FileSystem memory root / 'AIAiliensTest'.
+    rootDirectory ensureCreateDirectory.
+    presenter := AIAProvidersPresenter new.
+    presenter ailiensDirectory: rootDirectory
+]
+
+{ #category : 'running' }
+AIAProvidersPresenterTest >> tearDown [
+    "Restore the active configuration after each test."
+    AIAiliensFile current: originalConfiguration.
+    super tearDown
 ]
 
 { #category : 'tests' }
