@@ -51,11 +51,12 @@ MistralApi class >> esug [
 
 { #category : 'AI models' }
 MistralApi class >> modelNamesAndReasoning [
+	"This is generated from ../Pharo/ailiens.txt file"
 	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
 
 	^ {
 		'codestral-latest' -> #().
-		'zai-glm-latest' -> #().
+		'zai-glm-5-3' -> #().
 		'mistral-medium-3-5' -> #().
 		'mistral-large-latest' -> #(). }
 ]

@@ -45,11 +45,11 @@ OllamaApi class >> apiGenerateUrl [
 
 { #category : 'AI models' }
 OllamaApi class >> modelNamesAndReasoning [
+	"This is generated from ../Pharo/ailiens.txt file"
 	"Look at https://ollama.com/search"
 
 	^ {
-		'llama3.2:latest' -> #().
-		'Kilroy6.9:left' -> #(). }
+		'llama3.2:latest' -> #(). }
 ]
 
 { #category : 'accessing' }

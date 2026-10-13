@@ -64,7 +64,9 @@ String >> maxFirst: index [
 { #category : '*AIActions' }
 String >> p [
 	| resp |
-	(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^''].
+	[(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^'']]
+		on: Error
+		do: [].
 	resp := (AIAHistory dDiscussion 
 		user: self;
 		getResponse;
@@ -87,6 +89,7 @@ String >> q [
 
 { #category : '*AIActions' }
 String >> q0 [
+	"Send the receiver as a prompt to a new AI conversation and return the response"
 	
 	[(thisContext sender method name = 'StMethodFinderSend>>#evaluate') ifTrue: [ ^'']]
 		on: Error

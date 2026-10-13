@@ -16,6 +16,7 @@ AIAiliensTestApi class >> modelNames [
 
 { #category : 'AI models' }
 AIAiliensTestApi class >> modelNamesAndReasoning [
+	"This is auto generated from ../Pharo/ailiens.txt file"
 	^ {
 		'alpha' -> #(). }
 ]

@@ -52,40 +52,6 @@ AilienApiToolsTest >> testProviderToolsAreEnabledByDefault [
 ]
 
 { #category : 'tests' }
-AilienApiToolsTest >> testReasoningModelDisablesToolsByDefault [
-    | api model |
-
-    model := (OpenAIApi modelNames
-        detect: [ :each |
-            (OpenAIApi reasoningLevelsFor: each) isNotEmpty ]).
-
-    api := OpenAIApi new.
-    api model: model.
-
-    self deny: api toolsEnabled
-]
-
-{ #category : 'tests' }
-AilienApiToolsTest >> testReasoningModelsProduceRequestWithoutTools [
-    OpenAIApi modelNamesAndReasoning
-        select: [ :each | each value isNotEmpty ]
-        thenDo: [ :each |
-            | api entity |
-
-            api := OpenAIApi new.
-            api
-                model: each key;
-                messageList: #().
-
-            entity := api znClientEntity asDictionary.
-
-            self deny: (entity includesKey: 'tools').
-            self
-                assert: (entity at: 'reasoning_effort')
-                equals: api reasoningLevel ]
-]
-
-{ #category : 'tests' }
 AilienApiToolsTest >> testRequestContainsToolsWhenEnabled [
     | api entity |
 

@@ -85,6 +85,7 @@ GrokApi class >> grokKey [
 
 { #category : 'AI models' }
 GrokApi class >> modelNamesAndReasoning [
+	"This is generated from ../Pharo/ailiens.txt file"
 	"Check https://docs.x.ai/ for updates
 Console: https://console.x.ai/team/5e551e89-6f2d-49bc-88ba-edd9b27ae732/models/grok-code-fast-1"
 

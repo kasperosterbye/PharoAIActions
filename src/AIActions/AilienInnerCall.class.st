@@ -71,14 +71,13 @@ AilienInnerCall >> callLLM [
 { #category : 'checking' }
 AilienInnerCall >> check [
 	"Continues tool calls writes assistant content or handles api errors"
-
 	| message content |
 	(llmReply includesKey: 'error') ifTrue: [ 
 		self responseError. 
 		^ '*notool*'].
 	message := (llmReply at: 'choices') first at: 'message'.
-	content := message at: 'content' ifAbsent: [ nil ].
-	(content isNotNil and: [ content isNotEmpty  ]) ifTrue: [
+	content := self textFromContent: (message at: 'content' ifAbsent: [ nil ]).
+	(content isNotNil and: [ content isNotEmpty ]) ifTrue: [
 			outer history assistant: content" from: self".
 			^ '*notool*'].
 	^ message.
@@ -162,6 +161,21 @@ AilienInnerCall >> responseError [
 	error := llmReply at: 'error'.
 	outer history assistant: 'API Error: ' , (error at: 'type') , ' - ' , (error at: 'message') "from: self".
 	^ self
+]
+
+{ #category : 'checking' }
+AilienInnerCall >> textFromContent: content [
+	"Normalise the assistant content to a String.
+	Plain models return a String. Reasoning models (e.g. Mistral's zai-glm-*) return an Array of chunks:
+	  {type: 'thinking', thinking: [...]} and {type: 'text', text: '...'}.
+	We keep only the text chunks and drop the thinking chunks."
+	content isNil ifTrue: [ ^ nil ].
+	content isString ifTrue: [ ^ content ].
+	content isCollection ifFalse: [ ^ content printString ].
+	^ String streamContents: [ :s |
+		content do: [ :chunk |
+			(chunk isDictionary and: [ (chunk at: 'type' ifAbsent: [ nil ]) = 'text' ])
+				ifTrue: [ s nextPutAll: (chunk at: 'text' ifAbsent: [ '' ]) ] ] ]
 ]
 
 { #category : 'accessing' }

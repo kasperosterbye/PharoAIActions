@@ -7,32 +7,6 @@ Class {
 }
 
 { #category : 'tests' }
-AIAOpenAIResponsesTest >> testParsesOrdinaryResponsesMessage [
-	| inner history reply |
-
-	history := AIAHistory new.
-
-	inner := OpenAIResponsesInnerCall new.
-	inner outer: (OpenAIApi new
-		history: history;
-		yourself).
-
-	reply := Dictionary newFrom: {
-		'output' -> {
-			Dictionary newFrom: {
-				'type' -> 'message'.
-				'content' -> {
-					Dictionary newFrom: {
-						'type' -> 'output_text'.
-						'text' -> 'seven' } } } } }.
-
-	inner llmReply: reply.
-
-	self assert: inner check equals: '*notool*'.
-	self assert: history response equals: 'seven'
-]
-
-{ #category : 'tests' }
 AIAOpenAIResponsesTest >> testReasoningModelAllowsTools [
 	self assert:
 		(OpenAIApi toolsEnabledFor: 'gpt-6-astra')

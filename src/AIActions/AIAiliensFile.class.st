@@ -131,6 +131,7 @@ AIAiliensFile >> compileModelsOf: aProviderName into: aProviderClass [
 	comment := (self commentFor: aProviderName) copyReplaceAll: '"' with: '""'.
 	source := String streamContents: [ :stream |
 		stream nextPutAll: 'modelNamesAndReasoning'; cr.
+		stream tab ; nextPutAll: '"This is auto generated from ../Pharo/ailiens.txt file"' ; cr.
 		comment ifNotEmpty: [
 			stream tab; nextPut: $"; nextPutAll: comment; nextPut: $"; cr; cr ].
 		stream tab; nextPutAll: '^ {'.

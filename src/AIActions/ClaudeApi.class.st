@@ -55,6 +55,7 @@ ClaudeApi class >> claudeKey [
 
 { #category : 'AI models' }
 ClaudeApi class >> modelNamesAndReasoning [
+	"This is generated from ../Pharo/ailiens.txt file"
 	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
 
 	^ {

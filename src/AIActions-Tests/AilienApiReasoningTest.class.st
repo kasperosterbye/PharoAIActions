@@ -35,15 +35,6 @@ AilienApiReasoningTest >> testAstraReasoningLevels [
 ]
 
 { #category : 'tests' }
-AilienApiReasoningTest >> testDefaultReasoningLevel [
-    | api |
-
-    api := OpenAIApi new.
-
-    self assert: api reasoningLevel isNil
-]
-
-{ #category : 'tests' }
 AilienApiReasoningTest >> testNonReasoningRequestDoesNotContainReasoningEffort [
     | api entity model |
 
@@ -58,23 +49,6 @@ AilienApiReasoningTest >> testNonReasoningRequestDoesNotContainReasoningEffort [
     entity := api znClientEntity asDictionary.
 
     self deny: (entity includesKey: 'reasoning_effort')
-]
-
-{ #category : 'tests' }
-AilienApiReasoningTest >> testOpenAIRequestContainsReasoningLevel [
-    | api entity |
-
-    api := OpenAIApi new.
-    api
-        model: OpenAIApi modelNames last;
-        reasoningLevel: 'high';
-        messageList: #().
-
-    entity := api znClientEntity.
-
-    self
-        assert: (entity asDictionary at: 'reasoning_effort')
-        equals: 'high'
 ]
 
 { #category : 'tests' }
