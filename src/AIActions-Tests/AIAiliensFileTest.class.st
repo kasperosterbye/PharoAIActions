@@ -22,91 +22,11 @@ AIAiliensFileTest >> setUp [
 ]
 
 { #category : 'tests' }
-AIAiliensFileTest >> testExportFromImageMatchesCurrentModelNames [
-	"The issue asks that the current data can be saved. Every provider in
-	the image must therefore appear in the export, in the same order, with
-	exactly the models it answers today."
-	| ailiens |
-	ailiens := AIAiliensFile fromImage.
-	self
-		assert: ailiens providerNames
-		equals: (AilienApi providers collect: [ :cls | cls name ]).
-	AilienApi providers do: [ :cls |
-		self
-			assert: (ailiens modelNamesFor: cls name)
-			equals: cls modelNames asArray ]
-]
-
-{ #category : 'tests' }
-AIAiliensFileTest >> testInstallCompilesModelNames [
-	"Installing must leave the image working as today: the provider answers
-	its models and their reasoning levels without reading the file again."
-	(AIAiliensFile fromString: '# AIAiliensTestApi
-- alpha
-- beta low high') install.
-	self assert: AIAiliensTestApi modelNames asArray equals: #( 'alpha' 'beta' ).
-	self
-		assert: (AIAiliensTestApi reasoningLevelsFor: 'beta')
-		equals: #( #low #high )
-]
-
-{ #category : 'tests' }
-AIAiliensFileTest >> testInstallFallsBackToFirstWhenDefaultRemoved [
-	"A model removed from the file can no longer be called. The default
-	must fall back to the first model rather than keep a dead name."
-	(AIAiliensFile fromString: '# AIAiliensTestApi
-- alpha
-- beta') install.
-	AIAiliensTestApi defaultModel: 2.
-	(AIAiliensFile fromString: '# AIAiliensTestApi
-- alpha') install.
-	self assert: AIAiliensTestApi defaultModel equals: 'alpha'
-]
-
-{ #category : 'tests' }
-AIAiliensFileTest >> testInstallKeepsCurrentProvider [
-	"Reloading model lists is not choosing a provider. Whatever provider is
-	selected, Mistral by default, must still be selected afterwards."
-	| originalProvider |
-	originalProvider := AilienApi provider.
-	[
-		AilienApi provider: MistralApi.
-		(AIAiliensFile fromString: '# AIAiliensTestApi
-- alpha') install.
-		self assert: AilienApi provider equals: MistralApi
-	] ensure: [
-		AilienApi provider: originalProvider ]
-]
-
-{ #category : 'tests' }
-AIAiliensFileTest >> testInstallKeepsDefaultModelByName [
-	"Another image may reorder the list. The selected model must stay
-	selected, not whichever model now sits at the old position."
-	(AIAiliensFile fromString: '# AIAiliensTestApi
-- alpha
-- beta
-- gamma') install.
-	AIAiliensTestApi defaultModel: 3.
-	(AIAiliensFile fromString: '# AIAiliensTestApi
-- gamma
-- alpha') install.
-	self assert: AIAiliensTestApi defaultModel equals: 'gamma'
-]
-
-{ #category : 'tests' }
-AIAiliensFileTest >> testInstallRejectsUnknownProviderAndChangesNothing [
-	"A typo in a heading must not leave the image half updated. Install
-	checks every provider first and compiles nothing if one is unknown."
-	(AIAiliensFile fromString: '# AIAiliensTestApi
-- alpha') install.
-	self
-		should: [
-			(AIAiliensFile fromString: '# AIAiliensTestApi
-- beta
-# NoSuchApi
-- gamma') install ]
-		raise: Error.
-	self assert: AIAiliensTestApi modelNames asArray equals: #( 'alpha' )
+AIAiliensFileTest >> testCurrentReturnsSameInstance [
+    | first second |
+    first := AIAiliensFile current.
+    second := AIAiliensFile current.
+    self assert: first identicalTo: second
 ]
 
 { #category : 'tests' }
@@ -168,6 +88,227 @@ AIAiliensFileTest >> testParseReasoningLevels [
 		equals: {
 			'gpt-5.5' -> #().
 			'gpt-5.6-luna' -> #( #none #low #medium #high #xhigh #max ) }
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testProviderReadsCurrentConfiguration [
+    "A provider must obtain its models from the active configuration."
+    | original |
+    original := AIAiliensFile current.
+    [
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- beta low high
+- gamma').
+
+        self
+            assert: AIAiliensTestApi modelNames
+            equals: #( 'beta' 'gamma' ).
+
+        self
+            assert: (AIAiliensTestApi reasoningLevelsFor: 'beta')
+            equals: #( #low #high )
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadDoesNotCompileModelNames [
+    "Changing the active configuration must update models and reasoning
+    levels without modifying compiled methods."
+    | original methodBefore methodAfter |
+    original := AIAiliensFile current.
+    methodBefore := AilienApi class
+        compiledMethodAt: #modelNamesAndReasoning.
+
+    [
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha
+- beta low high').
+
+        self
+            assert: AIAiliensTestApi modelNames
+            equals: #( 'alpha' 'beta' ).
+
+        self
+            assert: (AIAiliensTestApi reasoningLevelsFor: 'beta')
+            equals: #( #low #high ).
+
+        methodAfter := AilienApi class
+            compiledMethodAt: #modelNamesAndReasoning.
+
+        self assert: methodBefore identicalTo: methodAfter
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadFallsBackToFirstWhenDefaultRemoved [
+    "When the selected model disappears, use the first available model."
+    | original |
+    original := AIAiliensFile current.
+    [
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha
+- beta').
+
+        AIAiliensTestApi defaultModel: 2.
+
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- gamma
+- alpha').
+
+        self
+            assert: AIAiliensTestApi defaultModel
+            equals: 'gamma'
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadIsAtomic [
+    "A failed reload must preserve the entire active configuration."
+    | original file |
+    original := AIAiliensFile current.
+    file := rootDirectory / AIAiliensFile fileName.
+    [
+        file writeStreamDo: [ :stream |
+            stream nextPutAll: '# MistralApi
+- changed-model
+# NoSuchApi
+- invalid-model' ].
+
+        self
+            should: [ AIAiliensFile reloadFrom: rootDirectory ]
+            raise: Error.
+
+        self assert: AIAiliensFile current identicalTo: original
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadKeepsCurrentProvider [
+    "Changing the model configuration must not change the selected provider."
+    | originalConfiguration originalProvider |
+    originalConfiguration := AIAiliensFile current.
+    originalProvider := AilienApi provider.
+    [
+        AilienApi provider: MistralApi.
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha').
+
+        self assert: AilienApi provider equals: MistralApi
+    ] ensure: [
+        AIAiliensFile current: originalConfiguration.
+        AilienApi provider: originalProvider ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadKeepsDefaultModelByName [
+    "Reloading a reordered model list must preserve the selected model by name."
+    | original |
+    original := AIAiliensFile current.
+    [
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha
+- beta
+- gamma').
+
+        AIAiliensTestApi defaultModel: 3.
+
+        AIAiliensFile current:
+            (AIAiliensFile fromString: '# AIAiliensTestApi
+- gamma
+- alpha').
+
+        self
+            assert: AIAiliensTestApi defaultModel
+            equals: 'gamma'
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadMissingFileUsesDefault [
+    "A missing file must load the default configuration."
+    | original |
+    original := AIAiliensFile current.
+    [
+        AIAiliensFile reloadFrom: rootDirectory.
+        self
+            assert: AIAiliensFile current providerNames
+            equals: AIAiliensFile default providerNames.
+        self
+            assert: (AIAiliensFile current modelNamesFor: #MistralApi)
+            equals: (AIAiliensFile default modelNamesFor: #MistralApi)
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadReadsUpdatedFile [
+    "Reload must replace the shared configuration with the current file contents."
+    | original file |
+    original := AIAiliensFile current.
+    file := rootDirectory / AIAiliensFile fileName.
+    [
+        file writeStreamDo: [ :stream |
+            stream nextPutAll: '# MistralApi
+- model-one' ].
+
+        AIAiliensFile reloadFrom: rootDirectory.
+        self
+            assert: (AIAiliensFile current modelNamesFor: #MistralApi)
+            equals: #( 'model-one' ).
+
+        file ensureDelete.
+        file writeStreamDo: [ :stream |
+            stream nextPutAll: '# MistralApi
+- model-two' ].
+
+        AIAiliensFile reloadFrom: rootDirectory.
+        self
+            assert: (AIAiliensFile current modelNamesFor: #MistralApi)
+            equals: #( 'model-two' )
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadRejectsUnknownProvider [
+    "An unknown provider must not replace the active configuration."
+    | original file |
+    original := AIAiliensFile current.
+    file := rootDirectory / AIAiliensFile fileName.
+    [
+        file writeStreamDo: [ :stream |
+            stream nextPutAll: '# NoSuchApi
+- model-one' ].
+        self
+            should: [
+                AIAiliensFile reloadFrom: rootDirectory ]
+            raise: Error.
+        self assert: AIAiliensFile current identicalTo: original
+    ] ensure: [
+        AIAiliensFile current: original ]
+]
+
+{ #category : 'tests' }
+AIAiliensFileTest >> testReloadReplacesCurrent [
+	"Ensures that reloading the AIAiliensFile replaces the current instance with a new one"
+    | original |
+    original := AIAiliensFile current.
+    [
+        AIAiliensFile reload.
+        self deny: AIAiliensFile current identicalTo: original
+    ] ensure: [
+        AIAiliensFile current: original ]
 ]
 
 { #category : 'tests' }

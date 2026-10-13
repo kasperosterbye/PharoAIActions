@@ -130,14 +130,17 @@ AilienApi class >> lastHistory [
 
 { #category : 'AI models' }
 AilienApi class >> modelNames [
-	self = AilienApi ifTrue: [ ^ self provider modelNames ].
-	^ (self modelNamesAndReasoning collect: [ :each | each key ]) asArray
+    "Return model names from the active configuration."
+    self = AilienApi ifTrue: [ ^ self provider modelNames ].
+    ^ AIAiliensFile current modelNamesFor: self name
 ]
 
-{ #category : 'responses' }
+{ #category : 'AI models' }
 AilienApi class >> modelNamesAndReasoning [
-	"Returns each available provider model with its supported reasoning levels"
-	 ^ self modelNames collect: [ :model | model -> #() ].
+    "Return models and reasoning levels from the active configuration."
+    self = AilienApi ifTrue: [
+        ^ self provider modelNamesAndReasoning ].
+    ^ AIAiliensFile current modelNamesAndReasoningFor: self name
 ]
 
 { #category : 'instance creation' }
@@ -242,12 +245,11 @@ AilienApi class >> providers [
 
 { #category : 'responses' }
 AilienApi class >> reasoningLevelsFor: modelName [
+    "Return reasoning levels for a model from the active configuration."
     | association |
-
     association := self modelNamesAndReasoning
         detect: [ :each | each key = modelName ]
         ifNone: [ ^ #() ].
-
     ^ association value
 ]
 

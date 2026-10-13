@@ -49,18 +49,6 @@ MistralApi class >> esug [
 	^ ZnClient new url: 'https://maarumlam.dk/kasper/pharoCommentsByMistral.txt'; get.
 ]
 
-{ #category : 'AI models' }
-MistralApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
-	"Look at https://docs.mistral.ai/getting-started/models/models_overview/ to see the list"
-
-	^ {
-		'codestral-latest' -> #().
-		'zai-glm-5-3' -> #().
-		'mistral-medium-3-5' -> #().
-		'mistral-large-latest' -> #(). }
-]
-
 { #category : 'accessing' }
 MistralApi class >> token [
 	"Return the API token for Mistral, read from a local file.

@@ -54,18 +54,6 @@ ClaudeApi class >> claudeKey [
 ]
 
 { #category : 'AI models' }
-ClaudeApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
-	"Look at https://docs.anthropic.com/en/docs/about-claude/models/overview to see the list"
-
-	^ {
-		'claude-haiku-4-5-20251001' -> #().
-		'claude-sonnet-5' -> #().
-		'claude-opus-5' -> #().
-		'claude-fable-5-1' -> #(). }
-]
-
-{ #category : 'AI models' }
 ClaudeApi class >> znClientHeaders: jsonPrompt [
 	"Configures and returns the headers for the HTTP client used to interact with the Claude API, including the API key and version information"
 	jsonPrompt

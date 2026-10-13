@@ -43,15 +43,6 @@ OllamaApi class >> apiGenerateUrl [
 	
 ]
 
-{ #category : 'AI models' }
-OllamaApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
-	"Look at https://ollama.com/search"
-
-	^ {
-		'llama3.2:latest' -> #(). }
-]
-
 { #category : 'accessing' }
 OllamaApi class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"

@@ -37,19 +37,6 @@ TogetherApi class >> apiGenerateUrl [
     
 ]
 
-{ #category : 'AI models' }
-TogetherApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
-	"Check https://api.together.ai/models (use GitHub at login) for updates
-Account area: https://api.together.ai/settings/api-keys"
-
-	^ {
-		'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8' -> #().
-		'deepseek-ai/DeepSeek-V3.1' -> #().
-		'deepseek-ai/DeepSeek-V4-Pro' -> #().
-		'meta-llama/Llama-3.3-70B-Instruct-Turbo' -> #(). }
-]
-
 { #category : 'accessing' }
 TogetherApi class >> togetherKey [
 	"Returns the Together API key from a local file together txt"
