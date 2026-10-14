@@ -157,18 +157,18 @@ AIAProvidersPresenter >> providerRoots [
 
 { #category : 'layout' }
 AIAProvidersPresenter >> refreshProviders [
-	| ailiens activeProviders |
+    "Reload model configuration without compiling provider methods.
+    Preserve the selected provider if it remains available."
+    | ailiens activeProviders |
+    ailiens := AIAiliensFile reloadFrom: self ailiensDirectory.
 
-	ailiens := AIAiliensFile loadFrom: self ailiensDirectory.
-	ailiens install.
+    activeProviders := ailiens providerNames collect: [ :name |
+        ailiens providerClassFor: name ].
 
-	activeProviders := ailiens providerNames collect: [ :name |
-		Smalltalk globals at: name ].
+    (activeProviders includes: AilienApi provider)
+        ifFalse: [ AilienApi provider: activeProviders first ].
 
-	(activeProviders includes: AilienApi provider)
-		ifFalse: [ AilienApi provider: activeProviders first ].
-
-	providers roots: activeProviders
+    providers roots: activeProviders
 ]
 
 { #category : 'initialization' }

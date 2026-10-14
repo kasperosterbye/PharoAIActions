@@ -13,7 +13,8 @@ Class {
 	#superclass : 'TestCase',
 	#instVars : [
 		'rootDirectory',
-		'presenter'
+		'presenter',
+		'originalConfiguration'
 	],
 	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
@@ -21,12 +22,41 @@ Class {
 }
 
 { #category : 'running' }
-AIAProvidersPresenterTest >> setUp [ 
-	super setUp.
-	rootDirectory := FileSystem memory root / 'AIAiliensTest'.
-	rootDirectory ensureCreateDirectory.
-	presenter := AIAProvidersPresenter new.
-	presenter ailiensDirectory: rootDirectory
+AIAProvidersPresenterTest >> setUp [
+    "Prepare an isolated filesystem and preserve the active configuration."
+    super setUp.
+    originalConfiguration := AIAiliensFile current.
+    rootDirectory := FileSystem memory root / 'AIAiliensTest'.
+    rootDirectory ensureCreateDirectory.
+    presenter := AIAProvidersPresenter new.
+    presenter ailiensDirectory: rootDirectory
+]
+
+{ #category : 'running' }
+AIAProvidersPresenterTest >> tearDown [
+    "Restore the active configuration after each test."
+    AIAiliensFile current: originalConfiguration.
+    super tearDown
+]
+
+{ #category : 'tests' }
+AIAProvidersPresenterTest >> testRefreshDoesNotCompileMethods [
+    "Refreshing must not change compiled methods in provider classes."
+    | ailiensFile methodsBefore methodsAfter |
+
+    methodsBefore := AIAiliensTestApi class methodDict copy.
+
+    ailiensFile := AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha low
+- beta high'.
+    ailiensFile rootDirectory: rootDirectory.
+    ailiensFile save.
+
+    presenter refreshProviders.
+
+    methodsAfter := AIAiliensTestApi class methodDict.
+
+    self assert: methodsAfter equals: methodsBefore
 ]
 
 { #category : 'tests' }
@@ -202,6 +232,46 @@ AIAProvidersPresenterTest >> testRefreshShowsOnlyProvidersListedInFile [
 		equals: {  ClaudeApi . MistralApi }.
 
 	self assert: (Smalltalk globals includesKey: #TogetherApi)
+]
+
+{ #category : 'tests' }
+AIAProvidersPresenterTest >> testRefreshUpdatesReasoningLevels [
+    "Refreshing must update model names and reasoning levels
+    directly from the file, without compiling methods."
+    | ailiensFile |
+
+    ailiensFile := AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha low medium
+- beta high'.
+    ailiensFile rootDirectory: rootDirectory.
+    ailiensFile save.
+
+    presenter refreshProviders.
+
+    self
+        assert: AIAiliensTestApi modelNames
+        equals: #( 'alpha' 'beta' ).
+    self
+        assert: (AIAiliensTestApi reasoningLevelsFor: 'alpha')
+        equals: #( #low #medium ).
+
+    ailiensFile := AIAiliensFile fromString: '# AIAiliensTestApi
+- alpha high
+- gamma none low'.
+    ailiensFile rootDirectory: rootDirectory.
+    ailiensFile save.
+
+    presenter refreshProviders.
+
+    self
+        assert: AIAiliensTestApi modelNames
+        equals: #( 'alpha' 'gamma' ).
+    self
+        assert: (AIAiliensTestApi reasoningLevelsFor: 'alpha')
+        equals: #( #high ).
+    self
+        assert: (AIAiliensTestApi reasoningLevelsFor: 'gamma')
+        equals: #( #none #low )
 ]
 
 { #category : 'tests' }
