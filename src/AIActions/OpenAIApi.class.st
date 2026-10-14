@@ -43,7 +43,7 @@ OpenAIApi class >> apiGenerateUrl [
 
 { #category : 'AI models' }
 OpenAIApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
+	"This is auto generated from ../Pharo/ailiens.txt file"
 	"Look at https://platform.openai.com/docs/models to see the list"
 
 	^ {

@@ -45,7 +45,7 @@ OllamaApi class >> apiGenerateUrl [
 
 { #category : 'AI models' }
 OllamaApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
+	"This is auto generated from ../Pharo/ailiens.txt file"
 	"Look at https://ollama.com/search"
 
 	^ {

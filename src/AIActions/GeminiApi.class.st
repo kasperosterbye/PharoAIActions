@@ -23,7 +23,7 @@ GeminiApi class >> geminiKey [
 
 { #category : 'AI models' }
 GeminiApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
+	"This is auto generated from ../Pharo/ailiens.txt file"
 	"Look at https://ai.google.dev/gemini-api/docs/models to see the list"
 
 	^ {

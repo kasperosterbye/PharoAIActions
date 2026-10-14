@@ -39,7 +39,7 @@ TogetherApi class >> apiGenerateUrl [
 
 { #category : 'AI models' }
 TogetherApi class >> modelNamesAndReasoning [
-	"This is generated from ../Pharo/ailiens.txt file"
+	"This is auto generated from ../Pharo/ailiens.txt file"
 	"Check https://api.together.ai/models (use GitHub at login) for updates
 Account area: https://api.together.ai/settings/api-keys"
 
