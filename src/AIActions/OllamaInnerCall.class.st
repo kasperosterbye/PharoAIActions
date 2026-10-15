@@ -26,13 +26,23 @@ OllamaInnerCall >> check [
 ]
 
 { #category : 'adding' }
-OllamaInnerCall >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
-    | func result |
-    func := call at: 'function'.
-    result := self 
-        executeToolNamed: (func at: 'name') 
-        withArgs: (func at: 'arguments').
+OllamaInnerCall >> processToolCall: call history: aHistory [
+    "Execute an Ollama tool call, record it, and return a native tool result."
+    | function name arguments result |
+
+    function := call at: 'function'.
+    name := function at: 'name'.
+    arguments := function at: 'arguments'.
+
+    result := AilienApiTool
+        executeToolNamed: name
+        withArgs: arguments.
+
+    aHistory
+        toolCall: name
+        arguments: (STONJSON toString: arguments)
+        result: result.
+
     ^ 'tool' -> (Dictionary newFrom: {
         'tool_call_id' -> (call at: 'id').
         'content' -> result })

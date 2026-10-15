@@ -406,10 +406,18 @@ AIAHistory >> printPrompt [
 
 { #category : 'accessing' }
 AIAHistory >> response [
+    "Return the final assistant response, excluding tool interactions."
 
-	(messages last key = 'assistant')
-		ifTrue: [ ^ messages last value ]
-		ifFalse: [ ^ nil ]
+    | lastMessage |
+    messages ifEmpty: [ ^ nil ].
+
+    lastMessage := messages last.
+
+    lastMessage key = 'assistant' ifFalse: [ ^ nil ].
+    (lastMessage value beginsWith: '[tool_call]')
+        ifTrue: [ ^ nil ].
+
+    ^ lastMessage value
 ]
 
 { #category : 'accessing' }
@@ -508,6 +516,22 @@ AIAHistory >> title [
 AIAHistory >> title: anObject [
 
 	title := anObject
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistory >> toolCall: aName arguments: arguments result: result [
+    "Record a completed tool interaction as conversational context
+    that remains available to subsequent LLM turns."
+    | text |
+    text := String streamContents: [ :stream |
+        stream
+            << '[tool_call]'; cr;
+            << 'name: '; << aName; cr;
+            << 'arguments: '; << arguments; cr;
+            << '[tool_response]'; cr;
+            << 'result: '; << result ].
+
+    self messagesAdd: 'assistant' -> text
 ]
 
 { #category : 'accessing' }

@@ -41,7 +41,7 @@ Class {
 		'rootDirectory',
 		'reloadButton',
 		'deleteButton',
-		'tagLlmButton'
+		'showToolsButton'
 	],
 	#category : 'AIActions-UIPresenters',
 	#package : 'AIActions',
@@ -171,7 +171,7 @@ AIAHistoryPresenter >> defaultLayout [
 		add: SpBoxLayout newLeftToRight;
 		add: deleteButton ;
 		add: SpBoxLayout newLeftToRight;
-		add: tagLlmButton ;
+		add: showToolsButton ;
 		yourself.
 
 	leftContent := SpPanedLayout newVertical
@@ -278,7 +278,18 @@ AIAHistoryPresenter >> displayDetailsForHistory: aHistory [
 
 { #category : 'displaying' }
 AIAHistoryPresenter >> displayHistory: aHistory [
-	self displayMessages: aHistory displayMessageList
+    "Display the selected conversation, optionally excluding tool interactions."
+
+    | messages |
+    messages := aHistory displayMessageList.
+
+    showToolsButton state ifFalse: [
+        messages := messages reject: [ :message |
+            message key = 'assistant'
+                and: [
+                    message value beginsWith: '[tool_call]' ] ] ].
+
+    self displayMessages: messages
 ]
 
 { #category : 'displaying' }
@@ -404,15 +415,13 @@ AIAHistoryPresenter >> initializePresenters [
 		yourself.
 	sendButton disable.
 	
-	tagLlmButton := self newToggleButton
-		label: 'Tag LLM';
-		help: 'Store provider and model with future assistant responses';
-		state: AIAHistory recordLlmInfo;
-		whenActivatedDo: [
-			AIAHistory recordLlmInfo: true ];
-		whenDeactivatedDo: [
-			AIAHistory recordLlmInfo: false ];
-		yourself.
+	showToolsButton := self newToggleButton
+   		label: 'Show Tools';
+		help: 'Show or hide tool interactions in the conversation';
+    	state: true;
+    	whenActivatedDo: [ self refreshSelectedHistory ];
+    	whenDeactivatedDo: [ self refreshSelectedHistory ];
+    	yourself.
 
 	newHistoryFactory := [ AIAHistory new ].
 
@@ -504,6 +513,16 @@ AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
 
 	replacements ifNotEmpty: [
 		historyTree selectItems: replacements ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> refreshSelectedHistory [
+    "Refresh the displayed conversation using the current visibility settings."
+
+    | selectedNode |
+    selectedNode := historyTree selectedItem.
+    selectedNode ifNil: [ ^ self ].
+    self displayHistory: selectedNode history
 ]
 
 { #category : 'history globals' }
