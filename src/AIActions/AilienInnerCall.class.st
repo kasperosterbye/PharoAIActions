@@ -85,14 +85,11 @@ AilienInnerCall >> check [
 
 { #category : 'trait tools support' }
 AilienInnerCall >> executeToolNamed: name withArgs: args [
-	"Executes a tool with the given name and arguments, returning the result"
-	AilienApiTool subclasses do: [ :tool | 
-		| instance |
-		instance := tool new.
-		instance name = name ifTrue:[
-			^ instance executeTool: args
-			] ].
-    ^ 'Unknown tool: ', name
+    "Execute a registered tool through the common tool execution interface."
+
+    ^ AilienApiTool
+        executeToolNamed: name
+        withArgs: args
 ]
 
 { #category : 'adding' }
@@ -142,12 +139,32 @@ AilienInnerCall >> outer: o [
 
 { #category : 'adding' }
 AilienInnerCall >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history."
-    | func result |
-    func := call at: 'function'. 
-    result := self 
-        executeToolNamed: (func at: 'name') 
-        withArgs: (STONJSON fromString: (func at: 'arguments')).
+    "Execute a tool call using the conversation history
+    associated with the current LLM interaction."
+
+    ^ self processToolCall: call history: outer history
+]
+
+{ #category : 'adding' }
+AilienInnerCall >> processToolCall: call history: aHistory [
+    "Execute a tool and record its arguments and result in the
+    conversation history for use in subsequent LLM turns."
+
+    | function name arguments result |
+
+    function := call at: 'function'.
+    name := function at: 'name'.
+    arguments := function at: 'arguments'.
+
+    result := AilienApiTool
+        executeToolNamed: name
+        withArgs: (STONJSON fromString: arguments).
+
+    aHistory
+        toolCall: name
+        arguments: arguments
+        result: result.
+
     ^ 'tool' -> (Dictionary newFrom: {
         'tool_call_id' -> (call at: 'id').
         'content' -> result })

@@ -10,6 +10,23 @@ Class {
 }
 
 { #category : 'tests' }
+AilienApiToolsTest >> testExecuteToolNamed [
+    "A registered tool can be found by name and executed
+    without involving an LLM or conversation history."
+
+    | result |
+
+    result := AilienApiTool
+        executeToolNamed: 'getClassInfo'
+        withArgs: (Dictionary newFrom: {
+            'className' -> 'AilienApiTool' }).
+
+    self assert: result isString.
+    self assert: (result includesSubstring: 'AilienApiTool').
+    self assert: (result includesSubstring: 'executeTool:').
+]
+
+{ #category : 'tests' }
 AilienApiToolsTest >> testInstanceOverrideDoesNotChangeProviderSetting [
     | original api |
 

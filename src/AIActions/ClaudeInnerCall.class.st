@@ -72,17 +72,26 @@ ClaudeInnerCall >> messageListAdd [
 ]
 
 { #category : 'adding' }
-ClaudeInnerCall >> processToolCall: call [
-	"Processes a single tool call, executes the corresponding tool with its arguments, and returns the result formatted for the conversation history"
-    | result encoded|
-    result := self 
-        executeToolNamed: (call at: 'name')
-        withArgs: (call at: 'input').
-    encoded := 'user' -> (Dictionary newFrom: {
+ClaudeInnerCall >> processToolCall: call history: aHistory [
+    "Execute a Claude tool call, record it, and return a native tool result."
+    | name arguments result |
+
+    name := call at: 'name'.
+    arguments := call at: 'input'.
+
+    result := AilienApiTool
+        executeToolNamed: name
+        withArgs: arguments.
+
+    aHistory
+        toolCall: name
+        arguments: (STONJSON toString: arguments)
+        result: result.
+
+    ^ 'user' -> (Dictionary newFrom: {
         'role' -> 'user'.
         'content' -> { Dictionary newFrom: {
             'type' -> 'tool_result'.
             'tool_use_id' -> (call at: 'id').
-            'content' -> result } } }).
-	^ encoded 
+            'content' -> result } } })
 ]

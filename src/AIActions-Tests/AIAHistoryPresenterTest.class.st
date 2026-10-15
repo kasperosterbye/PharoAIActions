@@ -1253,6 +1253,54 @@ AIAHistoryPresenterTest >> testSendPromptAddsUserAndAssistantMessages [
 	self assert: promptInput text equals: ''
 ]
 
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testShowToolsToggle [
+    "Tool interactions are initially visible and can be hidden
+    without changing ordinary messages or the stored history."
+
+    | historyTree messageText showToolsButton history root
+      displayed originalMessages |
+
+    historyTree := refAIAHistoryPresenter
+        instVarNamed: #historyTree.
+    messageText := refAIAHistoryPresenter
+        instVarNamed: #messageText.
+
+    history := historyTree roots first history.
+    history
+        toolCall: 'getClassInfo'
+        arguments: '{"className":"AilienApiTool"}'
+        result: 'Class information returned'.
+
+    originalMessages := history messages copy.
+
+    root := historyTree roots detect: [ :node |
+        node history == history ].
+    historyTree selectItem: root.
+
+    showToolsButton := refAIAHistoryPresenter
+        instVarNamed: #showToolsButton.
+
+    self assert: showToolsButton state.
+
+    displayed := messageText text asString.
+    self assert: (displayed includesSubstring: '[tool_call]').
+    self assert: (displayed includesSubstring: '[tool_response]').
+
+    showToolsButton state: false.
+
+    displayed := messageText text asString.
+    self deny: (displayed includesSubstring: '[tool_call]').
+    self deny: (displayed includesSubstring: '[tool_response]').
+    self assert:
+        (displayed includesSubstring: 'A message without an answer').
+
+    self assert: history messages equals: originalMessages.
+    self assert:
+        (history apiMessageList anySatisfy: [ :message |
+            message value includesSubstring: '[tool_call]' ])
+]
+
 { #category : 'running' }
 AIAHistoryPresenterTest >> testStoredHistoriesAreTreeRoots [
 	"Every stored history must have one canonical top-level occurrence.

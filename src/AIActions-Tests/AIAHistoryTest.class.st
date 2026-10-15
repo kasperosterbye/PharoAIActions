@@ -29,10 +29,17 @@ AIAHistoryTest >> setUp [
 ]
 
 { #category : 'running' }
-AIAHistoryTest >> tearDown [ 
-	refAIAHistory class clearHistories.
-	refAIAHistory class histories addAll: originalHistories.
-	super tearDown
+AIAHistoryTest >> tearDown [
+    "Restore the original histories and notify observers that
+    the test's temporary histories are no longer active."
+
+    refAIAHistory class clearHistories.
+    refAIAHistory class histories addAll: originalHistories.
+
+    SystemAnnouncer uniqueInstance
+        announce: AIAHistoriesChanged new.
+
+    super tearDown
 ]
 
 { #category : 'tests' }
@@ -488,4 +495,84 @@ AIAHistoryTest >> testStoredHistoriesAreNotSilentlyDiscarded [
 	self
 		assert: AIAHistory histories size
 		equals: initialSize + 25
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testToolInteraction [
+    | history message |
+    history := AIAHistory new.
+
+    history
+        toolCall: 'searchGitHubSmalltalk'
+        arguments: '{"query":"Pharo"}'
+        result: 'Found 5 repositories'.
+
+    self assert: history messages size equals: 1.
+
+    message := history messages first.
+    self assert: message key equals: 'assistant'.
+    self assert: (message value includesSubstring: '[tool_call]').
+    self assert: (message value includesSubstring: 'searchGitHubSmalltalk').
+    self assert: (message value includesSubstring: '{"query":"Pharo"}').
+    self assert: (message value includesSubstring: '[tool_response]').
+    self assert: (message value includesSubstring: 'Found 5 repositories').
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testToolInteractionIsNotFinalResponse [
+    "A recorded tool interaction must not be mistaken
+    for the final response from the LLM."
+
+    refAIAHistory fileStore rootDirectory: rootDirectory.
+    refAIAHistory user: 'Describe AilienApiTool'.
+
+    refAIAHistory
+        toolCall: 'getClassInfo'
+        arguments: '{"className":"AilienApiTool"}'
+        result: 'Class information'.
+
+    self assert: refAIAHistory response isNil.
+
+    refAIAHistory assistant: 'AilienApiTool defines API tools'.
+
+    self
+        assert: refAIAHistory response
+        equals: 'AilienApiTool defines API tools'
+]
+
+{ #category : 'tests' }
+AIAHistoryTest >> testToolInteractionSurvivesReload [
+    "Tool interactions must survive persistence and remain available
+    as conversational context in subsequent LLM turns."
+
+    | history file loaded toolMessage |
+
+    history := AIAHistory new.
+    history fileStore rootDirectory:
+        FileSystem memory root / 'tool-persistence-test'.
+
+    history user: 'Tell me about AilienApiTool'.
+    history
+        toolCall: 'getClassInfo'
+        arguments: '{"className":"AilienApiTool"}'
+        result: 'A tool for interacting with AI APIs'.
+    history assistant: 'AilienApiTool provides tool execution'.
+
+    file := history fileStore fileReference.
+    loaded := AIAHistoryFileStore loadFrom: file.
+
+    self assert: loaded messages size equals: 4.
+
+    toolMessage := loaded messages second.
+    self assert: toolMessage key equals: 'assistant'.
+    self assert:
+        (toolMessage value includesSubstring: '[tool_call]').
+    self assert:
+        (toolMessage value includesSubstring: 'getClassInfo').
+    self assert:
+        (toolMessage value includesSubstring: '[tool_response]').
+
+    self assert:
+        (loaded apiMessageList anySatisfy: [ :message |
+            message value includesSubstring: '[tool_call]' ])
 ]
