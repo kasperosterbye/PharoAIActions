@@ -1,3 +1,8 @@
+"
+I am an API tool that searches GitHub for Pharo/Smalltalk repositories.
+
+Given a search query, I return a short summary of the top matching repositories (full name and description). Use me when a user asks about a specific GitHub repository or project by name.
+"
 Class {
 	#name : 'ApiToolGitHub',
 	#superclass : 'AilienApiTool',
@@ -35,7 +40,6 @@ ApiToolGitHub >> executeTool: args [
 					| desc |
 					desc := (repo at: 'description') ifNil: [ '' ].
 				  s << '- ' << (repo at: 'full_name') << ': ' << desc << String cr ] ].
-	"Transcript << '>>> ' << response asString << String lf."
 	^ responseText 
 ]
 
