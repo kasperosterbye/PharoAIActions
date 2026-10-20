@@ -480,20 +480,9 @@ AIAHistoryPresenter >> messageRefreshTree [
 
 { #category : 'instance creation' }
 AIAHistoryPresenter >> newPrompt [
-	| prompt history root |
-	prompt := promptInput text asString.
-	prompt ifEmpty: [ ^ self ].
-
-	history := newHistoryFactory value.
-	history fileStore rootDirectory: rootDirectory.
-
-	root := historyTree roots
-		detect: [ :node | node history == history ].
-	historyTree selectItem: root.
-
-	self addPrompt: prompt to: history.
-
-	promptInput text: ''
+	self displayMessages: #(  ).
+	historyDetails items: #(  ).
+	historyTree unselectAll.
 ]
 
 { #category : 'history tree' }
@@ -515,7 +504,7 @@ AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
 		historyTree selectItems: replacements ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryPresenter >> refreshSelectedHistory [
     "Refresh the displayed conversation using the current visibility settings."
 
