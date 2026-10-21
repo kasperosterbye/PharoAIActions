@@ -284,6 +284,32 @@ AIAYouTubeUI >> episodeDetailFor: anEpisodeId forChannel: aChannelHandle [
 ]
 
 { #category : 'episode' }
+AIAYouTubeUI >> episodeGenerateSummary: episodeText [
+	"Open an AI summary and mark all selected episodes as read."
+
+	| aiResponse episode channel |
+
+	aiResponse := ('Please summarize the episode text I gave you, about 250 tokens in size.
+		Ignore the text before "Episode contents" in your response.
+		Please let your response be in the same language as the description text'
+		q0: [ episodeText ]).
+
+	AIAPresenter onText:
+		(aiResponse copyReplaceAll: '$' with: '\$').
+
+	channel := channelList selectedItem.
+	channel ifNotNil: [
+		episode := AIAYouTubeEpisode new
+			channel: channel;
+			yourself.
+
+		episodeList selectedItems do: [ :episodeId |
+			episode episodeMarkAsRead: episodeId ].
+
+		episodeList refresh ]
+]
+
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeMetaDetailFor: anEpisodeId forChannel: aChannelHandle [
 	| path file lines title date episodeId desc details |
 	path := (self class directoryForChannel:aChannelHandle)  ,
