@@ -237,29 +237,39 @@ AIAYouTubeUI >> descriptionFor: aChannelHandle [
 
 { #category : 'episode' }
 AIAYouTubeUI >> episodeChangeAction [
+	"Configure episode selection, keyboard shortcuts, and activation."
+
 	episodeList bindKeyCombination: $r command asKeyCombination
-            toAction: [self episodeToggleRead ].
-	
+		toAction: [ self episodeToggleRead ].
+
+	episodeList bindKeyCombination: $s command asKeyCombination
+		toAction: [
+			self episodeGenerateSummary:
+				episodeDetail text asString ].
+
 	episodeList whenSelectionChangedDo: [ :selection |
 		| selected |
 		selected := selection selectedItems.
 		selected ifNotNil: [ self showEpisodes: selected ] ].
+
 	episodeList display: [ :episodeId |
-		self episodeTitleFor: episodeId forChannel: channelList selectedItem ].
+		self episodeTitleFor: episodeId
+			forChannel: channelList selectedItem ].
+
 	episodeList whenActivatedDo: [ :selection |
-		| selected url channel raw channelName|
+		| selected url channel raw channelName |
 		selected := selection selectedItem.
-		channel :=  channelList selectedItem.
+		channel := channelList selectedItem.
 		(channel beginsWith: 'dr_')
-			ifTrue: [ 
+			ifTrue: [
 				raw := self episodeRawMetaDetailFor: selected forChannel: channel.
 				channelName := channel allButFirst: 3.
-				url := 'https://www.dr.dk/lyd/p1/', channelName , '/' , channelName, '-', 
-						(raw fifth first: 4), '/', 
-						(raw first asLowercase copyReplaceAll: ' ' with: '-' ), '-', selected .]
-			ifFalse: [ url := 'https://www.youtube.com/watch?v=' , selected ].
-			
-		LibC runCommand: 'open -a Safari "' , url , '"'  ].
+				url := 'https://www.dr.dk/lyd/p1/', channelName, '/', channelName, '-',
+					(raw fifth first: 4), '/',
+					(raw first asLowercase copyReplaceAll: ' ' with: '-'), '-', selected ]
+			ifFalse: [ url := 'https://www.youtube.com/watch?v=', selected ].
+
+		LibC runCommand: 'open -a Safari "', url, '"' ]
 ]
 
 { #category : 'episode' }
@@ -339,16 +349,13 @@ AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle 
 
 { #category : 'episode' }
 AIAYouTubeUI >> episodeTextAction [
+	"Bind keyboard shortcuts for generating summaries and toggling read status."
+
 	episodeDetail bindKeyCombination: $r command asKeyCombination
-				toAction: [ self episodeToggleRead ].
-	episodeDetail whenSubmitDo: [ :a | 
-		| aiResponse |
-		aiResponse := ('Please summarize the episode text I gave you, about 250 tokens in size. 
-			Ignore the text before "Episode contents" in your response. 
-			Please let your response be in the same language as the description text'
-		q0: [ a asString]).
-		AIAPresenter onText: (aiResponse copyReplaceAll: '$' with: '\$').
-		].
+		toAction: [ self episodeToggleRead ].
+
+	episodeDetail whenSubmitDo: [ :a |
+		self episodeGenerateSummary: a asString ]
 ]
 
 { #category : 'episode' }
