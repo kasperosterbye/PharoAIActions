@@ -15,8 +15,7 @@ Class {
 		'responseHearderLevel'
 	],
 	#classVars : [
-		'Histories',
-		'RecordLlmInfo'
+		'Histories'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -125,16 +124,6 @@ AIAHistory class >> readCurrent [
 		Histories at: Histories size put: discussion ]
 		on: Error
 		do: [ self error: 'No file available' ]
-]
-
-{ #category : 'recording' }
-AIAHistory class >> recordLlmInfo [
-	^ RecordLlmInfo ifNil: [ true ]
-]
-
-{ #category : 'recording' }
-AIAHistory class >> recordLlmInfo: aBoolean [
-	RecordLlmInfo := aBoolean
 ]
 
 { #category : 'history globals' }
