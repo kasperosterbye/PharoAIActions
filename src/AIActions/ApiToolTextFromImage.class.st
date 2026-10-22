@@ -26,7 +26,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolTextFromImage >> evaluateTool [
 	| desc desc1 |
 	desc := 'Performs OCR on an image URL (PNG, JPG, etc.) and returns the extracted plain text. Optimized for screenshots of code, error messages, Pharo inspectors, GitHub issues, or Smalltalk output. Handles syntax like <<, slots:, #symbols, and stack traces well. If the image is blurry or has syntax highlighting, it still tries to reconstruct clean text.'.
@@ -35,7 +35,7 @@ ApiToolTextFromImage >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
-{ #category : 'initialization' }
+{ #category : 'evaluating' }
 ApiToolTextFromImage >> executeTool: args [
 
 	| url response |
@@ -46,7 +46,7 @@ ApiToolTextFromImage >> executeTool: args [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolTextFromImage >> imageFromUrl: url [
 	
 	| image llmTempFile type responseText|

@@ -9,7 +9,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ApiToolGetWeather >> describeWeatherCode: code [
     code = 0 ifTrue: [ ^ 'clear sky' ].
     (code between: 1 and: 3) ifTrue: [ ^ 'partly cloudy' ].
@@ -20,7 +20,7 @@ ApiToolGetWeather >> describeWeatherCode: code [
     ^ 'overcast'
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolGetWeather >> evaluateTool [
 	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
 	| desc desc1 |
@@ -29,7 +29,7 @@ ApiToolGetWeather >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolGetWeather >> evaluateTool: descs [
 	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
 	| desc desc1|
@@ -55,7 +55,7 @@ ApiToolGetWeather >> evaluateTool: descs [
     }
 ]
 
-{ #category : 'Protocol (as yet unclassified) - 4 selector(s)' }
+{ #category : 'accessing' }
 ApiToolGetWeather >> executeTool: args [
 	"Fetches the current weather for a city in any country"
 

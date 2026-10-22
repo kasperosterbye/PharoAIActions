@@ -6,7 +6,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolCompileMethod >> evaluateTool [
 	^ self evaluateToolDescription: 'Compiles (adds or replaces) a method in an existing Pharo class. Source must be full method source: selector pattern, optional comment, temporaries and body. Set classSide to true to define a class-side method (metaclass).'
 		properties: (Dictionary newFrom: {
@@ -17,7 +17,7 @@ ApiToolCompileMethod >> evaluateTool [
 		required: #('className' 'source')
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolCompileMethod >> executeTool: args [
 	"Compiles the given source in the named class (instance or class side). Returns a confirmation or an error message."
 	| class target source protocol selector |

@@ -6,7 +6,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolDefineClass >> evaluateTool [
 	^ self evaluateTool: {
 		'Creates or redefines a Pharo class. Pass the complete fluid class definition, e.g.
@@ -18,7 +18,7 @@ Returns the installed class definition or an error message.'.
 		'Full Pharo class definition expression (Superclass << #Name slots: {...}; package: ...)' }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolDefineClass >> executeTool: args [
 	"Evaluates a fluid class definition and installs the class. Returns the resulting definition string or an error message."
 	| builder class |

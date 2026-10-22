@@ -10,7 +10,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolWebReader >> evaluateTool [
 	| desc desc1 |
 	desc := 'Can load any website, returning the html at that site. Always try https before http'.
@@ -18,7 +18,7 @@ ApiToolWebReader >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolWebReader >> evaluateTool: descs [
 	"Evaluates the tool with the given descriptions and returns a dictionary representation of the tool's configuration."
 	| desc desc1|
@@ -92,7 +92,7 @@ ApiToolWebReader >> initialize [
     timeoutSeconds := 15
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ApiToolWebReader >> lynxAvailable [
     "Answer whether Lynx can be executed from this Pharo process."
 
@@ -100,7 +100,7 @@ ApiToolWebReader >> lynxAvailable [
         'test -x /opt/homebrew/bin/lynx || command -v lynx >/dev/null 2>&1') = 0
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 ApiToolWebReader >> lynxReadUrl: aUrl [
     "Retrieve readable text using Lynx, with connection and read timeouts."
 

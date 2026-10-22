@@ -11,7 +11,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'initialization' }
+{ #category : 'evaluating' }
 ApiToolGitHub >> evaluateTool [
 	| desc desc1 |
 	desc := 'Search GitHub for Pharo/Smalltalk repositories. Use this when the user asks about a specific GitHub repository or project by name.'.
@@ -20,7 +20,7 @@ ApiToolGitHub >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
-{ #category : 'initialization' }
+{ #category : 'evaluating' }
 ApiToolGitHub >> executeTool: args [
 
 	| aQuery response url responseText |

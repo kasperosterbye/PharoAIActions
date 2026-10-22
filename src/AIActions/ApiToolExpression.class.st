@@ -6,7 +6,7 @@ Class {
 	#tag : 'AIApiTool'
 }
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolExpression >> evaluateTool [
 	| desc desc1 |
 	desc := 'Evaluates Pharo Smalltalk expression. Returns printString of result. Handles arithmetic, object creation, collection operations, blocks etc.'.
@@ -15,7 +15,7 @@ ApiToolExpression >> evaluateTool [
     ^ self evaluateTool: { desc. desc1 }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'evaluating' }
 ApiToolExpression >> executeTool: args [
 	"Evaluates the provided Pharo expression and returns its string representation handling any errors"
 
