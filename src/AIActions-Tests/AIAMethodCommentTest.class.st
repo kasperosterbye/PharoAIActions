@@ -12,6 +12,7 @@ Class {
 
 { #category : 'method example' }
 AIAMethodCommentTest >> methodExample [
+	"This method demonstrates the use of variables and arithmetic operations in Pharo Smalltalk"
 	| foo |
 	foo := 88.
 	^ foo + 12.
