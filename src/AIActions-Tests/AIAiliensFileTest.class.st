@@ -335,6 +335,16 @@ See https://platform.openai.com/docs/models
 ]
 
 { #category : 'tests' }
+AIAiliensFileTest >> testSelectableProvidersHaveModelNames [
+    "Verify that every selectable provider has a valid model list."
+
+    AilienApi providers do: [ :provider |
+        self
+            assert: provider modelNames isNotEmpty
+            description: 'No models available for ', provider name asString ]
+]
+
+{ #category : 'tests' }
 AIAiliensFileTest >> testSelectionIsAppendedToHistory [
 	"Each selection of a model is recorded with time, provider and model,
 	and survives being read back by another image."

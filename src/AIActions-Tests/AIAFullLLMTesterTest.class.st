@@ -4,9 +4,9 @@ Class {
 	#instVars : [
 		'savedResults'
 	],
-	#category : 'AIActions-Tests-AIActions-LiveTests',
+	#category : 'AIActions-Tests-AIApi-Tests',
 	#package : 'AIActions-Tests',
-	#tag : 'AIActions-LiveTests'
+	#tag : 'AIApi-Tests'
 }
 
 { #category : 'adding' }
@@ -18,6 +18,14 @@ AIAFullLLMTesterTest class >> simulateFailure [
 
 	100 milliSeconds wait.
 	newInstance error: 'Simulated test failure'
+]
+
+{ #category : 'as yet unclassified' }
+AIAFullLLMTesterTest class >> simulateModel: aProvider model: aModel [
+    "Verify that the workload receives the expected provider and model."
+
+    (aProvider = #ProviderA and: [ aModel = 'model1' ])
+        ifFalse: [ self error: 'Incorrect provider or model' ]
 ]
 
 { #category : 'adding' }
@@ -74,6 +82,58 @@ AIAFullLLMTesterTest >> testCancellation [
 ]
 
 { #category : 'tests' }
+AIAFullLLMTesterTest >> testCompletedTestsAreSkipped [
+    "Verify that a successfully completed test is not executed again."
+
+    | process runs |
+
+    process := AIAFullLLMTester
+        runTests: #(simulateSuccess)
+        on: self class.
+    self waitFor: process.
+
+    process := AIAFullLLMTester
+        runTests: #(simulateSuccess)
+        on: self class.
+    self waitFor: process.
+
+    runs := AIAFullLLMTester testResults.
+
+    self assert: runs size equals: 2.
+    self assert: runs first size equals: 1.
+    self assert: (runs first first at: #status) equals: #passed.
+    self assert: runs second isEmpty
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testDifferentModelsAreTested [
+    "Verify that a successful test for one model does not skip another model."
+
+    | runner results |
+
+    runner := AIAFullLLMTester.
+
+    runner startNewRun.
+    runner addTestResult: (Dictionary new
+        at: #test put: #simulateSuccess;
+        at: #provider put: OpenAIApi;
+        at: #model put: 'model-A';
+        at: #status put: #passed;
+        yourself).
+
+    results := runner hasPassed: #simulateSuccess
+        provider: OpenAIApi
+        model: 'model-B'.
+
+    self deny: results.
+
+    self assert: (runner
+        hasPassed: #simulateSuccess
+        provider: OpenAIApi
+        model: 'model-A')
+]
+
+{ #category : 'tests' }
 AIAFullLLMTesterTest >> testFailedExecution [
     "Verify that failures are recorded and subsequent tests continue."
 
@@ -96,6 +156,113 @@ AIAFullLLMTesterTest >> testFailedExecution [
 
     self assert: (results second at: #test) equals: #simulateSuccess.
     self assert: (results second at: #status) equals: #passed
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testFailedTestsAreRetried [
+    "Verify that failed tests are retried and previous results retained."
+
+    | process runs |
+
+    process := AIAFullLLMTester
+        runTests: #(simulateFailure)
+        on: self class.
+    self waitFor: process.
+
+    process := AIAFullLLMTester
+        runTests: #(simulateFailure)
+        on: self class.
+    self waitFor: process.
+
+    runs := AIAFullLLMTester testResults.
+
+    self assert: runs size equals: 2.
+    self assert: runs first size equals: 1.
+    self assert: runs second size equals: 1.
+
+    self assert: (runs first first at: #test)
+        equals: #simulateFailure.
+    self assert: (runs first first at: #status)
+        equals: #failed.
+
+    self assert: (runs second first at: #test)
+        equals: #simulateFailure.
+    self assert: (runs second first at: #status)
+        equals: #failed
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testModelSpecificExecution [
+    "Verify that each model is tested independently and successful tests are not repeated."
+
+    | process runs |
+
+    process := AIAFullLLMTester
+        runTests: #(simulateSuccess)
+        on: self class
+        provider: OpenAIApi
+        model: 'model-A'.
+    self waitFor: process.
+
+    process := AIAFullLLMTester
+        runTests: #(simulateSuccess)
+        on: self class
+        provider: OpenAIApi
+        model: 'model-B'.
+    self waitFor: process.
+
+    process := AIAFullLLMTester
+        runTests: #(simulateSuccess)
+        on: self class
+        provider: OpenAIApi
+        model: 'model-A'.
+    self waitFor: process.
+
+    runs := AIAFullLLMTester testResults.
+
+    self assert: runs size equals: 3.
+    self assert: runs first size equals: 1.
+    self assert: runs second size equals: 1.
+    self assert: runs third isEmpty.
+
+    self assert: (runs first first at: #model) equals: 'model-A'.
+    self assert: (runs second first at: #model) equals: 'model-B'
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testMultipleModelsInSingleRun [
+    "Verify that multiple models execute within one run,
+    with separate results for each model."
+
+    | process runs results models |
+
+    models := {
+        { #ProviderA. #('model1' 'model2') }
+    }.
+
+    process := AIAFullLLMTester
+        runTests: #(simulateSuccess)
+        on: self class
+        providersAndModels: models.
+
+    self waitFor: process.
+
+    runs := AIAFullLLMTester testResults.
+
+    self assert: runs size equals: 1.
+
+    results := runs first.
+    self assert: results size equals: 2.
+
+    self assert: (results collect: [ :each |
+        each at: #model ])
+        asArray equals: #('model1' 'model2').
+
+    self assert: (results allSatisfy: [ :each |
+        (each at: #status) = #passed ]).
+
+    self assert: (results allSatisfy: [ :each |
+        (each at: #provider) = #ProviderA ])
 ]
 
 { #category : 'tests' }
@@ -143,6 +310,97 @@ AIAFullLLMTesterTest >> testResultsAreGroupedByRun [
 ]
 
 { #category : 'tests' }
+AIAFullLLMTesterTest >> testSelectAllProvidersAndModels [
+    "Verify that empty filters preserve all available providers and models."
+
+    | available selected |
+
+    available := {
+        { #ProviderA. #('model1' 'model2') }.
+        { #ProviderB. #('model3' 'model4') }
+    }.
+
+    selected := AIAFullLLMTester
+        selectProvidersAndModels: available
+        providers: #()
+        models: #().
+
+    self assert: selected equals: available
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testSelectModelsAcrossProviders [
+    "Verify that model filtering works across providers and excludes nonmatching providers."
+
+    | available selected |
+
+    available := {
+        { #ProviderA. #('model1' 'model2') }.
+        { #ProviderB. #('model2' 'model3') }.
+        { #ProviderC. #('model4') }
+    }.
+
+    selected := AIAFullLLMTester
+        selectProvidersAndModels: available
+        providers: #()
+        models: #('model2').
+
+    self assert: selected equals: {
+        { #ProviderA. #('model2') }.
+        { #ProviderB. #('model2') }
+    }
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testSelectProvidersAndModels [
+    "Verify that provider and model filtering work independently."
+
+    | available selected |
+
+    available := {
+        { #ProviderA. #('model1' 'model2') }.
+        { #ProviderB. #('model3' 'model4') }
+    }.
+
+    selected := AIAFullLLMTester
+        selectProvidersAndModels: available
+        providers: #(ProviderA)
+        models: #('model2').
+
+    self assert: selected equals: {
+        { #ProviderA. #('model2') }
+    }
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testSelectedProvidersAndModels [
+    "Verify that model selection returns the available providers and models."
+
+    | selected available |
+    selected := AIAFullLLMTester selectedProvidersAndModels.
+    available := AilienApi providerAndModels.
+
+    self assert: selected equals: available
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testSelectedProvidersDelegatesCorrectly [
+    "Verify that unfiltered selection matches the available providers and models."
+
+    | expected actual |
+
+    expected := AilienApi providerAndModels.
+
+    actual := AIAFullLLMTester
+        selectedProviders: #()
+        models: #().
+
+    self assert: actual equals: expected.
+    self assert: AIAFullLLMTester selectedProvidersAndModels
+        equals: expected
+]
+
+{ #category : 'tests' }
 AIAFullLLMTesterTest >> testSuccessfulExecution [
     "Verify that a successful workload produces a structured result."
 
@@ -162,6 +420,26 @@ AIAFullLLMTesterTest >> testSuccessfulExecution [
     self assert: (result at: #status) equals: #passed.
     self assert: (result at: #duration) >= 0.
     self assert: (result at: #details) equals: ''
+]
+
+{ #category : 'tests' }
+AIAFullLLMTesterTest >> testWorkloadReceivesProviderAndModel [
+    "Verify that the runner supplies provider and model to a workload."
+
+    | process results |
+
+    process := AIAFullLLMTester
+        runTests: #(simulateModel:model:)
+        on: self class
+        providersAndModels: {
+            { #ProviderA. #('model1') } }.
+
+    self waitFor: process.
+
+    results := AIAFullLLMTester testResults last.
+
+    self assert: results size equals: 1.
+    self assert: (results first at: #status) equals: #passed
 ]
 
 { #category : 'helpers' }

@@ -220,18 +220,10 @@ AilienApi class >> provider: aProvider [
 
 { #category : 'provider' }
 AilienApi class >> providerAndModels [
-	"Returns all providers with their available models"
-	| allSubclasses index models|
-	allSubclasses := OrderedCollection new.
-	allSubclasses addAll: self subclasses.
-	index := 1.
-	[ index <= allSubclasses size ] whileTrue: [ | subs |
-			subs := allSubclasses at: index.
-			subs subclasses ifNotEmpty: [ allSubclasses addAll: subs subclasses ].
-			index := index + 1 ].
-	models := OrderedCollection new.
-	(allSubclasses sort: [ :a :b | a name < b name ]) do: [ :provider | models add: { provider. provider modelNames} ].
-	^ models asArray
+    "Answer concrete providers with their available models."
+
+    ^ self providers collect: [ :provider |
+        { provider. provider modelNames } ]
 ]
 
 { #category : 'provider' }

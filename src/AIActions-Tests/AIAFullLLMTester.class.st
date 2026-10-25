@@ -23,6 +23,31 @@ AIAFullLLMTester class >> addTestResult: aResult [
         cr
 ]
 
+{ #category : 'testing' }
+AIAFullLLMTester class >> hasPassed: aSelector [
+    "Answer whether this test passed in an earlier run."
+
+    ^ self testResults anySatisfy: [ :run |
+        run anySatisfy: [ :result |
+            (result at: #test) = aSelector
+                and: [ (result at: #status) = #passed ] ] ]
+]
+
+{ #category : 'testing' }
+AIAFullLLMTester class >> hasPassed: aSelector provider: aProvider model: aModel [
+    "Answer whether this test passed for the specified provider and model."
+
+    ^ self testResults anySatisfy: [ :run |
+        run anySatisfy: [ :result |
+            (result at: #test) = aSelector
+                and: [
+                    (result at: #provider ifAbsent: [ nil ]) = aProvider
+                        and: [
+                            (result at: #model ifAbsent: [ nil ]) = aModel
+                                and: [
+                                    (result at: #status) = #passed ] ] ] ] ]
+]
+
 { #category : 'adding' }
 AIAFullLLMTester class >> initialize [
     "Clear all recorded test runs."
@@ -49,9 +74,26 @@ AIAFullLLMTester class >> run [
 
 { #category : 'tests' }
 AIAFullLLMTester class >> runTests: selectors on: aTestClass [
-    "Execute workloads in a background Job, recording results and supporting cancellation."
+    "Execute tests without a specific LLM provider or model."
 
-    | job |
+    ^ self
+        runTests: selectors
+        on: aTestClass
+        provider: nil
+        model: nil
+]
+
+{ #category : 'testing' }
+AIAFullLLMTester class >> runTests: selectors on: aTestClass provider: aProvider model: aModel [
+    "Execute tests for a specified provider and model, recording results."
+
+    | job pending |
+
+    pending := selectors reject: [ :selector |
+        self
+            hasPassed: selector
+            provider: aProvider
+            model: aModel ].
 
     self startNewRun.
 
@@ -61,11 +103,11 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass [
             j terminate ].
 
         [
-            selectors withIndexDo: [ :selector :index |
+            pending withIndexDo: [ :selector :index |
                 | started status details duration |
 
                 j
-                    progress: index / selectors size
+                    progress: index / pending size
                     title: 'Running ', selector asString.
 
                 started := DateAndTime now.
@@ -83,8 +125,8 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass [
 
                 self addTestResult: (Dictionary new
                     at: #test put: selector;
-                    at: #provider put: nil;
-                    at: #model put: nil;
+                    at: #provider put: aProvider;
+                    at: #model put: aModel;
                     at: #status put: status;
                     at: #duration put: duration;
                     at: #timestamp put: DateAndTime now;
@@ -99,6 +141,136 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass [
     CurrentJob := job.
 
     ^ [ job run ] forkAt: Processor userBackgroundPriority
+]
+
+{ #category : 'as yet unclassified' }
+AIAFullLLMTester class >> runTests: selectors on: aTestClass providersAndModels: providersAndModels [
+    "Execute selected workloads for multiple providers and models
+    in one cancellable Job, recording results and skipping successes."
+
+    | job combinations pending |
+
+    combinations := OrderedCollection new.
+
+    providersAndModels do: [ :entry |
+        entry second do: [ :model |
+            selectors do: [ :selector |
+                combinations add: { selector. entry first. model } ] ] ].
+
+    pending := combinations reject: [ :each |
+        self
+            hasPassed: each first
+            provider: each second
+            model: each third ].
+
+    self startNewRun.
+
+    job := [ :j |
+        j interruptBlock: [
+            Transcript show: 'Experiment stopped'; cr.
+            j terminate ].
+
+        [
+            pending withIndexDo: [ :each :index |
+                | selector provider model started status details duration |
+
+                selector := each first.
+                provider := each second.
+                model := each third.
+
+                j
+                    progress: index / pending size
+                    title: 'Running ', selector asString,
+                        ' - ', provider asString,
+                        ' - ', model asString.
+
+                started := DateAndTime now.
+                status := #passed.
+                details := ''.
+
+                [
+                    selector numArgs = 2
+                        ifTrue: [
+                            aTestClass
+                                perform: selector
+                                with: provider
+                                with: model ]
+                        ifFalse: [
+                            aTestClass perform: selector ]
+                ]
+                    on: Error
+                    do: [ :error |
+                        status := #failed.
+                        details := error printString ].
+
+                duration := (DateAndTime now - started)
+                    asMilliSeconds / 1000.0.
+
+                self addTestResult: (Dictionary new
+                    at: #test put: selector;
+                    at: #provider put: provider;
+                    at: #model put: model;
+                    at: #status put: status;
+                    at: #duration put: duration;
+                    at: #timestamp put: DateAndTime now;
+                    at: #details put: details;
+                    yourself)
+            ]
+        ] ensure: [
+            CurrentJob == j ifTrue: [
+                CurrentJob := nil ] ]
+    ] asJob.
+
+    CurrentJob := job.
+
+    ^ [ job run ] forkAt: Processor userBackgroundPriority
+]
+
+{ #category : 'as yet unclassified' }
+AIAFullLLMTester class >> selectProvidersAndModels: available providers: providers models: models [
+    "Select provider/model combinations. Empty filters mean all."
+
+    ^ (available collect: [ :entry |
+        | provider selectedModels |
+
+        provider := entry first.
+        selectedModels := entry second.
+
+        (providers isEmpty or: [ providers includes: provider ])
+            ifTrue: [
+                selectedModels := selectedModels select: [ :model |
+                    models isEmpty or: [ models includes: model ] ].
+                { provider. selectedModels } ]
+            ifFalse: [ nil ]
+    ]) reject: [ :entry |
+        entry isNil or: [ entry second isEmpty ] ]
+]
+
+{ #category : 'as yet unclassified' }
+AIAFullLLMTester class >> selectedProviders: providers models: models [
+    "Answer available provider/model combinations matching the filters."
+
+    ^ self
+        selectProvidersAndModels: AilienApi providerAndModels
+        providers: providers
+        models: models
+]
+
+{ #category : 'as yet unclassified' }
+AIAFullLLMTester class >> selectedProvidersAndModels [
+    "Answer all available provider/model combinations."
+
+    ^ self
+        selectedProviders: #()
+        models: #()
+]
+
+{ #category : 'as yet unclassified' }
+AIAFullLLMTester class >> simulateModel: aProvider model: aModel [
+    "Verify that a workload receives its provider and model."
+
+    self assert: aProvider equals: #ProviderA.
+    self assert: aModel equals: 'model1'
 ]
 
 { #category : 'adding' }
