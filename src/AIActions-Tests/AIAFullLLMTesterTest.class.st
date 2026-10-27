@@ -61,7 +61,8 @@ AIAFullLLMTesterTest >> tearDown [
 
 { #category : 'tests' }
 AIAFullLLMTesterTest >> testCancellation [
-    "Verify that cancellation stops the current workload and preserves completed results."
+    "Verify that cancellation stops the current 
+		workload and preserves completed results."
 
     | process results |
 
