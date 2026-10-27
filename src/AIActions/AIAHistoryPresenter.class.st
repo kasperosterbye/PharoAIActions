@@ -487,21 +487,27 @@ AIAHistoryPresenter >> newPrompt [
 
 { #category : 'history tree' }
 AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
-	| selectedHistories roots replacements |
-	selectedHistories := historyTree selectedItems collect: [ :node |
-		node history ].
+    "Refresh the history tree while preserving the selected histories.
+    Ignore announcements received before the presenter is initialized."
 
-	roots := self getHistoryTreeRoots.
-	historyTree roots: roots.
+    | selectedHistories roots replacements |
 
-	selectedHistories ifEmpty: [ ^ self ].
+    historyTree ifNil: [ ^ self ].
 
-	replacements := roots select: [ :node |
-		selectedHistories anySatisfy: [ :history |
-			node history == history ] ].
+    selectedHistories := historyTree selectedItems collect: [ :node |
+        node history ].
 
-	replacements ifNotEmpty: [
-		historyTree selectItems: replacements ]
+    roots := self getHistoryTreeRoots.
+    historyTree roots: roots.
+
+    selectedHistories ifEmpty: [ ^ self ].
+
+    replacements := roots select: [ :node |
+        selectedHistories anySatisfy: [ :history |
+            node history == history ] ].
+
+    replacements ifNotEmpty: [
+        historyTree selectItems: replacements ]
 ]
 
 { #category : 'accessing' }

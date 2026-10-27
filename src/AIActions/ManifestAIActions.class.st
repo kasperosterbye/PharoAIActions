@@ -20,5 +20,12 @@ ManifestAIActions class >> ruleCollectionProtocolRuleV1FalsePositive [
 ManifestAIActions class >> ruleLongMethodsRuleV1FalsePositive [
 
 	<ignoreForCoverage>
-	^ #(#(#(#RGClassDefinition #(#AIAHistoryFileStore)) #'2026-09-01T11:07:49.015643+02:00') )
+	^ #(#(#(#RGClassDefinition #(#AIAHistoryFileStore)) #'2026-09-01T11:07:49.015643+02:00') #(#(#RGPackageDefinition #(#AIActions)) #'2026-10-22T09:47:01.001222+02:00') )
+]
+
+{ #category : 'code-critics' }
+ManifestAIActions class >> ruleStringConcatenationRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#AIActions)) #'2026-10-22T09:47:16.157282+02:00') )
 ]

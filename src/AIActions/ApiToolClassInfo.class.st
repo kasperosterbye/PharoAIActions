@@ -1,3 +1,9 @@
+"
+The `ApiToolClassInfo` class is responsible for retrieving and structuring documentation for Pharo classes, including class comments, instance variables, and method selectors with their respective comments.
+
+kilroy left here
+
+"
 Class {
 	#name : 'ApiToolClassInfo',
 	#superclass : 'AilienApiTool',

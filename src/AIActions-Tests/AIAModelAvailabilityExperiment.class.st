@@ -23,6 +23,7 @@ AIAModelAvailabilityExperiment class >> lastInstance [
 
 { #category : 'accessing' }
 AIAModelAvailabilityExperiment class >> run [
+	<example>
     ^ self new run
 ]
 
