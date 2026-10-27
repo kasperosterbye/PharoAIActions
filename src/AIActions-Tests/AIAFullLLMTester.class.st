@@ -72,6 +72,39 @@ AIAFullLLMTester class >> run [
         on: self
 ]
 
+{ #category : 'run-directory creation' }
+AIAFullLLMTester class >> runAllProviders [
+    "Run the tool-capability test for all available providers and models."
+
+    ^ self
+        runTests: #(testClassInfo:model:)
+        on: AIAFullLLMTesterLiveTest
+        providersAndModels: self selectedProvidersAndModels
+]
+
+{ #category : 'run-directory creation' }
+AIAFullLLMTester class >> runProvider: aProvider [
+    "Run the tool-capability test for every model of one provider."
+
+    ^ self
+        runTests: #(testClassInfo:model:)
+        on: AIAFullLLMTesterLiveTest
+        providersAndModels: (self
+            selectedProviders: { aProvider }
+            models: #())
+]
+
+{ #category : 'run-directory creation' }
+AIAFullLLMTester class >> runProvider: aProvider model: aModel [
+    "Run the tool-capability test for one provider and model."
+
+    ^ self
+        runTests: #(testClassInfo:model:)
+        on: AIAFullLLMTesterLiveTest
+        providersAndModels: {
+            { aProvider. { aModel } } }
+]
+
 { #category : 'tests' }
 AIAFullLLMTester class >> runTests: selectors on: aTestClass [
     "Execute tests without a specific LLM provider or model."
@@ -85,70 +118,21 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass [
 
 { #category : 'testing' }
 AIAFullLLMTester class >> runTests: selectors on: aTestClass provider: aProvider model: aModel [
-    "Execute tests for a specified provider and model, recording results."
+    "Execute tests for one provider and model, retaining all results."
 
-    | job pending |
-
-    pending := selectors reject: [ :selector |
-        self
-            hasPassed: selector
-            provider: aProvider
-            model: aModel ].
-
-    self startNewRun.
-
-    job := [ :j |
-        j interruptBlock: [
-            Transcript show: 'Experiment stopped'; cr.
-            j terminate ].
-
-        [
-            pending withIndexDo: [ :selector :index |
-                | started status details duration |
-
-                j
-                    progress: index / pending size
-                    title: 'Running ', selector asString.
-
-                started := DateAndTime now.
-                status := #passed.
-                details := ''.
-
-                [ aTestClass perform: selector ]
-                    on: Error
-                    do: [ :error |
-                        status := #failed.
-                        details := error printString ].
-
-                duration := (DateAndTime now - started)
-                    asMilliSeconds / 1000.0.
-
-                self addTestResult: (Dictionary new
-                    at: #test put: selector;
-                    at: #provider put: aProvider;
-                    at: #model put: aModel;
-                    at: #status put: status;
-                    at: #duration put: duration;
-                    at: #timestamp put: DateAndTime now;
-                    at: #details put: details;
-                    yourself)
-            ]
-        ] ensure: [
-            CurrentJob == j ifTrue: [
-                CurrentJob := nil ] ]
-    ] asJob.
-
-    CurrentJob := job.
-
-    ^ [ job run ] forkAt: Processor userBackgroundPriority
+    ^ self
+        runTests: selectors
+        on: aTestClass
+        providersAndModels: {
+            { aProvider. { aModel } } }
 ]
 
 { #category : 'as yet unclassified' }
 AIAFullLLMTester class >> runTests: selectors on: aTestClass providersAndModels: providersAndModels [
-    "Execute selected workloads for multiple providers and models
-    in one cancellable Job, recording results and skipping successes."
+    "Execute all requested workloads in one cancellable Job,
+    recording every result without skipping previous successes."
 
-    | job combinations pending |
+    | job combinations |
 
     combinations := OrderedCollection new.
 
@@ -157,12 +141,6 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass providersAndModels:
             selectors do: [ :selector |
                 combinations add: { selector. entry first. model } ] ] ].
 
-    pending := combinations reject: [ :each |
-        self
-            hasPassed: each first
-            provider: each second
-            model: each third ].
-
     self startNewRun.
 
     job := [ :j |
@@ -171,7 +149,7 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass providersAndModels:
             j terminate ].
 
         [
-            pending withIndexDo: [ :each :index |
+            combinations withIndexDo: [ :each :index |
                 | selector provider model started status details duration |
 
                 selector := each first.
@@ -179,7 +157,7 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass providersAndModels:
                 model := each third.
 
                 j
-                    progress: index / pending size
+                    progress: index / combinations size
                     title: 'Running ', selector asString,
                         ' - ', provider asString,
                         ' - ', model asString.
@@ -216,9 +194,10 @@ AIAFullLLMTester class >> runTests: selectors on: aTestClass providersAndModels:
                     at: #details put: details;
                     yourself)
             ]
-        ] ensure: [
+         ] ensure: [
             CurrentJob == j ifTrue: [
-                CurrentJob := nil ] ]
+                CurrentJob := nil ].
+            self testResults last inspect ]
     ] asJob.
 
     CurrentJob := job.
@@ -277,7 +256,7 @@ AIAFullLLMTester class >> simulateModel: aProvider model: aModel [
 AIAFullLLMTester class >> startNewRun [
     "Create a new collection for the results of this run."
 
-    self testResults add: OrderedCollection new
+    self testResults add: CheckCollection new
 ]
 
 { #category : 'accessing' }

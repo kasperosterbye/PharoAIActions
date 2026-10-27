@@ -6,11 +6,12 @@ Class {
 	#tag : 'AIActions-LiveTests'
 }
 
-{ #category : 'tests' }
-AIAFullLLMTesterLiveTest >> testClassInfo: aProvider model: aModel [
-    "Verify that the LLM can retrieve information from a Pharo class comment."
+{ #category : 'testing' }
+AIAFullLLMTesterLiveTest class >> testClassInfo: aProvider model: aModel [
+    "Verify that the LLM invokes getClassInfo and correctly retrieves
+    the kilroy sentence from the Pharo class comment."
 
-    | api history answer |
+    | api history answer toolCalled |
 
     api := aProvider new.
     api
@@ -21,8 +22,18 @@ AIAFullLLMTesterLiveTest >> testClassInfo: aProvider model: aModel [
     history := AIAHistory new.
     history
         api: api;
-        user: 'Use ApiToolClassInfo to read the class comment of ApiToolClassInfo. What is the kilroy sentence? Answer with only that sentence.';
+        user: 'Use the Pharo class-information tool to retrieve the current class comment of ApiToolClassInfo. Extract the exact sentence containing the word "kilroy". Do not answer from memory.';
         getResponse.
+
+    toolCalled := history messages anySatisfy: [ :message |
+        message key = 'assistant'
+            and: [
+                (message value beginsWith: '[tool_call]')
+                    and: [
+                        message value includesSubstring: 'name: getClassInfo' ] ] ].
+
+    toolCalled ifFalse: [
+        self error: 'LLM did not call getClassInfo' ].
 
     answer := history response.
 
@@ -36,14 +47,4 @@ AIAFullLLMTesterLiveTest >> testClassInfo: aProvider model: aModel [
     (answer asLowercase includesSubstring: 'kilroy was here')
         ifTrue: [
             self error: 'Incorrect sentence found: ', answer ]
-]
-
-{ #category : 'tests' }
-AIAFullLLMTesterLiveTest >> testKilroy [
-
-AIAFullLLMTester
-    runTests: #(testClassInfo:model:)
-    on: AIAFullLLMTesterLiveTest
-    providersAndModels: {
-        { MistralApi. #('codestral-latest') } }
 ]

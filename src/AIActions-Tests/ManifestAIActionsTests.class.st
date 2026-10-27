@@ -15,3 +15,10 @@ ManifestAIActionsTests class >> ruleBadMessageRule2V1FalsePositive [
 	<ignoreForCoverage>
 	^ #(#(#(#RGMethodDefinition #(#'AIAFullLLMTester class' #runTests:on: #true)) #'2026-10-22T14:31:37.054793+02:00') )
 ]
+
+{ #category : 'code-critics' }
+ManifestAIActionsTests class >> ruleTempVarOverridesInstVarRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGPackageDefinition #(#'AIActions-Tests')) #'2026-10-27T09:06:17.852845+01:00') )
+]

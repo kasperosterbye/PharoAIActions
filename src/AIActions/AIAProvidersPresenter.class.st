@@ -62,6 +62,40 @@ AIAProvidersPresenter >> ailiensDirectory: dir [
 	^ ailiensDirectory := dir
 ]
 
+{ #category : 'event handling' }
+AIAProvidersPresenter >> bindCheckShortcut [
+    "Bind Command-P to check the selection and
+    Command-Shift-P to clear the selection and check all models."
+
+    providers
+        bindKeyCombination: $p command asKeyCombination
+        toAction: [ self checkSelection ].
+	 providers
+        bindKeyCombination: $P command asKeyCombination
+        toAction: [ providers unselectAll. self checkSelection ]
+]
+
+{ #category : 'event handling' }
+AIAProvidersPresenter >> checkSelection [
+    "Run the LLM tool-capability test for the selected model,
+    selected provider, or all providers when nothing is selected."
+
+    | selected provider |
+
+    selected := providers selectedItem.
+
+    selected ifNil: [
+        ^ AIAFullLLMTester runAllProviders ].
+
+    selected isClass ifTrue: [
+        ^ AIAFullLLMTester runProvider: selected ].
+
+    provider := self providerFor: selected.
+    ^ AIAFullLLMTester
+        runProvider: provider
+        model: selected
+]
+
 { #category : 'layout' }
 AIAProvidersPresenter >> defaultLayout [
 	"Configures the layout of the presenter with a tree table and buttons for browsing and refreshing providers"
@@ -128,7 +162,8 @@ AIAProvidersPresenter >> initializePresenters [
 					do: [ #(  ) ] ];
 		beResizable;
 		activateOnDoubleClick;
-		whenActivatedDo: [ :selection | self doubleClick: selection ]
+		whenActivatedDo: [ :selection | self doubleClick: selection ].
+		self bindCheckShortcut
 ]
 
 { #category : 'initialization' }
@@ -182,6 +217,6 @@ AIAProvidersPresenter >> window [
 	"Returns the window associated with the presenter, ensuring it is unclosable"
 	| windowResult |
 	windowResult := super window.
-	window window makeUnclosable.
+	"window window makeUnclosable."
 	^ windowResult
 ]

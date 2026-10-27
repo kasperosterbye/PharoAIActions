@@ -82,8 +82,8 @@ AIAFullLLMTesterTest >> testCancellation [
 ]
 
 { #category : 'tests' }
-AIAFullLLMTesterTest >> testCompletedTestsAreSkipped [
-    "Verify that a successfully completed test is not executed again."
+AIAFullLLMTesterTest >> testCompletedTestsAreRepeated [
+    "Verify that repeated executions run again and retain both results."
 
     | process runs |
 
@@ -101,8 +101,10 @@ AIAFullLLMTesterTest >> testCompletedTestsAreSkipped [
 
     self assert: runs size equals: 2.
     self assert: runs first size equals: 1.
+    self assert: runs second size equals: 1.
+
     self assert: (runs first first at: #status) equals: #passed.
-    self assert: runs second isEmpty
+    self assert: (runs second first at: #status) equals: #passed
 ]
 
 { #category : 'tests' }
@@ -193,40 +195,26 @@ AIAFullLLMTesterTest >> testFailedTestsAreRetried [
 
 { #category : 'tests' }
 AIAFullLLMTesterTest >> testModelSpecificExecution [
-    "Verify that each model is tested independently and successful tests are not repeated."
+    "Verify that repeated model executions produce separate results."
 
     | process runs |
 
-    process := AIAFullLLMTester
-        runTests: #(simulateSuccess)
-        on: self class
-        provider: OpenAIApi
-        model: 'model-A'.
-    self waitFor: process.
-
-    process := AIAFullLLMTester
-        runTests: #(simulateSuccess)
-        on: self class
-        provider: OpenAIApi
-        model: 'model-B'.
-    self waitFor: process.
-
-    process := AIAFullLLMTester
-        runTests: #(simulateSuccess)
-        on: self class
-        provider: OpenAIApi
-        model: 'model-A'.
-    self waitFor: process.
+    #('model-A' 'model-B' 'model-A') do: [ :model |
+        process := AIAFullLLMTester
+            runTests: #(simulateSuccess)
+            on: self class
+            provider: OpenAIApi
+            model: model.
+        self waitFor: process ].
 
     runs := AIAFullLLMTester testResults.
 
     self assert: runs size equals: 3.
-    self assert: runs first size equals: 1.
-    self assert: runs second size equals: 1.
-    self assert: runs third isEmpty.
+    self assert: (runs allSatisfy: [ :run | run size = 1 ]).
 
     self assert: (runs first first at: #model) equals: 'model-A'.
-    self assert: (runs second first at: #model) equals: 'model-B'
+    self assert: (runs second first at: #model) equals: 'model-B'.
+    self assert: (runs third first at: #model) equals: 'model-A'
 ]
 
 { #category : 'tests' }
