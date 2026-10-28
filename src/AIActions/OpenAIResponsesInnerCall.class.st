@@ -36,22 +36,33 @@ OpenAIResponsesInnerCall >> check [
 
 { #category : 'adding' }
 OpenAIResponsesInnerCall >> handleToolCall [
-	toolCall do: [ :call |
-		(call at: 'type') = 'function_call' ifTrue: [
-			| result args output |
+    "Execute OpenAI Responses API tool calls, record their
+    interactions in AIAHistory, and return results to the API."
 
-			args := STONJSON fromString: (call at: 'arguments').
+    toolCall do: [ :call |
+        (call at: 'type') = 'function_call' ifTrue: [
+            | name arguments args result output |
 
-			result := self
-				executeToolNamed: (call at: 'name')
-				withArgs: args.
+            name := call at: 'name'.
+            arguments := call at: 'arguments'.
+            args := STONJSON fromString: arguments.
 
-			output := Dictionary newFrom: {
-				'type' -> 'function_call_output'.
-				'call_id' -> (call at: 'call_id').
-				'output' -> result }.
+            result := self
+                executeToolNamed: name
+                withArgs: args.
 
-			outer messageList add: 'assistant' -> output ] ]
+            outer history
+                toolCall: name
+                arguments: arguments
+                result: result.
+
+            output := Dictionary newFrom: {
+                'type' -> 'function_call_output'.
+                'call_id' -> (call at: 'call_id').
+                'output' -> result }.
+
+            outer messageList add: 'assistant' -> output ] ]
+
 ]
 
 { #category : 'adding' }
