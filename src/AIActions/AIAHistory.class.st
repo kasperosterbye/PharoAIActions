@@ -507,7 +507,7 @@ AIAHistory >> title: anObject [
 	title := anObject
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistory >> toolCall: aName arguments: arguments result: result [
     "Record a completed tool interaction as conversational context
     that remains available to subsequent LLM turns."
