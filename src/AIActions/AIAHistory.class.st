@@ -272,33 +272,71 @@ AIAHistory >> getMessages [
 
 { #category : 'llm call' }
 AIAHistory >> getResponse [
-	"Start the LLM call in a background process and show progress until
-	the answer arrives, the user interrupts, or the time limit is reached."
-	self apiMessageList ifEmpty: [
-		self assistant: 'No answer, as I was not asked'.
-		^ self ].
-	[ :job |
-		| aiProcess secs |
-		aiProcess := [
-			self api
-				messageList: self apiMessageList;
-				loadResponse: self ] newProcess.
-		aiProcess priority: Processor userBackgroundPriority.
-		aiProcess resume.
-		SystemProgressMorph uniqueInstance position: 10 @ 20.
-		job interruptBlock: [
-			self response ifNil: [
-				aiProcess terminate.
-				self assistant: 'AI based response Terminated' ].
-			^ self ].
-		secs := self api responseWaitingInSecs.
-		1 to: secs * 2 do: [ :each |
-			self response ifNotNil: [ ^ self ].
-			job
-				progress: 1 / (secs * 2) * each;
-				title: (self api asString , ' working {1} of {2}'
-					format: { (each / 2) asFloat printString. secs }).
-			500 milliSeconds wait ] ] asJob run
+	        "Start the LLM call in a background process and show progress until
+        the answer arrives, the user interrupts, or the time limit is reached."
+
+        self apiMessageList ifEmpty: [
+                self assistant: 'No answer, as I was not asked'.
+                ^ self ].
+
+        [ :job |
+                | aiProcess secs |
+
+                [
+                        aiProcess := [
+                                self api
+                                        messageList: self apiMessageList;
+                                        loadResponse: self
+                        ] newProcess.
+
+                        aiProcess priority: Processor userBackgroundPriority.
+                        aiProcess resume.
+
+                        SystemProgressMorph uniqueInstance position: 10 @ 20.
+
+                        job interruptBlock: [
+                                self response ifNil: [
+                                        aiProcess isTerminated ifFalse: [
+                                                aiProcess terminate ].
+
+                                        self response ifNil: [
+                                                self assistant:
+                                                        'AI based response terminated' ] ].
+                                ^ self
+                        ].
+
+                        secs := self api responseWaitingInSecs.
+
+                        1 to: secs * 2 do: [ :each |
+                                self response ifNotNil: [ ^ self ].
+
+                                job
+                                        progress: 1 / (secs * 2) * each;
+                                        title: (self api asString , ' working {1} of {2}'
+                                                format: {
+                                                        (each / 2) asFloat printString.
+                                                        secs }).
+
+                                500 milliSeconds wait ].
+
+                        "The configured wait time has expired."
+                        self response ifNil: [
+                                aiProcess isTerminated ifFalse: [
+                                        aiProcess terminate ].
+
+                                "Terminate waits until the process has stopped,
+                                so this second check avoids overwriting a response
+                                produced just before termination."
+                                self response ifNil: [
+                                        self assistant:
+                                                'AI based response timed out' ] ].
+
+                ] ensure: [
+                        "Also covers user interruption and unexpected errors."
+                        aiProcess ifNotNil: [
+                                aiProcess isTerminated ifFalse: [
+                                        aiProcess terminate ] ] ]
+        ] asJob run
 ]
 
 { #category : 'accessing' }
