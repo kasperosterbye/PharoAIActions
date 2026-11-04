@@ -13,30 +13,37 @@ Class {
 
 { #category : 'running' }
 AIAHistoryPresenterTest >> setUp [
-	| history |
-	super setUp.
-	originalHistories := AIAHistory histories copy.
-	originalRecordLlmInfo := AIAHistory recordLlmInfo.
-	AIAHistory recordLlmInfo: false.
-	AIAHistory clearHistories.
+    "Prepare an isolated history and presenter for each test."
 
-	history := AIAHistory new.
-	history fileStore rootDirectory:
-		FileSystem memory root / 'history'.
-	history user: 'A message without an answer'.
+    | history |
+    super setUp.
+    originalHistories := AIAHistory histories copy.
+    AIAHistory clearHistories.
 
-	refAIAHistoryPresenter :=
-	AIAHistoryPresenter forDirectory: history fileStore rootDirectory
+    history := AIAHistory new.
+    history fileStore rootDirectory:
+        FileSystem memory root / 'history'.
+    history user: 'A message without an answer'.
+
+    refAIAHistoryPresenter :=
+        AIAHistoryPresenter forDirectory:
+            history fileStore rootDirectory
 ]
 
 { #category : 'running' }
 AIAHistoryPresenterTest >> tearDown [
-	SystemAnnouncer uniqueInstance
-		unsubscribe: refAIAHistoryPresenter.
-	AIAHistory clearHistories.
-	AIAHistory histories addAll: originalHistories.
-	AIAHistory recordLlmInfo: originalRecordLlmInfo.
-	super tearDown
+    "Restore the original histories and notify existing presenters."
+
+    SystemAnnouncer uniqueInstance
+        unsubscribe: refAIAHistoryPresenter.
+
+    AIAHistory clearHistories.
+    AIAHistory histories addAll: originalHistories.
+
+    SystemAnnouncer uniqueInstance
+        announce: AIAHistoriesChanged new.
+
+    super tearDown
 ]
 
 { #category : 'tests' }
@@ -568,102 +575,62 @@ AIAHistoryPresenterTest >> testMultipleDeleteIsBlockedWhenOneHistoryIsReferenced
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testNewInPharoModeRecordsExpressionAndResult [
-	"In Pharo mode, New must create an independent history containing
-	both the entered expression and its evaluated result, without sending."
+AIAHistoryPresenterTest >> testNewClearsSelectionWithoutCreatingHistory [
+    "New prepares for a new conversation without creating
+    a history or discarding the pending prompt."
 
-	| promptInput evalButton newButton newHistory |
-	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
-	evalButton := refAIAHistoryPresenter instVarNamed: #evalButton.
-	newButton := refAIAHistoryPresenter instVarNamed: #newButton.
+    | historyTree promptInput newButton previousSize |
 
-	evalButton state: true.
-	promptInput text: '40 + 2'.
-	newButton action value.
+    historyTree := refAIAHistoryPresenter
+        instVarNamed: #historyTree.
+    promptInput := refAIAHistoryPresenter
+        instVarNamed: #promptInput.
+    newButton := refAIAHistoryPresenter
+        instVarNamed: #newButton.
 
-	newHistory := AIAHistory histories last.
+    historyTree selectItem: historyTree roots first.
+    promptInput text: 'An independent prompt'.
+    previousSize := AIAHistory histories size.
 
-	self assert: newHistory preHistories isEmpty.
-	self assert: newHistory messages size equals: 2.
-	self
-		assert: newHistory messages first
-		equals: 'user' -> ':eval: 40 + 2'.
-	self
-		assert: newHistory messages second
-		equals: 'user' -> '42'
+    newButton action value.
+
+    self assert: AIAHistory histories size equals: previousSize.
+    self assert: historyTree selectedItem isNil.
+    self assert: promptInput text asString equals: 'An independent prompt'
 ]
 
 { #category : 'tests' }
-AIAHistoryPresenterTest >> testNewPromptCreatesIndependentHistory [
-	"New creates an independent history, sends the entered prompt, selects
-	the new root and leaves the new history without pre-histories."
+AIAHistoryPresenterTest >> testNewInPharoModeDoesNotEvaluatePrompt [
+    "New must not evaluate the pending expression or create
+    a history, even when Eval is active."
 
-	| promptInput newButton directory previousSize newHistory |
-	promptInput := refAIAHistoryPresenter
-		instVarNamed: #promptInput.
-	newButton := refAIAHistoryPresenter
-		instVarNamed: #newButton.
-	directory := AIAHistory histories first fileStore rootDirectory.
-	previousSize := AIAHistory histories size.
+    | historyTree promptInput evalButton newButton
+      history previousSize previousMessages |
 
-	refAIAHistoryPresenter
-		instVarNamed: #newHistoryFactory
-		put: [
-			| history |
-			history := AIAHistory new.
-			history fileStore rootDirectory: directory.
-			history api: AIAHistoryPresenterTestApi new.
-			history ].
+    historyTree := refAIAHistoryPresenter
+        instVarNamed: #historyTree.
+    promptInput := refAIAHistoryPresenter
+        instVarNamed: #promptInput.
+    evalButton := refAIAHistoryPresenter
+        instVarNamed: #evalButton.
+    newButton := refAIAHistoryPresenter
+        instVarNamed: #newButton.
 
-	promptInput text: 'An independent prompt'.
-	newButton action value.
-	newHistory := AIAHistory histories last.
+    historyTree selectItem: historyTree roots first.
+    history := historyTree selectedItem history.
 
-	self assert: AIAHistory histories size equals: previousSize + 1.
-	self assert: newHistory messages size equals: 1.
-	self assert: newHistory messages first
-		equals: 'user' -> 'An independent prompt'.
-	self assert:
-		(refAIAHistoryPresenter instVarNamed: #historyTree)
-			selectedItem history
-		identicalTo: newHistory.
-	self assert: promptInput text equals: ''
-]
+    previousSize := AIAHistory histories size.
+    previousMessages := history messages copy.
 
-{ #category : 'tests' }
-AIAHistoryPresenterTest >> testNewStoresHistoryInPresenterDirectory [
-	"New histories must be stored in the directory represented by the
-	presenter, regardless of the factory history's initial file store."
+    evalButton state: true.
+    promptInput text: '40 + 2'.
 
-	| directory wrongDirectory promptInput newButton createdHistory |
-	directory := AIAHistory histories first fileStore rootDirectory.
-	wrongDirectory := directory parent / 'wrong-history'.
+    newButton action value.
 
-	SystemAnnouncer uniqueInstance
-		unsubscribe: refAIAHistoryPresenter.
-	refAIAHistoryPresenter :=
-		AIAHistoryPresenter forDirectory: directory.
-
-	promptInput := refAIAHistoryPresenter instVarNamed: #promptInput.
-	newButton := refAIAHistoryPresenter instVarNamed: #newButton.
-
-	refAIAHistoryPresenter
-		instVarNamed: #newHistoryFactory
-		put: [
-			createdHistory := AIAHistory new.
-			createdHistory fileStore rootDirectory: wrongDirectory.
-			createdHistory api: AIAHistoryPresenterTestApi new.
-			createdHistory ].
-
-	promptInput text: 'Stored in the presenter directory'.
-	newButton action value.
-
-	self
-		assert: createdHistory fileStore rootDirectory
-		equals: directory.
-	self assert: createdHistory fileStore fileReference exists.
-	self deny:
-		(wrongDirectory / createdHistory fileStore fileName) exists
+    self assert: AIAHistory histories size equals: previousSize.
+    self assert: history messages equals: previousMessages.
+    self assert: historyTree selectedItem isNil.
+    self assert: promptInput text asString equals: '40 + 2'
 ]
 
 { #category : 'tests' }
@@ -1074,6 +1041,8 @@ AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCompleteConversation [
 		'A message without an answer', String lf, String lf,
 		'user:', String lf,
 		'Second question', String lf, String lf,
+		'comment:', String lf,
+		'[LLM] MistralApi: codestral-latest', String lf, String lf,
 		'assistant:', String lf,
 		answer.
 
@@ -1216,7 +1185,7 @@ AIAHistoryPresenterTest >> testSendInPharoModeRecordsExpressionResultAndAnswer [
 	promptInput text: '40 + 2'.
 	sendButton action value.
 
-	self assert: history messages size equals: previousSize + 3.
+	self assert: history messages size equals: previousSize + 4.
 	self
 		assert: (history messages at: previousSize + 1)
 		equals: 'user' -> ':eval: 40 + 2'.
@@ -1247,7 +1216,7 @@ AIAHistoryPresenterTest >> testSendPromptAddsUserAndAssistantMessages [
 
 	sendButton action value.
 
-	self assert: root history messages size equals: previousSize + 2.
+	self assert: root history messages size equals: previousSize + 3.
 	self assert: root history messages last
 		equals: 'assistant' -> 'Deterministic test response'.
 	self assert: promptInput text equals: ''
@@ -1343,25 +1312,6 @@ AIAHistoryPresenterTest >> testSystemOnlyHistoryIsDisplayed [
 
 	self assert:
 		(displayed includesSubstring: 'A visible system instruction')
-]
-
-{ #category : 'tests' }
-AIAHistoryPresenterTest >> testTagLlmButtonControlsRecordingStrategy [
-	"Tag LLM reflects and controls whether future assistant responses
-	are preceded by information about their provider and model."
-
-	| tagLlmButton |
-	tagLlmButton := refAIAHistoryPresenter
-		instVarNamed: #tagLlmButton.
-
-	self deny: tagLlmButton state.
-	self deny: AIAHistory recordLlmInfo.
-
-	tagLlmButton state: true.
-	self assert: AIAHistory recordLlmInfo.
-
-	tagLlmButton state: false.
-	self deny: AIAHistory recordLlmInfo
 ]
 
 { #category : 'tests' }
