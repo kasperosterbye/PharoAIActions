@@ -98,6 +98,12 @@ PForth >> fibbe [
 	^88
 ]
 
+{ #category : 'as yet unclassified' }
+PForth >> ignoreMe [
+	"I'm just a joke method"
+	^ 'ignore me'
+]
+
 { #category : 'initialization' }
 PForth >> initialize [
 	fArray := Array new: 1000. 
