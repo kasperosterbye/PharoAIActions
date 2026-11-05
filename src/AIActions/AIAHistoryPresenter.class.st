@@ -31,7 +31,7 @@ Class {
 	#instVars : [
 		'historyTree',
 		'historyDetails',
-		'messageText',
+		'messagesPresenter',
 		'promptInput',
 		'addButton',
 		'sendButton',
@@ -185,7 +185,7 @@ AIAHistoryPresenter >> defaultLayout [
 		yourself.
 
 	right := SpPanedLayout newVertical
-		add: messageText;
+		add: messagesPresenter;
 		add: composer;
 		yourself.
 
@@ -278,25 +278,11 @@ AIAHistoryPresenter >> displayDetailsForHistory: aHistory [
 
 { #category : 'displaying' }
 AIAHistoryPresenter >> displayHistory: aHistory [
-    "Display the selected conversation, optionally excluding tool interactions."
+    "Display the selected history using the messages presenter."
 
-    | messages |
-    messages := aHistory displayMessageList.
-
-    showToolsButton state ifFalse: [
-        messages := messages reject: [ :message |
-            message key = 'assistant'
-                and: [
-                    message value beginsWith: '[tool_call]' ] ] ].
-
-    self displayMessages: messages
-]
-
-{ #category : 'displaying' }
-AIAHistoryPresenter >> displayMessages: messages [
-	messageText ifNil: [ ^ self ].
-	messageText text:
-		(self stringFromMessages: messages)
+    messagesPresenter
+        showTools: showToolsButton state;
+        history: aHistory
 ]
 
 { #category : 'history tree' }
@@ -333,7 +319,7 @@ AIAHistoryPresenter >> historyChangeAction [
 			ifFalse: [ nil ].
 
 		addButton enabled:
-			(selected notNil and: [ selected isReference not ]).
+			(selected notNil and: [ selected isReference not ]). 
 		sendButton enabled:
 			(selected isNil or: [ selected isReference not ]).
 		deleteButton enabled:
@@ -341,8 +327,8 @@ AIAHistoryPresenter >> historyChangeAction [
 
 		selected
 			ifNil: [
-				self displayMessages: #().
-				historyDetails items: #() ]
+				messagesPresenter history: nil.
+				historyDetails ifNotNil: [ historyDetails items: #() ] ]
 			ifNotNil: [
 				self displayHistory: selected history.
 				self displayDetailsForHistory: selected history ] ]
@@ -376,8 +362,7 @@ AIAHistoryPresenter >> historyObserveTree [
 AIAHistoryPresenter >> initializePresenters [
 	super initializePresenters.
 
-	messageText := self newText.
-	messageText beNotEditable.
+	messagesPresenter := self instantiate: AIAHistoryMessagesPresenter.
 
 	historyTree := self newTree.
 	historyTree beMultipleSelection.
@@ -458,9 +443,9 @@ AIAHistoryPresenter >> initializeWindow: aWindow [
 
 { #category : 'messages' }
 AIAHistoryPresenter >> messageActions [
-	self
-		displayMessages: #();
-		messageRefreshTree
+    "Install message refresh handling."
+
+    self messageRefreshTree
 ]
 
 { #category : 'messages' }
@@ -480,9 +465,11 @@ AIAHistoryPresenter >> messageRefreshTree [
 
 { #category : 'instance creation' }
 AIAHistoryPresenter >> newPrompt [
-	self displayMessages: #(  ).
-	historyDetails items: #(  ).
-	historyTree unselectAll.
+    "Clear the selected history and its message display."
+
+    messagesPresenter history: nil.
+    historyDetails items: #().
+    historyTree unselectAll
 ]
 
 { #category : 'history tree' }

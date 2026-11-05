@@ -24,6 +24,13 @@ ManifestAIActions class >> ruleLongMethodsRuleV1FalsePositive [
 ]
 
 { #category : 'code-critics' }
+ManifestAIActions class >> ruleReNilBranchRuleV1FalsePositive [
+
+	<ignoreForCoverage>
+	^ #(#(#(#RGMethodDefinition #(#AIAHistoryPresenter #historyChangeAction #false)) #'2026-11-05T13:19:21.471458+01:00') )
+]
+
+{ #category : 'code-critics' }
 ManifestAIActions class >> ruleStringConcatenationRuleV1FalsePositive [
 
 	<ignoreForCoverage>
