@@ -426,20 +426,22 @@ AIAHistoryPresenterTest >> testExternalHistoryCreationPreservesSelection [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testExternalMessageRefreshesSelectedConversation [
-	"An external messageThis is a test message must refresh the displayed conversation."
+    "An external message must refresh the displayed conversation."
 
-	| historyTree messageText root |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-	root := historyTree roots first.
+    | historyTree messagesPresenter root messages |
 
-	historyTree selectItem: root.
-	messageText text: ''.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
+    root := historyTree roots first.
 
-	root history user: 'Added outside the presenter'.
+    historyTree selectItem: root.
 
-	self assert: (messageText text asString
-		includesSubstring: 'Added outside the presenter')
+    root history user: 'Added outside the presenter'.
+
+    messages := messagesPresenter visibleMessages.
+
+    self assert: (messages anySatisfy: [ :message |
+        message value includesSubstring: 'Added outside the presenter' ])
 ]
 
 { #category : 'tests' }
@@ -720,39 +722,38 @@ AIAHistoryPresenterTest >> testPresenterLoadsPreHistoryReferencesFromDirectory [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testReducingMultipleSelectionDisplaysRemainingHistory [
-	"When multiple selection is reduced to one history, that history's
-	conversation and details must immediately be displayed."
+    "When multiple selection is reduced to one history, that history's
+    conversation and details must immediately be displayed."
 
-	| historyTree messageText historyDetails directory
-	  firstHistory secondHistory firstRoot secondRoot |
+    | historyTree messagesPresenter historyDetails directory
+      firstHistory secondHistory firstRoot secondRoot |
 
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-	historyDetails := refAIAHistoryPresenter
-		instVarNamed: #historyDetails.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
+    historyDetails := refAIAHistoryPresenter
+        instVarNamed: #historyDetails.
 
-	firstHistory := AIAHistory histories first.
-	directory := firstHistory fileStore rootDirectory.
+    firstHistory := AIAHistory histories first.
+    directory := firstHistory fileStore rootDirectory.
 
-	secondHistory := AIAHistory new.
-	secondHistory fileStore rootDirectory: directory.
-	secondHistory user: 'Second selected history'.
+    secondHistory := AIAHistory new.
+    secondHistory fileStore rootDirectory: directory.
+    secondHistory user: 'Second selected history'.
 
-	firstRoot := historyTree roots detect: [ :node |
-		node history == firstHistory ].
-	secondRoot := historyTree roots detect: [ :node |
-		node history == secondHistory ].
+    firstRoot := historyTree roots detect: [ :node |
+        node history == firstHistory ].
+    secondRoot := historyTree roots detect: [ :node |
+        node history == secondHistory ].
 
-	historyTree selectItems: { firstRoot. secondRoot }.
-	self assert: messageText text asString isEmpty.
+    historyTree selectItems: { firstRoot. secondRoot }.
+    self assert: messagesPresenter visibleMessages isEmpty.
 
-	historyTree unselectItem: secondRoot.
+    historyTree unselectItem: secondRoot.
 
-	self assert: historyTree selectedItems size equals: 1.
-	self assert:
-		(messageText text asString
-			includesSubstring: 'A message without an answer').
-	self assert: historyDetails items size equals: 7
+    self assert: historyTree selectedItems size equals: 1.
+    self assert: (messagesPresenter visibleMessages anySatisfy: [ :message |
+        message value includesSubstring: 'A message without an answer' ]).
+    self assert: historyDetails items size equals: 7
 ]
 
 { #category : 'tests' }
@@ -790,22 +791,24 @@ AIAHistoryPresenterTest >> testReferencedHistoryCannotBeDeleted [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testReloadAfterFileDeletionClearsDisplayedConversation [
-	"Reloading after deletion of the selected file must clear its display."
+    "Reloading after deletion of the selected file must clear its display."
 
-	| historyTree messageText reloadButton history |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-	reloadButton := refAIAHistoryPresenter instVarNamed: #reloadButton.
+    | historyTree messagesPresenter reloadButton history |
 
-	historyTree selectItem: historyTree roots first.
-	history := historyTree selectedItem history.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
+    reloadButton := refAIAHistoryPresenter instVarNamed: #reloadButton.
 
-	self assert: messageText text asString isNotEmpty.
-	history fileStore delete.
-	reloadButton action value.
+    historyTree selectItem: historyTree roots first.
+    history := historyTree selectedItem history.
 
-	self assert: historyTree selectedItem isNil..
-	self assert: messageText text asString isEmpty
+    self assert: messagesPresenter visibleMessages isNotEmpty.
+
+    history fileStore delete.
+    reloadButton action value.
+
+    self assert: historyTree selectedItem isNil.
+    self assert: messagesPresenter visibleMessages isEmpty
 ]
 
 { #category : 'tests' }
@@ -952,169 +955,179 @@ AIAHistoryPresenterTest >> testReloadRemovesHistoryDeletedOutsidePresenter [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectedHistoryDisplaysComments [
-	"Comments are part of the visible history and must be shown unchanged."
+    "Comments are part of the visible history and must be shown unchanged."
 
-	| historyTree messageText history root displayed |
+    | historyTree messagesPresenter history root displayed |
 
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
 
-	history := historyTree roots first history.
-	history
-		comment: 'Diagnostic information';
-		comment: '[LLM] ClaudeApi: claude-opus-5';
-		assistant: 'The answer'.
+    history := historyTree roots first history.
+    history
+        comment: 'Diagnostic information';
+        comment: '[LLM] ClaudeApi: claude-opus-5';
+        assistant: 'The answer'.
 
-	root := historyTree roots detect: [ :node |
-		node history == history ].
-	historyTree selectItem: root.
+    root := historyTree roots detect: [ :node |
+        node history == history ].
+    historyTree selectItem: root.
 
-	displayed := messageText text asString.
+    displayed := messagesPresenter visibleMessages.
 
-	self assert:
-		(displayed includesSubstring: 'Diagnostic information').
-	self assert:
-		(displayed includesSubstring: '[LLM] ClaudeApi: claude-opus-5').
-	self assert:
-		(displayed includesSubstring: 'The answer')
+    self assert: (displayed anySatisfy: [ :message |
+        message key = 'comment'
+            and: [ message value = 'Diagnostic information' ]]).
+
+    self assert: (displayed anySatisfy: [ :message |
+        message key = 'comment'
+            and: [ message value = '[LLM] ClaudeApi: claude-opus-5' ]]).
+
+    self assert: (displayed anySatisfy: [ :message |
+        message key = 'assistant'
+            and: [ message value = 'The answer' ]])
 ]
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCommentsFromPreHistory [
-	"Comments in a pre-history are part of the visible conversation."
+    "Comments in a pre-history are part of the visible conversation."
 
-	| directory preHistory history historyTree messageText root displayed |
+    | directory preHistory history historyTree messagesPresenter root displayed |
 
-	directory := AIAHistory histories first fileStore rootDirectory.
+    directory := AIAHistory histories first fileStore rootDirectory.
 
-	preHistory := AIAHistory new.
-	preHistory fileStore rootDirectory: directory.
-	preHistory
-		user: 'Pre-history question';
-		comment: 'Pre-history diagnostic information'.
+    preHistory := AIAHistory new.
+    preHistory fileStore rootDirectory: directory.
+    preHistory
+        user: 'Pre-history question';
+        comment: 'Pre-history diagnostic information'.
 
-	history := AIAHistory new.
-	history fileStore rootDirectory: directory.
-	history
-		user: 'Current question';
-		addPreHistory: preHistory.
+    history := AIAHistory new.
+    history fileStore rootDirectory: directory.
+    history
+        user: 'Current question';
+        addPreHistory: preHistory.
 
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
 
-	root := historyTree roots detect: [ :node |
-		node history == history ].
-	historyTree selectItem: root.
+    root := historyTree roots detect: [ :node |
+        node history == history ].
+    historyTree selectItem: root.
 
-	displayed := messageText text asString.
+    displayed := messagesPresenter visibleMessages.
 
-	self assert:
-		(displayed includesSubstring: 'Pre-history question').
-	self assert:
-		(displayed includesSubstring: 'Pre-history diagnostic information').
-	self assert:
-		(displayed includesSubstring: 'Current question')
+    self assert: (displayed anySatisfy: [ :message |
+        message key = 'user'
+            and: [ message value includesSubstring: 'Pre-history question' ] ]).
+
+    self assert: (displayed anySatisfy: [ :message |
+        message key = 'comment'
+            and: [ message value includesSubstring: 'Pre-history diagnostic information' ] ]).
+
+    self assert: (displayed anySatisfy: [ :message |
+        message key = 'user'
+            and: [ message value includesSubstring: 'Current question' ] ])
 ]
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectedHistoryDisplaysCompleteConversation [
-	"The selected history must display every role and complete message
-	in chronological order."
+    "The selected history must display every role and complete message
+    in chronological order."
 
-	| historyTree messageText history root answer expected |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-	history := historyTree roots first history.
+    | historyTree messagesPresenter history root answer expected |
 
-	answer := 'First answer line', String lf, 'Second answer line'.
-	history
-		user: 'Second question';
-		assistant: answer.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
+    history := historyTree roots first history.
 
-	"Announcements rebuild the tree, so obtain its new root node."
-	root := historyTree roots detect: [ :node |
-		node history == history ].
-	historyTree selectItem: root.
+    answer := 'First answer line', String lf, 'Second answer line'.
+    history
+        user: 'Second question';
+        assistant: answer.
 
-	expected :=
-		'user:', String lf,
-		'A message without an answer', String lf, String lf,
-		'user:', String lf,
-		'Second question', String lf, String lf,
-		'comment:', String lf,
-		'[LLM] MistralApi: codestral-latest', String lf, String lf,
-		'assistant:', String lf,
-		answer.
+    "Announcements rebuild the tree, so obtain its new root node."
+    root := historyTree roots detect: [ :node |
+        node history == history ].
+    historyTree selectItem: root.
 
-	self assert: messageText text asString equals: expected
+    expected := {
+        'user' -> 'A message without an answer'.
+        'user' -> 'Second question'.
+        'comment' -> '[LLM] MistralApi: codestral-latest'.
+        'assistant' -> answer
+    }.
+
+    self assert: messagesPresenter visibleMessages asArray equals: expected
 ]
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectedHistoryDisplaysPreHistoryBeforeOwnConversation [
-	"The displayed conversation must include the effective pre-history
-	context before the selected history's own user and assistant messages."
+    "The displayed conversation must include the effective pre-history
+    context before the selected history's own messages."
 
-	| directory preHistory history historyTree messageText root displayed
-	  systemPosition questionPosition answerPosition |
+    | directory preHistory history historyTree messagesPresenter
+      root displayed systemPosition questionPosition answerPosition |
 
-	directory := AIAHistory histories first fileStore rootDirectory.
+    directory := AIAHistory histories first fileStore rootDirectory.
 
-	preHistory := AIAHistory new.
-	preHistory fileStore rootDirectory: directory.
-	preHistory system: 'Shared system instruction'.
-	preHistory fileStore save: preHistory.
+    preHistory := AIAHistory new.
+    preHistory fileStore rootDirectory: directory.
+    preHistory system: 'Shared system instruction'.
+    preHistory fileStore save: preHistory.
 
-	history := AIAHistory new.
-	history fileStore rootDirectory: directory.
-	history
-		user: 'Current question';
-		assistant: 'Current answer';
-		addPreHistory: preHistory.
+    history := AIAHistory new.
+    history fileStore rootDirectory: directory.
+    history
+        user: 'Current question';
+        assistant: 'Current answer';
+        addPreHistory: preHistory.
 
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
 
-	root := historyTree roots detect: [ :node |
-		node history == history ].
-	historyTree selectItem: root.
-	displayed := messageText text asString.
+    root := historyTree roots detect: [ :node |
+        node history == history ].
+    historyTree selectItem: root.
 
-	systemPosition := displayed
-		findString: 'Shared system instruction'.
-	questionPosition := displayed
-		findString: 'Current question'.
-	answerPosition := displayed
-		findString: 'Current answer'.
+    displayed := messagesPresenter visibleMessages.
 
-	self assert: systemPosition > 0.
-	self assert: questionPosition > systemPosition.
-	self assert: answerPosition > questionPosition
+    systemPosition := displayed findFirst: [ :message |
+        message value includesSubstring: 'Shared system instruction' ].
+    questionPosition := displayed findFirst: [ :message |
+        message value includesSubstring: 'Current question' ].
+    answerPosition := displayed findFirst: [ :message |
+        message value includesSubstring: 'Current answer' ].
+
+    self assert: systemPosition > 0.
+    self assert: questionPosition > systemPosition.
+    self assert: answerPosition > questionPosition
 ]
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectingAnotherHistoryReplacesDisplayedConversation [
-	"Selecting another history must replace the complete displayed text;
-	content from the previous selection must not remain."
+    "Selecting another history must replace the displayed conversation;
+    no messages from the previous history may remain."
 
-	| historyTree messageText firstRoot secondHistory secondRoot directory |
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
-	firstRoot := historyTree roots first.
-	directory := firstRoot history fileStore rootDirectory.
+    | historyTree messagesPresenter firstRoot secondHistory secondRoot directory |
 
-	secondHistory := AIAHistory new.
-	secondHistory fileStore rootDirectory: directory.
-	secondHistory user: 'Only in the second history'.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter instVarNamed: #messagesPresenter.
+    firstRoot := historyTree roots first.
+    directory := firstRoot history fileStore rootDirectory.
 
-	secondRoot := historyTree roots detect: [ :node |
-		node history == secondHistory ].
+    secondHistory := AIAHistory new.
+    secondHistory fileStore rootDirectory: directory.
+    secondHistory user: 'Only in the second history'.
 
-	historyTree selectItem: firstRoot.
-	historyTree selectItem: secondRoot.
+    secondRoot := historyTree roots detect: [ :node |
+        node history == secondHistory ].
 
-	self
-		assert: messageText text asString
-		equals: 'user:', String lf, 'Only in the second history'
+    historyTree selectItem: firstRoot.
+    historyTree selectItem: secondRoot.
+
+    self
+        assert: messagesPresenter visibleMessages asArray
+        equals: { 'user' -> 'Only in the second history' }
 ]
 
 { #category : 'tests' }
@@ -1224,16 +1237,16 @@ AIAHistoryPresenterTest >> testSendPromptAddsUserAndAssistantMessages [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testShowToolsToggle [
-    "Tool interactions are initially visible and can be hidden
-    without changing ordinary messages or the stored history."
+    "Tool interactions can be hidden without changing ordinary messages
+    or modifying the stored history."
 
-    | historyTree messageText showToolsButton history root
+    | historyTree messagesPresenter showToolsButton history root
       displayed originalMessages |
 
     historyTree := refAIAHistoryPresenter
         instVarNamed: #historyTree.
-    messageText := refAIAHistoryPresenter
-        instVarNamed: #messageText.
+    messagesPresenter := refAIAHistoryPresenter
+        instVarNamed: #messagesPresenter.
 
     history := historyTree roots first history.
     history
@@ -1252,22 +1265,25 @@ AIAHistoryPresenterTest >> testShowToolsToggle [
 
     self assert: showToolsButton state.
 
-    displayed := messageText text asString.
-    self assert: (displayed includesSubstring: '[tool_call]').
-    self assert: (displayed includesSubstring: '[tool_response]').
+    displayed := messagesPresenter visibleMessages.
+    self assert: (displayed anySatisfy: [ :message |
+        message value includesSubstring: '[tool_call]' ]).
+    self assert: (displayed anySatisfy: [ :message |
+        message value includesSubstring: '[tool_response]' ]).
 
     showToolsButton state: false.
 
-    displayed := messageText text asString.
-    self deny: (displayed includesSubstring: '[tool_call]').
-    self deny: (displayed includesSubstring: '[tool_response]').
-    self assert:
-        (displayed includesSubstring: 'A message without an answer').
+    displayed := messagesPresenter visibleMessages.
+    self deny: (displayed anySatisfy: [ :message |
+        message value includesSubstring: '[tool_call]' ]).
+    self deny: (displayed anySatisfy: [ :message |
+        message value includesSubstring: '[tool_response]' ]).
+    self assert: (displayed anySatisfy: [ :message |
+        message value includesSubstring: 'A message without an answer' ]).
 
     self assert: history messages equals: originalMessages.
-    self assert:
-        (history apiMessageList anySatisfy: [ :message |
-            message value includesSubstring: '[tool_call]' ])
+    self assert: (history apiMessageList anySatisfy: [ :message |
+        message value includesSubstring: '[tool_call]' ])
 ]
 
 { #category : 'running' }
@@ -1289,29 +1305,34 @@ AIAHistoryPresenterTest >> testStoredHistoriesAreTreeRoots [
 
 { #category : 'tests' }
 AIAHistoryPresenterTest >> testSystemOnlyHistoryIsDisplayed [
-	"A history containing only system information must not appear empty.
-	This is the normal shape of reusable histories such as qPrefix."
+    "A history containing only system information must not appear empty.
+    This is the normal shape of reusable histories such as qPrefix."
 
-	| directory history historyTree messageText root displayed |
-	directory := AIAHistory histories first fileStore rootDirectory.
+    | directory history historyTree messagesPresenter root displayed |
 
-	history := AIAHistory new.
-	history fileStore rootDirectory: directory.
-	history
-		title: 'System only';
-		system: 'A visible system instruction'.
-	history fileStore save: history.
+    directory := AIAHistory histories first fileStore rootDirectory.
 
-	historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
-	messageText := refAIAHistoryPresenter instVarNamed: #messageText.
+    history := AIAHistory new.
+    history fileStore rootDirectory: directory.
+    history
+        title: 'System only';
+        system: 'A visible system instruction'.
+    history fileStore save: history.
 
-	root := historyTree roots detect: [ :node |
-		node history == history ].
-	historyTree selectItem: root.
-	displayed := messageText text asString.
+    historyTree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    messagesPresenter := refAIAHistoryPresenter
+        instVarNamed: #messagesPresenter.
 
-	self assert:
-		(displayed includesSubstring: 'A visible system instruction')
+    root := historyTree roots detect: [ :node |
+        node history == history ].
+    historyTree selectItem: root.
+
+    displayed := messagesPresenter visibleMessages.
+
+    self assert: (displayed anySatisfy: [ :message |
+	    message key = 'user'
+   	     	and: [ message value includesSubstring:
+                '[system] A visible system instruction' ] ])
 ]
 
 { #category : 'tests' }
