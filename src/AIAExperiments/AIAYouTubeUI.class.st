@@ -247,6 +247,9 @@ AIAYouTubeUI >> episodeChangeAction [
 			self episodeGenerateSummary:
 				episodeDetail text asString ].
 
+	episodeList bindKeyCombination: $l command asKeyCombination
+    	toAction: [ self episodeReloadSelected ].
+
 	episodeList whenSelectionChangedDo: [ :selection |
 		| selected |
 		selected := selection selectedItems.
@@ -345,6 +348,47 @@ AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle 
 	file := File named: path.
 	file exists ifFalse: [ ^ 'Not loaded yet' ].
 	^ file readStream contents utf8Decoded lines
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeUI >> episodeReloadSelected [
+    "Reload all selected episodes sequentially in a background job."
+
+    | ids channel |
+
+    ids := episodeList selectedItems copy.
+    ids ifEmpty: [ ^ self ].
+    channel := channelList selectedItem.
+
+    [
+        [ :job |
+            | episode |
+            episode := AIAYouTubeEpisode new
+                channel: channel;
+                yourself.
+
+            ids withIndexDo: [ :id :index |
+                job
+                    title: 'Reloading episode ', index asString,
+                        ' of ', ids size asString;
+                    progress: (index - 1) / ids size.
+
+                [ episode episodeReload: id ]
+                    on: Error
+                    do: [ :error |
+                        Transcript
+                            show: 'Reload failed: ', id, ' - ',
+                                error messageText;
+                            cr ] ].
+
+            job progress: 1
+        ] asJob run.
+
+        UIManager default defer: [
+            episodeList refresh.
+            self showEpisodes: ids ]
+    ] forkAt: Processor userBackgroundPriority
+      named: 'Reload YouTube episodes'
 ]
 
 { #category : 'episode' }

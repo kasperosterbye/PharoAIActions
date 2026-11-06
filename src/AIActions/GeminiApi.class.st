@@ -35,7 +35,22 @@ GeminiApi class >> modelNamesAndReasoning [
 
 { #category : 'accessing' }
 GeminiApi class >> transcribeYouTube: aUrl [
-	"GeminiApi transcribeYouTube: 'https://www.youtube.com/watch?v=x1ESqB7M9To'"
+"Transcribe a YouTube video using Google's Gemini API.
+
+Example:
+GeminiApi transcribeYouTube:
+    'https://www.youtube.com/watch?v=x1ESqB7M9To'
+
+This operation uses paid Gemini API credits.
+
+Manage billing and add prepaid credits at:
+https://aistudio.google.com/
+
+If credits are exhausted, Google returns HTTP 402
+with status RESOURCE_EXHAUSTED.
+
+The API key is obtained through self geminiKey."
+
 	| body response modelName |
 	modelName := self modelNames first.
 	body := Dictionary with: 'contents' -> {
@@ -48,7 +63,10 @@ GeminiApi class >> transcribeYouTube: aUrl [
 		entity: (ZnEntity json: (STONJSON toString: body));
 		timeout: 600;
 		post.
-	^ ((((STONJSON fromString: response) at: 'candidates') first at: 'content') at: 'parts') first at: 'text'
+	^ ((((STONJSON fromString: response)
+    at: 'candidates'
+    ifAbsent: [ self error: response asString ])
+    first at: 'content') at: 'parts') first at: 'text'
 ]
 
 { #category : 'AI models' }

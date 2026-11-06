@@ -143,6 +143,29 @@ AIAYouTubeEpisode >> episodePath: episodeId [
 
 ]
 
+{ #category : 'as yet unclassified' }
+AIAYouTubeEpisode >> episodeReload: episodeId [
+    "Reload an episode, preserving its existing transcript if Gemini fails."
+
+    | transcript wasRead |
+
+    transcript := self episodeSplitSentences:
+        (GeminiApi transcribeYouTube:
+            'https://www.youtube.com/watch?v=', episodeId).
+
+    wasRead := self episodeIsRead: episodeId.
+
+    self episodeMeta: episodeId.
+
+    (File named: (self episodePath: episodeId), episodeId, '.txt')
+        writeStream
+            nextPutAll: transcript utf8Encoded;
+            close.
+
+    wasRead ifTrue: [
+        self episodeMarkAsRead: episodeId ].
+]
+
 { #category : 'episode' }
 AIAYouTubeEpisode >> episodeSplitSentences: aString [
 	"Break after '. ' unless the word before the full stop is a known abbreviation."
