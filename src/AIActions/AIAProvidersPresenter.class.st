@@ -119,21 +119,34 @@ AIAProvidersPresenter >> defaultLayout [
 
 { #category : 'event handling' }
 AIAProvidersPresenter >> doubleClick: selection [
-	"Handles double-click events on the providers tree table. If the selected item is a class, it browses the class. If the selected item is a model name, it sets the default model for the provider and updates the window title. If the selected item is neither, it refreshes the list of providers."
+    "Browse a provider class or select a model.
+    Warn if Ollama has stopped since the last refresh."
 
-	| item |
-	item := selection selectedItem.
-	item isClass 
-		ifTrue: [ item browse ]
-		ifFalse: [
-			| provider llmModelNumber |
-			provider :=  self providerFor:item.
-			provider ifNotNil:[
-				llmModelNumber := provider modelNames indexOf: item.
-				provider defaultModel: llmModelNumber.
-				AilienApi provider: provider.
-				self setWindowTitle]
-			ifNil: [ self refreshProviders ]  ]
+    | item provider llmModelNumber |
+
+    item := selection selectedItem.
+
+    item isClass ifTrue: [
+        item browse.
+        ^ self ].
+
+    provider := self providerFor: item.
+
+    provider ifNil: [
+        self refreshProviders.
+        ^ self ].
+
+    (provider = OllamaApi and: [
+        OllamaApi models isEmpty ]) ifTrue: [
+            self inform: 'Ollama is not running or has no installed models'.
+            self refreshProviders.
+            ^ self ].
+
+    llmModelNumber := provider modelNames indexOf: item.
+    provider defaultModel: llmModelNumber.
+    AilienApi provider: provider.
+    self setWindowTitle
+
 ]
 
 { #category : 'layout' }
@@ -156,10 +169,14 @@ AIAProvidersPresenter >> initializePresenters [
 								  ifFalse: [ item name ] ]);
 				 yourself);
 		roots: AilienApi providers;
-		children: [ :provider |
-				[ provider modelNames ]
-					on: Error
-					do: [ #(  ) ] ];
+		children: [ :item |
+    		item isClass
+        		ifFalse: [ #() ]
+        		ifTrue: [
+            		item = OllamaApi
+                	ifTrue: [ item availableModelNames ]
+                	ifFalse: [ item modelNames ] ] ];
+
 		beResizable;
 		activateOnDoubleClick;
 		whenActivatedDo: [ :selection | self doubleClick: selection ].

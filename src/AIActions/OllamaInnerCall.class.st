@@ -26,6 +26,19 @@ OllamaInnerCall >> check [
 ]
 
 { #category : 'adding' }
+OllamaInnerCall >> innerCall [
+    "Handle Ollama connection failures without opening a debugger."
+
+    ^ [ super innerCall ]
+        on: Error
+        do: [ :ex |
+            outer history assistant:
+                'API Error: Ollama is not running.'.
+            '*notool*' ]
+
+]
+
+{ #category : 'adding' }
 OllamaInnerCall >> processToolCall: call history: aHistory [
     "Execute an Ollama tool call, record it, and return a native tool result."
     | function name arguments result |

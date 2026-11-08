@@ -43,6 +43,17 @@ OllamaApi class >> apiGenerateUrl [
 	
 ]
 
+{ #category : 'as yet unclassified' }
+OllamaApi class >> availableModelNames [
+    "Return configured models when Ollama is running,
+    otherwise an empty array."
+
+    ^ self models isEmpty
+        ifTrue: [ #() ]
+        ifFalse: [ self modelNames ]
+
+]
+
 { #category : 'AI models' }
 OllamaApi class >> modelNamesAndReasoning [
 	"This is auto generated from ../Pharo/ailiens.txt file"
@@ -56,7 +67,6 @@ OllamaApi class >> modelNamesAndReasoning [
 OllamaApi class >> models [
 	"returns an array with one item per model. Each item has nested informations, and some arrays"
 	| response  |
-
 	[response := ZnClient new get: 'http://localhost:11434/api/tags'.
 	^ (STONJSON fromString: response) at: 'models' ]
 	on: Error
