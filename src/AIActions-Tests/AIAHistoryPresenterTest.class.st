@@ -954,6 +954,126 @@ AIAHistoryPresenterTest >> testReloadRemovesHistoryDeletedOutsidePresenter [
 ]
 
 { #category : 'tests' }
+AIAHistoryPresenterTest >> testSaveButtonWritesSelectedHistory [
+    "Save button exports the selected history to a fixed text file."
+
+    | historyTree saveButton directory file history |
+
+    historyTree := refAIAHistoryPresenter
+        instVarNamed: #historyTree.
+    saveButton := refAIAHistoryPresenter
+        instVarNamed: #saveButton.
+
+    historyTree selectItem: historyTree roots first.
+    history := historyTree selectedItem history.
+    directory := history fileStore rootDirectory.
+    file := directory / 'Pharo-history-file.txt'.
+
+    self assert: saveButton isEnabled.
+
+    saveButton action value.
+
+    self assert: file exists.
+    self assert: (file contents
+        includesSubstring: 'A message without an answer')
+
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSaveSelectedHistoriesOverwritesExistingFile [
+    "Saving histories must completely replace existing file contents."
+
+    | directory file tree |
+
+    directory := refAIAHistoryPresenter
+        instVarNamed: #rootDirectory.
+
+    file := directory / 'Pharo-history-file.txt'.
+
+    file writeStreamDo: [ :stream |
+        stream nextPutAll: (String new: 10000 withAll: $X) ].
+
+    tree := refAIAHistoryPresenter
+        instVarNamed: #historyTree.
+
+    tree selectItem: tree roots first.
+
+    refAIAHistoryPresenter saveSelectedHistoriesTo: file.
+
+    self assert: file exists.
+    self deny: (file contents includes: $X)
+
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSaveSelectedHistoriesToFile [
+    "Save two selected histories to one text file,
+    preserving titles, message roles, and contents."
+
+    | directory first second tree file contents |
+
+    directory := AIAHistory histories first fileStore rootDirectory.
+
+    first := AIAHistory new.
+    first fileStore rootDirectory: directory.
+    first title: 'First conversation'.
+    first user: 'First question'.
+
+    second := AIAHistory new.
+    second fileStore rootDirectory: directory.
+    second title: 'Second conversation'.
+    second user: 'Second question'.
+
+    tree := refAIAHistoryPresenter instVarNamed: #historyTree.
+    tree selectItems: (tree roots select: [ :node |
+        { first. second } includes: node history ]).
+
+    file := directory / 'Pharo-history-file.txt'.
+
+    refAIAHistoryPresenter saveSelectedHistoriesTo: file.
+
+    self assert: file exists.
+    contents := file contents.
+
+    self assert: (contents includesSubstring: 'First conversation').
+    self assert: (contents includesSubstring: 'Second conversation').
+    self assert: (contents includesSubstring: 'user').
+    self assert: (contents includesSubstring: 'First question').
+    self assert: (contents includesSubstring: 'Second question').
+
+]
+
+{ #category : 'tests' }
+AIAHistoryPresenterTest >> testSaveSelectedHistoriesUsesLF [
+    "Exported text must contain LF line endings, never CR."
+
+    | directory file tree history contents |
+
+    directory := refAIAHistoryPresenter
+        instVarNamed: #rootDirectory.
+
+    tree := refAIAHistoryPresenter
+        instVarNamed: #historyTree.
+
+    tree selectItem: tree roots first.
+    history := tree selectedItem history.
+
+    history user: 'First line', String cr, 'Second line'.
+
+    file := directory / 'Pharo-history-file.txt'.
+
+    refAIAHistoryPresenter saveSelectedHistoriesTo: file.
+
+    contents := file contents.
+
+    self assert: (contents includes: Character lf).
+    self deny: (contents includes: Character cr).
+    self assert: (contents includesSubstring:
+        'First line', String lf, 'Second line')
+
+]
+
+{ #category : 'tests' }
 AIAHistoryPresenterTest >> testSelectedHistoryDisplaysComments [
     "Comments are part of the visible history and must be shown unchanged."
 
