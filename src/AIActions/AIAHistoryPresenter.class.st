@@ -41,7 +41,8 @@ Class {
 		'rootDirectory',
 		'reloadButton',
 		'deleteButton',
-		'showToolsButton'
+		'showToolsButton',
+		'saveButton'
 	],
 	#category : 'AIActions-UIPresenters',
 	#package : 'AIActions',
@@ -150,51 +151,56 @@ AIAHistoryPresenter >> canDeleteNodes: nodes [
 
 { #category : 'layout' }
 AIAHistoryPresenter >> defaultLayout [
-	| left leftContent right both composer composerButtons leftButtons |
+    "Arrange the history list, Save button, details and messages."
 
-	composerButtons := SpBoxLayout newLeftToRight
-		add: addButton;
-		add: sendButton;
-		add: SpBoxLayout newLeftToRight;
-		add: evalButton;
-		add: SpBoxLayout newLeftToRight;
-		add: newButton;
-		yourself.
+    | left leftContent right both composer composerButtons leftButtons |
 
-	composer := SpBoxLayout newTopToBottom
-		add: promptInput;
-		add: composerButtons expand: false;
-		yourself.
+    composerButtons := SpBoxLayout newLeftToRight
+        add: addButton;
+        add: sendButton;
+        add: SpBoxLayout newLeftToRight;
+        add: evalButton;
+        add: SpBoxLayout newLeftToRight;
+        add: newButton;
+        yourself.
 
-	leftButtons := SpBoxLayout newLeftToRight
-		add: reloadButton ;
-		add: SpBoxLayout newLeftToRight;
-		add: deleteButton ;
-		add: SpBoxLayout newLeftToRight;
-		add: showToolsButton ;
-		yourself.
+    composer := SpBoxLayout newTopToBottom
+        add: promptInput;
+        add: composerButtons expand: false;
+        yourself.
 
-	leftContent := SpPanedLayout newVertical
-		add: historyTree;
-		add: historyDetails;
-		yourself.
+    leftButtons := SpBoxLayout newLeftToRight
+        add: reloadButton;
+        add: SpBoxLayout newLeftToRight;
+        add: saveButton;
+        add: SpBoxLayout newLeftToRight;
+        add: deleteButton;
+        add: SpBoxLayout newLeftToRight;
+        add: showToolsButton;
+        yourself.
 
-	left := SpBoxLayout newTopToBottom
-		add: leftContent;
-		add: leftButtons expand: false;
-		yourself.
+    leftContent := SpPanedLayout newVertical
+        add: historyTree;
+        add: historyDetails;
+        yourself.
 
-	right := SpPanedLayout newVertical
-		add: messagesPresenter;
-		add: composer;
-		yourself.
+    left := SpBoxLayout newTopToBottom
+        add: leftContent;
+        add: leftButtons expand: false;
+        yourself.
 
-	both := SpPanedLayout newHorizontal
-		add: left;
-		add: right;
-		yourself.
+    right := SpPanedLayout newVertical
+        add: messagesPresenter;
+        add: composer;
+        yourself.
 
-	^ both
+    both := SpPanedLayout newHorizontal
+        add: left;
+        add: right;
+        yourself.
+
+    ^ both
+
 ]
 
 { #category : 'deleting' }
@@ -310,28 +316,32 @@ AIAHistoryPresenter >> historyActions [
 
 { #category : 'history tree' }
 AIAHistoryPresenter >> historyChangeAction [
-	historyTree whenMultiSelectionChangedDo: [ :selection |
-		| selectedNodes selected |
-		selectedNodes := historyTree selectedItems.
+    "Update button availability and message display after selection changes."
 
-		selected := selectedNodes size = 1
-			ifTrue: [ selectedNodes first ]
-			ifFalse: [ nil ].
+    historyTree whenMultiSelectionChangedDo: [ :selection |
+        | selectedNodes selected |
+        selectedNodes := historyTree selectedItems.
 
-		addButton enabled:
-			(selected notNil and: [ selected isReference not ]). 
-		sendButton enabled:
-			(selected isNil or: [ selected isReference not ]).
-		deleteButton enabled:
-			(self canDeleteNodes: selectedNodes).
+        selected := selectedNodes size = 1
+            ifTrue: [ selectedNodes first ]
+            ifFalse: [ nil ].
 
-		selected
-			ifNil: [
-				messagesPresenter history: nil.
-				historyDetails ifNotNil: [ historyDetails items: #() ] ]
-			ifNotNil: [
-				self displayHistory: selected history.
-				self displayDetailsForHistory: selected history ] ]
+        addButton enabled:
+            (selected notNil and: [ selected isReference not ]).
+        sendButton enabled:
+            (selected isNil or: [ selected isReference not ]).
+        saveButton enabled: selectedNodes isNotEmpty.
+        deleteButton enabled:
+            (self canDeleteNodes: selectedNodes).
+
+        selected
+            ifNil: [
+                messagesPresenter history: nil.
+                historyDetails ifNotNil: [ historyDetails items: #() ] ]
+            ifNotNil: [
+                self displayHistory: selected history.
+                self displayDetailsForHistory: selected history ] ]
+
 ]
 
 { #category : 'formatting' }
@@ -360,77 +370,83 @@ AIAHistoryPresenter >> historyObserveTree [
 
 { #category : 'initialization' }
 AIAHistoryPresenter >> initializePresenters [
-	super initializePresenters.
+    "Initialize the history presenter and its controls."
 
-	messagesPresenter := self instantiate: AIAHistoryMessagesPresenter.
+    super initializePresenters.
 
-	historyTree := self newTree.
-	historyTree beMultipleSelection.
-	historyDetails := self newTable.
-	historyDetails
-		addColumn: (SpStringTableColumn
-			title: 'Property'
-			evaluated: [ :association | association key ]);
-		addColumn: ((SpStringTableColumn
-			title: 'Value'
-			evaluated: [ :association | association value ])
-				beEditable;
-				onAcceptEdition: [ :association :newValue |
-					self
-						acceptHistoryDetail: association
-						value: newValue ];
-				yourself);
-		items: #().
+    messagesPresenter := self instantiate: AIAHistoryMessagesPresenter.
+    historyTree := self newTree.
+    historyTree beMultipleSelection.
+    historyDetails := self newTable.
+    historyDetails
+        addColumn: (SpStringTableColumn
+            title: 'Property'
+            evaluated: [ :association | association key ]);
+        addColumn: ((SpStringTableColumn
+            title: 'Value'
+            evaluated: [ :association | association value ])
+                beEditable;
+                onAcceptEdition: [ :association :newValue |
+                    self
+                        acceptHistoryDetail: association
+                        value: newValue ];
+                yourself);
+        items: #().
+    promptInput := self newText.
 
-	promptInput := self newText.
+    evalButton := self newToggleButton
+        label: 'Eval';
+        yourself.
 
-	evalButton := self newToggleButton
-		label: 'Eval';
-		yourself.
+    addButton := self newButton
+        label: 'Add';
+        action: [ self addPrompt ];
+        yourself.
+    addButton disable.
 
-	addButton := self newButton
-		label: 'Add';
-		action: [ self addPrompt ];
-		yourself.
-	addButton disable.
+    sendButton := self newButton
+        label: 'Send';
+        action: [ self sendPrompt ];
+        yourself.
+    sendButton disable.
 
-	sendButton := self newButton
-		label: 'Send';
-		action: [ self sendPrompt ];
-		yourself.
-	sendButton disable.
-	
-	showToolsButton := self newToggleButton
-   		label: 'Show Tools';
-		help: 'Show or hide tool interactions in the conversation';
-    	state: true;
-    	whenActivatedDo: [ self refreshSelectedHistory ];
-    	whenDeactivatedDo: [ self refreshSelectedHistory ];
-    	yourself.
+    showToolsButton := self newToggleButton
+        label: 'Show Tools';
+        help: 'Show or hide tool interactions in the conversation';
+        state: true;
+        whenActivatedDo: [ self refreshSelectedHistory ];
+        whenDeactivatedDo: [ self refreshSelectedHistory ];
+        yourself.
 
-	newHistoryFactory := [ AIAHistory new ].
+    newHistoryFactory := [ AIAHistory new ].
+    newButton := self newButton
+        label: 'New';
+        action: [ self newPrompt ];
+        yourself.
 
-	newButton := self newButton
-		label: 'New';
-		action: [ self newPrompt ];
-		yourself.
+    rootDirectory ifNil: [
+        rootDirectory := AIAHistoryFileStore new rootDirectory ].
 
-	rootDirectory ifNil: [
-		rootDirectory := AIAHistoryFileStore new rootDirectory ].
+    reloadButton := self newButton
+        label: 'Reload';
+        action: [ self reloadHistories ];
+        yourself.
 
-	reloadButton := self newButton
-		label: 'Reload';
-		action: [ self reloadHistories ];
-		yourself.
+    saveButton := self newButton
+        label: 'Save';
+        action: [ self saveSelectedHistories ];
+        yourself.
+    saveButton disable.
 
-	deleteButton := self newButton
-		label: 'Delete';
-		action: [ self deleteSelectedHistories ];
-		yourself.
-	deleteButton disable.
+    deleteButton := self newButton
+        label: 'Delete';
+        action: [ self deleteSelectedHistories ];
+        yourself.
+    deleteButton disable.
 
-	self historyActions.
-	self messageActions
+    self historyActions.
+    self messageActions
+
 ]
 
 { #category : 'initialization' }
@@ -541,6 +557,52 @@ AIAHistoryPresenter >> reloadHistories [
 { #category : 'accessing' }
 AIAHistoryPresenter >> rootDirectory: aDirectory [
 	rootDirectory := aDirectory
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> saveSelectedHistories [
+    "Save selected histories to the user's Downloads folder."
+
+    | file |
+    file := FileLocator home
+        / 'Downloads'
+        / 'Pharo-history-file.txt'.
+
+    self saveSelectedHistoriesTo: file
+
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> saveSelectedHistoriesTo: aFileReference [
+    "Export selected histories as plain text, replacing the target file.
+    Normalize CR and CRLF line endings to LF."
+
+    | histories text |
+
+    histories := historyTree selectedItems collect: [ :node |
+        node history ].
+
+    text := String streamContents: [ :stream |
+        histories do: [ :history |
+            stream
+                nextPutAll: 'History: ';
+                nextPutAll: history printString;
+                nextPutAll: String lf;
+                nextPutAll: String lf;
+                nextPutAll: (self
+                    stringFromMessages: history displayMessageList);
+                nextPutAll: String lf;
+                nextPutAll: String lf ] ].
+
+    text := (text copyReplaceAll: String crlf with: String lf)
+        copyReplaceAll: String cr with: String lf.
+
+    aFileReference exists ifTrue: [
+        aFileReference delete ].
+
+    aFileReference writeStreamDo: [ :stream |
+        stream nextPutAll: text ]
+
 ]
 
 { #category : 'sending' }
