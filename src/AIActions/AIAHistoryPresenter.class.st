@@ -329,7 +329,7 @@ AIAHistoryPresenter >> historyChangeAction [
             (selected notNil and: [ selected isReference not ]).
         sendButton enabled:
             (selected isNil or: [ selected isReference not ]).
-        "saveButton enabled: selectedNodes isNotEmpty."
+        saveButton enabled: selectedNodes isNotEmpty.
         deleteButton enabled:
             (self canDeleteNodes: selectedNodes).
 
