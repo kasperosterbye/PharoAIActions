@@ -89,24 +89,23 @@ AIAHistoryMessagesPresenter >> messageAt: anIndex [
 AIAHistoryMessagesPresenter >> rebuildMessagesLayout [
     "Rebuild the message list with content-dependent heights."
 
-    | layout container |
+    | layoutStructure container |
 
-    layout := SpBoxLayout newTopToBottom.
-    layout spacing: 2.
-
+    layoutStructure := SpBoxLayout newTopToBottom.
+    layoutStructure spacing: 2.
     history ifNotNil: [
         1 to: self visibleMessages size do: [ :index |
             | row |
             row := self rowAt: index.
-
-            layout add: row first height: 28.
+"Transcript << index asString << ': ' << row first label asString << String lf << String lf.
+self halt."
+            layoutStructure add: row first "height: 20".
 
             (expandedIndices includes: index) ifTrue: [
-                layout add: row second
+                layoutStructure add: row second
                     height: (self heightForMessageAt: index) ] ] ].
-
     container := SpPresenter new.
-    container layout: layout.
+    container layout: layoutStructure.
 
     self layout: (SpScrollableLayout new
         child: container;
@@ -139,14 +138,15 @@ AIAHistoryMessagesPresenter >> rowAt: anIndex [
         style backgroundColor: #veryVeryLightGray.
 		  style applyTo: link adapter widget
     ].
-
+	 (content beginsWith: '[tool_call]')
+		ifTrue: [ content := '```text' , String lf , content , String lf, '```', String lf ].
     md := MicrodownPresenter new.
-    md documentFromString: content.
+	 md documentFromString: content.
 
     ^ { link. md }
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryMessagesPresenter >> scrollToSelectedMessage [
     "Scroll the selected message header into view."
 
@@ -173,7 +173,7 @@ AIAHistoryMessagesPresenter >> scrollToSelectedMessage [
                 0 @ ((offset / maxScroll) min: 1) ] ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryMessagesPresenter >> showTools: aBoolean [
     "Set whether tool interactions are visible."
 
@@ -201,7 +201,7 @@ AIAHistoryMessagesPresenter >> toggleExpandedAt: anIndex [
             self defer: [ self scrollToSelectedMessage ] ]
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 AIAHistoryMessagesPresenter >> visibleMessages [
     "Return messages, optionally excluding tool interactions."
 

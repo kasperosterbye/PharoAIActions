@@ -293,6 +293,7 @@ AIAHistoryPresenter >> displayHistory: aHistory [
 { #category : 'history tree' }
 AIAHistoryPresenter >> getHistoryTreeRoots [
 	| sortedHistories |
+	
 	sortedHistories := AIAHistory histories sorted: [ :first :second |
 		first fileStore modifiedAt >
 			second fileStore modifiedAt ].
@@ -493,7 +494,6 @@ AIAHistoryPresenter >> refreshHistoryTreePreservingSelection [
     Ignore announcements received before the presenter is initialized."
 
     | selectedHistories roots replacements |
-
     historyTree ifNil: [ ^ self ].
 
     selectedHistories := historyTree selectedItems collect: [ :node |
@@ -558,7 +558,7 @@ AIAHistoryPresenter >> rootDirectory: aDirectory [
 	rootDirectory := aDirectory
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history globals' }
 AIAHistoryPresenter >> saveSelectedHistories [
     "Save selected histories to the user's Downloads folder."
 
@@ -571,7 +571,7 @@ AIAHistoryPresenter >> saveSelectedHistories [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'history globals' }
 AIAHistoryPresenter >> saveSelectedHistoriesTo: aFileReference [
     "Export selected histories as plain text, replacing the target file.
     Normalize CR and CRLF line endings to LF."
