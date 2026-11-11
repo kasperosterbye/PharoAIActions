@@ -42,7 +42,9 @@ AIAHistoryMessagesPresenter >> heightForMessageAt: anIndex [
 
     | content richText morph width |
 
-    content := (self messageAt: anIndex) value.
+    content := ((self messageAt: anIndex) value
+		lines collect: [ :line | line = '```' ifTrue: [ '```text' ] ifFalse: [ line ]])
+		joinUsing: String lf.
     richText := Microdown asRichText: (Microdown parse: content).
 
     width := self adapter
@@ -99,7 +101,7 @@ AIAHistoryMessagesPresenter >> rebuildMessagesLayout [
             row := self rowAt: index.
 "Transcript << index asString << ': ' << row first label asString << String lf << String lf.
 self halt."
-            layoutStructure add: row first "height: 20".
+            layoutStructure add: row first height: 20.
 
             (expandedIndices includes: index) ifTrue: [
                 layoutStructure add: row second
