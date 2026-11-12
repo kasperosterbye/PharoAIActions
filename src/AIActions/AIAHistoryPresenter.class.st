@@ -42,7 +42,8 @@ Class {
 		'reloadButton',
 		'deleteButton',
 		'showToolsButton',
-		'saveButton'
+		'saveButton',
+		'inspectButton'
 	],
 	#category : 'AIActions-UIPresenters',
 	#package : 'AIActions',
@@ -149,7 +150,7 @@ AIAHistoryPresenter >> canDeleteNodes: nodes [
 		self canDeleteNode: node ]
 ]
 
-{ #category : 'layout' }
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> defaultLayout [
     "Arrange the history list, Save button, details and messages."
 
@@ -173,6 +174,8 @@ AIAHistoryPresenter >> defaultLayout [
         add: reloadButton;
         add: SpBoxLayout newLeftToRight;
         add: saveButton;
+        add: SpBoxLayout newLeftToRight;
+        add: inspectButton;
         add: SpBoxLayout newLeftToRight;
         add: deleteButton;
         add: SpBoxLayout newLeftToRight;
@@ -200,7 +203,6 @@ AIAHistoryPresenter >> defaultLayout [
         yourself.
 
     ^ both
-
 ]
 
 { #category : 'deleting' }
@@ -314,7 +316,7 @@ AIAHistoryPresenter >> historyActions [
 		historyChangeAction
 ]
 
-{ #category : 'history tree' }
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> historyChangeAction [
     "Update button availability and message display after selection changes."
 
@@ -333,6 +335,7 @@ AIAHistoryPresenter >> historyChangeAction [
         saveButton enabled: selectedNodes isNotEmpty.
         deleteButton enabled:
             (self canDeleteNodes: selectedNodes).
+        inspectButton enabled: selected notNil.
 
         selected
             ifNil: [
@@ -341,7 +344,6 @@ AIAHistoryPresenter >> historyChangeAction [
             ifNotNil: [
                 self displayHistory: selected history.
                 self displayDetailsForHistory: selected history ] ]
-
 ]
 
 { #category : 'formatting' }
@@ -368,7 +370,7 @@ AIAHistoryPresenter >> historyObserveTree [
 		for: self
 ]
 
-{ #category : 'initialization' }
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> initializePresenters [
     "Initialize the history presenter and its controls."
 
@@ -444,9 +446,14 @@ AIAHistoryPresenter >> initializePresenters [
         yourself.
     deleteButton disable.
 
+    inspectButton := self newButton
+        label: 'Inspect';
+        action: [ self inspectSelectedHistory ];
+        yourself.
+    inspectButton disable.
+
     self historyActions.
     self messageActions
-
 ]
 
 { #category : 'initialization' }
@@ -455,6 +462,13 @@ AIAHistoryPresenter >> initializeWindow: aWindow [
     aWindow title: 'AIA History'.
     aWindow whenClosedDo: [
         SystemAnnouncer uniqueInstance unsubscribe: self ].
+]
+
+{ #category : 'as yet unclassified' }
+AIAHistoryPresenter >> inspectSelectedHistory [
+	| node |
+	node := historyTree selectedItem.
+	node ifNotNil: [ node history inspect ]
 ]
 
 { #category : 'messages' }
