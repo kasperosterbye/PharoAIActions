@@ -43,7 +43,7 @@ OllamaApi class >> apiGenerateUrl [
 	
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'accessing' }
 OllamaApi class >> availableModelNames [
     "Return configured models when Ollama is running,
     otherwise an empty array."
