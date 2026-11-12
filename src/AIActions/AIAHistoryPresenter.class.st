@@ -151,6 +151,33 @@ AIAHistoryPresenter >> canDeleteNodes: nodes [
 ]
 
 { #category : 'as yet unclassified' }
+AIAHistoryPresenter >> cleanupAfterClosing [
+    "Unsubscribe myself. If no AIAHistoryPresenter window remains open,
+    remove subscriptions belonging to obsolete presenter instances."
+
+    | announcer presenters |
+
+    announcer := SystemAnnouncer uniqueInstance.
+    announcer unsubscribe: self.
+
+    presenters := (announcer subscriptions subscriptions copy
+        collect: [ :subscription | subscription subscriber ])
+        select: [ :subscriber |
+            subscriber notNil and: [
+                subscriber class name asString
+                    endsWith: 'AIAHistoryPresenter' ] ].
+
+    (presenters anySatisfy: [ :presenter |
+        presenter window notNil and: [
+            presenter window isOpen ] ])
+        ifTrue: [ ^ self ].
+
+    presenters do: [ :presenter |
+        announcer unsubscribe: presenter ]
+
+]
+
+{ #category : 'as yet unclassified' }
 AIAHistoryPresenter >> defaultLayout [
     "Arrange the history list, Save button, details and messages."
 
@@ -458,10 +485,13 @@ AIAHistoryPresenter >> initializePresenters [
 
 { #category : 'initialization' }
 AIAHistoryPresenter >> initializeWindow: aWindow [
+    "Configure the window and clean up subscriptions on closing."
+
     super initializeWindow: aWindow.
     aWindow title: 'AIA History'.
     aWindow whenClosedDo: [
-        SystemAnnouncer uniqueInstance unsubscribe: self ].
+        self cleanupAfterClosing ]
+
 ]
 
 { #category : 'as yet unclassified' }
