@@ -155,12 +155,12 @@ AIAHistoryPresenter >> cleanupAfterClosing [
     "Unsubscribe myself. If no AIAHistoryPresenter window remains open,
     remove subscriptions belonging to obsolete presenter instances."
 
-    | announcer presenters |
+    | systemAnnouncer presenters |
 
-    announcer := SystemAnnouncer uniqueInstance.
-    announcer unsubscribe: self.
+    systemAnnouncer := SystemAnnouncer uniqueInstance.
+    systemAnnouncer unsubscribe: self.
 
-    presenters := (announcer subscriptions subscriptions copy
+    presenters := (systemAnnouncer subscriptions subscriptions copy
         collect: [ :subscription | subscription subscriber ])
         select: [ :subscriber |
             subscriber notNil and: [
@@ -173,7 +173,7 @@ AIAHistoryPresenter >> cleanupAfterClosing [
         ifTrue: [ ^ self ].
 
     presenters do: [ :presenter |
-        announcer unsubscribe: presenter ]
+        systemAnnouncer unsubscribe: presenter ]
 
 ]
 
