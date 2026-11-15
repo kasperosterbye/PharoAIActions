@@ -117,6 +117,29 @@ AIAProvidersPresenter >> defaultLayout [
 		  yourself
 ]
 
+{ #category : 'accessing' }
+AIAProvidersPresenter >> displayNameFor: item [
+    "Show the reasoning level index before the model name."
+
+    | provider levels selected index |
+
+    item isString ifFalse: [ ^ item name ].
+
+    provider := self providerFor: item.
+    provider ifNil: [ ^ item ].
+
+    levels := provider reasoningLevelsFor: item.
+    levels ifEmpty: [ ^ item ].
+
+    selected := AIAReasoningSettings levelForModel: item.
+    selected ifNil: [ selected := levels middle ].
+
+    index := levels indexOf: selected asSymbol.
+    index = 0 ifTrue: [ ^ item ].
+
+    ^ '[', index asString, '] ', item
+]
+
 { #category : 'event handling' }
 AIAProvidersPresenter >> doubleClick: selection [
     "Browse a provider class or select a model.
@@ -149,38 +172,45 @@ AIAProvidersPresenter >> doubleClick: selection [
 
 ]
 
-{ #category : 'layout' }
+{ #category : 'defaults' }
+AIAProvidersPresenter >> iconFor: item [
+    "Use the standard icons for providers and models."
+
+    ^ self iconNamed: (item isString
+        ifTrue: [ #processBrowser ]
+        ifFalse: [ item systemIconName ])
+]
+
+{ #category : 'initialization' }
 AIAProvidersPresenter >> initializePresenters [
-	"Initializes the presenters for the AIAProvidersPresenter class"
+    "Initialize the providers tree and reasoning-level menu."
 
-	providers := self newTreeTable.
-	providers
-		addColumn: (SpCompositeTableColumn new
-				 title: 'Providers';
-				 addColumn: ((SpImageTableColumn evaluated: [ :item |
-								   self iconNamed: (item isString
-											    ifTrue: [ #processBrowser ]
-											    ifFalse: [ item systemIconName ]) ])
-						  width: 20;
-						  yourself);
-				 addColumn: (SpStringTableColumn evaluated: [ :item |
-							  item isString
-								  ifTrue: [ item ]
-								  ifFalse: [ item name ] ]);
-				 yourself);
-		roots: AilienApi providers;
-		children: [ :item |
-    		item isClass
-        		ifFalse: [ #() ]
-        		ifTrue: [
-            		item = OllamaApi
-                	ifTrue: [ item availableModelNames ]
-                	ifFalse: [ item modelNames ] ] ];
+    providers := self newTreeTable.
+    providers
+        addColumn: (SpCompositeTableColumn new
+            title: 'Providers';
+            addColumn: ((SpImageTableColumn evaluated: [ :item |
+                self iconFor: item ])
+                width: 20;
+                yourself);
+            addColumn: (SpStringTableColumn evaluated: [ :item |
+                self displayNameFor: item ]);
+            yourself);
+        roots: AilienApi providers;
+        children: [ :item |
+            item isClass
+                ifFalse: [ #() ]
+                ifTrue: [
+                    item = OllamaApi
+                        ifTrue: [ item availableModelNames ]
+                        ifFalse: [ item modelNames ] ] ];
+        beResizable;
+        activateOnDoubleClick;
+        whenActivatedDo: [ :selection |
+            self doubleClick: selection ];
+        contextMenu: [ self reasoningContextMenu ].
 
-		beResizable;
-		activateOnDoubleClick;
-		whenActivatedDo: [ :selection | self doubleClick: selection ].
-		self bindCheckShortcut
+    self bindCheckShortcut
 ]
 
 { #category : 'initialization' }
@@ -205,6 +235,39 @@ AIAProvidersPresenter >> providerFor: modelName [
 { #category : 'accessing' }
 AIAProvidersPresenter >> providerRoots [
 	^ providers roots
+]
+
+{ #category : 'accessing' }
+AIAProvidersPresenter >> reasoningContextMenu [
+    "Select a reasoning level and refresh the display."
+
+    | model provider levels menu |
+
+    model := providers selectedItem.
+    model ifNil: [ ^ nil ].
+    model isString ifFalse: [ ^ nil ].
+
+    provider := self providerFor: model.
+    provider ifNil: [ ^ nil ].
+
+    levels := provider reasoningLevelsFor: model.
+    levels ifEmpty: [ ^ nil ].
+
+    menu := self newMenu.
+
+    menu addGroup: [ :group |
+        levels do: [ :level |
+            group addItem: [ :item |
+                item
+                    name: level asString;
+                    action: [
+                        AIAReasoningSettings
+                            level: level
+                            forModel: model.
+                        providers adapter refreshTree.
+                        self setWindowTitle ] ] ] ].
+
+    ^ menu
 ]
 
 { #category : 'layout' }
@@ -234,6 +297,6 @@ AIAProvidersPresenter >> window [
 	"Returns the window associated with the presenter, ensuring it is unclosable"
 	| windowResult |
 	windowResult := super window.
-	window window makeUnclosable.
+	"window window makeUnclosable."
 	^ windowResult
 ]

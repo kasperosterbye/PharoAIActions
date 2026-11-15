@@ -199,7 +199,7 @@ AIAHistory >> apiMessageList [
 
 { #category : 'accessing' }
 AIAHistory >> assistant: aString [
-	self comment: '[LLM] ', self llmInfoString .
+	self comment: '[LLM] ', self api class info .
 
 	self messagesAdd:
 		'assistant' -> (self sanitizedResonse: aString)
@@ -362,16 +362,6 @@ AIAHistory >> initialize [
 { #category : 'accessing' }
 AIAHistory >> lastRoles [
 	^ lastRoles 
-]
-
-{ #category : 'accessing' }
-AIAHistory >> llmInfoString [
-	| currentApi |
-	currentApi := self api.
-
-	^ currentApi class name asString,
-		': ',
-		currentApi model asString
 ]
 
 { #category : 'accessing' }
