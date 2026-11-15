@@ -297,6 +297,6 @@ AIAProvidersPresenter >> window [
 	"Returns the window associated with the presenter, ensuring it is unclosable"
 	| windowResult |
 	windowResult := super window.
-	"window window makeUnclosable."
+	window window makeUnclosable.
 	^ windowResult
 ]
