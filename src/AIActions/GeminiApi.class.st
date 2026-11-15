@@ -21,18 +21,6 @@ GeminiApi class >> geminiKey [
 		readStream contents trimBoth.
 ]
 
-{ #category : 'AI models' }
-GeminiApi class >> modelNamesAndReasoning [
-	"This is auto generated from ../Pharo/ailiens.txt file"
-	"Look at https://ai.google.dev/gemini-api/docs/models to see the list"
-
-	^ {
-		'gemini-2.5-flash' -> #().
-		'gemini-3.5-flash' -> #().
-		'gemini-3.7-flash' -> #().
-		'gemini-3.8-flash' -> #(). }
-]
-
 { #category : 'accessing' }
 GeminiApi class >> transcribeYouTube: aUrl [
 "Transcribe a YouTube video using Google's Gemini API.

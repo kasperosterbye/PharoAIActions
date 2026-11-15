@@ -106,8 +106,8 @@ AilienInnerCall >> innerCall [
 	self callLLM.
 	toolCall := self check.
 	toolCall = '*notool*' ifTrue: [ ^ '*notool*' ].
-	llmName := outer class name asString , ' @ ', outer class defaultModel .
-	Transcript << '## ' << llmName << '. Tool call: ' << turn asString << String lf.
+	llmName := outer class info.
+	Transcript << '## LLM: ' << llmName << '. Tool call: ' << turn asString << String lf.
 	self messageListAdd.
 	self handleToolCall
 ]

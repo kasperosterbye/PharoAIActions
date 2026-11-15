@@ -110,8 +110,26 @@ AilienApi class >> errorResponse: aString [
 
 { #category : 'accessing' }
 AilienApi class >> info [
-	"Returns a descriptive string combining the current AI provider name and its default model name to identify the API configuration being used"
-	^ self provider name asString, ': ', self provider defaultModel
+    "Answer the current model, provider, and reasoning level."
+
+    | provider model api levels level index title |
+
+    provider := self provider.
+    model := provider defaultModel.
+    title := model , '@' , provider name asString.
+
+    api := provider new.
+    api model: model.
+    levels := api reasoningLevels.
+
+    levels ifEmpty: [ ^ title ].
+
+    level := api reasoningLevel.
+    index := levels indexOf: level asSymbol.
+
+    index = 0 ifTrue: [ ^ title ].
+
+    ^ '[' , index asString , '] ' , title
 ]
 
 { #category : 'private' }
@@ -371,9 +389,18 @@ AilienApi >> printOn: aStream [
 
 { #category : 'accessing' }
 AilienApi >> reasoningLevel [
-	(reasoningLevel isNil and: [ self reasoningLevels isNotEmpty ]) 
-		ifTrue: [ reasoningLevel := self reasoningLevels middle ].
-    ^ reasoningLevel
+    "Answer the explicit level, the configured default,
+    or the middle available level."
+
+    | selected levels |
+
+    reasoningLevel ifNotNil: [ ^ reasoningLevel ].
+
+    selected := AIAReasoningSettings levelForModel: self model.
+    selected ifNotNil: [ ^ selected ].
+
+    levels := self reasoningLevels.
+    ^ levels ifEmpty: [ nil ] ifNotEmpty: [ levels middle ]
 ]
 
 { #category : 'accessing' }
