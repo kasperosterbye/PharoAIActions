@@ -137,7 +137,7 @@ AIAProvidersPresenter >> displayNameFor: item [
     index := levels indexOf: selected asSymbol.
     index = 0 ifTrue: [ ^ item ].
 
-    ^ '[', index asString, '] ', item
+    ^ '[' , index asString , '/', levels size asString , '] ' , item
 ]
 
 { #category : 'event handling' }

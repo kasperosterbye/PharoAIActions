@@ -128,8 +128,7 @@ AilienApi class >> info [
     index := levels indexOf: level asSymbol.
 
     index = 0 ifTrue: [ ^ title ].
-
-    ^ '[' , index asString , '] ' , title
+    ^ '[' , index asString , '/', levels size asString , '] ' , title
 ]
 
 { #category : 'private' }
