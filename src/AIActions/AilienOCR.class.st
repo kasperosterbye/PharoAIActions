@@ -1,31 +1,26 @@
 "
 # AilienOCR
 
-AilienOCR is a client for the Ailien OCR API, designed to extract text from PDF documents using advanced optical character recognition (OCR) capabilities. This class provides a simple interface to upload PDF files, process them through the Ailien API, and retrieve the extracted text in Markdown format.
+`AilienOCR` is a synchronous adapter for Mistral’s file and OCR endpoints. It uploads PDF files, obtains short-lived signed URLs, submits documents for OCR, and returns the recognised page content as plain text. It also exposes Mistral’s voice listing and speech-generation endpoints; those capabilities share the same API access but are not part of the OCR workflow.
 
-## Usage Example
+## Design and contract
 
-```smalltalk
-""AilienOCR usage example in the Playground""
+- API requests use `MistralApi esug` for the `Authorization` header. Credentials and endpoint URLs are not injected, so adapting authentication or the service requires changing or specialising the relevant methods.
+- `uploadFile:` uploads the supplied file as `application/pdf` with purpose `ocr` and returns the response’s file ID. The caller is responsible for supplying an appropriate file.
+- `getSignedUrl:` requests a URL with a one-hour expiry. `ocrFile:` uses that URL and returns the `markdown` values from the response’s `pages`, joined with carriage returns. This deliberately gives callers text rather than page objects: page metadata and the original response structure are discarded.
+- `textFromPDF:` composes upload and OCR. The lower-level methods remain available when callers need to separate those steps or work with an existing file ID.
 
-| fileReference text |
-fileReference := 'path/to/your/document.pdf' asFileReference.
-text := AilienOCR new textFromPDF: fileReference.
-text inspect
-```
+## Local-file behaviour
 
-## Key Features
+The class-side `pdf:` and `webpdf:` conveniences use `/Users/kasper/downloads`. `pdf:in:` allows a different folder for the PDF and resulting text file. `webpdf:` derives local names from the URL’s final path segment, returns an existing `.txt` file without checking whether it is current, and downloads the PDF only when it is absent.
 
-- **PDF Upload**: Uploads PDF files to the Ailien OCR API for processing.
-- **OCR Processing**: Extracts text from PDF documents using the Ailien API.
-- **Markdown Output**: Returns the extracted text in Markdown format for easy formatting and display.
+Consequently, the text cache is keyed by filename rather than URL or document contents: same-named PDFs can collide, and cached text is not refreshed automatically. The download directory is also platform- and user-specific. These are convenience choices, not properties of the OCR service.
 
-## Design Notes
+## Extension and trade-offs
 
-- The class follows a fluent interface for easy integration with other tools.
-- All API interactions are handled internally, requiring only the file reference for operation.
-- Designed to be used interactively in the Playground for quick text extraction tasks.
+The request stages (`uploadFile:`, `getSignedUrl:`, and `ocrFile:`) are natural seams for specialisation, as are `pdf:in:` and the voice-related methods. However, models, endpoints, expiry, output paths and several response keys are hard-coded. Requests are made directly through `ZnClient`, and responses are assumed to have the expected JSON shape; the class does not provide its own retry, caching invalidation, or structured error policy.
 
+`speakText:` has additional local side effects: it writes an MP3 to the fixed downloads directory and invokes `afplay`. It therefore depends on that path and an available macOS playback command, rather than behaving as a platform-neutral API operation.
 "
 Class {
 	#name : 'AilienOCR',
@@ -57,6 +52,31 @@ AilienOCR class >> pdf: aFileName in: folderFile [
     outputReference writeStreamDo: [ :stream |
         stream nextPutAll: text ].
     ^ text
+]
+
+{ #category : 'as yet unclassified' }
+AilienOCR class >> webpdf: webAddress [
+	"Return the saved OCR text or extract it from a local or downloaded PDF."
+	| url segments fileName folder pdfReference textReference |
+	url := webAddress asZnUrl.
+	segments := url pathSegments.
+	segments isEmpty ifTrue: [ self error: 'The URL must include a PDF filename' ].
+	fileName := segments last.
+	((fileName endsWith: '.pdf') and: [ (fileName includes: $/) not ])
+		ifFalse: [ self error: 'The URL must include a PDF filename ending in .pdf' ].
+
+	folder := '/Users/kasper/downloads' asFileReference.
+	textReference := folder / (fileName copyReplaceAll: '.pdf' with: '.txt').
+	textReference isFile ifTrue: [ ^ textReference contents ].
+
+	pdfReference := folder / fileName.
+	pdfReference isFile ifFalse: [
+		ZnClient new
+			url: url;
+			enforceHttpSuccess: true;
+			downloadTo: pdfReference ].
+
+	^ self pdf: fileName
 ]
 
 { #category : 'OCR' }

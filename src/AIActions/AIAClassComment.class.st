@@ -11,7 +11,7 @@ Class {
 
 { #category : 'accessing' }
 AIAClassComment >> aiaClassComment: aClass [
-	^ self aiaCommentBasic: aClass 
+	^ self aiaCommentExpert: aClass 
 ]
 
 { #category : 'accessing' }
