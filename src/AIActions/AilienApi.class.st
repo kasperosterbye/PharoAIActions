@@ -55,6 +55,7 @@ Class {
 		'toolsEnabled'
 	],
 	#classVars : [
+		'AllToolsEnabled',
 		'ErrorResponse',
 		'LastHistory',
 		'Provider'
@@ -67,6 +68,20 @@ Class {
 	#package : 'AIActions',
 	#tag : 'AIApi'
 }
+
+{ #category : 'accessing' }
+AilienApi class >> allToolsEnabled [
+    "Global master switch for advertising tools to all providers."
+    ^ AllToolsEnabled ifNil: [ true ]
+]
+
+{ #category : 'accessing' }
+AilienApi class >> allToolsEnabled: aBoolean [
+	"Enable or disable tool advertisements globally, without changing provider or instance settings."
+
+	(#( true false ) includes: aBoolean) ifFalse: [ self error: 'Expected a Boolean' ].
+	AllToolsEnabled := aBoolean
+]
 
 { #category : 'backgrounds' }
 AilienApi class >> background01 [
@@ -446,6 +461,8 @@ AilienApi >> toolSpecification [
 
 { #category : 'accessing' }
 AilienApi >> toolsEnabled [
+    "The global switch takes precedence over instance and provider settings."
+    AilienApi allToolsEnabled ifFalse: [ ^ false ].
     toolsEnabled ifNotNil: [ ^ toolsEnabled ].
     ^ self class toolsEnabledFor: self model
 ]

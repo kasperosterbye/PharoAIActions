@@ -84,25 +84,18 @@ ClaudeApi >> jsonHistory [
 
 { #category : 'adding' }
 ClaudeApi >> toolSpecification [
-	"Returns a collection of tool specifications for all registered API tool subclasses"
-	| all |
-    all := AilienApiTool subclasses collect: [ :tool |
-        | openAI func params |
-        openAI := tool new evaluateTool.
-        func := openAI at: 'function'.
-        params := func at: 'parameters'.
+    "Translate the common registered tool specifications to Claude's format."
+    ^ super toolSpecification collect: [ :tool |
+        | function |
+        function := tool at: 'function'.
         Dictionary newFrom: {
-            'name' -> (func at: 'name').
-            'description' -> (func at: 'description').
-            'input_schema' -> params } ].
-	^ all
+            'name' -> (function at: 'name').
+            'description' -> (function at: 'description').
+            'input_schema' -> (function at: 'parameters') } ]
 ]
 
 { #category : 'adding' }
 ClaudeApi >> znClientEntity [
-	"Returns the JSON body for the API request, including the message history and tool specifications"
-    ^ super znClientEntity , {
-        'tools' -> self toolSpecification.
-        'max_tokens' -> 32000
-    }
+    "Add Claude's token limit to the common request, which includes tools only when enabled."
+    ^ super znClientEntity , { 'max_tokens' -> 32000 }
 ]

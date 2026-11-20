@@ -10,6 +10,24 @@ Class {
 }
 
 { #category : 'tests' }
+AilienApiToolsTest >> testClaudeToolsRespectInstanceSettingAndUseRegistry [
+    | original api entity tools |
+    original := AilienApi allToolsEnabled.
+    [
+        AilienApi allToolsEnabled: true.
+        api := ClaudeApi new.
+        api messageList: #(); toolsEnabled: true.
+        entity := api znClientEntity.
+        self assert: (entity count: [ :each | each key = 'tools' ]) equals: 1.
+        tools := entity asDictionary at: 'tools'.
+        self assert: tools size equals: AilienApiTool toolList size.
+        self assert: (tools allSatisfy: [ :tool | tool includesKey: 'input_schema' ]).
+        api toolsEnabled: false.
+        self deny: (api znClientEntity asDictionary includesKey: 'tools')
+    ] ensure: [ AilienApi allToolsEnabled: original ]
+]
+
+{ #category : 'tests' }
 AilienApiToolsTest >> testExecuteToolNamed [
     "A registered tool can be found by name and executed
     without involving an LLM or conversation history."
@@ -24,6 +42,37 @@ AilienApiToolsTest >> testExecuteToolNamed [
     self assert: result isString.
     self assert: (result includesSubstring: 'AilienApiTool').
     self assert: (result includesSubstring: 'executeTool:').
+]
+
+{ #category : 'tests' }
+AilienApiToolsTest >> testGlobalSwitchDoesNotDisableToolExecution [
+    | original result |
+    original := AilienApi allToolsEnabled.
+    [
+        AilienApi allToolsEnabled: false.
+        result := AilienApiTool executeToolNamed: 'getClassInfo'
+            withArgs: { 'className' -> 'AilienApiTool' } asDictionary.
+        self assert: (result includesSubstring: 'AilienApiTool')
+    ] ensure: [ AilienApi allToolsEnabled: original ]
+]
+
+{ #category : 'tests' }
+AilienApiToolsTest >> testGlobalToolsSwitchControlsAllProviderRequests [
+    | original |
+    original := AilienApi allToolsEnabled.
+    [
+        AilienApi providers do: [ :provider |
+            | api enabled disabled |
+            api := provider new.
+            api messageList: #(); toolsEnabled: true.
+            AilienApi allToolsEnabled: true.
+            enabled := api znClientEntity asDictionary.
+            AilienApi allToolsEnabled: false.
+            disabled := api znClientEntity asDictionary.
+            self assert: (enabled includesKey: 'tools') description: provider name.
+            self deny: (disabled includesKey: 'tools') description: provider name.
+            self deny: api toolsEnabled description: provider name ]
+    ] ensure: [ AilienApi allToolsEnabled: original ]
 ]
 
 { #category : 'tests' }

@@ -38,7 +38,8 @@ Class {
 	#instVars : [
 		'providers',
 		'window',
-		'ailiensDirectory'
+		'ailiensDirectory',
+		'toolsToggle'
 	],
 	#category : 'AIActions-AIApi',
 	#package : 'AIActions',
@@ -98,23 +99,20 @@ AIAProvidersPresenter >> checkSelection [
 
 { #category : 'layout' }
 AIAProvidersPresenter >> defaultLayout [
-	"Configures the layout of the presenter with a tree table and buttons for browsing and refreshing providers"
-
-	^ SpBoxLayout newTopToBottom
-		  add: providers;
-		  add: (SpBoxLayout newLeftToRight
-				   add: (self newButton
-						    label: 'Double click to browse or select';
-						    yourself);
-				   addLast: (self newButton
-						    label: 'Refresh';
-						    icon: (self iconNamed: #glamorousRefresh);
-						    action: [ self refreshProviders ];
-						    yourself)
-				   expand: false;
-				   yourself)
-		  expand: false;
-		  yourself
+    "Show the providers tree, global tools toggle and refresh button."
+    ^ SpBoxLayout newTopToBottom
+        add: providers;
+        add: (SpBoxLayout newLeftToRight
+            add: toolsToggle;
+            addLast: (self newButton
+                label: 'Refresh';
+                icon: (self iconNamed: #glamorousRefresh);
+                action: [ self refreshProviders ];
+                yourself)
+            expand: false;
+            yourself)
+        expand: false;
+        yourself
 ]
 
 { #category : 'accessing' }
@@ -183,8 +181,7 @@ AIAProvidersPresenter >> iconFor: item [
 
 { #category : 'initialization' }
 AIAProvidersPresenter >> initializePresenters [
-    "Initialize the providers tree and reasoning-level menu."
-
+    "Initialize the providers tree, tools toggle and reasoning-level menu."
     providers := self newTreeTable.
     providers
         addColumn: (SpCompositeTableColumn new
@@ -205,10 +202,18 @@ AIAProvidersPresenter >> initializePresenters [
                         ifTrue: [ item availableModelNames ]
                         ifFalse: [ item modelNames ] ] ];
         beResizable;
+        help: 'Double click a provider to browse it or a model to select it';
         activateOnDoubleClick;
         whenActivatedDo: [ :selection |
             self doubleClick: selection ];
         contextMenu: [ self reasoningContextMenu ].
+
+    toolsToggle := self newToggleButton.
+    toolsToggle
+        label: 'Tools';
+        help: 'Enable or disable tools for all providers';
+        state: AilienApi allToolsEnabled;
+        whenChangedDo: [ :enabled | AilienApi allToolsEnabled: enabled ].
 
     self bindCheckShortcut
 ]

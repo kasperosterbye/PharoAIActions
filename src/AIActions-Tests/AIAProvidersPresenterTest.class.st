@@ -305,3 +305,23 @@ AIAProvidersPresenterTest >> testRefreshWithUnknownProviderLeavesCurrentModelsUn
 		assert: AIAiliensTestApi modelNames
 		equals: #( 'alpha' )
 ]
+
+{ #category : 'tests' }
+AIAProvidersPresenterTest >> testToolsToggleInitialStateAndChangesGlobalSetting [
+    | original enabledPresenter disabledPresenter toggle |
+    original := AilienApi allToolsEnabled.
+    [
+        AilienApi allToolsEnabled: true.
+        enabledPresenter := AIAProvidersPresenter new.
+        toggle := enabledPresenter instVarNamed: 'toolsToggle'.
+        self assert: toggle state.
+        self assert: toggle label equals: 'Tools'.
+        toggle state: false.
+        self deny: AilienApi allToolsEnabled.
+        disabledPresenter := AIAProvidersPresenter new.
+        toggle := disabledPresenter instVarNamed: 'toolsToggle'.
+        self deny: toggle state.
+        toggle state: true.
+        self assert: AilienApi allToolsEnabled
+    ] ensure: [ AilienApi allToolsEnabled: original ]
+]
