@@ -66,7 +66,55 @@ AIAYouTubeEpisode >> channel: handler [
 ]
 
 { #category : 'episode' }
+AIAYouTubeEpisode >> episodeDownloadVtt: episodeId [
+    "Prefer manual subtitles, then automatic subtitles.
+    Continue to the next option if an attempt fails."
+
+    | success |
+
+    #('en' 'en-orig') do: [ :lang |
+
+        language := lang.
+
+        success := [
+            self
+                episodeTryDownloadVtt: episodeId
+                language: lang
+                automatic: lang = 'en-orig'
+        ]
+            on: Error
+            do: [ false ].
+
+        success ifTrue: [
+            ^ self episodeVttPath: episodeId ]
+    ].
+
+    self error:
+        'No usable YouTube subtitles for episode: ', episodeId
+]
+
+{ #category : 'episode' }
 AIAYouTubeEpisode >> episodeFetch: episodeId [
+    "Fetch a transcript, preferring YouTube subtitles.
+    Fall back to Gemini if necessary.
+    Preserve existing files if both fail."
+
+    | transcript path |
+
+    transcript := self episodeTranscriptWithFallback: episodeId.
+
+    path := (self episodePath: episodeId),
+        episodeId, '.txt'.
+
+    (File named: path) writeStream
+        nextPutAll: transcript utf8Encoded;
+        close.
+
+    ^ path
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeFetch_old: episodeId [
 	| transcript |
 	transcript := [ 
 			self episodeSplitSentences: 
@@ -76,6 +124,23 @@ AIAYouTubeEpisode >> episodeFetch: episodeId [
 	(File named: (self episodePath: episodeId) , episodeId , '.txt') writeStream
 		nextPutAll: transcript utf8Encoded;
 		close
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeGeminiTranscript: episodeId [
+    "Transcribe a YouTube video using Gemini."
+
+    | url transcript |
+
+    url := 'https://www.youtube.com/watch?v=', episodeId.
+
+    transcript := GeminiApi transcribeYouTube: url.
+
+    (transcript isNil or: [ transcript trimBoth isEmpty ])
+        ifTrue: [
+            self error: 'Gemini returned an empty transcript' ].
+
+    ^ self episodeSplitSentences: transcript
 ]
 
 { #category : 'episode' }
@@ -143,8 +208,35 @@ AIAYouTubeEpisode >> episodePath: episodeId [
 
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeEpisode >> episodeReload: episodeId [
+    "Reload an episode using YouTube subtitles or Gemini.
+    Preserve the existing transcript if retrieval fails.
+    Preserve the read/unread state."
+
+    | transcript wasRead path |
+
+    transcript := self episodeTranscriptWithFallback: episodeId.
+
+    wasRead := self episodeIsRead: episodeId.
+
+    self episodeMeta: episodeId.
+
+    path := (self episodePath: episodeId),
+        episodeId, '.txt'.
+
+    (File named: path) writeStream
+        nextPutAll: transcript utf8Encoded;
+        close.
+
+    wasRead ifTrue: [
+        self episodeMarkAsRead: episodeId ].
+
+    ^ path
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeReload_old: episodeId [
     "Reload an episode, preserving its existing transcript if Gemini fails."
 
     | transcript wasRead |
@@ -181,7 +273,121 @@ AIAYouTubeEpisode >> episodeSplitSentences: aString [
 		stream nextPutAll: pieces last ]
 ]
 
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeTextFromVtt: vttText [
+    "Convert VTT subtitles into plain text, removing timestamps,
+    formatting tags, and consecutive duplicate lines."
+
+    | result previous text |
+
+    result := OrderedCollection new.
+    previous := ''.
+
+    vttText lines do: [ :line |
+        text := line trimBoth.
+
+        ((text isEmpty)
+            or: [ text = 'WEBVTT'
+            or: [ (text beginsWith: 'Kind:')
+            or: [ (text beginsWith: 'Language:')
+            or: [ text includesSubstring: '-->' ] ] ] ])
+            ifFalse: [
+                text := text
+                    copyWithRegex: '<[^>]*>'
+                    matchesReplacedWith: ''.
+
+                text := text
+                    copyReplaceAll: '&gt;' with: '>';
+                    copyReplaceAll: '&lt;' with: '<';
+                    copyReplaceAll: '&amp;' with: '&'.
+
+                text := text trimBoth.
+
+                (text isNotEmpty and: [ text ~= previous ])
+                    ifTrue: [
+                        result add: text.
+                        previous := text ] ] ].
+
+    ^ String lf join: result
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeTranscript: episodeId [
+    "Read a downloaded VTT file and return its plain text."
+
+    | file vttText |
+
+    file := (self episodeVttPath: episodeId) asFileReference.
+
+    file exists ifFalse: [
+        self error: 'VTT file not found: ', file fullName ].
+
+    vttText := file contents.
+
+    ^ self episodeTextFromVtt: vttText
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeTranscriptWithFallback: episodeId [
+    "Prefer YouTube subtitles, falling back to Gemini."
+
+    | transcript |
+
+    transcript := [
+        self episodeDownloadVtt: episodeId.
+        self episodeTranscript: episodeId
+    ]
+        on: Error
+        do: [ :error | nil ].
+
+    (transcript isNotNil and: [
+        transcript trimBoth isNotEmpty ])
+        ifTrue: [ ^ transcript ].
+
+    ^ self episodeGeminiTranscript: episodeId
+]
+
+{ #category : 'as yet unclassified' }
+AIAYouTubeEpisode >> episodeTryDownloadVtt: episodeId language: lang automatic: isAutomatic [
+    "Try downloading subtitles.
+    Answer true only when the VTT file exists."
+
+    | directory path file command options |
+
+    language := lang.
+    directory := self episodePath: episodeId.
+    path := self episodeVttPath: episodeId.
+    file := File named: path.
+
+    file exists ifTrue: [ file delete ].
+
+    options := isAutomatic
+        ifTrue: [ '--write-auto-subs' ]
+        ifFalse: [ '--write-subs' ].
+
+    command := 'yt-dlp --skip-download ',
+        options, ' ',
+        '--sub-langs ', lang, ' ',
+        '--sub-format vtt ',
+        '-o "', directory, '/%(id)s.%(ext)s" ',
+        '"https://www.youtube.com/watch?v=', episodeId, '"'.
+
+    LibC runCommand: command.
+
+    ^ file exists
+]
+
+{ #category : 'episode' }
+AIAYouTubeEpisode >> episodeVttPath: episodeId [
+    "Return the path of the downloaded VTT subtitle file."
+
+    ^ (self episodePath: episodeId),
+        '/', episodeId, '.', language, '.vtt'
+]
+
 { #category : 'initialization' }
 AIAYouTubeEpisode >> initialize [
-	channel := ''.
+    super initialize.
+    channel := ''.
+    language := 'en-orig'
 ]
