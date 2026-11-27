@@ -350,7 +350,7 @@ AIAYouTubeUI >> episodeRawMetaDetailFor: anEpisodeId forChannel: aChannelHandle 
 	^ file readStream contents utf8Decoded lines
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeUI >> episodeReloadSelected [
     "Reload all selected episodes sequentially in a background job."
 
