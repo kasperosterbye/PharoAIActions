@@ -347,7 +347,7 @@ AIAYouTubeEpisode >> episodeTranscriptWithFallback: episodeId [
     ^ self episodeGeminiTranscript: episodeId
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'episode' }
 AIAYouTubeEpisode >> episodeTryDownloadVtt: episodeId language: lang automatic: isAutomatic [
     "Try downloading subtitles.
     Answer true only when the VTT file exists."
